@@ -2166,6 +2166,7 @@ private fun V8PortraitContent(
                 canvasFallbackUrl = canvasFallbackUrl,
                 isPlaying = isPlaying,
                 size = artworkSize,
+                onSwipeUp = onSwipeUp,
             )
 
             Spacer(Modifier.height(artworkToMetadata))
@@ -2276,6 +2277,7 @@ private fun V8LandscapeContent(
                 canvasFallbackUrl = canvasFallbackUrl,
                 isPlaying = isPlaying,
                 size = artworkSize,
+                onSwipeUp = onSwipeUp,
             )
 
             Column(
@@ -2387,6 +2389,7 @@ private fun V8Artwork(
     canvasFallbackUrl: String?,
     isPlaying: Boolean,
     size: androidx.compose.ui.unit.Dp,
+    onSwipeUp: () -> Unit = {},
 ) {
     val artworkRequest = rememberOfflineArtworkImageRequest(artworkUrl)
     Box(
@@ -2411,6 +2414,14 @@ private fun V8Artwork(
                 modifier = Modifier.fillMaxSize(),
             )
         }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.5f)
+                .align(Alignment.BottomCenter)
+                .detectSwipeUpAction(onSwipeUp = onSwipeUp)
+        )
     }
 }
 
@@ -3045,6 +3056,7 @@ private fun V9PortraitContent(
                 isPlaying = isPlaying,
                 size = artworkSize,
                 placeholderColor = textButtonColor.copy(alpha = 0.12f),
+                onSwipeUp = onSwipeUp,
             )
 
             Spacer(Modifier.height(metadataGap))
@@ -3144,6 +3156,7 @@ private fun V9LandscapeContent(
                 isPlaying = isPlaying,
                 size = artworkSize,
                 placeholderColor = textButtonColor.copy(alpha = 0.12f),
+                onSwipeUp = onSwipeUp,
             )
 
             Column(
@@ -3303,6 +3316,7 @@ private fun V9Artwork(
     isPlaying: Boolean,
     size: Dp,
     placeholderColor: Color,
+    onSwipeUp: () -> Unit = {},
 ) {
     val artworkRequest = rememberOfflineArtworkImageRequest(artworkUrl)
     Box(
@@ -3327,6 +3341,14 @@ private fun V9Artwork(
                 modifier = Modifier.fillMaxSize(),
             )
         }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.5f)
+                .align(Alignment.BottomCenter)
+                .detectSwipeUpAction(onSwipeUp = onSwipeUp)
+        )
     }
 }
 
