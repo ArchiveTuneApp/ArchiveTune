@@ -104,6 +104,8 @@ import moe.rukamori.archivetune.constants.QuickPicksDisplayModeKey
 import moe.rukamori.archivetune.constants.SwipeThumbnailKey
 import moe.rukamori.archivetune.constants.SwipeSensitivityKey
 import moe.rukamori.archivetune.constants.SwipeToSongKey
+import moe.rukamori.archivetune.constants.SwipeUpAction
+import moe.rukamori.archivetune.constants.SwipeUpActionKey
 import moe.rukamori.archivetune.constants.HidePlayerThumbnailKey
 import moe.rukamori.archivetune.constants.ArchiveTuneCanvasKey
 import moe.rukamori.archivetune.constants.ThumbnailCornerRadiusKey
@@ -216,6 +218,10 @@ fun AppearanceSettings(
     val (swipeSensitivity, onSwipeSensitivityChange) = rememberPreference(
         SwipeSensitivityKey,
         defaultValue = 0.73f
+    )
+    val (swipeUpAction, onSwipeUpActionChange) = rememberEnumPreference(
+        SwipeUpActionKey,
+        defaultValue = SwipeUpAction.LYRICS
     )
     val (gridItemSize, onGridItemSizeChange) = rememberEnumPreference(
         GridItemsSizeKey,
@@ -772,6 +778,23 @@ fun AppearanceSettings(
                     description = stringResource(R.string.sensitivity_percentage, (swipeSensitivity * 100).roundToInt()),
                     icon = { Icon(painterResource(R.drawable.tune), null) },
                     onClick = { showSensitivityDialog = true }
+                )
+
+                EnumListPreference(
+                    title = { Text(stringResource(R.string.swipe_up_action)) },
+                    icon = { Icon(painterResource(R.drawable.swipe), null) },
+                    selectedValue = swipeUpAction,
+                    onValueSelected = onSwipeUpActionChange,
+                    valueText = {
+                        when (it) {
+                            SwipeUpAction.LYRICS -> stringResource(R.string.swipe_up_action_lyrics)
+                            SwipeUpAction.QUEUE -> stringResource(R.string.swipe_up_action_queue)
+                            SwipeUpAction.ARTIST -> stringResource(R.string.swipe_up_action_artist)
+                            SwipeUpAction.ALBUM -> stringResource(R.string.swipe_up_action_album)
+                            SwipeUpAction.SONG_INFO -> stringResource(R.string.swipe_up_action_song_info)
+                            SwipeUpAction.NONE -> stringResource(R.string.swipe_up_action_none)
+                        }
+                    }
                 )
             }
         }
