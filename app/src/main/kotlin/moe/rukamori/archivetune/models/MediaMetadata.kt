@@ -9,6 +9,7 @@ package moe.rukamori.archivetune.models
 
 import androidx.compose.runtime.Immutable
 import moe.rukamori.archivetune.innertube.models.SongItem
+import moe.rukamori.archivetune.innertube.models.displayThumbnail
 import moe.rukamori.archivetune.db.entities.Song
 import moe.rukamori.archivetune.db.entities.SongEntity
 import moe.rukamori.archivetune.ui.utils.resize
@@ -109,7 +110,9 @@ fun SongItem.toMediaMetadata() =
             )
         },
         duration = duration ?: -1,
-        thumbnailUrl = thumbnail.resize(1080, 1080),
+        thumbnailUrl = displayThumbnail?.let {
+            if ("maxresdefault" in it) it.replace("maxresdefault", "mqdefault") else it
+        } ?: thumbnail,
         album =
         album?.let {
             MediaMetadata.Album(

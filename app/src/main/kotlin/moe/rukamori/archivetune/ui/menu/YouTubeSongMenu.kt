@@ -51,6 +51,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -70,6 +71,7 @@ import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import moe.rukamori.archivetune.innertube.YouTube
 import moe.rukamori.archivetune.innertube.models.SongItem
+import moe.rukamori.archivetune.innertube.models.displayThumbnail
 import moe.rukamori.archivetune.LocalDatabase
 import moe.rukamori.archivetune.LocalDownloadUtil
 import moe.rukamori.archivetune.LocalPlayerConnection
@@ -93,6 +95,7 @@ import moe.rukamori.archivetune.ui.component.LocalBottomSheetPageState
 import moe.rukamori.archivetune.ui.component.MenuSurfaceSection
 import moe.rukamori.archivetune.ui.component.NewAction
 import moe.rukamori.archivetune.ui.component.NewActionGrid
+import moe.rukamori.archivetune.ui.component.YTFallbackImage
 import moe.rukamori.archivetune.ui.utils.ShowMediaInfo
 import moe.rukamori.archivetune.utils.SpeedDialPin
 import moe.rukamori.archivetune.utils.SpeedDialPinType
@@ -259,12 +262,13 @@ fun YouTubeSongMenu(
                         .size(ListThumbnailSize)
                         .clip(RoundedCornerShape(ThumbnailCornerRadius))
                 ) {
-                    AsyncImage(
-                        model = song.thumbnail,
+                    YTFallbackImage(
+                        url = song.displayThumbnail,
                         contentDescription = null,
+                        contentScale = ContentScale.Fit,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(ThumbnailCornerRadius))
+                            .clip(RoundedCornerShape(ThumbnailCornerRadius)),
                     )
                 }
             },
