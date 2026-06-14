@@ -755,33 +755,33 @@ fun BottomSheetPlayer(
         mutableStateOf(false)
     }
 
-    val swipeUpAction by rememberEnumPreference(SwipeUpActionKey, defaultValue = SwipeUpAction.Lyrics)
+    val swipeUpAction by rememberEnumPreference(SwipeUpActionKey, defaultValue = SwipeUpAction.LYRICS)
 
-    val handleSwipeUp = {
+    val handleSwipeUp: () -> Unit = {
         when (swipeUpAction) {
-            SwipeUpAction.Lyrics -> isLyricsScreenVisible = true
-            SwipeUpAction.Queue -> queueSheetState.expandSoft()
-            SwipeUpAction.Artist -> {
+            SwipeUpAction.LYRICS -> isLyricsScreenVisible = true
+            SwipeUpAction.QUEUE -> queueSheetState.expandSoft()
+            SwipeUpAction.ARTIST -> {
                 val firstArtistId = mediaMetadata?.artists?.firstOrNull()?.id
                 if (!firstArtistId.isNullOrBlank()) {
                     state.collapseSoft()
                     navController.navigate("artist/$firstArtistId")
                 }
             }
-            SwipeUpAction.Album -> {
+            SwipeUpAction.ALBUM -> {
                 if (mediaMetadata?.album != null) {
                     state.snapTo(state.collapsedBound)
                     navController.navigate("album/${mediaMetadata?.album?.id}")
                 }
             }
-            SwipeUpAction.SongInfo -> {
+            SwipeUpAction.SONG_INFO -> {
                 mediaMetadata?.id?.let { id ->
                     bottomSheetPageState.show {
                         ShowMediaInfo(id)
                     }
                 }
             }
-            SwipeUpAction.None -> {}
+            SwipeUpAction.NONE -> {}
         }
     }
 
