@@ -188,6 +188,17 @@ val TogetherRequireHostApprovalToJoinKey = booleanPreferencesKey("together_requi
 val TogetherLastJoinLinkKey = stringPreferencesKey("together_last_join_link")
 val TogetherWelcomeShownKey = booleanPreferencesKey("together_welcome_shown")
     
+enum class SwipeUpAction {
+    Lyrics,
+    Queue,
+    Artist,
+    Album,
+    SongInfo,
+    None
+}
+
+val SwipeUpActionKey = stringPreferencesKey("swipe_up_action")
+    
 // ListenBrainz scrobbling
 val ListenBrainzEnabledKey = booleanPreferencesKey("listenbrainz_enabled")
 val ListenBrainzTokenKey = stringPreferencesKey("listenbrainz_token")
@@ -674,6 +685,16 @@ val RepeatModeKey = intPreferencesKey("repeatMode")
 val SearchSourceKey = stringPreferencesKey("searchSource")
 val SwipeThumbnailKey = booleanPreferencesKey("swipeThumbnail")
 val SwipeSensitivityKey = floatPreferencesKey("swipeSensitivity")
+val SwipeUpActionKey = stringPreferencesKey("swipeUpAction")
+
+enum class SwipeUpAction {
+    LYRICS,
+    QUEUE,
+    ARTIST,
+    ALBUM,
+    SONG_INFO,
+    NONE
+}
 
 enum class SearchSource {
     LOCAL,
