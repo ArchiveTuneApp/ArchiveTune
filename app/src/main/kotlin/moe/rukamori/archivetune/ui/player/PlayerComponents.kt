@@ -33,6 +33,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -1625,6 +1627,7 @@ fun PlayerControlsContent(
     context: Context,
     onSliderValueChange: (Long) -> Unit,
     onSliderValueChangeFinished: () -> Unit,
+    onSwipeUp: () -> Unit = {},
     currentFormat: FormatEntity? = null,
 ) {
     val currentSong by playerConnection.currentSong.collectAsState(initial = null)
@@ -1641,7 +1644,8 @@ fun PlayerControlsContent(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = PlayerHorizontalPadding),
+            .padding(horizontal = PlayerHorizontalPadding)
+            .detectSwipeUpAction(onSwipeUp = onSwipeUp),
     ) {
         Column(modifier = Modifier.weight(1f)) {
             PlayerTitleSection(
@@ -1773,6 +1777,7 @@ fun V8PlayerControlsContent(
     onSliderValueChange: (Long) -> Unit,
     onSliderValueChangeFinished: () -> Unit,
     onVolumeChange: (Float) -> Unit,
+    onSwipeUp: () -> Unit = {},
     modifier: Modifier = Modifier,
     landscape: Boolean = false,
 ) {
@@ -1873,6 +1878,7 @@ fun V8PlayerControlsContent(
                 onToggleLike = onToggleLike,
                 onTitleClick = onTitleClick,
                 onArtistClick = onArtistClick,
+                onSwipeUp = onSwipeUp,
             )
 
             Spacer(Modifier.height(contentGap))
@@ -1938,6 +1944,7 @@ fun V8PlayerContent(
     onSliderValueChange: (Long) -> Unit,
     onSliderValueChangeFinished: () -> Unit,
     onVolumeChange: (Float) -> Unit,
+    onSwipeUp: () -> Unit = {},
     modifier: Modifier = Modifier,
     landscape: Boolean = false,
 ) {
@@ -2016,6 +2023,7 @@ fun V8PlayerContent(
             onSliderValueChange = onSliderValueChange,
             onSliderValueChangeFinished = onSliderValueChangeFinished,
             onVolumeChange = onVolumeChange,
+            onSwipeUp = onSwipeUp,
             modifier = modifier,
         )
     } else {
@@ -2056,6 +2064,7 @@ fun V8PlayerContent(
             onSliderValueChange = onSliderValueChange,
             onSliderValueChangeFinished = onSliderValueChangeFinished,
             onVolumeChange = onVolumeChange,
+            onSwipeUp = onSwipeUp,
             modifier = modifier,
         )
     }
@@ -2092,6 +2101,7 @@ private fun V8PortraitContent(
     onVolumeChange: (Float) -> Unit,
     onTitleClick: () -> Unit,
     onArtistClick: () -> Unit,
+    onSwipeUp: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
@@ -2169,6 +2179,7 @@ private fun V8PortraitContent(
                 onToggleLike = onToggleLike,
                 onTitleClick = onTitleClick,
                 onArtistClick = onArtistClick,
+                onSwipeUp = onSwipeUp,
             )
 
             Spacer(Modifier.height(controlsGap))
@@ -2242,6 +2253,7 @@ private fun V8LandscapeContent(
     onVolumeChange: (Float) -> Unit,
     onTitleClick: () -> Unit,
     onArtistClick: () -> Unit,
+    onSwipeUp: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
@@ -2291,6 +2303,7 @@ private fun V8LandscapeContent(
                     onToggleLike = onToggleLike,
                     onTitleClick = onTitleClick,
                     onArtistClick = onArtistClick,
+                    onSwipeUp = onSwipeUp,
                 )
 
                 Spacer(Modifier.height(18.dp))
@@ -2411,9 +2424,12 @@ private fun V8MetadataActions(
     onToggleLike: () -> Unit,
     onTitleClick: () -> Unit,
     onArtistClick: () -> Unit,
+    onSwipeUp: () -> Unit = {},
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .detectSwipeUpAction(onSwipeUp = onSwipeUp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(18.dp),
     ) {
@@ -2842,6 +2858,7 @@ fun V9PlayerContent(
     onLyricsClick: () -> Unit,
     onSliderValueChange: (Long) -> Unit,
     onSliderValueChangeFinished: () -> Unit,
+    onSwipeUp: () -> Unit = {},
     modifier: Modifier = Modifier,
     landscape: Boolean = false,
 ) {
@@ -2899,6 +2916,7 @@ fun V9PlayerContent(
             onNextClick = playerConnection::seekToNext,
             onSliderValueChange = onSliderValueChange,
             onSliderValueChangeFinished = onSliderValueChangeFinished,
+            onSwipeUp = onSwipeUp,
             modifier = modifier,
         )
     } else {
@@ -2929,6 +2947,7 @@ fun V9PlayerContent(
             onNextClick = playerConnection::seekToNext,
             onSliderValueChange = onSliderValueChange,
             onSliderValueChangeFinished = onSliderValueChangeFinished,
+            onSwipeUp = onSwipeUp,
             modifier = modifier,
         )
     }
@@ -2962,6 +2981,7 @@ private fun V9PortraitContent(
     onSliderValueChangeFinished: () -> Unit,
     onTitleClick: () -> Unit,
     onArtistClick: () -> Unit,
+    onSwipeUp: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
@@ -3035,6 +3055,7 @@ private fun V9PortraitContent(
                 textColor = textBackgroundColor,
                 onTitleClick = onTitleClick,
                 onArtistClick = onArtistClick,
+                onSwipeUp = onSwipeUp,
             )
 
             Spacer(Modifier.height(controlsGap))
@@ -3101,6 +3122,7 @@ private fun V9LandscapeContent(
     onSliderValueChangeFinished: () -> Unit,
     onTitleClick: () -> Unit,
     onArtistClick: () -> Unit,
+    onSwipeUp: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
@@ -3147,6 +3169,7 @@ private fun V9LandscapeContent(
                     textColor = textBackgroundColor,
                     onTitleClick = onTitleClick,
                     onArtistClick = onArtistClick,
+                    onSwipeUp = onSwipeUp,
                 )
 
                 Spacer(Modifier.height(20.dp))
@@ -3314,9 +3337,12 @@ private fun V9Metadata(
     textColor: Color,
     onTitleClick: () -> Unit,
     onArtistClick: () -> Unit,
+    onSwipeUp: () -> Unit = {},
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .detectSwipeUpAction(onSwipeUp = onSwipeUp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
@@ -3991,4 +4017,31 @@ fun PlayerBackground(
             }
         }
     }
+}
+
+fun Modifier.detectSwipeUpAction(
+    sensitivity: Float = 20f,
+    onSwipeUp: () -> Unit
+): Modifier = this.pointerInput(Unit) {
+    var totalDragY = 0f
+    var totalDragX = 0f
+
+    androidx.compose.foundation.gestures.detectDragGestures(
+        onDragStart = {
+            totalDragY = 0f
+            totalDragX = 0f
+        },
+        onDragEnd = {
+            if (totalDragY < -sensitivity && kotlin.math.abs(totalDragY) > kotlin.math.abs(totalDragX)) {
+                onSwipeUp()
+            }
+        },
+        onDrag = { change, dragAmount ->
+            totalDragX += dragAmount.x
+            totalDragY += dragAmount.y
+            if (kotlin.math.abs(totalDragY) > kotlin.math.abs(totalDragX) && kotlin.math.abs(totalDragY) > 20f) {
+                change.consume()
+            }
+        }
+    )
 }
