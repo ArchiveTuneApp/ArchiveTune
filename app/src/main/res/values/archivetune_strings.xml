@@ -362,6 +362,14 @@
     <string name="storage_cache_cleared">Cache cleared.</string>
     <string name="storage_cache_clear_failed">Cache could not be cleared. Check SD card access.</string>
     <string name="storage_size_ratio">%1$s / %2$s</string>
+
+    <string name="swipe_up_action">Swipe up action</string>
+    <string name="swipe_up_action_lyrics">Lyrics</string>
+    <string name="swipe_up_action_queue">Queue</string>
+    <string name="swipe_up_action_artist">Artist</string>
+    <string name="swipe_up_action_album">Album</string>
+    <string name="swipe_up_action_song_info">Song Info</string>
+    <string name="swipe_up_action_none">None</string>
     <string name="sensitivity_percentage">%1$d%%</string>
     <string name="clear_song_cache_dialog">  Are you sure you want to clear all cached songs?</string>
     <string name="clear_image_cache_dialog">  Are you sure you want to clear all cached image?</string>
