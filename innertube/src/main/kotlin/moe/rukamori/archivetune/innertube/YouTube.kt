@@ -696,10 +696,30 @@ object YouTube {
             browseId = "VL$playlistId",
             setLogin = true
         ).body<BrowseResponse>()
-        val primarySection = response.contents?.twoColumnBrowseResultsRenderer?.tabs
-            ?.firstOrNull()?.tabRenderer?.content?.sectionListRenderer
-        val allFirstColumnContents = primarySection?.contents.orEmpty()
-        val base = allFirstColumnContents.firstOrNull {
+
+        val allSections = buildList {
+            response.contents?.sectionListRenderer?.contents?.let(::addAll)
+            response.contents?.singleColumnBrowseResultsRenderer?.tabs
+                ?.firstOrNull()
+                ?.tabRenderer
+                ?.content
+                ?.sectionListRenderer
+                ?.contents
+                ?.let(::addAll)
+            response.contents?.twoColumnBrowseResultsRenderer?.tabs
+                ?.firstOrNull()
+                ?.tabRenderer
+                ?.content
+                ?.sectionListRenderer
+                ?.contents
+                ?.let(::addAll)
+            response.contents?.twoColumnBrowseResultsRenderer?.secondaryContents
+                ?.sectionListRenderer
+                ?.contents
+                ?.let(::addAll)
+        }
+
+        val base = allSections.firstOrNull {
             it.musicResponsiveHeaderRenderer != null || it.musicEditablePlaylistDetailHeaderRenderer != null
         }
         val header = base?.musicResponsiveHeaderRenderer ?: base?.musicEditablePlaylistDetailHeaderRenderer?.header?.musicResponsiveHeaderRenderer
@@ -716,27 +736,37 @@ object YouTube {
 
         val description = base?.musicEditablePlaylistDetailHeaderRenderer?.header
             ?.musicDetailHeaderRenderer?.description?.runs?.joinToString("") { it.text }
-            ?: allFirstColumnContents.firstNotNullOfOrNull {
+            ?: allSections.firstNotNullOfOrNull {
                 it.musicDescriptionShelfRenderer?.description?.runs?.joinToString("") { run -> run.text }
             }
+
         val secondarySection = response.contents
             ?.twoColumnBrowseResultsRenderer
             ?.secondaryContents
             ?.sectionListRenderer
         val secondaryContents = secondarySection?.contents.orEmpty()
+
         val songContents = buildList {
             secondaryContents.forEach { content ->
                 addAll(content.playlistSongContents())
             }
-            allFirstColumnContents.forEach { content ->
+            allSections.forEach { content ->
                 addAll(content.playlistSongContents())
             }
         }
         val songsContinuation = secondaryContents.firstNotNullOfOrNull { content ->
             content.playlistSongContinuation()
-        } ?: allFirstColumnContents.firstNotNullOfOrNull { content ->
+        } ?: allSections.firstNotNullOfOrNull { content ->
             content.playlistSongContinuation()
         }
+
+        val primarySection = response.contents?.twoColumnBrowseResultsRenderer?.tabs
+            ?.firstOrNull()?.tabRenderer?.content?.sectionListRenderer
+        val singleColumnSection = response.contents?.singleColumnBrowseResultsRenderer?.tabs
+            ?.firstOrNull()
+            ?.tabRenderer
+            ?.content
+            ?.sectionListRenderer
 
         PlaylistPage(
             playlist = PlaylistItem(
@@ -764,6 +794,7 @@ object YouTube {
             songsContinuation = songsContinuation,
             continuation = secondarySection?.continuations?.getContinuation()
                 ?: primarySection?.continuations?.getContinuation()
+                ?: singleColumnSection?.continuations?.getContinuation()
         )
     }
 
