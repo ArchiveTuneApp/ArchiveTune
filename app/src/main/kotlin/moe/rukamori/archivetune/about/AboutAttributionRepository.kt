@@ -197,32 +197,61 @@ constructor(
     private suspend fun getTranslationContributors(
         languages: List<TranslationLanguage>,
     ): Map<String, List<String>> {
-        val token = BuildConfig.WEBLATE_API_TOKEN.trim()
-        if (token.isNotBlank()) {
-            val credits = getTranslationCredits(languages)
-            if (credits.isNotEmpty()) return credits
+        val contributorsByLanguage = LinkedHashMap<String, LinkedHashSet<String>>()
+
+        if (BuildConfig.WEBLATE_API_TOKEN.trim().isNotBlank()) {
+            mergeContributorMaps(
+                target = contributorsByLanguage,
+                source = getTranslationCredits(languages),
+            )
         }
-        return parseTranslationContributors(getJson(TranslationChangesUrl))
+
+        mergeContributorMaps(
+            target = contributorsByLanguage,
+            source = getTranslationChangeContributors(),
+        )
+
+        return contributorsByLanguage.toLimitedContributorMap()
     }
 
     private suspend fun getTranslationCredits(
         languages: List<TranslationLanguage>,
     ): Map<String, List<String>> {
         val end = Instant.now().toString()
-        val contributorsByLanguage = LinkedHashMap<String, List<String>>()
+        val contributorsByLanguage = LinkedHashMap<String, LinkedHashSet<String>>()
         for (language in languages) {
             val contributors = try {
                 parseTranslationCredits(getJson(translationCreditsUrl(language.code, end)))
             } catch (throwable: Throwable) {
                 if (throwable is CancellationException) throw throwable
-                Timber.w(throwable, "Failed to load Weblate translation credits")
-                return emptyMap()
+                Timber.w(throwable, "Failed to load Weblate translation credits for ${language.code}")
+                emptyList()
             }
-            if (contributors.isNotEmpty()) {
-                contributorsByLanguage[language.code] = contributors
-            }
+            mergeContributorMaps(
+                target = contributorsByLanguage,
+                source = mapOf(language.code to contributors),
+            )
         }
-        return contributorsByLanguage
+        return contributorsByLanguage.toLimitedContributorMap()
+    }
+
+    private suspend fun getTranslationChangeContributors(): Map<String, List<String>> {
+        val contributorsByLanguage = LinkedHashMap<String, LinkedHashSet<String>>()
+        var url: String? = TranslationChangesUrl
+        var pageCount = 0
+
+        while (!url.isNullOrBlank() && pageCount < MaxChangePages) {
+            val json = JSONObject(getJson(url))
+            val results = json.optJSONArray("results") ?: JSONArray()
+            collectTranslationContributors(
+                result = results,
+                contributorsByLanguage = contributorsByLanguage,
+            )
+            url = json.optString("next").takeIf(String::isNotBlank)
+            pageCount++
+        }
+
+        return contributorsByLanguage.toLimitedContributorMap()
     }
 
     private fun parseTranslationLanguages(json: String): List<TranslationLanguage> {
@@ -248,6 +277,7 @@ constructor(
         val values = ArrayList<AboutTranslationContributor>(languages.size)
         for (language in languages) {
             val contributors = contributorsByLanguage[language.code].orEmpty()
+            if (contributors.isEmpty()) continue
             values.add(
                 AboutTranslationContributor(
                     language = language.name,
@@ -263,6 +293,17 @@ constructor(
     private fun parseTranslationContributors(json: String): Map<String, List<String>> {
         val result = JSONObject(json).optJSONArray("results") ?: return emptyMap()
         val contributorsByLanguage = LinkedHashMap<String, LinkedHashSet<String>>()
+        collectTranslationContributors(
+            result = result,
+            contributorsByLanguage = contributorsByLanguage,
+        )
+        return contributorsByLanguage.toLimitedContributorMap()
+    }
+
+    private fun collectTranslationContributors(
+        result: JSONArray,
+        contributorsByLanguage: LinkedHashMap<String, LinkedHashSet<String>>,
+    ) {
         for (index in 0 until result.length()) {
             val item = result.getJSONObject(index)
             val languageCode = item.optString("translation").translationLanguageCode() ?: continue
@@ -274,9 +315,6 @@ constructor(
             contributorsByLanguage
                 .getOrPut(languageCode) { LinkedHashSet() }
                 .add(contributor)
-        }
-        return contributorsByLanguage.mapValues { (_, contributors) ->
-            contributors.take(MaxContributorsPerLanguage)
         }
     }
 
@@ -292,8 +330,7 @@ constructor(
         val contributors = LinkedHashSet<String>()
         for (index in 0 until credits.length()) {
             val contributor = credits.getJSONObject(index)
-                .optString("full_name")
-                .takeIf(String::isNotBlank)
+                .translationCreditContributorName()
                 ?.takeUnless(::isIgnoredTranslationContributor)
                 ?: continue
             contributors.add(contributor)
@@ -301,6 +338,31 @@ constructor(
         }
         return contributors.toList()
     }
+
+    private fun mergeContributorMaps(
+        target: LinkedHashMap<String, LinkedHashSet<String>>,
+        source: Map<String, List<String>>,
+    ) {
+        for ((languageCode, contributors) in source) {
+            val targetContributors = target.getOrPut(languageCode) { LinkedHashSet() }
+            for (contributor in contributors) {
+                val cleanContributor = contributor
+                    .trim()
+                    .takeIf(String::isNotBlank)
+                    ?.takeUnless(::isIgnoredTranslationContributor)
+                    ?: continue
+                targetContributors.add(cleanContributor)
+                if (targetContributors.size == MaxContributorsPerLanguage) break
+            }
+        }
+    }
+
+    private fun Map<String, LinkedHashSet<String>>.toLimitedContributorMap(): Map<String, List<String>> =
+        mapValues { (_, contributors) ->
+            contributors.take(MaxContributorsPerLanguage)
+        }.filterValues { contributors ->
+            contributors.isNotEmpty()
+        }
 
     private fun isIgnoredTranslationContributor(name: String): Boolean =
         IgnoredTranslationContributors.any { ignoredName ->
@@ -311,7 +373,14 @@ constructor(
         languageCode: String,
         end: String,
     ): String =
-        "$TranslationCreditsUrl?start=$TranslationCreditsStart&end=${end.urlEncoded()}&lang=${languageCode.urlEncoded()}"
+        "$TranslationCreditsUrl?start=${TranslationCreditsStart.urlEncoded()}&end=${end.urlEncoded()}&lang=${languageCode.urlEncoded()}"
+
+    private fun JSONObject.translationCreditContributorName(): String? =
+        optString("full_name")
+            .ifBlank { optString("username") }
+            .ifBlank { optString("name") }
+            .trim()
+            .takeIf(String::isNotBlank)
 
     private fun String.translationLanguageCode(): String? {
         val segments = trimEnd('/').split('/')
@@ -337,7 +406,8 @@ constructor(
         const val TranslationLanguagesUrl = "https://translate.codeberg.org/api/projects/archivetune/languages/"
         const val TranslationChangesUrl = "https://translate.codeberg.org/api/projects/archivetune/changes/?page_size=1000"
         const val TranslationCreditsUrl = "https://translate.codeberg.org/api/projects/archivetune/credits/"
-        const val TranslationCreditsStart = "1970-01-01T00%3A00%3A00Z"
+        const val TranslationCreditsStart = "1970-01-01T00:00:00Z"
+        const val MaxChangePages = 10
         const val WeblateCommitUser = "weblate:commit"
         const val AnonymousUser = "anonymous"
         const val MisspelledAnonymousUser = "anynymous"

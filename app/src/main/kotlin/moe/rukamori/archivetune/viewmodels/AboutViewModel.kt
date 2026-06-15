@@ -420,7 +420,7 @@ constructor(
             ),
             leadDeveloper = TeamMember(
                 avatarUrl = "https://avatars.githubusercontent.com/u/107134739?v=4",
-                name = "morieeattonkatsu",
+                name = "morie",
                 positionResId = R.string.about_position_lead_dev,
                 profileUrl = "https://github.com/rukamori",
                 links = AboutLinkCollection.of(
