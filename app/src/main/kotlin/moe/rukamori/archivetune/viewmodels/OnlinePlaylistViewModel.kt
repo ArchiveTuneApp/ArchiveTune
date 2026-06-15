@@ -13,7 +13,6 @@ import androidx.lifecycle.viewModelScope
 import moe.rukamori.archivetune.innertube.YouTube
 import moe.rukamori.archivetune.innertube.models.PlaylistItem
 import moe.rukamori.archivetune.innertube.models.SongItem
-import moe.rukamori.archivetune.innertube.utils.completed
 import moe.rukamori.archivetune.db.MusicDatabase
 import moe.rukamori.archivetune.utils.reportException
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -119,11 +118,10 @@ class OnlinePlaylistViewModel @Inject constructor(
 
             YouTube
                 .playlist(playlistId)
-                .completed()
                 .onSuccess { playlistPage ->
                     _playlist.value = playlistPage.playlist
                     _playlistSongs.value = playlistPage.songs.distinctBy { it.id }
-                    continuation = null
+                    continuation = playlistPage.songsContinuation ?: playlistPage.continuation
                     prefetchViewCounts(playlistPage.songs.map { song -> song.id })
                 }.onFailure { throwable ->
                     _error.value = throwable.message ?: "Failed to load playlist"

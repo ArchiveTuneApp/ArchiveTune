@@ -518,7 +518,9 @@ class HomeViewModel @Inject constructor(
                 isAccountLoggedIn.value = loggedIn
 
                 if (loggedIn && prepareYouTubeAccount(cookie)) {
-                    refreshAccountIdentity()
+                    launch {
+                        refreshAccountIdentity()
+                    }
                     launch {
                         refreshAccountPlaylistsInternal()
                     }
@@ -587,8 +589,12 @@ class HomeViewModel @Inject constructor(
                 val authState = context.dataStore.data.first().toPlaybackAuthState()
                 YouTube.authState = authState
 
-                refreshAccountIdentity()
-                refreshAccountPlaylistsInternal()
+                launch {
+                    refreshAccountIdentity()
+                }
+                launch {
+                    refreshAccountPlaylistsInternal()
+                }
 
                 if (forceSyncOnSwitch && context.dataStore.get(YtmSyncKey, true) && authState.hasLoginCookie) {
                     syncUtils.performFullSync(authoritative = true)
@@ -663,8 +669,9 @@ class HomeViewModel @Inject constructor(
                             
                             kotlinx.coroutines.delay(100)
 
-                            refreshAccountIdentity()
-
+                            launch {
+                                refreshAccountIdentity()
+                            }
                             launch {
                                 refreshAccountPlaylistsInternal()
                             }
