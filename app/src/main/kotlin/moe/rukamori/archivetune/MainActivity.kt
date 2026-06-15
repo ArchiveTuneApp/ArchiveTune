@@ -764,6 +764,11 @@ class MainActivity : ComponentActivity() {
                         modifier =
                         Modifier
                             .fillMaxSize()
+                            .then(
+                                if (liquidGlassEnabled) {
+                                    Modifier.haze(hazeState)
+                                } else Modifier
+                            )
                             .background(
                                 if (liquidGlassEnabled) {
                                     LiquidGlassDefaults.rootBackgroundBrush(useDarkTheme, themeColor)
@@ -777,11 +782,6 @@ class MainActivity : ComponentActivity() {
                                         )
                                     )
                                 }
-                            )
-                            .then(
-                                if (liquidGlassEnabled) {
-                                    Modifier.haze(hazeState)
-                                } else Modifier
                             )
                     ) {
 
@@ -1471,6 +1471,7 @@ class MainActivity : ComponentActivity() {
                             }
                             
                             Scaffold(
+                                containerColor = if (liquidGlassEnabled) Color.Transparent else MaterialTheme.colorScheme.background,
                                 topBar = {
                                     if (shouldShowTopBar) {
                                         val shouldUseFloatingTopBar = remember(navBackStackEntry) {
