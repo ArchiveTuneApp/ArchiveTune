@@ -61,7 +61,13 @@ data class HomePage(
                     }.mapNotNull {
                         fromMusicTwoRowItemRenderer(it)
                     }.ifEmpty {
-                        return null
+                        renderer.contents.mapNotNull {
+                            it.musicResponsiveListItemRenderer
+                        }.mapNotNull {
+                            SearchPage.toYTItem(it)
+                        }.ifEmpty {
+                            return null
+                        }
                     }
                 )
             }
