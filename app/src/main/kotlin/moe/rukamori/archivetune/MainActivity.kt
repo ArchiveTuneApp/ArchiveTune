@@ -314,6 +314,7 @@ class MainActivity : ComponentActivity() {
     private var pendingVoiceSearchQuery: String? = null
     private var pendingTogetherJoinLink: String? = null
     private var latestVersionName by mutableStateOf(BuildConfig.VERSION_NAME)
+    private var latestUpdateChannel by mutableStateOf(UpdateChannel.STABLE)
 
     private var playerConnection by mutableStateOf<PlayerConnection?>(null)
     private var isMusicServiceBound = false
@@ -542,7 +543,8 @@ class MainActivity : ComponentActivity() {
                             else -> Updater.getLatestVersionName()
                         }
                         versionResult.onSuccess {
-                            if (!Updater.isSameVersion(it, BuildConfig.VERSION_NAME)) {
+                            if (Updater.isUpdateAvailable(it, BuildConfig.VERSION_NAME)) {
+                                latestUpdateChannel = actualChannel
                                 latestVersionName = it
                             }
                         }
@@ -608,7 +610,7 @@ class MainActivity : ComponentActivity() {
                         androidx.compose.material3.Button(
                             onClick = {
                                 try {
-                                    val downloadUrl = when (updateChannel) {
+                                    val downloadUrl = when (latestUpdateChannel) {
                                         UpdateChannel.DAILY_NIGHTLY -> Updater.getLatestDailyNightlyDownloadUrl()
                                         UpdateChannel.NIGHTLY -> Updater.getLatestNightlyDownloadUrl()
                                         UpdateChannel.STABLE -> Updater.getLatestDownloadUrl()
@@ -624,12 +626,13 @@ class MainActivity : ComponentActivity() {
                     }
 
                     // fetch release notes and show sheet when a new version is detected
-                    LaunchedEffect(latestVersionName) {
+                    LaunchedEffect(latestVersionName, latestUpdateChannel, updateChannel) {
                         if (
                             BuildConfig.UPDATER_AVAILABLE &&
-                            !Updater.isSameVersion(latestVersionName, BuildConfig.VERSION_NAME)
+                            latestUpdateChannel == updateChannel &&
+                            Updater.isUpdateAvailable(latestVersionName, BuildConfig.VERSION_NAME)
                         ) {
-                            val releaseNotesResult = when (updateChannel) {
+                            val releaseNotesResult = when (latestUpdateChannel) {
                                 UpdateChannel.DAILY_NIGHTLY -> Updater.getLatestDailyNightlyReleaseNotes()
                                 else -> Updater.getLatestReleaseNotes()
                             }
@@ -1561,7 +1564,8 @@ class MainActivity : ComponentActivity() {
                                                         BadgedBox(badge = {
                                                             if (
                                                                 BuildConfig.UPDATER_AVAILABLE &&
-                                                                !Updater.isSameVersion(latestVersionName, BuildConfig.VERSION_NAME)
+                                                                latestUpdateChannel == updateChannel &&
+                                                                Updater.isUpdateAvailable(latestVersionName, BuildConfig.VERSION_NAME)
                                                             ) {
                                                                 Badge()
                                                             }

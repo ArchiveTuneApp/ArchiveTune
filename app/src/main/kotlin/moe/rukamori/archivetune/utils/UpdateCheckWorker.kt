@@ -43,7 +43,7 @@ class UpdateCheckWorker(
                 UpdateChannel.NIGHTLY -> return Result.success()
                 UpdateChannel.DAILY_NIGHTLY -> {
                     Updater.getLatestDailyNightlyVersionName().onSuccess { latestVersion ->
-                        if (!Updater.isSameVersion(latestVersion, BuildConfig.VERSION_NAME)) {
+                        if (Updater.isUpdateAvailable(latestVersion, BuildConfig.VERSION_NAME)) {
                             UpdateNotificationManager.notifyIfNewVersion(
                                 applicationContext,
                                 latestVersion,
@@ -54,7 +54,7 @@ class UpdateCheckWorker(
                 }
                 else -> {
                     Updater.getLatestVersionName().onSuccess { latestVersion ->
-                        if (!Updater.isSameVersion(latestVersion, BuildConfig.VERSION_NAME)) {
+                        if (Updater.isUpdateAvailable(latestVersion, BuildConfig.VERSION_NAME)) {
                             UpdateNotificationManager.notifyIfNewVersion(applicationContext, latestVersion)
                         }
                     }

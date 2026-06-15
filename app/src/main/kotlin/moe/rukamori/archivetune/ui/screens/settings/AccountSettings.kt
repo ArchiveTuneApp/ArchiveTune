@@ -224,7 +224,7 @@ fun AccountSettings(
     }
 
     val hasUpdate = BuildConfig.UPDATER_AVAILABLE &&
-        !Updater.isSameVersion(latestVersionName, BuildConfig.VERSION_NAME)
+        Updater.isUpdateAvailable(latestVersionName, BuildConfig.VERSION_NAME)
     val tokenActionTitle = when {
         !isLoggedIn -> stringResource(R.string.advanced_login)
         showToken -> stringResource(R.string.token_shown)

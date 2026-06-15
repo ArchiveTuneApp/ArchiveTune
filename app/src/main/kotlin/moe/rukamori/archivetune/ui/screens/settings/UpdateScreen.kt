@@ -157,7 +157,7 @@ fun UpdateScreen(
     val isUpdateAvailable by remember(latestVersion) {
         derivedStateOf {
             BuildConfig.UPDATER_AVAILABLE &&
-                (latestVersion?.let { !Updater.isSameVersion(it, BuildConfig.VERSION_NAME) } ?: false)
+                (latestVersion?.let { Updater.isUpdateAvailable(it, BuildConfig.VERSION_NAME) } ?: false)
         }
     }
     val latestCommit by remember(commits) {
@@ -268,7 +268,7 @@ fun UpdateScreen(
             updateSheetLoading = false
 
             versionResult.onSuccess { version ->
-                updateSheetIsSameVersion = Updater.isSameVersion(version, BuildConfig.VERSION_NAME)
+                updateSheetIsSameVersion = !Updater.isUpdateAvailable(version, BuildConfig.VERSION_NAME)
                 updateSheetVersion = version
 
                 if (updateSheetIsSameVersion) {
@@ -487,7 +487,7 @@ fun UpdateScreen(
         }
         versionResult.onSuccess {
             latestVersion = it
-            if (Updater.isSameVersion(it, BuildConfig.VERSION_NAME)) {
+            if (!Updater.isUpdateAvailable(it, BuildConfig.VERSION_NAME)) {
                 onUpToDate()
             }
         }

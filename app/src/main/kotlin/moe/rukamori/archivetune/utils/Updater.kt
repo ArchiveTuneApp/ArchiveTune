@@ -178,6 +178,16 @@ object Updater {
         }
     }
 
+    internal fun isUpdateAvailable(latestVersion: String, currentVersion: String): Boolean {
+        val latestSemVer = parseSemVerOrNull(latestVersion)
+        val currentSemVer = parseSemVerOrNull(currentVersion)
+        return if (latestSemVer != null && currentSemVer != null) {
+            latestSemVer > currentSemVer
+        } else {
+            !isSameVersion(latestVersion, currentVersion)
+        }
+    }
+
     internal fun findLatestRelease(releases: List<ReleaseInfo>): ReleaseInfo? {
         if (releases.isEmpty()) return null
         val parsed =
