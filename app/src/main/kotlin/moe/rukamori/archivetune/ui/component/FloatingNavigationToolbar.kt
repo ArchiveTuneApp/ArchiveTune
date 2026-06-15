@@ -28,7 +28,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.graphics.luminance
-import dev.chrisbanes.haze.hazeChild
+import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -119,10 +119,10 @@ fun FloatingNavigationToolbar(
     val glassModifier = if (isLiquidGlassEnabled && hazeState != null) {
         Modifier
             .clip(shape)
-            .hazeChild(
+            .hazeEffect(
                 state = hazeState,
                 style = HazeStyle(
-                    tint = HazeTint(color = LiquidGlassDefaults.surfaceContainerColor(isDark)),
+                    tints = listOf(HazeTint(color = LiquidGlassDefaults.surfaceContainerColor(isDark))),
                     blurRadius = 24.dp,
                     noiseFactor = 0.1f
                 )

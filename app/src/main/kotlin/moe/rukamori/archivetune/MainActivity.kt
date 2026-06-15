@@ -280,7 +280,7 @@ import moe.rukamori.archivetune.ui.theme.extractThemeColor
 import moe.rukamori.archivetune.ui.theme.LiquidGlassDefaults
 import moe.rukamori.archivetune.ui.theme.LocalHazeState
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeSource
 import moe.rukamori.archivetune.ui.utils.appBarScrollBehavior
 import moe.rukamori.archivetune.ui.utils.backToMain
 import moe.rukamori.archivetune.ui.utils.resetHeightOffset
@@ -766,7 +766,7 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .then(
                                 if (liquidGlassEnabled) {
-                                    Modifier.haze(hazeState)
+                                    Modifier.hazeSource(state = hazeState)
                                 } else Modifier
                             )
                             .background(

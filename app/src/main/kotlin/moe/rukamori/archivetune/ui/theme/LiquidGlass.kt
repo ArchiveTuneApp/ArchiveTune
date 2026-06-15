@@ -40,44 +40,44 @@ object LiquidGlassDefaults {
 
     /** Base colour for M3 `surface` when liquid glass is active. */
     fun surfaceColor(isDark: Boolean): Color = if (isDark) {
-        Color(0xFF12121F).copy(alpha = 0.60f)
+        Color(0xFF12121F).copy(alpha = 0.20f)
     } else {
-        Color.White.copy(alpha = 0.58f)
+        Color.White.copy(alpha = 0.18f)
     }
 
     /** Colour for elevated surface container tokens. */
     fun surfaceContainerColor(isDark: Boolean): Color = if (isDark) {
-        Color(0xFF1A1A2E).copy(alpha = 0.52f)
+        Color(0xFF1A1A2E).copy(alpha = 0.15f)
     } else {
-        Color.White.copy(alpha = 0.48f)
+        Color.White.copy(alpha = 0.12f)
     }
 
     /** Lower-elevation container — slightly more transparent. */
     fun surfaceContainerLowColor(isDark: Boolean): Color = if (isDark) {
-        Color(0xFF0F0F1C).copy(alpha = 0.48f)
+        Color(0xFF0F0F1C).copy(alpha = 0.10f)
     } else {
-        Color.White.copy(alpha = 0.40f)
+        Color.White.copy(alpha = 0.08f)
     }
 
     /** Higher-elevation container — slightly more opaque. */
     fun surfaceContainerHighColor(isDark: Boolean): Color = if (isDark) {
-        Color(0xFF1E1E30).copy(alpha = 0.58f)
+        Color(0xFF1E1E30).copy(alpha = 0.25f)
     } else {
-        Color.White.copy(alpha = 0.55f)
+        Color.White.copy(alpha = 0.20f)
     }
 
     /** Lowest-elevation container. */
     fun surfaceContainerLowestColor(isDark: Boolean): Color = if (isDark) {
-        Color(0xFF0A0A14).copy(alpha = 0.44f)
+        Color(0xFF0A0A14).copy(alpha = 0.08f)
     } else {
-        Color.White.copy(alpha = 0.34f)
+        Color.White.copy(alpha = 0.06f)
     }
 
     /** Highest-elevation container. */
     fun surfaceContainerHighestColor(isDark: Boolean): Color = if (isDark) {
-        Color(0xFF22223A).copy(alpha = 0.64f)
+        Color(0xFF22223A).copy(alpha = 0.30f)
     } else {
-        Color.White.copy(alpha = 0.62f)
+        Color.White.copy(alpha = 0.28f)
     }
 
     // ── Decorative brushes ────────────────────────────────────────────────────
