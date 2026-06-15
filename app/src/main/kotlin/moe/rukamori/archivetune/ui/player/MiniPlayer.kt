@@ -178,6 +178,8 @@ private fun NewMiniPlayer(
     val isLiquidGlassEnabled = LocalLiquidGlassEnabled.current
     val hazeState = LocalHazeState.current
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val themeBg = MaterialTheme.colorScheme.background
+    val hazeBg = if (themeBg != Color.Unspecified) themeBg else (if (isDark) Color(0xFF12121F) else Color.White)
     val miniPlayerShape = RoundedCornerShape(32.dp)
 
     val glassModifier = if (isLiquidGlassEnabled) {
@@ -188,7 +190,7 @@ private fun NewMiniPlayer(
                     tints = listOf(HazeTint(color = LiquidGlassDefaults.surfaceContainerColor(isDark))),
                     blurRadius = 24.dp,
                     noiseFactor = 0.1f,
-                    backgroundColor = MaterialTheme.colorScheme.background
+                    backgroundColor = hazeBg
                 )
             )
         } else Modifier

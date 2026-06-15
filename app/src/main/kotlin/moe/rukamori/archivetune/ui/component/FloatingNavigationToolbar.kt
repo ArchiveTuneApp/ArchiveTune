@@ -117,6 +117,8 @@ fun FloatingNavigationToolbar(
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val shape = CircleShape
+    val themeBg = MaterialTheme.colorScheme.background
+    val hazeBg = if (themeBg != Color.Unspecified) themeBg else (if (isDark) Color(0xFF12121F) else Color.White)
     val glassModifier = if (isLiquidGlassEnabled && hazeState != null) {
         Modifier
             .clip(shape)
@@ -126,7 +128,7 @@ fun FloatingNavigationToolbar(
                     tints = listOf(HazeTint(color = LiquidGlassDefaults.surfaceContainerColor(isDark))),
                     blurRadius = 24.dp,
                     noiseFactor = 0.1f,
-                    backgroundColor = MaterialTheme.colorScheme.background
+                    backgroundColor = hazeBg
                 )
             )
             .border(1.dp, LiquidGlassDefaults.borderBrush(isDark), shape)
