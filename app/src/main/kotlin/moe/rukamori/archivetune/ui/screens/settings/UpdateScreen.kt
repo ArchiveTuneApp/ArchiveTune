@@ -953,8 +953,13 @@ fun UpdateScreen(
                 )
             },
             confirmButton = {
-                OutlinedButton(onClick = { showUpdateUpToDateDialog = false }) {
-                    Text(stringResource(android.R.string.ok))
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    OutlinedButton(
+                        onClick = { showUpdateUpToDateDialog = false },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(android.R.string.ok))
+                    }
                 }
             }
         )
