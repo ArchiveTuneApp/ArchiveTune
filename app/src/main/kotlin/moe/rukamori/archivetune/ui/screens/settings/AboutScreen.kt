@@ -9,11 +9,11 @@
 
 package moe.rukamori.archivetune.ui.screens.settings
 
-import androidx.compose.foundation.BorderStroke
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -33,26 +33,31 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
@@ -70,6 +75,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -140,6 +146,8 @@ private fun AboutScreenContent(
                     Text(
                         text = stringResource(R.string.about),
                         fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 },
                 navigationIcon = {
@@ -161,45 +169,35 @@ private fun AboutScreenContent(
             )
         },
     ) { innerPadding ->
+        val stateModifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
+            .windowInsetsPadding(
+                LocalPlayerAwareWindowInsets.current.only(
+                    WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                ),
+            )
+
         when (state) {
             AboutScreenState.Loading -> {
-                AboutLoadingContent(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .windowInsetsPadding(
-                            LocalPlayerAwareWindowInsets.current.only(
-                                WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
-                            ),
-                        ),
+                AboutStateContent(
+                    messageResId = R.string.loading,
+                    showLoading = true,
+                    modifier = stateModifier,
                 )
             }
 
             AboutScreenState.Empty -> {
-                AboutMessageContent(
-                    message = stringResource(R.string.no_results_found),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .windowInsetsPadding(
-                            LocalPlayerAwareWindowInsets.current.only(
-                                WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
-                            ),
-                        ),
+                AboutStateContent(
+                    messageResId = R.string.no_results_found,
+                    modifier = stateModifier,
                 )
             }
 
             is AboutScreenState.Error -> {
-                AboutMessageContent(
-                    message = stringResource(state.messageResId),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .windowInsetsPadding(
-                            LocalPlayerAwareWindowInsets.current.only(
-                                WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
-                            ),
-                        ),
+                AboutStateContent(
+                    messageResId = state.messageResId,
+                    modifier = stateModifier,
                 )
             }
 
@@ -208,6 +206,7 @@ private fun AboutScreenContent(
                     model = state.model,
                     onOpenUri = onOpenUri,
                     onRetryContributors = onRetryContributors,
+                    listState = listState,
                     modifier = Modifier
                         .fillMaxSize()
                         .windowInsetsPadding(
@@ -216,10 +215,9 @@ private fun AboutScreenContent(
                             ),
                         ),
                     contentPadding = PaddingValues(
-                        top = innerPadding.calculateTopPadding(),
-                        bottom = 32.dp,
+                        top = innerPadding.calculateTopPadding() + AboutSpacing.sm,
+                        bottom = AboutSpacing.xl,
                     ),
-                    listState = listState,
                 )
             }
         }
@@ -227,28 +225,22 @@ private fun AboutScreenContent(
 }
 
 @Composable
-private fun AboutLoadingContent(
+private fun AboutStateContent(
+    @StringRes messageResId: Int,
     modifier: Modifier = Modifier,
+    showLoading: Boolean = false,
 ) {
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center,
+    Column(
+        modifier = modifier.padding(AboutSpacing.lg),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
     ) {
-        LoadingIndicator(modifier = Modifier.size(40.dp))
-    }
-}
-
-@Composable
-private fun AboutMessageContent(
-    message: String,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier.padding(24.dp),
-        contentAlignment = Alignment.Center,
-    ) {
+        if (showLoading) {
+            LoadingIndicator(modifier = Modifier.size(AboutDimensions.StateIndicatorSize))
+            Spacer(modifier = Modifier.height(AboutSpacing.sm))
+        }
         Text(
-            text = message,
+            text = stringResource(messageResId),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -260,98 +252,85 @@ private fun AboutSuccessContent(
     model: AboutUiModel,
     onOpenUri: (String) -> Unit,
     onRetryContributors: () -> Unit,
+    listState: LazyListState,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues,
-    listState: androidx.compose.foundation.lazy.LazyListState,
 ) {
     LazyColumn(
         state = listState,
         modifier = modifier,
         contentPadding = contentPadding,
-        verticalArrangement = Arrangement.spacedBy(18.dp),
+        verticalArrangement = Arrangement.spacedBy(AboutSpacing.md),
     ) {
         item(key = "hero", contentType = "about_hero") {
-            AboutHeroCard(
-                model = model,
-                onOpenUri = onOpenUri,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = SettingsDimensions.ScreenHorizontalPadding)
-                    .padding(top = 8.dp),
-            )
-        }
-
-        item(key = "lead_header", contentType = "about_section_header") {
-            SectionHeader(
-                title = stringResource(R.string.about_lead_developer),
-                modifier = Modifier.padding(horizontal = SettingsDimensions.ScreenHorizontalPadding),
-            )
+            AboutContentContainer {
+                AboutHeroCard(
+                    model = model,
+                    onOpenUri = onOpenUri,
+                )
+            }
         }
 
         item(key = "lead", contentType = "about_lead") {
-            LeadDeveloperCard(
-                member = model.leadDeveloper,
-                onOpenUri = onOpenUri,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = SettingsDimensions.ScreenHorizontalPadding),
-            )
+            AboutContentContainer {
+                AboutLeadSection(
+                    member = model.leadDeveloper,
+                    onOpenUri = onOpenUri,
+                )
+            }
         }
 
-        item(key = "team_header", contentType = "about_section_header") {
-            SectionHeader(
-                title = stringResource(R.string.about_archive_tune_team),
-                modifier = Modifier.padding(horizontal = SettingsDimensions.ScreenHorizontalPadding),
-            )
+        item(key = "team", contentType = "about_member_section") {
+            AboutContentContainer {
+                TeamMemberSection(
+                    titleResId = R.string.about_archive_tune_team,
+                    membersCount = model.collaborators.size,
+                    memberAt = { index -> model.collaborators[index] },
+                    onOpenUri = onOpenUri,
+                )
+            }
         }
 
-        items(
-            count = model.collaborators.size,
-            key = { index -> "collaborator_${model.collaborators[index].name}" },
-            contentType = { "about_member" },
-        ) { index ->
-            TeamMemberCard(
-                member = model.collaborators[index],
-                onOpenUri = onOpenUri,
-                modifier = Modifier.padding(horizontal = SettingsDimensions.ScreenHorizontalPadding),
-            )
-        }
-
-        item(key = "respect_header", contentType = "about_section_header") {
-            SectionHeader(
-                title = stringResource(R.string.about_respecter),
-                modifier = Modifier.padding(horizontal = SettingsDimensions.ScreenHorizontalPadding),
-            )
-        }
-
-        items(
-            count = model.respecters.size,
-            key = { index -> "respecter_${model.respecters[index].name}" },
-            contentType = { "about_member" },
-        ) { index ->
-            TeamMemberCard(
-                member = model.respecters[index],
-                onOpenUri = onOpenUri,
-                modifier = Modifier.padding(horizontal = SettingsDimensions.ScreenHorizontalPadding),
-            )
-        }
-
-        item(key = "contributors_header", contentType = "about_section_header") {
-            SectionHeader(
-                title = stringResource(R.string.about_contributors),
-                modifier = Modifier.padding(horizontal = SettingsDimensions.ScreenHorizontalPadding),
-            )
+        item(key = "respecters", contentType = "about_member_section") {
+            AboutContentContainer {
+                TeamMemberSection(
+                    titleResId = R.string.about_respecter,
+                    membersCount = model.respecters.size,
+                    memberAt = { index -> model.respecters[index] },
+                    onOpenUri = onOpenUri,
+                )
+            }
         }
 
         item(key = "contributors", contentType = "about_contributors") {
-            ContributorsCard(
-                state = model.contributorsState,
-                onOpenProfile = onOpenUri,
-                onRetry = onRetryContributors,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = SettingsDimensions.ScreenHorizontalPadding),
-            )
+            AboutContentContainer {
+                ContributorsSection(
+                    state = model.contributorsState,
+                    onOpenProfile = onOpenUri,
+                    onRetry = onRetryContributors,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AboutContentContainer(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = AboutSpacing.sm),
+        contentAlignment = Alignment.TopCenter,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(max = AboutDimensions.ContentMaxWidth),
+        ) {
+            content()
         }
     }
 }
@@ -363,61 +342,50 @@ private fun AboutHeroCard(
     onOpenUri: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(
-        modifier = modifier,
+    ElevatedCard(
+        modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(22.dp),
+                .padding(AboutSpacing.md),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(AboutSpacing.sm),
         ) {
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer,
-            ) {
-                val iconTint = MaterialTheme.colorScheme.onPrimaryContainer
-                val iconColorFilter = remember(iconTint) { ColorFilter.tint(iconTint) }
-                Image(
-                    painter = painterResource(R.drawable.about_splash),
-                    contentDescription = null,
-                    colorFilter = iconColorFilter,
-                    modifier = Modifier
-                        .padding(18.dp)
-                        .size(72.dp),
-                )
-            }
+            AppMark()
 
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(
-                    text = stringResource(model.appNameResId),
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
+            Text(
+                text = stringResource(model.appNameResId),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
 
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    AboutBadge(text = model.versionName)
-                    model.buildHash?.let { buildHash ->
-                        AboutBadge(text = buildHash)
-                    }
-                    AboutBadge(text = model.buildVariant)
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(AboutSpacing.xs, Alignment.CenterHorizontally),
+                verticalArrangement = Arrangement.spacedBy(AboutSpacing.xs),
+            ) {
+                AboutBadge(
+                    labelResId = R.string.app_version,
+                    value = model.versionName,
+                )
+                model.buildHash?.let { buildHash ->
+                    AboutBadge(value = buildHash)
                 }
+                AboutBadge(value = model.buildVariant)
             }
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = AboutSpacing.xs),
+                color = MaterialTheme.colorScheme.outlineVariant,
+            )
 
             LinkChipRow(
                 links = model.primaryLinks,
@@ -428,91 +396,63 @@ private fun AboutHeroCard(
 }
 
 @Composable
-fun OutlinedIconChip(
-    iconRes: Int,
-    contentDescription: String,
-    onClick: () -> Unit,
-    text: String? = null,
+private fun AppMark(
+    modifier: Modifier = Modifier,
 ) {
-    val borderColor = MaterialTheme.colorScheme.outlineVariant
-    val borderStroke = remember(borderColor) { BorderStroke(1.dp, borderColor) }
-    val contentPadding = remember { PaddingValues(horizontal = 14.dp, vertical = 10.dp) }
-
-    OutlinedButton(
-        onClick = onClick,
-        contentPadding = contentPadding,
-        border = borderStroke,
-        colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = Color.Transparent,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        ),
-        modifier = Modifier.heightIn(min = 48.dp),
-        shapes = ButtonDefaults.shapes(),
+    Surface(
+        modifier = modifier.size(AboutDimensions.AppMarkContainerSize),
+        shape = MaterialTheme.shapes.extraLarge,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
     ) {
-        Icon(
-            painter = painterResource(id = iconRes),
-            contentDescription = if (text.isNullOrBlank()) contentDescription else null,
-            modifier = Modifier.size(18.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        if (!text.isNullOrBlank()) {
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelLarge,
-                maxLines = 1,
-            )
-        }
-    }
-}
-
-@Composable
-fun OutlinedIconChipMembers(
-    iconRes: Int,
-    contentDescription: String?,
-    onClick: () -> Unit,
-) {
-    val borderColor = MaterialTheme.colorScheme.outlineVariant
-    val borderStroke = remember(borderColor) { BorderStroke(1.dp, borderColor) }
-    val contentPadding = remember { PaddingValues(0.dp) }
-
-    OutlinedButton(
-        onClick = onClick,
-        contentPadding = contentPadding,
-        border = borderStroke,
-        colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = Color.Transparent,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        ),
-        modifier = Modifier.size(48.dp),
-        shapes = ButtonDefaults.shapes(),
-    ) {
-        Icon(
-            painter = painterResource(id = iconRes),
-            contentDescription = contentDescription,
-            modifier = Modifier.size(18.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        val iconTint = MaterialTheme.colorScheme.onPrimaryContainer
+        val iconColorFilter = remember(iconTint) { ColorFilter.tint(iconTint) }
+        Image(
+            painter = painterResource(R.drawable.about_splash),
+            contentDescription = null,
+            colorFilter = iconColorFilter,
+            modifier = Modifier
+                .padding(AboutSpacing.sm)
+                .size(AboutDimensions.AppMarkIconSize),
         )
     }
 }
 
 @Composable
 private fun AboutBadge(
-    text: String,
+    value: String,
     modifier: Modifier = Modifier,
+    @StringRes labelResId: Int? = null,
 ) {
     Surface(
-        modifier = modifier,
+        modifier = modifier.heightIn(min = AboutDimensions.MinTouchTarget),
         shape = MaterialTheme.shapes.large,
         color = MaterialTheme.colorScheme.secondaryContainer,
         contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
-            maxLines = 1,
-        )
+        Row(
+            modifier = Modifier.padding(horizontal = AboutSpacing.sm, vertical = AboutSpacing.xs),
+            horizontalArrangement = Arrangement.spacedBy(AboutSpacing.xs),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            labelResId?.let {
+                Text(
+                    text = stringResource(it),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Text(
+                text = value,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
     }
 }
 
@@ -525,8 +465,8 @@ private fun LinkChipRow(
 ) {
     FlowRow(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(AboutSpacing.xs, Alignment.CenterHorizontally),
+        verticalArrangement = Arrangement.spacedBy(AboutSpacing.xs),
     ) {
         repeat(links.size) { index ->
             val link = links[index]
@@ -541,24 +481,52 @@ private fun LinkChipRow(
 }
 
 @Composable
-private fun SectionHeader(
-    title: String,
+fun OutlinedIconChip(
+    @DrawableRes iconRes: Int,
+    contentDescription: String,
+    onClick: () -> Unit,
+    text: String? = null,
+) {
+    val contentPadding = remember {
+        PaddingValues(horizontal = AboutSpacing.sm, vertical = AboutSpacing.xs)
+    }
+
+    OutlinedButton(
+        onClick = onClick,
+        contentPadding = contentPadding,
+        modifier = Modifier.heightIn(min = AboutDimensions.MinTouchTarget),
+    ) {
+        Icon(
+            painter = painterResource(id = iconRes),
+            contentDescription = if (text.isNullOrBlank()) contentDescription else null,
+            modifier = Modifier.size(AboutDimensions.SmallIconSize),
+        )
+        if (!text.isNullOrBlank()) {
+            Spacer(modifier = Modifier.width(AboutSpacing.xs))
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+@Composable
+private fun AboutLeadSection(
+    member: TeamMember,
+    onOpenUri: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
+    Column(
         modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalArrangement = Arrangement.spacedBy(AboutSpacing.xs),
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        Spacer(Modifier.width(12.dp))
-        HorizontalDivider(
-            modifier = Modifier.weight(1f),
-            color = MaterialTheme.colorScheme.outlineVariant,
+        SectionHeader(titleResId = R.string.about_lead_developer)
+        LeadDeveloperCard(
+            member = member,
+            onOpenUri = onOpenUri,
         )
     }
 }
@@ -570,142 +538,86 @@ private fun LeadDeveloperCard(
     onOpenUri: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ElevatedCard(
+        modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(18.dp),
+                .padding(AboutSpacing.sm),
+            horizontalArrangement = Arrangement.spacedBy(AboutSpacing.sm),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            AsyncImage(
-                model = member.avatarUrl,
+            ProfileImage(
+                imageUrl = member.avatarUrl,
                 contentDescription = member.name,
-                modifier = Modifier
-                    .size(84.dp)
-                    .clip(CircleShape)
-                    .border(
-                        width = 2.dp,
-                        color = MaterialTheme.colorScheme.primary,
-                        shape = CircleShape,
-                    )
-                    .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                size = AboutDimensions.LeadAvatarSize,
+                borderColor = MaterialTheme.colorScheme.onPrimaryContainer,
             )
 
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(AboutSpacing.xs),
             ) {
                 Text(
                     text = member.name,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     text = stringResource(member.positionResId),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
                 )
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    repeat(member.links.size) { index ->
-                        val link = member.links[index]
-                        OutlinedIconChipMembers(
-                            iconRes = link.iconResId,
-                            contentDescription = stringResource(link.labelResId),
-                            onClick = { onOpenUri(link.url) },
-                        )
-                    }
-                }
+                MemberLinkButtons(
+                    links = member.links,
+                    onOpenUri = onOpenUri,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
             }
         }
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TeamMemberCard(
-    member: TeamMember,
+private fun TeamMemberSection(
+    @StringRes titleResId: Int,
+    membersCount: Int,
+    memberAt: (Int) -> TeamMember,
     onOpenUri: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val clickableModifier = remember(member.profileUrl, onOpenUri) {
-        member.profileUrl?.let { profileUrl ->
-            Modifier.clickable { onOpenUri(profileUrl) }
-        } ?: Modifier
-    }
-
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .then(clickableModifier),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        shape = MaterialTheme.shapes.large,
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(AboutSpacing.xs),
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        SectionHeader(titleResId = titleResId)
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.extraLarge,
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         ) {
-            AsyncImage(
-                model = member.avatarUrl,
-                contentDescription = member.name,
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceContainerHighest),
-            )
-
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(3.dp),
-            ) {
-                Text(
-                    text = member.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = stringResource(member.positionResId),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                repeat(member.links.size) { index ->
-                    val link = member.links[index]
-                    OutlinedIconChipMembers(
-                        iconRes = link.iconResId,
-                        contentDescription = stringResource(link.labelResId),
-                        onClick = { onOpenUri(link.url) },
+            Column(modifier = Modifier.fillMaxWidth()) {
+                repeat(membersCount) { index ->
+                    val member = memberAt(index)
+                    TeamMemberRow(
+                        member = member,
+                        showDivider = index < membersCount - 1,
+                        onOpenUri = onOpenUri,
                     )
                 }
             }
@@ -714,53 +626,180 @@ private fun TeamMemberCard(
 }
 
 @Composable
-private fun ContributorsCard(
+private fun TeamMemberRow(
+    member: TeamMember,
+    showDivider: Boolean,
+    onOpenUri: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        val rowContent: @Composable () -> Unit = {
+            ListItem(
+                leadingContent = {
+                    ProfileImage(
+                        imageUrl = member.avatarUrl,
+                        contentDescription = member.name,
+                        size = AboutDimensions.MemberAvatarSize,
+                    )
+                },
+                headlineContent = {
+                    Text(
+                        text = member.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                supportingContent = {
+                    Text(
+                        text = stringResource(member.positionResId),
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                trailingContent = {
+                    MemberLinkButtons(
+                        links = member.links,
+                        onOpenUri = onOpenUri,
+                    )
+                },
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            )
+        }
+
+        member.profileUrl?.let { profileUrl ->
+            Card(
+                onClick = { onOpenUri(profileUrl) },
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large,
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            ) {
+                rowContent()
+            }
+        } ?: rowContent()
+
+        if (showDivider) {
+            HorizontalDivider(
+                modifier = Modifier.padding(start = AboutSpacing.lg, end = AboutSpacing.sm),
+                color = MaterialTheme.colorScheme.outlineVariant,
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun MemberLinkButtons(
+    links: AboutLinkCollection,
+    onOpenUri: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    contentColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+) {
+    FlowRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(AboutSpacing.xxs),
+        verticalArrangement = Arrangement.spacedBy(AboutSpacing.xxs),
+    ) {
+        repeat(links.size) { index ->
+            val link = links[index]
+            OutlinedIconChipMembers(
+                iconRes = link.iconResId,
+                contentDescription = stringResource(link.labelResId),
+                onClick = { onOpenUri(link.url) },
+                contentColor = contentColor,
+            )
+        }
+    }
+}
+
+@Composable
+fun OutlinedIconChipMembers(
+    @DrawableRes iconRes: Int,
+    contentDescription: String?,
+    onClick: () -> Unit,
+    contentColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+) {
+    OutlinedIconButton(
+        onClick = onClick,
+        modifier = Modifier.size(AboutDimensions.MinTouchTarget),
+    ) {
+        Icon(
+            painter = painterResource(id = iconRes),
+            contentDescription = contentDescription,
+            modifier = Modifier.size(AboutDimensions.SmallIconSize),
+            tint = contentColor,
+        )
+    }
+}
+
+@Composable
+private fun SectionHeader(
+    @StringRes titleResId: Int,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        text = stringResource(titleResId),
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = modifier.padding(horizontal = AboutSpacing.xs),
+    )
+}
+
+@Composable
+private fun ContributorsSection(
     state: AboutContributorsUiState,
     onOpenProfile: (String) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        shape = MaterialTheme.shapes.extraLarge,
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(AboutSpacing.xs),
     ) {
-        when (state) {
-            AboutContributorsUiState.Loading -> {
-                ContributorStatusContent(
-                    message = stringResource(R.string.loading),
-                    showRetry = false,
-                    onRetry = onRetry,
-                )
-            }
+        SectionHeader(titleResId = R.string.about_contributors)
 
-            AboutContributorsUiState.Empty -> {
-                ContributorStatusContent(
-                    message = stringResource(R.string.no_results_found),
-                    showRetry = true,
-                    onRetry = onRetry,
-                )
-            }
+        OutlinedCard(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.extraLarge,
+            colors = CardDefaults.outlinedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
+        ) {
+            when (state) {
+                AboutContributorsUiState.Loading -> {
+                    ContributorStatusContent(
+                        messageResId = R.string.loading,
+                        showLoading = true,
+                    )
+                }
 
-            is AboutContributorsUiState.Error -> {
-                ContributorStatusContent(
-                    message = stringResource(state.messageResId),
-                    showRetry = true,
-                    onRetry = onRetry,
-                )
-            }
+                AboutContributorsUiState.Empty -> {
+                    ContributorStatusContent(
+                        messageResId = R.string.no_results_found,
+                        showRetry = true,
+                        onRetry = onRetry,
+                    )
+                }
 
-            is AboutContributorsUiState.Success -> {
-                ContributorGrid(
-                    contributors = state.contributors,
-                    onOpenProfile = onOpenProfile,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(14.dp),
-                )
+                is AboutContributorsUiState.Error -> {
+                    ContributorStatusContent(
+                        messageResId = state.messageResId,
+                        showRetry = true,
+                        onRetry = onRetry,
+                    )
+                }
+
+                is AboutContributorsUiState.Success -> {
+                    ContributorGrid(
+                        contributors = state.contributors,
+                        onOpenProfile = onOpenProfile,
+                        modifier = Modifier.padding(AboutSpacing.sm),
+                    )
+                }
             }
         }
     }
@@ -768,28 +807,29 @@ private fun ContributorsCard(
 
 @Composable
 private fun ContributorStatusContent(
-    message: String,
-    showRetry: Boolean,
-    onRetry: () -> Unit,
+    @StringRes messageResId: Int,
     modifier: Modifier = Modifier,
+    showLoading: Boolean = false,
+    showRetry: Boolean = false,
+    onRetry: () -> Unit = {},
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(24.dp),
+            .padding(AboutSpacing.lg),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(AboutSpacing.sm),
     ) {
-        if (!showRetry) {
-            LoadingIndicator(modifier = Modifier.size(32.dp))
+        if (showLoading) {
+            LoadingIndicator(modifier = Modifier.size(AboutDimensions.InlineIndicatorSize))
         }
         Text(
-            text = message,
+            text = stringResource(messageResId),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         if (showRetry) {
-            TextButton(onClick = onRetry) {
+            FilledTonalButton(onClick = onRetry) {
                 Text(text = stringResource(R.string.retry))
             }
         }
@@ -803,20 +843,20 @@ private fun ContributorGrid(
     onOpenProfile: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    BoxWithConstraints(modifier = modifier) {
-        val spacing = 10.dp
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val spacing = AboutSpacing.xs
         val columns = when {
-            maxWidth >= 600.dp -> 6
-            maxWidth >= 360.dp -> 4
+            maxWidth >= AboutDimensions.ExpandedGridWidth -> 6
+            maxWidth >= AboutDimensions.CompactGridWidth -> 4
             else -> 3
         }
         val itemWidth = (maxWidth - spacing * (columns - 1)) / columns
 
         FlowRow(
+            modifier = Modifier.fillMaxWidth(),
             maxItemsInEachRow = columns,
             horizontalArrangement = Arrangement.spacedBy(spacing, Alignment.CenterHorizontally),
             verticalArrangement = Arrangement.spacedBy(spacing),
-            modifier = Modifier.fillMaxWidth(),
         ) {
             repeat(contributors.size) { index ->
                 val contributor = contributors[index]
@@ -840,32 +880,30 @@ private fun ContributorTile(
     onOpenProfile: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        modifier = modifier
-            .heightIn(min = 116.dp)
-            .clickable(enabled = profileUrl.isNotBlank()) {
-                onOpenProfile(profileUrl)
-            },
+    Card(
+        onClick = { onOpenProfile(profileUrl) },
+        enabled = profileUrl.isNotBlank(),
+        modifier = modifier.heightIn(min = AboutDimensions.ContributorTileMinHeight),
         shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        contentColor = MaterialTheme.colorScheme.onSurface,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 14.dp, horizontal = 10.dp),
+                .padding(horizontal = AboutSpacing.xs, vertical = AboutSpacing.sm),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
         ) {
-            AsyncImage(
-                model = avatarUrl,
+            ProfileImage(
+                imageUrl = avatarUrl,
                 contentDescription = login,
-                modifier = Modifier
-                    .size(52.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                size = AboutDimensions.ContributorAvatarSize,
             )
-            Spacer(Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(AboutSpacing.xs))
             Text(
                 text = login,
                 style = MaterialTheme.typography.labelMedium,
@@ -875,4 +913,53 @@ private fun ContributorTile(
             )
         }
     }
+}
+
+@Composable
+private fun ProfileImage(
+    imageUrl: String,
+    contentDescription: String,
+    size: Dp,
+    modifier: Modifier = Modifier,
+    borderColor: Color = MaterialTheme.colorScheme.outlineVariant,
+) {
+    AsyncImage(
+        model = imageUrl,
+        contentDescription = contentDescription,
+        modifier = modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+            .border(
+                width = AboutDimensions.AvatarBorderWidth,
+                color = borderColor,
+                shape = CircleShape,
+            ),
+    )
+}
+
+private object AboutSpacing {
+    val xxs = 4.dp
+    val xs = 8.dp
+    val sm = 16.dp
+    val md = 24.dp
+    val lg = 32.dp
+    val xl = 48.dp
+}
+
+private object AboutDimensions {
+    val ContentMaxWidth = 840.dp
+    val MinTouchTarget = 48.dp
+    val SmallIconSize = 18.dp
+    val AppMarkContainerSize = 104.dp
+    val AppMarkIconSize = 72.dp
+    val LeadAvatarSize = 88.dp
+    val MemberAvatarSize = 56.dp
+    val ContributorAvatarSize = 52.dp
+    val ContributorTileMinHeight = 116.dp
+    val StateIndicatorSize = 40.dp
+    val InlineIndicatorSize = 32.dp
+    val AvatarBorderWidth = 1.dp
+    val CompactGridWidth = 360.dp
+    val ExpandedGridWidth = 600.dp
 }
