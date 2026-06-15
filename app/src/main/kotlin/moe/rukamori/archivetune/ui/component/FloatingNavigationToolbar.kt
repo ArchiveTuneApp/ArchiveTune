@@ -152,12 +152,15 @@ fun FloatingNavigationToolbar(
                         shuffleContentDescription = shuffleContentDescription,
                         onMusicRecognitionClick = onMusicRecognitionClick,
                         musicRecognitionContentDescription = musicRecognitionContentDescription,
+                        modifier = glassModifier,
                     )
                 },
                 modifier = Modifier
                     .widthIn(max = 480.dp)
                     .then(glassModifier),
                 colors = toolbarColors,
+                expandedShadowElevation = 0.dp,
+                collapsedShadowElevation = 0.dp,
                 scrollBehavior = scrollBehavior,
                 animationSpec = FloatingToolbarDefaults.animationSpec(),
             ) {
@@ -178,12 +181,15 @@ fun FloatingNavigationToolbar(
                         onClick = onFabClick,
                         iconRes = fabIconRes,
                         contentDescription = fabContentDescription,
+                        modifier = glassModifier,
                     )
                 },
                 modifier = Modifier
                     .widthIn(max = 480.dp)
                     .then(glassModifier),
                 colors = toolbarColors,
+                expandedShadowElevation = 0.dp,
+                collapsedShadowElevation = 0.dp,
                 scrollBehavior = scrollBehavior,
                 animationSpec = FloatingToolbarDefaults.animationSpec(),
             ) {
@@ -202,6 +208,8 @@ fun FloatingNavigationToolbar(
                     .widthIn(max = 420.dp)
                     .then(glassModifier),
                 colors = toolbarColors,
+                expandedShadowElevation = 0.dp,
+                collapsedShadowElevation = 0.dp,
                 scrollBehavior = scrollBehavior,
             ) {
                 ToolbarItemsContainer(
@@ -291,22 +299,45 @@ private fun FloatingToolbarOverflowAction(
     shuffleContentDescription: String,
     onMusicRecognitionClick: (() -> Unit)?,
     musicRecognitionContentDescription: String,
+    modifier: Modifier = Modifier,
 ) {
+    val isLiquidGlassEnabled = LocalLiquidGlassEnabled.current
     var fabMenuExpanded by rememberSaveable { mutableStateOf(false) }
 
     Box {
-        FloatingToolbarDefaults.VibrantFloatingActionButton(
-            onClick = { fabMenuExpanded = !fabMenuExpanded },
-            containerColor = floatingToolbarFabContainerColor(pureBlack = pureBlack),
-            contentColor = floatingToolbarFabContentColor(pureBlack = pureBlack),
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.more_horiz),
-                contentDescription =
-                    shuffleContentDescription.ifEmpty {
+        if (isLiquidGlassEnabled) {
+            Box(
+                modifier = modifier
+                    .size(56.dp)
+                    .clickable(
+                        onClick = { fabMenuExpanded = !fabMenuExpanded },
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = LocalIndication.current,
+                        role = Role.Button,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.more_horiz),
+                    contentDescription = shuffleContentDescription.ifEmpty {
                         stringResource(R.string.more)
                     },
-            )
+                    tint = floatingToolbarFabContentColor(pureBlack = pureBlack),
+                )
+            }
+        } else {
+            FloatingToolbarDefaults.VibrantFloatingActionButton(
+                onClick = { fabMenuExpanded = !fabMenuExpanded },
+                containerColor = floatingToolbarFabContainerColor(pureBlack = pureBlack),
+                contentColor = floatingToolbarFabContentColor(pureBlack = pureBlack),
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.more_horiz),
+                    contentDescription = shuffleContentDescription.ifEmpty {
+                        stringResource(R.string.more)
+                    },
+                )
+            }
         }
 
         DropdownMenu(
@@ -392,21 +423,44 @@ private fun FloatingToolbarFabAction(
     onClick: (() -> Unit)?,
     iconRes: Int?,
     contentDescription: String,
+    modifier: Modifier = Modifier,
 ) {
     if (onClick == null || iconRes == null) return
+    val isLiquidGlassEnabled = LocalLiquidGlassEnabled.current
 
-    FloatingToolbarDefaults.VibrantFloatingActionButton(
-        onClick = onClick,
-        containerColor = floatingToolbarFabContainerColor(pureBlack = pureBlack),
-        contentColor = floatingToolbarFabContentColor(pureBlack = pureBlack),
-    ) {
-        Icon(
-            painter = painterResource(iconRes),
-            contentDescription =
-                contentDescription.ifEmpty {
+    if (isLiquidGlassEnabled) {
+        Box(
+            modifier = modifier
+                .size(56.dp)
+                .clickable(
+                    onClick = onClick,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = LocalIndication.current,
+                    role = Role.Button,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                painter = painterResource(iconRes),
+                contentDescription = contentDescription.ifEmpty {
                     stringResource(R.string.create_playlist)
                 },
-        )
+                tint = floatingToolbarFabContentColor(pureBlack = pureBlack),
+            )
+        }
+    } else {
+        FloatingToolbarDefaults.VibrantFloatingActionButton(
+            onClick = onClick,
+            containerColor = floatingToolbarFabContainerColor(pureBlack = pureBlack),
+            contentColor = floatingToolbarFabContentColor(pureBlack = pureBlack),
+        ) {
+            Icon(
+                painter = painterResource(iconRes),
+                contentDescription = contentDescription.ifEmpty {
+                    stringResource(R.string.create_playlist)
+                },
+            )
+        }
     }
 }
 
