@@ -23,6 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: true
 
       - name: Set up Python 3
         uses: actions/setup-python@v6
@@ -89,6 +91,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: true
       
       - name: Set up JDK 21
         uses: actions/setup-java@v5
@@ -253,6 +257,8 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: true
 
       - name: Download Artifacts
         uses: actions/download-artifact@v8
@@ -301,6 +307,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: true
 
       - name: Set up JDK 21
         uses: actions/setup-java@v5
