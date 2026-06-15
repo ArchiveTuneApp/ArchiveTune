@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.aboutlibraries.android)
 }
 
 val localProperties = Properties()
@@ -239,6 +240,7 @@ dependencies {
     implementation(libs.material3)
     implementation(libs.palette)
     implementation(libs.androidsvg)
+    implementation(libs.aboutlibraries.core)
     implementation(libs.markwon.core)
     implementation(libs.markwon.ext.strikethrough)
     implementation(libs.markwon.ext.tables)
