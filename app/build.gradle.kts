@@ -288,7 +288,7 @@ dependencies {
     ksp(libs.hilt.compiler)
     ksp(libs.kotlin.metadata.jvm)
 
-    implementation(project(":innertube"))
+    implementation(project(":core"))
     implementation(project(":kugou"))
     implementation(project(":lrclib"))
     implementation(project(":lastfm"))
