@@ -2403,9 +2403,8 @@ class MusicService :
             error.errorCode == PlaybackException.ERROR_CODE_IO_UNSPECIFIED ||
                 error.errorCode == PlaybackException.ERROR_CODE_IO_READ_POSITION_OUT_OF_RANGE
         val isContainerParseError =
-            error.errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED ||
-                error.errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED
-
+            error.errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED
+        
         if (!isIoError && !isContainerParseError) {
             return false
         }
