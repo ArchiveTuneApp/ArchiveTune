@@ -20,6 +20,7 @@ object SettingsDimensions {
     val BannerCardCornerRadius = 20.dp
 
     val ScreenHorizontalPadding = 16.dp
+    val ScreenBottomPadding = 32.dp
     val SectionSpacing = 14.dp
     val RowVerticalPadding = 14.dp
     val RowHorizontalPadding = 16.dp

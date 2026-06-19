@@ -16,11 +16,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -166,7 +164,7 @@ fun SettingsScreen(
             contentPadding =
                 PaddingValues(
                     top = innerPadding.calculateTopPadding(),
-                    bottom = 32.dp,
+                    bottom = SettingsDimensions.ScreenBottomPadding,
                 ),
         ) {
             if (hasUpdate && !isUpdateDismissed) {
@@ -217,10 +215,6 @@ fun SettingsScreen(
                     count = settingsItems.size,
                     modifier = Modifier.padding(horizontal = 26.dp),
                 )
-            }
-
-            item(key = "bottom_spacer", contentType = "settings_spacer") {
-                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }

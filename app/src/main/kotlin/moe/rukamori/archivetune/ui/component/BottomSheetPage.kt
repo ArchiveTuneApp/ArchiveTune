@@ -86,6 +86,7 @@ fun BottomSheetPage(
     modifier: Modifier = Modifier,
     state: BottomSheetPageState,
     background: Color = MaterialTheme.colorScheme.surfaceColorAtElevation(NavigationBarDefaults.Elevation),
+    contentWindowInsets: WindowInsets = WindowInsets.navigationBars,
 ) {
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
@@ -167,7 +168,7 @@ fun BottomSheetPage(
                     Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
-                        .windowInsetsPadding(WindowInsets.navigationBars),
+                        .windowInsetsPadding(contentWindowInsets),
             ) {
                 state.content(this)
             }

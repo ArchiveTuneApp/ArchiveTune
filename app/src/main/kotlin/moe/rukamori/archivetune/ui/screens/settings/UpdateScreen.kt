@@ -927,12 +927,15 @@ fun UpdateScreen(
             }
 
             item {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(SettingsDimensions.ScreenBottomPadding))
             }
         }
     }
 
-    BottomSheetPage(state = updateSheetState)
+    BottomSheetPage(
+        state = updateSheetState,
+        contentWindowInsets = LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom),
+    )
 
     if (updateSheetLoading) {
         AlertDialog(
