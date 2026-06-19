@@ -150,7 +150,8 @@ fun PrivacySettings(
     Column(
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .padding(bottom = SettingsDimensions.ScreenBottomPadding),
     ) {
         Spacer(
             Modifier.windowInsetsPadding(

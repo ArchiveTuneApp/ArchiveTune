@@ -84,7 +84,7 @@ fun LyricsAnimationSettings(
                         LocalPlayerAwareWindowInsets.current.only(
                             WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
                         ),
-                    ).padding(bottom = 16.dp),
+                    ).padding(bottom = SettingsDimensions.ScreenBottomPadding),
         ) {
             PreferenceGroup(title = "Animation Tuning") {
                 item {

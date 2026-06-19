@@ -425,7 +425,8 @@ fun MusicTogetherScreen(
                 Modifier
                     .weight(1f)
                     .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = SettingsDimensions.ScreenBottomPadding),
         ) {
             StatusCard(
                 state = sessionState,

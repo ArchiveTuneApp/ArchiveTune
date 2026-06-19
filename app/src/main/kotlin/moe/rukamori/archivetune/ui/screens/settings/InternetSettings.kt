@@ -178,7 +178,8 @@ fun InternetSettings(
     Column(
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .padding(bottom = SettingsDimensions.ScreenBottomPadding),
     ) {
         InternetWarningBox()
 

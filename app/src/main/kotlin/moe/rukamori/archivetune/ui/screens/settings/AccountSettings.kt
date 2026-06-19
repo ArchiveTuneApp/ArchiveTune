@@ -371,7 +371,7 @@ fun AccountSettings(
                     start = 16.dp,
                     top = innerPadding.calculateTopPadding() + 8.dp,
                     end = 16.dp,
-                    bottom = 32.dp,
+                    bottom = SettingsDimensions.ScreenBottomPadding,
                 ),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {

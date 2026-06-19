@@ -245,7 +245,7 @@ private fun AboutScreenContent(
                     contentPadding =
                         PaddingValues(
                             top = innerPadding.calculateTopPadding() + 8.dp,
-                            bottom = 32.dp,
+                            bottom = SettingsDimensions.ScreenBottomPadding,
                         ),
                     listState = listState,
                 )

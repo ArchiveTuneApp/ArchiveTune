@@ -290,6 +290,7 @@ fun PoTokenScreen(
                     WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
                 ),
             ).verticalScroll(rememberScrollState())
+            .padding(bottom = SettingsDimensions.ScreenBottomPadding)
             .animateContentSize(
                 animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
             ),

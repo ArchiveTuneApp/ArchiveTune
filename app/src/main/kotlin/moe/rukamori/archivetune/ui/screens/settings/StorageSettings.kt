@@ -92,9 +92,9 @@ import moe.rukamori.archivetune.ui.player.CanvasArtworkPlaybackCache
 import moe.rukamori.archivetune.ui.utils.backToMain
 import moe.rukamori.archivetune.ui.utils.formatFileSize
 import moe.rukamori.archivetune.utils.rememberPreference
-import moe.rukamori.archivetune.viewmodels.StorageFolderUiModel
 import moe.rukamori.archivetune.viewmodels.StorageCacheClearUiKind
 import moe.rukamori.archivetune.viewmodels.StorageCacheClearUiModel
+import moe.rukamori.archivetune.viewmodels.StorageFolderUiModel
 import moe.rukamori.archivetune.viewmodels.StorageLocationUiModel
 import moe.rukamori.archivetune.viewmodels.StorageLocationUiOptions
 import moe.rukamori.archivetune.viewmodels.StorageMigrationUiModel
@@ -283,7 +283,12 @@ fun StorageSettings(
             Modifier
                 .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
                 .verticalScroll(rememberScrollState())
-                .padding(12.dp),
+                .padding(
+                    start = 12.dp,
+                    top = 12.dp,
+                    end = 12.dp,
+                    bottom = SettingsDimensions.ScreenBottomPadding,
+                ),
         ) {
             Spacer(
                 Modifier.windowInsetsPadding(

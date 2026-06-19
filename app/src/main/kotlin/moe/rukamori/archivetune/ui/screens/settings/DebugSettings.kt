@@ -188,8 +188,7 @@ fun DebugSettings(navController: NavController) {
                         LocalPlayerAwareWindowInsets.current.only(
                             WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
                         ),
-                    )
-                    .verticalScroll(rememberScrollState()),
+                    ).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             PreferenceGroup(title = stringResource(R.string.experimental_features)) {
