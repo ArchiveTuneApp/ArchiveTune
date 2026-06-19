@@ -153,6 +153,9 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata.MEDIA_TYPE_MUSIC
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
+import androidx.media3.exoplayer.offline.Download
+import androidx.media3.exoplayer.offline.DownloadRequest
+import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -198,12 +201,14 @@ import moe.rukamori.archivetune.constants.MiniPlayerHeight
 import moe.rukamori.archivetune.constants.MiniPlayerLastAnchorKey
 import moe.rukamori.archivetune.constants.NavigationBarAnimationSpec
 import moe.rukamori.archivetune.constants.PauseSearchHistoryKey
+import moe.rukamori.archivetune.constants.PendingRestoreSongIdsKey
 import moe.rukamori.archivetune.constants.PureBlackKey
 import moe.rukamori.archivetune.constants.PlayerBackgroundStyle
 import moe.rukamori.archivetune.constants.PlayerBackgroundStyleKey
 import moe.rukamori.archivetune.constants.PlayerDesignStyle
 import moe.rukamori.archivetune.constants.PlayerDesignStyleKey
 import moe.rukamori.archivetune.constants.RemindAfterKey
+import moe.rukamori.archivetune.constants.RestoreDownloadPlaylistIdKey
 import moe.rukamori.archivetune.constants.SYSTEM_DEFAULT
 import moe.rukamori.archivetune.constants.SearchSource
 import moe.rukamori.archivetune.constants.SearchSourceKey
@@ -214,7 +219,10 @@ import moe.rukamori.archivetune.db.entities.SearchHistory
 import moe.rukamori.archivetune.db.entities.Album
 import moe.rukamori.archivetune.db.entities.Artist
 import moe.rukamori.archivetune.db.entities.Playlist
+import moe.rukamori.archivetune.db.entities.PlaylistEntity
+import moe.rukamori.archivetune.db.entities.PlaylistSongMap
 import moe.rukamori.archivetune.db.entities.Song
+import moe.rukamori.archivetune.db.entities.SongEntity
 
 import moe.rukamori.archivetune.innertube.YouTube
 import moe.rukamori.archivetune.innertube.models.AlbumItem
@@ -227,6 +235,7 @@ import moe.rukamori.archivetune.musicrecognition.ACTION_MUSIC_RECOGNITION
 import moe.rukamori.archivetune.musicrecognition.MusicRecognitionRoute
 import moe.rukamori.archivetune.musicrecognition.openMusicRecognition
 import moe.rukamori.archivetune.playback.DownloadUtil
+import moe.rukamori.archivetune.playback.ExoDownloadService
 import moe.rukamori.archivetune.playback.MusicService
 import moe.rukamori.archivetune.playback.MusicService.MusicBinder
 import androidx.compose.ui.hapticfeedback.HapticFeedback
@@ -1265,6 +1274,99 @@ class MainActivity : ComponentActivity() {
                         mutableStateOf(null)
                     }
 
+                    var restorePlaylistId by remember { mutableStateOf<String?>(null) }
+                    var restoreSongIds by remember { mutableStateOf<List<String>>(emptyList()) }
+                    var restoreCompletedCount by remember { mutableIntStateOf(0) }
+
+                    LaunchedEffect(Unit) {
+                        val ctx = this@MainActivity
+                        val pendingIds = withContext(Dispatchers.IO) {
+                            ctx.dataStore.data.first()[PendingRestoreSongIdsKey]
+                        }
+                        if (!pendingIds.isNullOrEmpty()) {
+                            val idList = pendingIds.toList()
+                            val playlistId = PlaylistEntity.generatePlaylistId()
+                            withContext(Dispatchers.IO) {
+                                database.query {
+                                    insert(PlaylistEntity(id = playlistId, name = "Restore Downloads"))
+                                    idList.forEachIndexed { idx, songId ->
+                                        insert(SongEntity(id = songId, title = songId))
+                                        insert(
+                                            PlaylistSongMap(
+                                                songId = songId,
+                                                playlistId = playlistId,
+                                                position = idx,
+                                            )
+                                        )
+                                    }
+                                }
+                                ctx.dataStore.edit { prefs ->
+                                    prefs.remove(PendingRestoreSongIdsKey)
+                                    prefs[RestoreDownloadPlaylistIdKey] = playlistId
+                                }
+                                idList.forEach { songId ->
+                                    val req = DownloadRequest.Builder(songId, songId.toUri()).build()
+                                    DownloadService.sendAddDownload(
+                                        ctx,
+                                        ExoDownloadService::class.java,
+                                        req,
+                                        true,
+                                    )
+                                }
+                            }
+                            restorePlaylistId = playlistId
+                            restoreSongIds = idList
+                            restoreCompletedCount = 0
+                        } else {
+                            val existingId = withContext(Dispatchers.IO) {
+                                ctx.dataStore.data.first()[RestoreDownloadPlaylistIdKey]
+                            }
+                            if (existingId != null) {
+                                val ids = withContext(Dispatchers.IO) {
+                                    val p = database.getPlaylistById(existingId)
+                                    if (p != null) {
+                                        database.playlistSongs(existingId).first().map { it.map.songId }
+                                    } else {
+                                        ctx.dataStore.edit { it.remove(RestoreDownloadPlaylistIdKey) }
+                                        emptyList()
+                                    }
+                                }
+                                if (ids.isNotEmpty()) {
+                                    restorePlaylistId = existingId
+                                    restoreSongIds = ids
+                                    restoreCompletedCount = 0
+                                }
+                            }
+                        }
+                    }
+
+                    LaunchedEffect(restorePlaylistId) {
+                        val pid = restorePlaylistId ?: return@LaunchedEffect
+                        val ids = restoreSongIds
+                        if (ids.isEmpty()) return@LaunchedEffect
+
+                        downloadUtil.downloads.collect { downloads ->
+                            val completed = ids.count { id ->
+                                downloads[id]?.state == Download.STATE_COMPLETED
+                            }
+                            restoreCompletedCount = completed
+
+                            if (completed >= ids.size) {
+                                withContext(Dispatchers.IO) {
+                                    database.query {
+                                        clearPlaylist(pid)
+                                        delete(PlaylistEntity(id = pid, name = ""))
+                                    }
+                                    this@MainActivity.dataStore.edit { prefs ->
+                                        prefs.remove(RestoreDownloadPlaylistIdKey)
+                                    }
+                                }
+                                restorePlaylistId = null
+                                restoreSongIds = emptyList()
+                            }
+                        }
+                    }
+
                     LaunchedEffect(Unit) {
                         if (pendingIntent != null) {
                             handleIntent(pendingIntent, navController)
@@ -1531,6 +1633,16 @@ class MainActivity : ComponentActivity() {
                                                     }
                                                 },
                                                 actions = {
+                                                    if (restorePlaylistId != null) {
+                                                        IconButton(onClick = {
+                                                            navController.navigate("local_playlist/$restorePlaylistId")
+                                                        }) {
+                                                            Icon(
+                                                                painter = painterResource(R.drawable.download),
+                                                                contentDescription = stringResource(R.string.downloads_in_progress),
+                                                            )
+                                                        }
+                                                    }
                                                     IconButton(onClick = { navController.navigate("history") }) {
                                                         Icon(
                                                             painter = painterResource(R.drawable.history),

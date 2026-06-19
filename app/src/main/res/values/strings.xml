@@ -706,6 +706,11 @@
     <string name="backup_create_failed">Couldn\'t create backup</string>
     <string name="restore_success">Backup restored successfully</string>
     <string name="restore_failed">Failed to restore backup</string>
+    <string name="backup_step_export_downloaded">Exporting downloaded songs</string>
+    <string name="restore_step_downloaded_songs">Restoring downloaded songs</string>
+    <string name="backup_downloaded_songs_label">Include Downloaded Songs</string>
+    <string name="backup_downloaded_songs_desc">Back up song IDs and re-download after restore</string>
+    <string name="downloads_in_progress">Downloads in progress</string>
     <string name="discord_integration">Discord Integration</string>
     <string name="account_integrations_summary">Discord, Last.fm, Libre.fm, ListenBrainz</string>
     <string name="discord_login_description">Connect your Discord account with OAuth so ArchiveTune can publish Rich Presence.</string>

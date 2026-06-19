@@ -52,6 +52,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -147,6 +148,7 @@ fun BackupAndRestore(
     var showSpotifyLogin by rememberSaveable { mutableStateOf(false) }
     var pendingBackupCategories by remember { mutableStateOf(BackupCategory.entries.toSet()) }
     var pendingRestoreCategories by remember { mutableStateOf(BackupCategory.entries.toSet()) }
+    var backupDownloadedSongs by rememberSaveable { mutableStateOf(false) }
 
     val backupRestoreProgress by viewModel.backupRestoreProgress.collectAsStateWithLifecycle()
     val spotifyState by spotifyAccountViewModel.uiState.collectAsStateWithLifecycle()
@@ -157,7 +159,7 @@ fun BackupAndRestore(
     val backupLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
             if (uri != null) {
-                viewModel.backup(context, uri, pendingBackupCategories)
+                viewModel.backup(context, uri, pendingBackupCategories, backupDownloadedSongs)
             }
         }
     val restoreLauncher =
@@ -274,8 +276,9 @@ fun BackupAndRestore(
         BackupOptionsDialog(
             title = stringResource(R.string.backup_options_title),
             confirmLabel = stringResource(R.string.action_backup),
-            onConfirm = { categories ->
+            onConfirm = { categories, backupDownloaded ->
                 pendingBackupCategories = categories
+                backupDownloadedSongs = backupDownloaded
                 showBackupOptionsDialog = false
                 val formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
                 backupLauncher.launch(
@@ -290,12 +293,13 @@ fun BackupAndRestore(
         BackupOptionsDialog(
             title = stringResource(R.string.restore_options_title),
             confirmLabel = stringResource(R.string.action_restore),
-            onConfirm = { categories ->
+            onConfirm = { categories, _ ->
                 pendingRestoreCategories = categories
                 showRestoreOptionsDialog = false
                 restoreLauncher.launch(arrayOf("application/octet-stream"))
             },
             onDismiss = { showRestoreOptionsDialog = false },
+            showDownloadedSongsToggle = false,
         )
     }
 
@@ -845,10 +849,12 @@ private fun IconBubble(
 private fun BackupOptionsDialog(
     title: String,
     confirmLabel: String,
-    onConfirm: (Set<BackupCategory>) -> Unit,
+    onConfirm: (Set<BackupCategory>, Boolean) -> Unit,
     onDismiss: () -> Unit,
+    showDownloadedSongsToggle: Boolean = true,
 ) {
     var selected by remember { mutableStateOf(BackupCategory.entries.toSet()) }
+    var backupDownloadedSongs by remember { mutableStateOf(false) }
 
     DefaultDialog(
         onDismiss = onDismiss,
@@ -858,7 +864,7 @@ private fun BackupOptionsDialog(
                 Text(stringResource(android.R.string.cancel))
             }
             TextButton(
-                onClick = { onConfirm(selected) },
+                onClick = { onConfirm(selected, backupDownloadedSongs) },
                 shapes = ButtonDefaults.shapes(),
                 enabled = selected.isNotEmpty(),
             ) {
@@ -931,6 +937,55 @@ private fun BackupOptionsDialog(
                         onCheckedChange = { checked ->
                             selected = if (checked) selected + category else selected - category
                         },
+                    )
+                }
+            }
+        }
+        if (showDownloadedSongsToggle) {
+            Spacer(Modifier.height(4.dp))
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.medium,
+                color = Color.Transparent,
+                onClick = { backupDownloadedSongs = !backupDownloadedSongs },
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 72.dp)
+                        .padding(horizontal = 4.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    IconBubble(
+                        icon = painterResource(R.drawable.download),
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                        size = 40.dp,
+                    )
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.backup_downloaded_songs_label),
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Text(
+                            text = stringResource(R.string.backup_downloaded_songs_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    Switch(
+                        checked = backupDownloadedSongs,
+                        onCheckedChange = { backupDownloadedSongs = it },
                     )
                 }
             }
