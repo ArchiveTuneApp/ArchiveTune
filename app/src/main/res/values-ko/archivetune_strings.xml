@@ -250,8 +250,6 @@
     <string name="clear_image_cache_dialog">캐시된 이미지를 모두 삭제하시겠습니까?</string>
     <string name="clear_downloads_dialog">다운로드된 모든 노래를 삭제하시겠습니까?</string>
     <string name="canvas_cache">캔버스 캐시</string>
-    <string name="canvas_cache_items">%d개 항목</string>
-    <string name="canvas_cache_usage">%1$s / %2$s</string>
     <string name="clear_canvas_cache">캔버스 캐시 비우기</string>
     <string name="clear_canvas_cache_dialog">캐시된 캔버스 데이터를 모두 삭제하시겠습니까?</string>
     <string name="disable">비활성화</string>

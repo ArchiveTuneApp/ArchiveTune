@@ -572,8 +572,6 @@
     <string name="queue_autoplaying_similar">Ähnliche Musik automatisch abspielen</string>
     <string name="random_theme_on_startup">Zufälliges Theme beim start</string>
     <string name="random_theme_on_startup_desc">Wende eine zufällige Farbpalette bei jedem Appstart an</string>
-    <string name="use_system_font">Nutze Systemschriftart</string>
-    <string name="use_system_font_desc">Nutze die Geräteschriftar anstelle der Appschriftart</string>
     <string name="music_recognition">Musik Erkennung</string>
     <string name="removed_song_from_queue">\"%s\" aus der Warteschlange entfernen</string>
     <string name="mood_and_genres_supporting">Nach Gefühl, Epoche oder Energie spielen</string>

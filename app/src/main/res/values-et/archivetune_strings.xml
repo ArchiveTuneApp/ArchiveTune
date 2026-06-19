@@ -194,7 +194,6 @@
     <string name="swipe_sensitivity_desc">Kohenda viipamise tundlikust lugude vahetamisel</string>
     <string name="sensitivity_percentage">%1$d%%</string>
     <string name="canvas_cache">Kanvaapuhver</string>
-    <string name="canvas_cache_items">%d objekti</string>
     <string name="clear_canvas_cache">Kustuta kanvaapuhvri sisu</string>
     <string name="clear_canvas_cache_dialog">Kas oled kindel, et soovid kustutada kogu kanvaapuhvri sisu?</string>
     <string name="playlist_private_title">See esitusloend oli privaatne</string>
@@ -251,7 +250,6 @@
     <string name="theme_preview_primary_action">Esmane toiming</string>
     <string name="theme_preview_trackline">Eelvaatekaart (premium)</string>
     <string name="player_stream_client_web_remix">Web Remix</string>
-    <string name="canvas_cache_usage">%1$s / %2$s</string>
     <string name="playlist_add_local_to_synced_note">Kohalike lugude lisamine sünkroonitud või serveri esitusloendisse pole toetatud. Kõik muud kombinatsioonid on lubatud</string>
     <string name="token_adv_login_description">See on sisselogimismeetud oskuskasutajatele. Veebivaate asemel võid tunnusloa lisada otse siia ja samas seda ka uuendada. Ja see võib näiteks see kiirendab sisselogimise mitmes seadmes. Palun arvesta, et kui tunnusloa vorming on vigane ja selle töötlemine ei õnnestu, siis rakendus seda ei kasuta.</string>
 </resources>

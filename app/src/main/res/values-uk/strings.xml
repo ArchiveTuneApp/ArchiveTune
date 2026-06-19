@@ -249,8 +249,6 @@
     <string name="enable_dynamic_theme">Увімкнути динамічну тему</string>
     <string name="random_theme_on_startup">Випадкова тема при запуску</string>
     <string name="random_theme_on_startup_desc">Застосовувати випадкову палітру кольорів при кожному запуску програми</string>
-    <string name="use_system_font">Використовувати системний шрифт</string>
-    <string name="use_system_font_desc">Використовувати шрифт пристрою замість шрифту програми</string>
     <string name="color_palette">Палітра кольорів</string>
     <string name="customize_theme_colors">Вибрати власну колірну тему застосунку</string>
     <string name="selected_theme_color">Вибраний колір теми</string>

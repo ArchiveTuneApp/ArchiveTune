@@ -198,8 +198,6 @@
     <string name="lyrics_text_size">Songtextgröße</string>
     <string name="resume_autoscroll">Autoscrollen fortsetzen</string>
     <string name="canvas_cache">Canvas Cache</string>
-    <string name="canvas_cache_items">%d Gegenstände</string>
-    <string name="canvas_cache_usage">%1$s / %2$s</string>
     <string name="clear_canvas_cache">Leere Canvas Cache</string>
     <string name="clear_canvas_cache_dialog">Sind sie sich sicher, dass sie alle zwischengespeicherten Canvas leeren wollen?</string>
     <string name="playlist_private_title">Diese playlist war privat</string>

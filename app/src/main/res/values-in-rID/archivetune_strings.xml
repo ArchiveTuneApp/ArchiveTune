@@ -323,8 +323,6 @@
     <string name="clear_image_cache_dialog">Apakah Anda yakin ingin menghapus semua gambar yang di-cache?</string>
     <string name="clear_downloads_dialog">Apakah Anda yakin ingin menghapus semua unduhan?</string>
     <string name="canvas_cache">Cache Kanvas</string>
-    <string name="canvas_cache_items">%d item</string>
-    <string name="canvas_cache_usage">%1$s / %2$s</string>
     <string name="clear_canvas_cache">Hapus cache kanvas</string>
     <string name="clear_canvas_cache_dialog">Apakah Anda yakin ingin menghapus semua kanvas yang di-cache?</string>
     <string name="disable">Nonaktifkan</string>

@@ -244,8 +244,6 @@
     <string name="show_home_category_chips_desc">在首页显示分类筛选标签</string>
     <string name="player_design_v6">生动</string>
     <string name="canvas_cache">画面缓存</string>
-    <string name="canvas_cache_items">%d 个项目</string>
-    <string name="canvas_cache_usage">%1$s / %2$s</string>
     <string name="clear_canvas_cache">清理画面缓存</string>
     <string name="clear_canvas_cache_dialog">确定要清除所有画面缓存吗？</string>
     <string name="album_not_found">未找到专辑</string>

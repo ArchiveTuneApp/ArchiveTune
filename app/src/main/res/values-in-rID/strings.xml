@@ -253,8 +253,6 @@
     <string name="enable_dynamic_theme">Aktifkan tema dinamis</string>
     <string name="random_theme_on_startup">Tema acak saat startup</string>
     <string name="random_theme_on_startup_desc">Terapkan palet warna acak setiap kali aplikasi dimulai</string>
-    <string name="use_system_font">Gunakan font sistem</string>
-    <string name="use_system_font_desc">Gunakan font perangkat, bukan font aplikasi</string>
     <!-- Color Palette -->
     <string name="color_palette">Palet Warna</string>
     <string name="customize_theme_colors">Pilih warna tema aplikasi Anda</string>

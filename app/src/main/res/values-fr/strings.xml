@@ -592,8 +592,6 @@
     <string name="permission_status_required">Veuillez autoriser toutes les permissions requises pour continuer.</string>
     <string name="next">Suivant</string>
     <string name="allow">Autoriser</string>
-    <string name="use_system_font">Utiliser la police système</string>
-    <string name="use_system_font_desc">Utilisez la police de l\'appareil au lieu de la police de l\'application</string>
     <string name="enable_simpmusic_lyrics">Activer les paroles de SimpMusic</string>
     <string name="eq_waiting_for_audio_session">En attente de la session audio</string>
     <string name="eq_open_system_equalizer">Ouvrir l\'égaliseur système</string>

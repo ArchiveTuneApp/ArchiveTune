@@ -241,8 +241,6 @@
     <string name="restore_step_restoring_file">Đang khôi phục %1$s</string>
     <string name="restore_step_restarting">Đang khởi động lại ứng dụng</string>
     <string name="canvas_cache">Canvas Cache</string>
-    <string name="canvas_cache_items">%d mục</string>
-    <string name="canvas_cache_usage">%1$s / %2$s</string>
     <string name="clear_canvas_cache">Xóa bộ nhớ cache canvas</string>
     <string name="clear_canvas_cache_dialog">Bạn có chắc chắn muốn xóa tất cả dữ liệu canvas đã lưu trong bộ nhớ cache không?</string>
     <string name="playlist_private_title">Danh sách phát này là riêng tư</string>

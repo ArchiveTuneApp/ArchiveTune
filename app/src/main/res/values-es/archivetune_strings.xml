@@ -154,7 +154,6 @@
     <string name="clear_song_cache_dialog">¿Estás seguro que deseas borrar todas las canciones en cache?</string>
     <string name="clear_image_cache_dialog">¿Estás seguro que deseas borrar todas las imágenes en cache?</string>
     <string name="clear_downloads_dialog">¿Estás seguro que deseas borrar todas las descargas?</string>
-    <string name="canvas_cache_items">%d elementos</string>
     <string name="clear_canvas_cache_dialog">¿Estás seguro que deseas borrar todo el canvas del cache?</string>
     <string name="disable">Desactivar</string>
     <string name="pause_remote_listen_history">Pausar historial de reproducción con YouTube Music</string>
@@ -201,7 +200,6 @@
     <string name="remote_history">Remoto</string>
     <string name="show_tags_in_library_desc">Mostrar el filtro de etiquetas en la pestaña de la biblioteca</string>
     <string name="canvas_cache">Cache del Canvas</string>
-    <string name="canvas_cache_usage">%1$s/%2$s</string>
     <string name="clear_canvas_cache">Limpiar el cache del canvas</string>
     <string name="player_stream_client_web_remix">Cliente Web Remix</string>
     <string name="player_stream_client_web_remix_desc">Extiende el soporte de formatos a costa de velocidad. El descifrado de firmas JavaScript introduce un retraso de inicio de entre 5 y 10 segundos.</string>

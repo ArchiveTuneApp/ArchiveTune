@@ -215,8 +215,6 @@
     <string name="appearance">Aspetto</string>
     <string name="theme">Tema</string>
     <string name="enable_dynamic_theme">Abilita tema dinamico</string>
-    <string name="use_system_font">Utilizza il carattere di sistema</string>
-    <string name="use_system_font_desc">Utilizza il carattere del dispositivo anziché il carattere dell\'app</string>
     <!-- Color Palette -->
     <string name="color_palette">Tavolozza dei colori</string>
     <string name="customize_theme_colors">Scegli i colori del tema dell\'app</string>

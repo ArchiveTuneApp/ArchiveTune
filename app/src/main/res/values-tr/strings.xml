@@ -217,8 +217,6 @@
     <string name="appearance">Görünüm</string>
     <string name="theme">Tema</string>
     <string name="enable_dynamic_theme">Dinamik temayı etkinleştir</string>
-    <string name="use_system_font">Sistem yazı tipini kullan</string>
-    <string name="use_system_font_desc">Uygulama yazı tipi yerine cihaz yazı tipini kullanın</string>
     <!-- Color Palette -->
     <string name="color_palette">Renk Paleti</string>
     <string name="customize_theme_colors">Uygulamanızın tema renklerini seçin</string>

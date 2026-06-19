@@ -314,8 +314,6 @@
     <string name="enable_dynamic_theme">動的テーマを有効にする</string>
     <string name="random_theme_on_startup">起動時のランダムなテーマ</string>
     <string name="random_theme_on_startup_desc">アプリを起動するたびにランダムなカラーパレットを適用する</string>
-    <string name="use_system_font">システムフォントを使用する</string>
-    <string name="use_system_font_desc">アプリのフォントの代わりにデバイスのフォントを使用する</string>
     <!-- Color Palette -->
     <string name="color_palette">カラーパレット</string>
     <string name="customize_theme_colors">アプリのテーマカラーを選択してください</string>

@@ -250,8 +250,6 @@
     <string name="enable_dynamic_theme">동적 테마 활성화</string>
     <string name="random_theme_on_startup">앱 시작 시 무작위 테마 적용</string>
     <string name="random_theme_on_startup_desc">앱을 실행할 때마다 매번 임의의 색상 테마를 자동으로 적용합니다.</string>
-    <string name="use_system_font">시스템 글꼴 사용</string>
-    <string name="use_system_font_desc">앱 글꼴 대신 장치 글꼴 사용</string>
     <!-- Color Palette -->
     <string name="color_palette">컬러 팔레트</string>
     <string name="customize_theme_colors">앱 테마의 메인 색상을 직접 선택하세요</string>

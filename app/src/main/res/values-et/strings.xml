@@ -305,8 +305,6 @@
     <string name="added_n_songs_to_playlist">%1$d lugu on isatud „%2$s“ esitusloendisse</string>
     <string name="added_to_n_playlists">Lisatud %d-te esitusloendisse</string>
     <string name="added_n_songs_to_n_playlists">%1$d lugu on isatud %2$d-te esitusloendisse</string>
-    <string name="use_system_font">Kasuta süsteemi kirjatüüpi</string>
-    <string name="use_system_font_desc">Rakenduse kirjatüübi asemel kasuta süsteemi vaikimisi kirjatüüpi</string>
     <string name="palette_ocean_blue">Ookeanisinine</string>
     <string name="palette_arctic_blue">Arktiline sinine</string>
     <string name="palette_midnight_navy">Kesköine meri</string>
