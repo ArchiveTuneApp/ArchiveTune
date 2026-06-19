@@ -32,6 +32,8 @@ import kotlinx.coroutines.withContext
 import moe.rukamori.archivetune.constants.GitHubContributorsEtagKey
 import moe.rukamori.archivetune.constants.GitHubContributorsJsonKey
 import moe.rukamori.archivetune.constants.GitHubContributorsLastCheckedAtKey
+import moe.rukamori.archivetune.constants.GitHubTranslationContributorsJsonKey
+import moe.rukamori.archivetune.constants.GitHubTranslationContributorsLastCheckedAtKey
 import moe.rukamori.archivetune.constants.StorageFolderDisplayNameKey
 import moe.rukamori.archivetune.constants.StorageFolderIdKey
 import moe.rukamori.archivetune.constants.StorageFolderPathKey
@@ -391,6 +393,8 @@ class StorageLocationRepository
                     preferences.remove(GitHubContributorsEtagKey)
                     preferences.remove(GitHubContributorsJsonKey)
                     preferences.remove(GitHubContributorsLastCheckedAtKey)
+                    preferences.remove(GitHubTranslationContributorsJsonKey)
+                    preferences.remove(GitHubTranslationContributorsLastCheckedAtKey)
                 }
             }.isSuccess
 

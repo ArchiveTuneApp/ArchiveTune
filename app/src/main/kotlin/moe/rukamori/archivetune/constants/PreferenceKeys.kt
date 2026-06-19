@@ -832,6 +832,8 @@ val LastNotifiedVersionKey = stringPreferencesKey("lastNotifiedVersion")
 val GitHubContributorsEtagKey = stringPreferencesKey("github_contributors_etag")
 val GitHubContributorsJsonKey = stringPreferencesKey("github_contributors_json")
 val GitHubContributorsLastCheckedAtKey = longPreferencesKey("github_contributors_last_checked_at")
+val GitHubTranslationContributorsJsonKey = stringPreferencesKey("github_translation_contributors_json")
+val GitHubTranslationContributorsLastCheckedAtKey = longPreferencesKey("github_translation_contributors_last_checked_at")
 
 val GitHubReleasesEtagKey = stringPreferencesKey("github_releases_etag")
 val GitHubReleasesJsonKey = stringPreferencesKey("github_releases_json")
