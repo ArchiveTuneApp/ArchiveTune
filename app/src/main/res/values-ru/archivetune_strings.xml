@@ -340,4 +340,5 @@
     <string name="audio_crossfade_seconds">%1$s сек</string>
     <string name="crossfade_gapless_title">Кроссфейд без пробелов</string>
     <string name="crossfade_gapless_description">Затухание и появление без перекрываний звука.</string>
+    <string name="top_songs"></string>
 </resources>
