@@ -1025,4 +1025,5 @@
     <string name="widget_pause"></string>
     <string name="widget_previous"></string>
     <string name="widget_tap_to_open"></string>
+    <string name="library_title">La tua Libreria</string>
 </resources>
