@@ -246,7 +246,7 @@ fun UpdateScreen(
             Text(text = stringResource(R.string.update_text))
         }
 
-        Spacer(Modifier.height(SettingsDimensions.ScreenBottomPadding))
+        Spacer(Modifier.height(12.dp))
     }
 
     val onCheckForUpdate: () -> Unit = {
