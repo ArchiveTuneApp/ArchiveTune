@@ -43,7 +43,7 @@ okhttp = "5.3.2"
 accompanist = "1.0.19"
 accompanist-core = "0.4.5"
 androidsvg = "1.4"
-aboutLibraries = "15.0.0-rc01"
+aboutLibraries = "15.0.0"
 
 [libraries]
 annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
