@@ -107,7 +107,15 @@ jobs:
               "app/build/outputs/apk/${DEVICE}${ABI_CAP}/release" \
               "app/build/outputs/apk/${DEVICE_CAP}${ABI_CAP}/release"
             do
-              apk="$(find "$dir" -maxdepth 1 -type f -name "*.apk" ! -name "*signed*.apk" 2>/dev/null | head -n 1 || true)"
+              [ -d "$dir" ] || continue
+
+              apk="$(find "$dir" -maxdepth 1 -type f -name "*-unsigned.apk" | head -n 1 || true)"
+              if [ -n "${apk:-}" ] && [ -f "$apk" ]; then
+                echo "$apk"
+                return 0
+              fi
+
+              apk="$(find "$dir" -maxdepth 1 -type f -name "*.apk" ! -name "*-signed.apk" ! -name "*-unsigned-signed.apk" | head -n 1 || true)"
               if [ -n "${apk:-}" ] && [ -f "$apk" ]; then
                 echo "$apk"
                 return 0
@@ -117,9 +125,19 @@ jobs:
             metadata="$(
               find app/build/outputs/apk -type f -name "output-metadata.json" \
                 \( \
+                  -path "*/gms${DEVICE_CAP}${ABI_CAP}/release/output-metadata.json" -o \
+                  -path "*/gms${DEVICE}${ABI_CAP}/release/output-metadata.json" -o \
+                  -path "*/gms/${DEVICE}/${ABI}/release/output-metadata.json" -o \
+                  -path "*/gms/${DEVICE}${ABI_CAP}/release/output-metadata.json" -o \
+                  -path "*/gms/${DEVICE_CAP}${ABI_CAP}/release/output-metadata.json" -o \
                   -path "*/${DEVICE}/${ABI}/release/output-metadata.json" -o \
                   -path "*/${DEVICE}${ABI_CAP}/release/output-metadata.json" -o \
                   -path "*/${DEVICE_CAP}${ABI_CAP}/release/output-metadata.json" -o \
+                  -path "*/gms${DEVICE_CAP}${ABI_CAP}/*/release/output-metadata.json" -o \
+                  -path "*/gms${DEVICE}${ABI_CAP}/*/release/output-metadata.json" -o \
+                  -path "*/gms/${DEVICE}/${ABI}/*/release/output-metadata.json" -o \
+                  -path "*/gms/${DEVICE}${ABI_CAP}/*/release/output-metadata.json" -o \
+                  -path "*/gms/${DEVICE_CAP}${ABI_CAP}/*/release/output-metadata.json" -o \
                   -path "*/${DEVICE}/${ABI}/*/release/output-metadata.json" -o \
                   -path "*/${DEVICE}${ABI_CAP}/*/release/output-metadata.json" -o \
                   -path "*/${DEVICE_CAP}${ABI_CAP}/*/release/output-metadata.json" \
@@ -138,7 +156,33 @@ jobs:
               fi
             fi
 
-            apk="$(find app/build/outputs/apk -type f -name "*.apk" ! -name "*signed*.apk" \( -path "*/${DEVICE}/${ABI}/*" -o -path "*/${DEVICE}${ABI_CAP}/*" -o -path "*/${DEVICE_CAP}${ABI_CAP}/*" \) | head -n 1 || true)"
+            apk="$(find app/build/outputs/apk -type f -name "*-unsigned.apk" \
+              \( \
+                -path "*/gms${DEVICE_CAP}${ABI_CAP}/*" -o \
+                -path "*/gms${DEVICE}${ABI_CAP}/*" -o \
+                -path "*/gms/${DEVICE}/${ABI}/*" -o \
+                -path "*/gms/${DEVICE}${ABI_CAP}/*" -o \
+                -path "*/gms/${DEVICE_CAP}${ABI_CAP}/*" -o \
+                -path "*/${DEVICE}/${ABI}/*" -o \
+                -path "*/${DEVICE}${ABI_CAP}/*" -o \
+                -path "*/${DEVICE_CAP}${ABI_CAP}/*" \
+              \) | head -n 1 || true)"
+            if [ -n "${apk:-}" ] && [ -f "$apk" ]; then
+              echo "$apk"
+              return 0
+            fi
+
+            apk="$(find app/build/outputs/apk -type f -name "*.apk" ! -name "*-signed.apk" ! -name "*-unsigned-signed.apk" \
+              \( \
+                -path "*/gms${DEVICE_CAP}${ABI_CAP}/*" -o \
+                -path "*/gms${DEVICE}${ABI_CAP}/*" -o \
+                -path "*/gms/${DEVICE}/${ABI}/*" -o \
+                -path "*/gms/${DEVICE}${ABI_CAP}/*" -o \
+                -path "*/gms/${DEVICE_CAP}${ABI_CAP}/*" -o \
+                -path "*/${DEVICE}/${ABI}/*" -o \
+                -path "*/${DEVICE}${ABI_CAP}/*" -o \
+                -path "*/${DEVICE_CAP}${ABI_CAP}/*" \
+              \) | head -n 1 || true)"
             if [ -n "${apk:-}" ] && [ -f "$apk" ]; then
               echo "$apk"
               return 0
@@ -173,7 +217,7 @@ jobs:
           test "$SHA_1" = "$SHA_2"
 
   build:
-    name: Build Release APKs (${{ matrix.distribution }}-${{ matrix.device }}-${{ matrix.abi }})
+    name: Build Release APKs
     needs: [check-version, reproducibility]
     # Removed '|| workflow_dispatch' so it respects the version check
     if: needs.check-version.outputs.version_changed == 'true'

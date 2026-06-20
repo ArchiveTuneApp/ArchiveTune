@@ -23,6 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -50,6 +53,7 @@ internal fun CanvasArtworkPlayer(
     resizeMode: Int = AspectRatioFrameLayout.RESIZE_MODE_FIT,
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val primary = primaryUrl?.takeIf { it.isNotBlank() }
     val fallback = fallbackUrl?.takeIf { it.isNotBlank() }
     val initial = primary ?: fallback ?: return
@@ -123,6 +127,19 @@ internal fun CanvasArtworkPlayer(
         exoPlayer.setCanvasPlayback(isPlaying)
     }
 
+    DisposableEffect(exoPlayer, lifecycleOwner) {
+        val observer =
+            LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_START || event == Lifecycle.Event.ON_RESUME) {
+                    exoPlayer.setCanvasPlayback(shouldPlay)
+                }
+            }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     DisposableEffect(exoPlayer, primary, fallback) {
         val listener =
             object : Player.Listener {
@@ -140,20 +157,14 @@ internal fun CanvasArtworkPlayer(
 
                 override fun onRenderedFirstFrame() {
                     isVideoReady = true
+                    if (shouldPlay) {
+                        exoPlayer.setCanvasPlayback(isPlaying = true)
+                    }
                 }
 
                 override fun onPlaybackStateChanged(playbackState: Int) {
                     if (!shouldPlay) return
-                    when (playbackState) {
-                        Player.STATE_READY -> {
-                            if (!exoPlayer.isPlaying) exoPlayer.play()
-                        }
-
-                        Player.STATE_ENDED -> {
-                            exoPlayer.seekTo(0)
-                            exoPlayer.play()
-                        }
-                    }
+                    exoPlayer.setCanvasPlayback(isPlaying = true)
                 }
 
                 override fun onPlayWhenReadyChanged(
@@ -161,6 +172,12 @@ internal fun CanvasArtworkPlayer(
                     reason: Int,
                 ) {
                     if (shouldPlay && !playWhenReady) {
+                        exoPlayer.setCanvasPlayback(isPlaying = true)
+                    }
+                }
+
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    if (shouldPlay && !isPlaying) {
                         exoPlayer.setCanvasPlayback(isPlaying = true)
                     }
                 }
@@ -234,6 +251,7 @@ private fun Int.toContentScale(): ContentScale =
 private fun ExoPlayer.setCanvasPlayback(isPlaying: Boolean) {
     if (isPlaying) {
         if (playbackState == Player.STATE_ENDED) seekTo(0)
+        if (playbackState == Player.STATE_IDLE && mediaItemCount > 0) prepare()
         play()
     } else {
         pause()
