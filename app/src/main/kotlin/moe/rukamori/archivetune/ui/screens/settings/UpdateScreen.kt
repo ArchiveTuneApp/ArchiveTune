@@ -932,10 +932,13 @@ fun UpdateScreen(
         }
     }
 
-    BottomSheetPage(
-        state = updateSheetState,
-        contentWindowInsets = LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom),
-    )
+    Box(modifier = Modifier.fillMaxSize()) {
+        BottomSheetPage(
+            state = updateSheetState,
+            modifier = Modifier.align(Alignment.BottomCenter),
+            contentWindowInsets = LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom),
+        )
+    }
 
     if (updateSheetLoading) {
         AlertDialog(
