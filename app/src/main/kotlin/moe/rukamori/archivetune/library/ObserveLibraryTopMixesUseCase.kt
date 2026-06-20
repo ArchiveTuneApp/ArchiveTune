@@ -7,15 +7,14 @@
 
 package moe.rukamori.archivetune.library
 
-import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import moe.rukamori.archivetune.repository.LibraryTopMixRepository
+import javax.inject.Inject
 
 class ObserveLibraryTopMixesUseCase
-@Inject
-constructor(
-    private val repository: LibraryTopMixRepository,
-) {
-    operator fun invoke(): Flow<List<LibraryTopMix>> =
-        repository.observePersistedTopMixes()
-}
+    @Inject
+    constructor(
+        private val repository: LibraryTopMixRepository,
+    ) {
+        operator fun invoke(): Flow<List<LibraryTopMix>> = repository.observePersistedTopMixes()
+    }

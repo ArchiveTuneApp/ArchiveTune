@@ -56,7 +56,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
-import androidx.compose.ui.draw.clip
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,6 +63,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
@@ -83,10 +83,6 @@ import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import moe.rukamori.archivetune.LocalPlayerAwareWindowInsets
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.models.NewsItem
@@ -94,6 +90,10 @@ import moe.rukamori.archivetune.ui.component.MarkdownText
 import moe.rukamori.archivetune.ui.utils.backToMain
 import moe.rukamori.archivetune.viewmodels.ViewNewsUiState
 import moe.rukamori.archivetune.viewmodels.ViewNewsViewModel
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import moe.rukamori.archivetune.ui.component.IconButton as AppIconButton
 
 @Composable
@@ -106,9 +106,10 @@ fun ViewNewsScreen(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
@@ -133,11 +134,12 @@ fun ViewNewsScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.largeTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                ),
+                colors =
+                    TopAppBarDefaults.largeTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    ),
                 scrollBehavior = scrollBehavior,
             )
         },
@@ -152,25 +154,33 @@ fun ViewNewsScreen(
             label = "viewNewsContent",
         ) { state ->
             when (state) {
-                is ViewNewsUiState.Loading -> ViewNewsLoadingState(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                )
+                is ViewNewsUiState.Loading -> {
+                    ViewNewsLoadingState(
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding),
+                    )
+                }
 
-                is ViewNewsUiState.Error -> ViewNewsErrorState(
-                    message = state.message,
-                    onRetry = viewModel::loadContent,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                )
+                is ViewNewsUiState.Error -> {
+                    ViewNewsErrorState(
+                        message = state.message,
+                        onRetry = viewModel::loadContent,
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding),
+                    )
+                }
 
-                is ViewNewsUiState.Success -> ViewNewsArticleContent(
-                    newsItem = newsItem,
-                    content = state.content,
-                    innerPadding = innerPadding,
-                )
+                is ViewNewsUiState.Success -> {
+                    ViewNewsArticleContent(
+                        newsItem = newsItem,
+                        content = state.content,
+                        innerPadding = innerPadding,
+                    )
+                }
             }
         }
     }
@@ -183,33 +193,36 @@ private fun ViewNewsArticleContent(
     innerPadding: PaddingValues,
 ) {
     BoxWithConstraints(
-        modifier = Modifier
-            .fillMaxSize()
-            .windowInsetsPadding(
-                LocalPlayerAwareWindowInsets.current.only(
-                    WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(
+                    LocalPlayerAwareWindowInsets.current.only(
+                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                    ),
                 ),
-            ),
     ) {
         val horizontalPadding = if (maxWidth > 840.dp) (maxWidth - 760.dp) / 2 else 24.dp
         val imageUrls = newsItem?.imageUrls.orEmpty()
         var fullImageUrl by remember { mutableStateOf<String?>(null) }
 
         LazyColumn(
-            contentPadding = PaddingValues(
-                top = innerPadding.calculateTopPadding() + 16.dp,
-                bottom = innerPadding.calculateBottomPadding() + 48.dp,
-            ),
+            contentPadding =
+                PaddingValues(
+                    top = innerPadding.calculateTopPadding() + 16.dp,
+                    bottom = innerPadding.calculateBottomPadding() + 48.dp,
+                ),
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             if (newsItem != null) {
                 item(key = "article_meta", contentType = "meta") {
                     ViewNewsMetaRow(
                         item = newsItem,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = horizontalPadding),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = horizontalPadding),
                     )
                 }
             }
@@ -219,9 +232,10 @@ private fun ViewNewsArticleContent(
                     ViewNewsCarousel(
                         imageUrls = imageUrls,
                         onImageClick = { url -> fullImageUrl = url },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(320.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .height(320.dp),
                     )
                 }
             }
@@ -229,13 +243,15 @@ private fun ViewNewsArticleContent(
             item(key = "article_content", contentType = "markdown") {
                 MarkdownText(
                     markdown = content,
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.2f
-                    ),
+                    style =
+                        MaterialTheme.typography.bodyLarge.copy(
+                            lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.2f,
+                        ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = horizontalPadding),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = horizontalPadding),
                 )
             }
         }
@@ -257,21 +273,24 @@ private fun ViewNewsCarousel(
 ) {
     if (imageUrls.size == 1) {
         val context = LocalContext.current
-        val model = remember(context, imageUrls.first()) {
-            ImageRequest.Builder(context)
-                .data(imageUrls.first())
-                .crossfade(true)
-                .build()
-        }
+        val model =
+            remember(context, imageUrls.first()) {
+                ImageRequest
+                    .Builder(context)
+                    .data(imageUrls.first())
+                    .crossfade(true)
+                    .build()
+            }
         AsyncImage(
             model = model,
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = modifier
-                .padding(horizontal = 24.dp)
-                .clip(MaterialTheme.shapes.extraLarge)
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                .clickable(role = Role.Image) { onImageClick(imageUrls.first()) },
+            modifier =
+                modifier
+                    .padding(horizontal = 24.dp)
+                    .clip(MaterialTheme.shapes.extraLarge)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                    .clickable(role = Role.Image) { onImageClick(imageUrls.first()) },
         )
         return
     }
@@ -287,21 +306,24 @@ private fun ViewNewsCarousel(
     ) { index ->
         val context = LocalContext.current
         val imageUrl = imageUrls[index]
-        val model = remember(context, imageUrl) {
-            ImageRequest.Builder(context)
-                .data(imageUrl)
-                .crossfade(true)
-                .build()
-        }
+        val model =
+            remember(context, imageUrl) {
+                ImageRequest
+                    .Builder(context)
+                    .data(imageUrl)
+                    .crossfade(true)
+                    .build()
+            }
         AsyncImage(
             model = model,
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-                .maskClip(MaterialTheme.shapes.extraLarge)
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                .clickable(role = Role.Image) { onImageClick(imageUrl) },
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .maskClip(MaterialTheme.shapes.extraLarge)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                    .clickable(role = Role.Image) { onImageClick(imageUrl) },
         )
     }
 }
@@ -322,24 +344,29 @@ private fun ViewNewsMetaRow(
                 label = {
                     Text(
                         text = stringResource(R.string.news_important_badge),
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
                 },
-                colors = AssistChipDefaults.assistChipColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                    labelColor = MaterialTheme.colorScheme.onErrorContainer,
-                ),
+                colors =
+                    AssistChipDefaults.assistChipColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        labelColor = MaterialTheme.colorScheme.onErrorContainer,
+                    ),
                 border = null,
-                shape = MaterialTheme.shapes.large
+                shape = MaterialTheme.shapes.large,
             )
         }
 
-        val formattedDate = remember(item.timestamp) {
-            if (item.timestamp == 0L) ""
-            else DateTimeFormatter.ofPattern("d MMM yyyy").format(
-                LocalDateTime.ofInstant(Instant.ofEpochSecond(item.timestamp), ZoneId.systemDefault())
-            )
-        }
+        val formattedDate =
+            remember(item.timestamp) {
+                if (item.timestamp == 0L) {
+                    ""
+                } else {
+                    DateTimeFormatter.ofPattern("d MMM yyyy").format(
+                        LocalDateTime.ofInstant(Instant.ofEpochSecond(item.timestamp), ZoneId.systemDefault()),
+                    )
+                }
+            }
 
         AssistChip(
             onClick = {},
@@ -347,16 +374,17 @@ private fun ViewNewsMetaRow(
                 Text(
                     text = stringResource(R.string.news_author_on_date, item.author, formattedDate),
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
             },
-            colors = AssistChipDefaults.assistChipColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                labelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-            ),
+            colors =
+                AssistChipDefaults.assistChipColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    labelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                ),
             border = null,
             shape = MaterialTheme.shapes.large,
-            modifier = Modifier.weight(1f, fill = false)
+            modifier = Modifier.weight(1f, fill = false),
         )
     }
 }
@@ -368,26 +396,30 @@ private fun ViewNewsFullImageDialog(
 ) {
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(
-            usePlatformDefaultWidth = false,
-            dismissOnBackPress = true,
-            dismissOnClickOutside = true,
-            decorFitsSystemWindows = false
-        ),
+        properties =
+            DialogProperties(
+                usePlatformDefaultWidth = false,
+                dismissOnBackPress = true,
+                dismissOnClickOutside = true,
+                decorFitsSystemWindows = false,
+            ),
     ) {
         val context = LocalContext.current
-        val model = remember(context, imageUrl) {
-            ImageRequest.Builder(context)
-                .data(imageUrl)
-                .crossfade(true)
-                .build()
-        }
+        val model =
+            remember(context, imageUrl) {
+                ImageRequest
+                    .Builder(context)
+                    .data(imageUrl)
+                    .crossfade(true)
+                    .build()
+            }
 
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.96f))
-                .clickable(onClick = onDismiss),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.96f))
+                    .clickable(onClick = onDismiss),
             contentAlignment = Alignment.Center,
         ) {
             AsyncImage(
@@ -408,10 +440,14 @@ private fun ViewNewsLoadingState(modifier: Modifier = Modifier) {
     ) {
         ElevatedCard(
             shape = MaterialTheme.shapes.extraLarge,
-            colors = MaterialTheme.colorScheme.surfaceContainerHigh.let {
-                androidx.compose.material3.CardDefaults.elevatedCardColors(containerColor = it)
-            },
-            elevation = androidx.compose.material3.CardDefaults.elevatedCardElevation(defaultElevation = 6.dp)
+            colors =
+                MaterialTheme.colorScheme.surfaceContainerHigh.let {
+                    androidx.compose.material3.CardDefaults
+                        .elevatedCardColors(containerColor = it)
+                },
+            elevation =
+                androidx.compose.material3.CardDefaults
+                    .elevatedCardElevation(defaultElevation = 6.dp),
         ) {
             Column(
                 modifier = Modifier.padding(48.dp),
@@ -421,13 +457,13 @@ private fun ViewNewsLoadingState(modifier: Modifier = Modifier) {
                 CircularWavyProgressIndicator(
                     modifier = Modifier.size(72.dp),
                     color = MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                    trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                 )
                 Text(
                     text = stringResource(R.string.news_loading),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
         }
@@ -446,13 +482,18 @@ private fun ViewNewsErrorState(
     ) {
         ElevatedCard(
             shape = MaterialTheme.shapes.extraLarge,
-            colors = MaterialTheme.colorScheme.surfaceContainerHigh.let {
-                androidx.compose.material3.CardDefaults.elevatedCardColors(containerColor = it)
-            },
-            elevation = androidx.compose.material3.CardDefaults.elevatedCardElevation(defaultElevation = 6.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .widthIn(max = 560.dp),
+            colors =
+                MaterialTheme.colorScheme.surfaceContainerHigh.let {
+                    androidx.compose.material3.CardDefaults
+                        .elevatedCardColors(containerColor = it)
+                },
+            elevation =
+                androidx.compose.material3.CardDefaults
+                    .elevatedCardElevation(defaultElevation = 6.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 560.dp),
         ) {
             Column(
                 modifier = Modifier.padding(40.dp),
@@ -479,7 +520,7 @@ private fun ViewNewsErrorState(
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.ExtraBold,
                     textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
 
                 Text(
@@ -495,7 +536,7 @@ private fun ViewNewsErrorState(
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(top = 8.dp)
+                        modifier = Modifier.padding(top = 8.dp),
                     )
                 }
 
@@ -504,16 +545,17 @@ private fun ViewNewsErrorState(
                 ElevatedButton(
                     onClick = onRetry,
                     shape = MaterialTheme.shapes.extraLarge,
-                    colors = ButtonDefaults.elevatedButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    ),
-                    contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp)
+                    colors =
+                        ButtonDefaults.elevatedButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        ),
+                    contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp),
                 ) {
                     Text(
                         text = stringResource(R.string.news_retry),
                         style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
                 }
             }

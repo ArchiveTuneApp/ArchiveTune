@@ -5,8 +5,6 @@
  * Do not remove or alter this notice. - Per GPL-3.0 Section 4 & Section 5
  */
 
- 
-
 package moe.rukamori.archivetune.canvas
 
 import io.ktor.client.HttpClient
@@ -34,15 +32,18 @@ import moe.rukamori.archivetune.canvas.models.CanvasArtwork
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 
-
 object AppleMusicProvider {
-
     // ── Logging ──────────────────────────────────────────────────────────────────────
 
     private object Log {
         fun d(msg: String) = println("AppleMusicCanvas: D: $msg")
+
         fun w(msg: String) = println("AppleMusicCanvas: W: $msg")
-        fun e(t: Throwable, msg: String) {
+
+        fun e(
+            t: Throwable,
+            msg: String,
+        ) {
             println("AppleMusicCanvas: E: $msg")
             t.printStackTrace()
         }
@@ -53,20 +54,21 @@ object AppleMusicProvider {
     // Public read-only JWT used by the Apple Music web player for unauthenticated catalog reads.
     private const val APPLE_MUSIC_TOKEN =
         "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IldlYlBsYXlLaWQifQ" +
-        ".eyJpc3MiOiJBTVBXZWJQbGF5IiwiaWF0IjoxNzc0NDU2MzgyLCJleHAiOjE3ODE3" +
-        "MTM5ODIsInJvb3RfaHR0cHNfb3JpZ2luIjpbImFwcGxlLmNvbSJdfQ" +
-        ".4n8qYF4qa18sL1E0G9A3qX35cD8wQ-IJcS9Bh8ZT8JV_yLBtVq46B-9-2ZS3EvWHuw3yK9BYFYAhAdTaDm38vQ"
+            ".eyJpc3MiOiJBTVBXZWJQbGF5IiwiaWF0IjoxNzc0NDU2MzgyLCJleHAiOjE3ODE3" +
+            "MTM5ODIsInJvb3RfaHR0cHNfb3JpZ2luIjpbImFwcGxlLmNvbSJdfQ" +
+            ".4n8qYF4qa18sL1E0G9A3qX35cD8wQ-IJcS9Bh8ZT8JV_yLBtVq46B-9-2ZS3EvWHuw3yK9BYFYAhAdTaDm38vQ"
 
     private const val AMP_BASE_URL = "https://amp-api.music.apple.com"
     private const val CACHE_TTL_MS = 1000L * 60 * 60 * 24 // 24 hours
 
     // ── Networking ───────────────────────────────────────────────────────────────────
 
-    private val json = Json {
-        ignoreUnknownKeys = true
-        isLenient = true
-        explicitNulls = false
-    }
+    private val json =
+        Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+            explicitNulls = false
+        }
 
     private val client by lazy {
         HttpClient(OkHttp) {
@@ -90,12 +92,17 @@ object AppleMusicProvider {
 
     // ── Cache ────────────────────────────────────────────────────────────────────────
 
-    private data class CacheEntry(val value: CanvasArtwork?, val expiresAtMs: Long)
+    private data class CacheEntry(
+        val value: CanvasArtwork?,
+        val expiresAtMs: Long,
+    )
 
     private val cache = ConcurrentHashMap<String, CacheEntry>()
 
-    private fun cacheKey(prefix: String, vararg parts: String): String =
-        "$prefix|" + parts.joinToString("|") { it.trim().lowercase(Locale.ROOT) }
+    private fun cacheKey(
+        prefix: String,
+        vararg parts: String,
+    ): String = "$prefix|" + parts.joinToString("|") { it.trim().lowercase(Locale.ROOT) }
 
     // ── Public API ───────────────────────────────────────────────────────────────────
 
@@ -155,29 +162,37 @@ object AppleMusicProvider {
             if (!album.isNullOrBlank() && !query.contains(album, ignoreCase = true)) query = "$query $album"
 
             val searchUrl = "$AMP_BASE_URL/v1/catalog/$storefront/search"
-            val response = client.get(searchUrl) {
-                header("Authorization", "Bearer $APPLE_MUSIC_TOKEN")
-                header("Origin", "https://music.apple.com")
-                header("Referer", "https://music.apple.com/")
-                header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-                parameter("term", query)
-                parameter("types", type)
-                parameter("limit", "10")
-                parameter("extend", "editorialVideo")
-                parameter("include", "albums")
-            }
+            val response =
+                client.get(searchUrl) {
+                    header("Authorization", "Bearer $APPLE_MUSIC_TOKEN")
+                    header("Origin", "https://music.apple.com")
+                    header("Referer", "https://music.apple.com/")
+                    header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                    parameter("term", query)
+                    parameter("types", type)
+                    parameter("limit", "10")
+                    parameter("extend", "editorialVideo")
+                    parameter("include", "albums")
+                }
             if (response.status != HttpStatusCode.OK) {
                 Log.w("search failed with status ${response.status}")
                 return@runCatching null
             }
 
             val root = response.body<JsonObject>()
-            val results = root["results"]?.jsonObject?.get(type)?.jsonObject?.get("data")?.jsonArray
-                ?: return@runCatching null
+            val results =
+                root["results"]
+                    ?.jsonObject
+                    ?.get(type)
+                    ?.jsonObject
+                    ?.get("data")
+                    ?.jsonArray
+                    ?: return@runCatching null
 
-            val scoredResults = results
-                .mapNotNull { scoreAndFilterItem(it.jsonObject, term, artist, album) }
-                .sortedByDescending { it.first }
+            val scoredResults =
+                results
+                    .mapNotNull { scoreAndFilterItem(it.jsonObject, term, artist, album) }
+                    .sortedByDescending { it.first }
 
             Log.d("Found ${scoredResults.size} scored results for term '$term'")
 
@@ -221,13 +236,14 @@ object AppleMusicProvider {
                 }
 
                 // Full lookup with metadata preservation
-                val fetched = fetchMotionArtwork(
-                    albumId = targetAlbumId,
-                    storefront = storefront,
-                    fallbackArtist = resultArtistName,
-                    titleOverride = if (itemType == "songs") attributes["name"]?.jsonPrimitive?.contentOrNull else null,
-                    artistOverride = if (itemType == "songs") resultArtistName else null,
-                )
+                val fetched =
+                    fetchMotionArtwork(
+                        albumId = targetAlbumId,
+                        storefront = storefront,
+                        fallbackArtist = resultArtistName,
+                        titleOverride = if (itemType == "songs") attributes["name"]?.jsonPrimitive?.contentOrNull else null,
+                        artistOverride = if (itemType == "songs") resultArtistName else null,
+                    )
                 if (fetched != null) return@runCatching fetched
             }
             Log.d("no canvas found in resolution/lookup for $term after ${scoredResults.size} results")
@@ -252,14 +268,15 @@ object AppleMusicProvider {
         return runCatching {
             Log.d("fetching album $albumId")
             val albumUrl = "$AMP_BASE_URL/v1/catalog/$storefront/albums/$albumId"
-            val response = client.get(albumUrl) {
-                header("Authorization", "Bearer $APPLE_MUSIC_TOKEN")
-                header("Origin", "https://music.apple.com")
-                header("Referer", "https://music.apple.com/")
-                header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-                parameter("extend", "editorialVideo")
-                parameter("include", "tracks")
-            }
+            val response =
+                client.get(albumUrl) {
+                    header("Authorization", "Bearer $APPLE_MUSIC_TOKEN")
+                    header("Origin", "https://music.apple.com")
+                    header("Referer", "https://music.apple.com/")
+                    header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                    parameter("extend", "editorialVideo")
+                    parameter("include", "tracks")
+                }
             if (response.status != HttpStatusCode.OK) {
                 Log.w("album fetch failed for $albumId: ${response.status}")
                 return@runCatching null
@@ -275,7 +292,8 @@ object AppleMusicProvider {
             val artistName = attributes?.get("artistName")?.jsonPrimitive?.contentOrNull ?: fallbackArtist
 
             val nameLower = albumName.lowercase(Locale.ROOT)
-            val isBlacklisted = nameLower.contains("playlist") || nameLower.contains("set list") ||
+            val isBlacklisted =
+                nameLower.contains("playlist") || nameLower.contains("set list") ||
                     nameLower.contains("essentials") || nameLower.contains("dj mix") ||
                     nameLower.contains("mixed") || nameLower.contains("apple music") ||
                     nameLower.contains("today's hits") || nameLower.contains("session")
@@ -330,7 +348,8 @@ object AppleMusicProvider {
 
         val nameLower = resultName.lowercase(Locale.ROOT)
         val collectionLower = resultCollectionName.lowercase(Locale.ROOT)
-        val isBlacklisted = nameLower.contains("playlist") || nameLower.contains("set list") ||
+        val isBlacklisted =
+            nameLower.contains("playlist") || nameLower.contains("set list") ||
                 collectionLower.contains("playlist") || collectionLower.contains("set list") ||
                 nameLower.contains("essentials") || collectionLower.contains("essentials") ||
                 collectionLower.contains("dj mix") || collectionLower.contains("mixed") ||
@@ -342,7 +361,8 @@ object AppleMusicProvider {
         }
 
         val artistMatch = resultArtistName.equals(artist, ignoreCase = true)
-        val artistFuzzy = resultArtistName.contains(artist, ignoreCase = true) ||
+        val artistFuzzy =
+            resultArtistName.contains(artist, ignoreCase = true) ||
                 artist.contains(resultArtistName, ignoreCase = true)
         if (!artistFuzzy) return null
 
@@ -350,34 +370,38 @@ object AppleMusicProvider {
 
         val nameMatch = resultName.equals(term, ignoreCase = true)
         val nameFuzzy = resultName.contains(term, ignoreCase = true) || term.contains(resultName, ignoreCase = true)
-        score += when {
-            nameMatch -> 15
-            nameFuzzy -> 7
-            else -> -10
-        }
+        score +=
+            when {
+                nameMatch -> 15
+                nameFuzzy -> 7
+                else -> -10
+            }
 
         // Special editions handling (Deluxe, Expanded, etc.)
         val editionWords = listOf("deluxe", "expanded", "remastered", "remix", "version", "edit", "mix", "bonus")
         for (word in editionWords) {
             val inTerm = term.contains(word, ignoreCase = true)
             val inResult = resultName.contains(word, ignoreCase = true)
-            score += when {
-                inTerm && inResult -> 5
-                inTerm != inResult && inResult -> -3
-                else -> 0
-            }
+            score +=
+                when {
+                    inTerm && inResult -> 5
+                    inTerm != inResult && inResult -> -3
+                    else -> 0
+                }
         }
 
         // Album matching — very strong signal
         if (!album.isNullOrBlank() && resultCollectionName.isNotBlank()) {
             val albumMatch = resultCollectionName.equals(album, ignoreCase = true)
-            val albumFuzzy = resultCollectionName.contains(album, ignoreCase = true) ||
+            val albumFuzzy =
+                resultCollectionName.contains(album, ignoreCase = true) ||
                     album.contains(resultCollectionName, ignoreCase = true)
-            score += when {
-                albumMatch -> 20
-                albumFuzzy -> 10
-                else -> 0
-            }
+            score +=
+                when {
+                    albumMatch -> 20
+                    albumFuzzy -> 10
+                    else -> 0
+                }
         }
 
         Log.d("  - Result: '$resultName' by '$resultArtistName' (Album: '$resultCollectionName', ID: ${obj["id"]}) -> Score: $score")
@@ -398,9 +422,18 @@ object AppleMusicProvider {
         if (itemType != "songs") return null
 
         val relationships = obj["relationships"]?.jsonObject
-        var albumId = relationships?.get("albums")?.jsonObject?.get("data")?.jsonArray?.firstOrNull()
-            ?.jsonObject?.get("id")?.jsonPrimitive?.contentOrNull
-            ?: attributes["collectionId"]?.jsonPrimitive?.contentOrNull
+        var albumId =
+            relationships
+                ?.get("albums")
+                ?.jsonObject
+                ?.get("data")
+                ?.jsonArray
+                ?.firstOrNull()
+                ?.jsonObject
+                ?.get("id")
+                ?.jsonPrimitive
+                ?.contentOrNull
+                ?: attributes["collectionId"]?.jsonPrimitive?.contentOrNull
 
         // Fallback: parse album ID from the track URL
         // URL format: https://music.apple.com/region/album/name/ID?i=songId

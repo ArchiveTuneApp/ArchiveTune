@@ -34,11 +34,11 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.ListItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -53,8 +53,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -64,8 +64,9 @@ import androidx.compose.ui.unit.sp
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
-import moe.rukamori.archivetune.innertube.YouTube
-import moe.rukamori.archivetune.innertube.models.AlbumItem
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import moe.rukamori.archivetune.LocalDatabase
 import moe.rukamori.archivetune.LocalDownloadUtil
 import moe.rukamori.archivetune.LocalPlayerConnection
@@ -76,6 +77,8 @@ import moe.rukamori.archivetune.constants.ListThumbnailSize
 import moe.rukamori.archivetune.constants.SpeedDialSongIdsKey
 import moe.rukamori.archivetune.db.entities.Song
 import moe.rukamori.archivetune.extensions.toMediaItem
+import moe.rukamori.archivetune.innertube.YouTube
+import moe.rukamori.archivetune.innertube.models.AlbumItem
 import moe.rukamori.archivetune.playback.ExoDownloadService
 import moe.rukamori.archivetune.playback.queues.YouTubeAlbumRadio
 import moe.rukamori.archivetune.ui.component.ListDialog
@@ -93,9 +96,6 @@ import moe.rukamori.archivetune.utils.rememberPreference
 import moe.rukamori.archivetune.utils.reportException
 import moe.rukamori.archivetune.utils.serializeSpeedDialPins
 import moe.rukamori.archivetune.utils.toggleSpeedDialPin
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("MutableCollectionMutableState")
@@ -140,8 +140,8 @@ fun YouTubeAlbumMenu(
                     Download.STATE_COMPLETED
                 } else if (songs.all {
                         downloads[it]?.state == Download.STATE_QUEUED ||
-                                downloads[it]?.state == Download.STATE_DOWNLOADING ||
-                                downloads[it]?.state == Download.STATE_COMPLETED
+                            downloads[it]?.state == Download.STATE_DOWNLOADING ||
+                            downloads[it]?.state == Download.STATE_COMPLETED
                     }
                 ) {
                     Download.STATE_DOWNLOADING
@@ -155,34 +155,40 @@ fun YouTubeAlbumMenu(
     val (speedDialSongIds, onSpeedDialSongIdsChange) = rememberPreference(SpeedDialSongIdsKey, "")
     val speedDialPins = remember(speedDialSongIds) { parseSpeedDialPins(speedDialSongIds) }
     val albumPin = remember(albumItem.id) { SpeedDialPin(type = SpeedDialPinType.ALBUM, id = albumItem.id) }
-    val isInSpeedDial = remember(speedDialPins, albumPin) {
-        speedDialPins.any { it.type == albumPin.type && it.id == albumPin.id }
-    }
+    val isInSpeedDial =
+        remember(speedDialPins, albumPin) {
+            speedDialPins.any { it.type == albumPin.type && it.id == albumPin.id }
+        }
 
     // Split artists by configured separators
     data class SplitArtist(
         val name: String,
-        val originalArtist: moe.rukamori.archivetune.db.entities.ArtistEntity?
+        val originalArtist: moe.rukamori.archivetune.db.entities.ArtistEntity?,
     )
 
-    val splitArtists = remember(album?.artists, artistSeparators) {
-        val artists = album?.artists ?: emptyList()
-        if (artistSeparators.isEmpty()) {
-            artists.map { SplitArtist(it.name, it) }
-        } else {
-            val separatorRegex = "[${Regex.escape(artistSeparators)}]".toRegex()
-            artists.flatMap { artist ->
-                val parts = artist.name.split(separatorRegex).map { it.trim() }.filter { it.isNotEmpty() }
-                if (parts.size > 1) {
-                    parts.mapIndexed { index, name ->
-                        SplitArtist(name, if (index == 0) artist else null)
+    val splitArtists =
+        remember(album?.artists, artistSeparators) {
+            val artists = album?.artists ?: emptyList()
+            if (artistSeparators.isEmpty()) {
+                artists.map { SplitArtist(it.name, it) }
+            } else {
+                val separatorRegex = "[${Regex.escape(artistSeparators)}]".toRegex()
+                artists.flatMap { artist ->
+                    val parts =
+                        artist.name
+                            .split(separatorRegex)
+                            .map { it.trim() }
+                            .filter { it.isNotEmpty() }
+                    if (parts.size > 1) {
+                        parts.mapIndexed { index, name ->
+                            SplitArtist(name, if (index == 0) artist else null)
+                        }
+                    } else {
+                        listOf(SplitArtist(artist.name, artist))
                     }
-                } else {
-                    listOf(SplitArtist(artist.name, artist))
                 }
             }
         }
-    }
 
     var showChoosePlaylistDialog by rememberSaveable {
         mutableStateOf(false)
@@ -203,12 +209,28 @@ fun YouTubeAlbumMenu(
         },
         onDismiss = { showChoosePlaylistDialog = false },
         onAddComplete = { songCount, playlistNames ->
-            val message = when {
-                songCount == 1 && playlistNames.size == 1 -> context.getString(R.string.added_to_playlist, playlistNames.first())
-                songCount > 1 && playlistNames.size == 1 -> context.getString(R.string.added_n_songs_to_playlist, songCount, playlistNames.first())
-                songCount == 1 -> context.getString(R.string.added_to_n_playlists, playlistNames.size)
-                else -> context.getString(R.string.added_n_songs_to_n_playlists, songCount, playlistNames.size)
-            }
+            val message =
+                when {
+                    songCount == 1 && playlistNames.size == 1 -> {
+                        context.getString(R.string.added_to_playlist, playlistNames.first())
+                    }
+
+                    songCount > 1 && playlistNames.size == 1 -> {
+                        context.getString(
+                            R.string.added_n_songs_to_playlist,
+                            songCount,
+                            playlistNames.first(),
+                        )
+                    }
+
+                    songCount == 1 -> {
+                        context.getString(R.string.added_to_n_playlists, playlistNames.size)
+                    }
+
+                    else -> {
+                        context.getString(R.string.added_n_songs_to_n_playlists, songCount, playlistNames.size)
+                    }
+                }
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         },
     )
@@ -255,23 +277,24 @@ fun YouTubeAlbumMenu(
             ) { splitArtist ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .height(ListItemHeight)
-                        .clickable {
-                            splitArtist.originalArtist?.let { artist ->
-                                navController.navigate("artist/${artist.id}")
-                                showSelectArtistDialog = false
-                                onDismiss()
-                            }
-                        }
-                        .padding(horizontal = 12.dp),
+                    modifier =
+                        Modifier
+                            .height(ListItemHeight)
+                            .clickable {
+                                splitArtist.originalArtist?.let { artist ->
+                                    navController.navigate("artist/${artist.id}")
+                                    showSelectArtistDialog = false
+                                    onDismiss()
+                                }
+                            }.padding(horizontal = 12.dp),
                 ) {
                     Box(
                         contentAlignment = Alignment.CenterStart,
-                        modifier = Modifier
-                            .fillParentMaxWidth()
-                            .height(ListItemHeight)
-                            .padding(horizontal = 24.dp),
+                        modifier =
+                            Modifier
+                                .fillParentMaxWidth()
+                                .height(ListItemHeight)
+                                .padding(horizontal = 24.dp),
                     ) {
                         Text(
                             text = splitArtist.name,
@@ -316,77 +339,80 @@ fun YouTubeAlbumMenu(
 
     LazyColumn(
         userScrollEnabled = true,
-        contentPadding = PaddingValues(
-            start = 0.dp,
-            top = 0.dp,
-            end = 0.dp,
-            bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
-        ),
+        contentPadding =
+            PaddingValues(
+                start = 0.dp,
+                top = 0.dp,
+                end = 0.dp,
+                bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+            ),
     ) {
         item {
             MenuSurfaceSection(modifier = Modifier.padding(vertical = 6.dp)) {
                 NewActionGrid(
-                    actions = listOf(
-                        NewAction(
-                            icon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.play),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(28.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            text = stringResource(R.string.play),
-                            onClick = {
-                                onDismiss()
-                                album?.songs?.let { songs ->
-                                    if (songs.isNotEmpty()) {
-                                        playerConnection.playQueue(YouTubeAlbumRadio(albumItem.playlistId))
+                    actions =
+                        listOf(
+                            NewAction(
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(R.drawable.play),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(28.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                },
+                                text = stringResource(R.string.play),
+                                onClick = {
+                                    onDismiss()
+                                    album?.songs?.let { songs ->
+                                        if (songs.isNotEmpty()) {
+                                            playerConnection.playQueue(YouTubeAlbumRadio(albumItem.playlistId))
+                                        }
                                     }
-                                }
-                            }
-                        ),
-                        NewAction(
-                            icon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.shuffle),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(28.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            text = stringResource(R.string.shuffle),
-                            onClick = {
-                                onDismiss()
-                                album?.songs?.let { songs ->
-                                    if (songs.isNotEmpty()) {
-                                        playerConnection.playQueue(YouTubeAlbumRadio(albumItem.playlistId))
+                                },
+                            ),
+                            NewAction(
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(R.drawable.shuffle),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(28.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                },
+                                text = stringResource(R.string.shuffle),
+                                onClick = {
+                                    onDismiss()
+                                    album?.songs?.let { songs ->
+                                        if (songs.isNotEmpty()) {
+                                            playerConnection.playQueue(YouTubeAlbumRadio(albumItem.playlistId))
+                                        }
                                     }
-                                }
-                            }
+                                },
+                            ),
+                            NewAction(
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(R.drawable.share),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(28.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                },
+                                text = stringResource(R.string.share),
+                                onClick = {
+                                    onDismiss()
+                                    val intent =
+                                        Intent().apply {
+                                            action = Intent.ACTION_SEND
+                                            type = "text/plain"
+                                            putExtra(Intent.EXTRA_TEXT, albumItem.shareLink)
+                                        }
+                                    context.startActivity(Intent.createChooser(intent, null))
+                                },
+                            ),
                         ),
-                        NewAction(
-                            icon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.share),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(28.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            text = stringResource(R.string.share),
-                            onClick = {
-                                onDismiss()
-                                val intent = Intent().apply {
-                                    action = Intent.ACTION_SEND
-                                    type = "text/plain"
-                                    putExtra(Intent.EXTRA_TEXT, albumItem.shareLink)
-                                }
-                                context.startActivity(Intent.createChooser(intent, null))
-                            }
-                        )
-                    ),
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp)
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
                 )
             }
         }
@@ -406,13 +432,14 @@ fun YouTubeAlbumMenu(
                                 contentDescription = null,
                             )
                         },
-                        modifier = Modifier.clickable {
-                            album
-                                ?.songs
-                                ?.map { it.toMediaItem() }
-                                ?.let(playerConnection::playNext)
-                            onDismiss()
-                        },
+                        modifier =
+                            Modifier.clickable {
+                                album
+                                    ?.songs
+                                    ?.map { it.toMediaItem() }
+                                    ?.let(playerConnection::playNext)
+                                onDismiss()
+                            },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     )
 
@@ -429,13 +456,14 @@ fun YouTubeAlbumMenu(
                                 contentDescription = null,
                             )
                         },
-                        modifier = Modifier.clickable {
-                            album
-                                ?.songs
-                                ?.map { it.toMediaItem() }
-                                ?.let(playerConnection::addToQueue)
-                            onDismiss()
-                        },
+                        modifier =
+                            Modifier.clickable {
+                                album
+                                    ?.songs
+                                    ?.map { it.toMediaItem() }
+                                    ?.let(playerConnection::addToQueue)
+                                onDismiss()
+                            },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     )
 
@@ -452,9 +480,10 @@ fun YouTubeAlbumMenu(
                                 contentDescription = null,
                             )
                         },
-                        modifier = Modifier.clickable {
-                            showChoosePlaylistDialog = true
-                        },
+                        modifier =
+                            Modifier.clickable {
+                                showChoosePlaylistDialog = true
+                            },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     )
 
@@ -466,10 +495,14 @@ fun YouTubeAlbumMenu(
                     ListItem(
                         headlineContent = {
                             Text(
-                                text = stringResource(
-                                    if (isInSpeedDial) R.string.remove_from_speed_dial
-                                    else R.string.pin_to_speed_dial,
-                                ),
+                                text =
+                                    stringResource(
+                                        if (isInSpeedDial) {
+                                            R.string.remove_from_speed_dial
+                                        } else {
+                                            R.string.pin_to_speed_dial
+                                        },
+                                    ),
                             )
                         },
                         leadingContent = {
@@ -478,34 +511,36 @@ fun YouTubeAlbumMenu(
                                 contentDescription = null,
                             )
                         },
-                        modifier = Modifier.clickable {
-                            coroutineScope.launch {
-                                val shouldTogglePin =
-                                    if (isInSpeedDial) {
-                                        true
-                                    } else {
-                                        withContext(Dispatchers.IO) {
-                                            if (album != null) {
-                                                true
-                                            } else {
-                                                val result = YouTube.album(albumItem.id)
-                                                result.onSuccess { albumPage ->
-                                                    database.transaction {
-                                                        insert(albumPage)
-                                                    }
-                                                }.onFailure(::reportException)
-                                                result.isSuccess
+                        modifier =
+                            Modifier.clickable {
+                                coroutineScope.launch {
+                                    val shouldTogglePin =
+                                        if (isInSpeedDial) {
+                                            true
+                                        } else {
+                                            withContext(Dispatchers.IO) {
+                                                if (album != null) {
+                                                    true
+                                                } else {
+                                                    val result = YouTube.album(albumItem.id)
+                                                    result
+                                                        .onSuccess { albumPage ->
+                                                            database.transaction {
+                                                                insert(albumPage)
+                                                            }
+                                                        }.onFailure(::reportException)
+                                                    result.isSuccess
+                                                }
                                             }
                                         }
-                                    }
 
-                                if (!shouldTogglePin) return@launch
+                                    if (!shouldTogglePin) return@launch
 
-                                val updatedPins = toggleSpeedDialPin(speedDialPins, albumPin)
-                                onSpeedDialSongIdsChange(serializeSpeedDialPins(updatedPins))
-                                onDismiss()
-                            }
-                        },
+                                    val updatedPins = toggleSpeedDialPin(speedDialPins, albumPin)
+                                    onSpeedDialSongIdsChange(serializeSpeedDialPins(updatedPins))
+                                    onDismiss()
+                                }
+                            },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     )
                 }
@@ -534,16 +569,17 @@ fun YouTubeAlbumMenu(
                                     tint = MaterialTheme.colorScheme.error,
                                 )
                             },
-                            modifier = Modifier.clickable {
-                                album?.songs?.forEach { song ->
-                                    DownloadService.sendRemoveDownload(
-                                        context,
-                                        ExoDownloadService::class.java,
-                                        song.id,
-                                        false,
-                                    )
-                                }
-                            },
+                            modifier =
+                                Modifier.clickable {
+                                    album?.songs?.forEach { song ->
+                                        DownloadService.sendRemoveDownload(
+                                            context,
+                                            ExoDownloadService::class.java,
+                                            song.id,
+                                            false,
+                                        )
+                                    }
+                                },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         )
                     }
@@ -556,16 +592,17 @@ fun YouTubeAlbumMenu(
                                     modifier = Modifier.size(24.dp),
                                 )
                             },
-                            modifier = Modifier.clickable {
-                                album?.songs?.forEach { song ->
-                                    DownloadService.sendRemoveDownload(
-                                        context,
-                                        ExoDownloadService::class.java,
-                                        song.id,
-                                        false,
-                                    )
-                                }
-                            },
+                            modifier =
+                                Modifier.clickable {
+                                    album?.songs?.forEach { song ->
+                                        DownloadService.sendRemoveDownload(
+                                            context,
+                                            ExoDownloadService::class.java,
+                                            song.id,
+                                            false,
+                                        )
+                                    }
+                                },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         )
                     }
@@ -579,20 +616,22 @@ fun YouTubeAlbumMenu(
                                     contentDescription = null,
                                 )
                             },
-                            modifier = Modifier.clickable {
-                                album?.songs?.let { songs ->
-                                    sendAddMissingDownloads(
-                                        context = context,
-                                        songs = songs.map { song ->
-                                            HeaderDownloadItem(
-                                                id = song.id,
-                                                title = song.song.title,
-                                            )
-                                        },
-                                        downloads = downloadUtil.downloads.value,
-                                    )
-                                }
-                            },
+                            modifier =
+                                Modifier.clickable {
+                                    album?.songs?.let { songs ->
+                                        sendAddMissingDownloads(
+                                            context = context,
+                                            songs =
+                                                songs.map { song ->
+                                                    HeaderDownloadItem(
+                                                        id = song.id,
+                                                        title = song.song.title,
+                                                    )
+                                                },
+                                            downloads = downloadUtil.downloads.value,
+                                        )
+                                    }
+                                },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         )
                     }
@@ -615,19 +654,19 @@ fun YouTubeAlbumMenu(
                                 contentDescription = null,
                             )
                         },
-                        modifier = Modifier.clickable {
-                            if (splitArtists.size == 1 && splitArtists[0].originalArtist != null) {
-                                navController.navigate("artist/${splitArtists[0].originalArtist!!.id}")
-                                onDismiss()
-                            } else {
-                                showSelectArtistDialog = true
-                            }
-                        },
+                        modifier =
+                            Modifier.clickable {
+                                if (splitArtists.size == 1 && splitArtists[0].originalArtist != null) {
+                                    navController.navigate("artist/${splitArtists[0].originalArtist!!.id}")
+                                    onDismiss()
+                                } else {
+                                    showSelectArtistDialog = true
+                                }
+                            },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     )
                 }
             }
         }
-
     }
 }

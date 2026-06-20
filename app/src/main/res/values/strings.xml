@@ -721,6 +721,9 @@
     <string name="discord_authorization_success">Discord account connected</string>
     <string name="discord_authorization_failed">Discord authorization failed</string>
     <string name="discord_account_ready">ArchiveTune is ready to publish Rich Presence for your listening session.</string>
+    <string name="discord_reauthorize_required_title">Discord session expired</string>
+    <string name="discord_reauthorize_required_description">Rich Presence cannot be shown until you authorize Discord again.</string>
+    <string name="discord_reauthorize_action">Reauthorize</string>
     <string name="discord_connection_settings">Connection</string>
     <string name="discord_activity_content">Activity Content</string>
     <string name="discord_custom_interval_value">Value</string>

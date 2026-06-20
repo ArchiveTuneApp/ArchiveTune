@@ -38,7 +38,7 @@ fun String.resize(
         sParamRegex.find(this)?.let { match ->
             val before = substring(0, match.range.first)
             val after = substring(match.range.last + 1)
-            return "${before}=s${maxOf(w, h)}${after.replace(brokenSAppendRegex, "")}"
+            return "$before=s${maxOf(w, h)}${after.replace(brokenSAppendRegex, "")}"
         }
 
         return this

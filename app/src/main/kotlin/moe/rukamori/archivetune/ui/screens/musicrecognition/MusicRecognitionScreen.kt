@@ -37,14 +37,12 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -59,7 +57,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
@@ -83,9 +83,9 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -153,9 +153,7 @@ import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MusicRecognitionScreen(
-    navController: NavHostController,
-) {
+fun MusicRecognitionScreen(navController: NavHostController) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
@@ -298,9 +296,10 @@ fun MusicRecognitionScreen(
             )
         },
         containerColor = Color.Transparent,
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
     ) { padding ->
         val primary = MaterialTheme.colorScheme.primary
         val tertiary = MaterialTheme.colorScheme.tertiary
@@ -369,6 +368,7 @@ fun MusicRecognitionScreen(
                                 onListenAgain = { startOrRequestPermission() },
                             )
                         }
+
                         else -> {
                             RecognitionListenPane(
                                 state = target,
@@ -513,6 +513,7 @@ private fun RecognitionHistoryBottomSheet(
                             )
                         }
                     }
+
                     filteredItems.isEmpty() -> {
                         item(key = "empty_search", contentType = "empty_search") {
                             RecognitionHistoryEmptyState(
@@ -522,6 +523,7 @@ private fun RecognitionHistoryBottomSheet(
                             )
                         }
                     }
+
                     else -> {
                         items(
                             items = filteredItems,
@@ -762,21 +764,25 @@ private fun RecognitionListenPane(
                         iconRes = R.drawable.mic,
                     )
                 }
+
                 MusicRecognitionState.Listening -> {
                     StatusPill(
                         label = stringResource(R.string.music_recognition_listening),
                         iconRes = R.drawable.listening,
                     )
                 }
+
                 MusicRecognitionState.Processing -> {
                     StatusPill(
                         label = stringResource(R.string.music_recognition_processing),
                         iconRes = R.drawable.cached,
                     )
                 }
+
                 MusicRecognitionState.PermissionRequired -> {
                     PermissionCard(onAllow = onRequestPermission)
                 }
+
                 is MusicRecognitionState.NoMatch -> {
                     FailureCard(
                         title = stringResource(R.string.music_recognition_no_match),
@@ -785,6 +791,7 @@ private fun RecognitionListenPane(
                         onAction = onStart,
                     )
                 }
+
                 is MusicRecognitionState.Error -> {
                     FailureCard(
                         title = stringResource(R.string.music_recognition_error),
@@ -793,7 +800,10 @@ private fun RecognitionListenPane(
                         onAction = onStart,
                     )
                 }
-                is MusicRecognitionState.Success -> Unit
+
+                is MusicRecognitionState.Success -> {
+                    Unit
+                }
             }
         }
 
@@ -803,9 +813,10 @@ private fun RecognitionListenPane(
             exit = fadeOut(tween(120)),
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 18.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 18.dp),
                 horizontalArrangement = Arrangement.Center,
             ) {
                 LoadingIndicator(modifier = Modifier.size(36.dp))
@@ -819,9 +830,10 @@ private fun RecognitionListenPane(
         ) {
             OutlinedButton(
                 onClick = onCancel,
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .heightIn(min = 48.dp),
+                modifier =
+                    Modifier
+                        .padding(top = 16.dp)
+                        .heightIn(min = 48.dp),
                 shapes = ButtonDefaults.shapes(),
             ) {
                 Text(stringResource(R.string.cancel))
@@ -832,12 +844,24 @@ private fun RecognitionListenPane(
 
 private sealed interface MusicRecognitionState {
     data object Ready : MusicRecognitionState
+
     data object Listening : MusicRecognitionState
+
     data object Processing : MusicRecognitionState
+
     data object PermissionRequired : MusicRecognitionState
-    data class Success(val result: RecognitionResult) : MusicRecognitionState
-    data class NoMatch(val message: String) : MusicRecognitionState
-    data class Error(val message: String) : MusicRecognitionState
+
+    data class Success(
+        val result: RecognitionResult,
+    ) : MusicRecognitionState
+
+    data class NoMatch(
+        val message: String,
+    ) : MusicRecognitionState
+
+    data class Error(
+        val message: String,
+    ) : MusicRecognitionState
 }
 
 @Immutable
@@ -979,9 +1003,10 @@ private suspend fun runRecognitionFlow(
 
     val signature =
         withContext(Dispatchers.Default) {
-            ShazamSignatureGenerator().apply {
-                feedPcm16Mono(samples)
-            }.nextSignatureOrNull()
+            ShazamSignatureGenerator()
+                .apply {
+                    feedPcm16Mono(samples)
+                }.nextSignatureOrNull()
         }
 
     if (signature == null) {
@@ -1002,7 +1027,10 @@ private suspend fun runRecognitionFlow(
                 msg.contains("no match", ignoreCase = true) || msg.contains("404") -> {
                     onState(MusicRecognitionState.NoMatch(msg.ifEmpty { strings.noMatchFallback }))
                 }
-                else -> onState(MusicRecognitionState.Error(msg.ifEmpty { strings.recognitionFailedFallback }))
+
+                else -> {
+                    onState(MusicRecognitionState.Error(msg.ifEmpty { strings.recognitionFailedFallback }))
+                }
             }
         },
     )
@@ -1031,45 +1059,46 @@ private fun buildHistoryMetadata(item: RecognitionHistoryItem): String {
 private suspend fun recordMicPcm16Mono(
     sampleRateHz: Int,
     recordMs: Long,
-): Pair<ShortArray, Int> = withContext(Dispatchers.IO) {
-    val channel = AudioFormat.CHANNEL_IN_MONO
-    val encoding = AudioFormat.ENCODING_PCM_16BIT
-    val minBuffer = AudioRecord.getMinBufferSize(sampleRateHz, channel, encoding).coerceAtLeast(4096)
-    val record =
-        AudioRecord(
-            MediaRecorder.AudioSource.MIC,
-            sampleRateHz,
-            channel,
-            encoding,
-            minBuffer,
-        )
+): Pair<ShortArray, Int> =
+    withContext(Dispatchers.IO) {
+        val channel = AudioFormat.CHANNEL_IN_MONO
+        val encoding = AudioFormat.ENCODING_PCM_16BIT
+        val minBuffer = AudioRecord.getMinBufferSize(sampleRateHz, channel, encoding).coerceAtLeast(4096)
+        val record =
+            AudioRecord(
+                MediaRecorder.AudioSource.MIC,
+                sampleRateHz,
+                channel,
+                encoding,
+                minBuffer,
+            )
 
-    val totalSamples = ((recordMs / 1000.0) * sampleRateHz).toInt().coerceAtLeast(sampleRateHz)
-    val output = ShortArray(totalSamples)
-    val buffer = ShortArray(minBuffer / 2)
+        val totalSamples = ((recordMs / 1000.0) * sampleRateHz).toInt().coerceAtLeast(sampleRateHz)
+        val output = ShortArray(totalSamples)
+        val buffer = ShortArray(minBuffer / 2)
 
-    try {
-        record.startRecording()
+        try {
+            record.startRecording()
 
-        var written = 0
-        while (written < output.size && isActive) {
-            val read = record.read(buffer, 0, minOf(buffer.size, output.size - written))
-            if (read > 0) {
-                System.arraycopy(buffer, 0, output, written, read)
-                written += read
+            var written = 0
+            while (written < output.size && isActive) {
+                val read = record.read(buffer, 0, minOf(buffer.size, output.size - written))
+                if (read > 0) {
+                    System.arraycopy(buffer, 0, output, written, read)
+                    written += read
+                }
             }
-        }
 
-        if (written <= 0) {
-            ShortArray(0) to sampleRateHz
-        } else {
-            output.copyOf(written) to sampleRateHz
+            if (written <= 0) {
+                ShortArray(0) to sampleRateHz
+            } else {
+                output.copyOf(written) to sampleRateHz
+            }
+        } finally {
+            runCatching { record.stop() }
+            runCatching { record.release() }
         }
-    } finally {
-        runCatching { record.stop() }
-        runCatching { record.release() }
     }
-}
 
 @Composable
 private fun IdleHeader() {
@@ -1208,9 +1237,7 @@ private fun ResultFirstSheet(
 }
 
 @Composable
-private fun ResultDetailSections(
-    result: RecognitionResult,
-) {
+private fun ResultDetailSections(result: RecognitionResult) {
     val lyrics =
         remember(result.lyrics) {
             result.lyrics
@@ -1441,15 +1468,14 @@ private fun StatusPill(
 }
 
 @Composable
-private fun PermissionCard(
-    onAllow: () -> Unit,
-) {
+private fun PermissionCard(onAllow: () -> Unit) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        ),
+        colors =
+            CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            ),
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
             Text(
@@ -1485,9 +1511,10 @@ private fun FailureCard(
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        ),
+        colors =
+            CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            ),
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
             Text(
@@ -1523,16 +1550,18 @@ private fun SuccessActions(
         ToggleButton(
             checked = false,
             onCheckedChange = { onListenAgain() },
-            modifier = Modifier
-                .weight(1f)
-                .heightIn(min = 48.dp),
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .heightIn(min = 48.dp),
             shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
-            colors = ToggleButtonDefaults.toggleButtonColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                checkedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                checkedContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-            ),
+            colors =
+                ToggleButtonDefaults.toggleButtonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    checkedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    checkedContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                ),
         ) {
             Icon(
                 painter = painterResource(R.drawable.replay),
@@ -1551,15 +1580,17 @@ private fun SuccessActions(
         ToggleButton(
             checked = false,
             onCheckedChange = { onSearch() },
-            modifier = Modifier
-                .weight(1f)
-                .heightIn(min = 48.dp),
-            colors = ToggleButtonDefaults.toggleButtonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                checkedContainerColor = MaterialTheme.colorScheme.primary,
-                checkedContentColor = MaterialTheme.colorScheme.onPrimary,
-            ),
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .heightIn(min = 48.dp),
+            colors =
+                ToggleButtonDefaults.toggleButtonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    checkedContainerColor = MaterialTheme.colorScheme.primary,
+                    checkedContentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
             shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
         ) {
             Icon(
@@ -1593,7 +1624,8 @@ private fun CoverArt(
         if (!coverUrl.isNullOrBlank()) {
             AsyncImage(
                 model =
-                    ImageRequest.Builder(context)
+                    ImageRequest
+                        .Builder(context)
                         .data(coverUrl)
                         .allowHardware(false)
                         .build(),

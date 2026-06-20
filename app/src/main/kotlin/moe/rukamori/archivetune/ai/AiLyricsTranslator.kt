@@ -17,12 +17,13 @@ class AiLyricsTranslator {
         if (document.segments.isEmpty()) return lyrics
         val translated = mutableMapOf<Int, String>()
         document.segments.chunkedByBudget().forEach { batch ->
-            val batchTranslations = AiTextService.translateLines(
-                config = config,
-                targetLanguage = normalizeTargetLanguage(targetLanguage),
-                lines = batch.map { it.text },
-                formatName = document.formatName,
-            )
+            val batchTranslations =
+                AiTextService.translateLines(
+                    config = config,
+                    targetLanguage = normalizeTargetLanguage(targetLanguage),
+                    lines = batch.map { it.text },
+                    formatName = document.formatName,
+                )
             batch.forEachIndexed { index, segment ->
                 translated[segment.id] = batchTranslations[index]
             }

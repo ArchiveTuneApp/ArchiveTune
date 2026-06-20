@@ -7,8 +7,8 @@
 
 package moe.rukamori.archivetune.betterlyrics.models
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
 
@@ -18,12 +18,12 @@ data class TTMLResponse(
     @JsonNames("ttml", "lyrics")
     val ttml: String = "",
     @SerialName("provider")
-    val provider: String? = null
+    val provider: String? = null,
 )
 
 @Serializable
 data class SearchResponse(
-    val results: List<Track>
+    val results: List<Track>,
 )
 
 @Serializable
@@ -32,24 +32,24 @@ data class Track(
     val artist: String,
     val album: String? = null,
     val duration: Double,
-    val lyrics: Lyrics? = null
+    val lyrics: Lyrics? = null,
 )
 
 @Serializable
 data class Lyrics(
-    val lines: List<Line>
+    val lines: List<Line>,
 )
 
 @Serializable
 data class Line(
     val text: String,
     val startTime: Double,
-    val words: List<Word>? = null
+    val words: List<Word>? = null,
 )
 
 @Serializable
 data class Word(
     val text: String,
     val startTime: Double,
-    val endTime: Double
+    val endTime: Double,
 )

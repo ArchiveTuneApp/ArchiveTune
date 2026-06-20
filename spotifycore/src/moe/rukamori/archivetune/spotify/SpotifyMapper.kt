@@ -16,7 +16,6 @@ import moe.rukamori.archivetune.spotify.models.SpotifyTrack
  * where MediaMetadata class is available.
  */
 object SpotifyMapper {
-
     // Pre-compiled regex patterns for title normalization (avoids re-creation on each call)
     private val FEAT_PATTERN = Regex("\\(feat\\..*?\\)")
     private val FT_PATTERN = Regex("\\(ft\\..*?\\)")
@@ -34,23 +33,27 @@ object SpotifyMapper {
      * on the same Spotify title/artist across multiple candidate comparisons.
      * Bounded to [NORM_CACHE_MAX_SIZE] entries to limit memory usage.
      */
-    private val normalizeCache = object : LinkedHashMap<String, String>(
-        NORM_CACHE_MAX_SIZE, 0.75f, true
-    ) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, String>?): Boolean =
-            size > NORM_CACHE_MAX_SIZE
-    }
+    private val normalizeCache =
+        object : LinkedHashMap<String, String>(
+            NORM_CACHE_MAX_SIZE,
+            0.75f,
+            true,
+        ) {
+            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, String>?): Boolean = size > NORM_CACHE_MAX_SIZE
+        }
 
     /**
      * LRU cache for pre-computed bigram sets. Avoids re-creating Set<String>
      * on every stringSimilarity call for the same normalized string.
      */
-    private val bigramCache = object : LinkedHashMap<String, Set<String>>(
-        NORM_CACHE_MAX_SIZE, 0.75f, true
-    ) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Set<String>>?): Boolean =
-            size > NORM_CACHE_MAX_SIZE
-    }
+    private val bigramCache =
+        object : LinkedHashMap<String, Set<String>>(
+            NORM_CACHE_MAX_SIZE,
+            0.75f,
+            true,
+        ) {
+            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Set<String>>?): Boolean = size > NORM_CACHE_MAX_SIZE
+        }
 
     /**
      * Pre-computed data for one side of a match comparison.
@@ -69,7 +72,11 @@ object SpotifyMapper {
      * The query is optimized for finding the matching song on YouTube Music.
      */
     fun buildSearchQuery(track: SpotifyTrack): String {
-        val artist = track.artists.firstOrNull()?.name.orEmpty()
+        val artist =
+            track.artists
+                .firstOrNull()
+                ?.name
+                .orEmpty()
         val title = track.name
         return if (artist.isEmpty()) title else "$artist $title"
     }
@@ -77,23 +84,21 @@ object SpotifyMapper {
     /**
      * Returns the best thumbnail URL from a Spotify playlist, preferring medium resolution.
      */
-    fun getPlaylistThumbnail(playlist: SpotifyPlaylist): String? {
-        return playlist.images.let { images ->
+    fun getPlaylistThumbnail(playlist: SpotifyPlaylist): String? =
+        playlist.images.let { images ->
             // Prefer 300x300 or similar medium size, fallback to first
             images.firstOrNull { it.width in 200..400 }?.url
                 ?: images.firstOrNull()?.url
         }
-    }
 
     /**
      * Returns the best thumbnail URL from a Spotify track's album art.
      */
-    fun getTrackThumbnail(track: SpotifyTrack): String? {
-        return track.album?.images?.let { images ->
+    fun getTrackThumbnail(track: SpotifyTrack): String? =
+        track.album?.images?.let { images ->
             images.firstOrNull { it.width in 200..400 }?.url
                 ?: images.firstOrNull()?.url
         }
-    }
 
     /**
      * Pre-computes normalized title/artist and their bigrams for a Spotify track.
@@ -132,14 +137,20 @@ object SpotifyMapper {
         val normSpotifyArtist = cachedNormalize(spotifyArtist)
         val normCandidateArtist = cachedNormalize(candidateArtist)
 
-        val titleScore = bigramSimilarity(
-            normSpotifyTitle, cachedBigrams(normSpotifyTitle),
-            normCandidateTitle, cachedBigrams(normCandidateTitle),
-        )
-        val artistScore = bigramSimilarity(
-            normSpotifyArtist, cachedBigrams(normSpotifyArtist),
-            normCandidateArtist, cachedBigrams(normCandidateArtist),
-        )
+        val titleScore =
+            bigramSimilarity(
+                normSpotifyTitle,
+                cachedBigrams(normSpotifyTitle),
+                normCandidateTitle,
+                cachedBigrams(normCandidateTitle),
+            )
+        val artistScore =
+            bigramSimilarity(
+                normSpotifyArtist,
+                cachedBigrams(normSpotifyArtist),
+                normCandidateArtist,
+                cachedBigrams(normCandidateArtist),
+            )
 
         val durationScore = durationScore(spotifyDurationMs, candidateDurationSec)
         return titleScore * 0.45 + artistScore * 0.35 + durationScore * 0.20
@@ -159,14 +170,20 @@ object SpotifyMapper {
         val normCandidateTitle = cachedNormalize(candidateTitle)
         val normCandidateArtist = cachedNormalize(candidateArtist)
 
-        val titleScore = bigramSimilarity(
-            precomputed.normalizedTitle, precomputed.titleBigrams,
-            normCandidateTitle, cachedBigrams(normCandidateTitle),
-        )
-        val artistScore = bigramSimilarity(
-            precomputed.normalizedArtist, precomputed.artistBigrams,
-            normCandidateArtist, cachedBigrams(normCandidateArtist),
-        )
+        val titleScore =
+            bigramSimilarity(
+                precomputed.normalizedTitle,
+                precomputed.titleBigrams,
+                normCandidateTitle,
+                cachedBigrams(normCandidateTitle),
+            )
+        val artistScore =
+            bigramSimilarity(
+                precomputed.normalizedArtist,
+                precomputed.artistBigrams,
+                normCandidateArtist,
+                cachedBigrams(normCandidateArtist),
+            )
 
         val durationScore = durationScore(precomputed.durationMs, candidateDurationSec)
         return titleScore * 0.45 + artistScore * 0.35 + durationScore * 0.20
@@ -175,7 +192,10 @@ object SpotifyMapper {
     /** Threshold above which we consider a match good enough to skip remaining candidates. */
     fun earlyExitThreshold(): Double = EARLY_EXIT_THRESHOLD
 
-    private fun durationScore(spotifyDurationMs: Int, candidateDurationSec: Int?): Double {
+    private fun durationScore(
+        spotifyDurationMs: Int,
+        candidateDurationSec: Int?,
+    ): Double {
         if (candidateDurationSec == null || spotifyDurationMs <= 0) return 0.5
         val diff = kotlin.math.abs(spotifyDurationMs / 1000 - candidateDurationSec)
         return when {
@@ -207,8 +227,9 @@ object SpotifyMapper {
         return bigrams
     }
 
-    private fun normalizeTitle(title: String): String {
-        return title.lowercase()
+    private fun normalizeTitle(title: String): String =
+        title
+            .lowercase()
             .replace(FEAT_PATTERN, "")
             .replace(FT_PATTERN, "")
             .replace(BRACKET_PATTERN, "")
@@ -217,14 +238,15 @@ object SpotifyMapper {
             .replace(NON_ALNUM_PATTERN, "")
             .replace(MULTI_SPACE_PATTERN, " ")
             .trim()
-    }
 
     /**
      * Dice coefficient using pre-computed bigram sets.
      */
     private fun bigramSimilarity(
-        a: String, bigramsA: Set<String>,
-        b: String, bigramsB: Set<String>,
+        a: String,
+        bigramsA: Set<String>,
+        b: String,
+        bigramsB: Set<String>,
     ): Double {
         if (a == b) return 1.0
         if (bigramsA.isEmpty() || bigramsB.isEmpty()) return 0.0

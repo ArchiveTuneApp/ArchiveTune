@@ -9,8 +9,8 @@ package moe.rukamori.archivetune.ui.component
 
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
-import kotlin.math.roundToInt
 import moe.rukamori.archivetune.R
+import kotlin.math.roundToInt
 
 enum class LyricsShareAspectRatio(
     @StringRes val labelRes: Int,

@@ -140,8 +140,6 @@
     <string name="clear_image_cache_dialog">Ви впевнені, що хочете очистити всю кешовану графіку?</string>
     <string name="clear_downloads_dialog">Ви впевнені, що хочете видалити всі завантажені файли?</string>
     <string name="canvas_cache">Кеш Canvas</string>
-    <string name="canvas_cache_items">%d елементів</string>
-    <string name="canvas_cache_usage">%1$s / %2$s</string>
     <string name="clear_canvas_cache">Очистити кеш Canvas</string>
     <string name="clear_canvas_cache_dialog">Ви впевнені, що хочете очистити весь кеш Canvas?</string>
     <string name="disable">Вимкнути</string>

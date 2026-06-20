@@ -10,6 +10,21 @@ package moe.rukamori.archivetune.discord
 import android.content.Context
 import android.net.Uri
 import androidx.datastore.preferences.core.edit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import moe.rukamori.archivetune.BuildConfig
+import moe.rukamori.archivetune.constants.DiscordAvatarUrlKey
+import moe.rukamori.archivetune.constants.DiscordNameKey
+import moe.rukamori.archivetune.constants.DiscordRefreshTokenKey
+import moe.rukamori.archivetune.constants.DiscordTokenExpiresAtKey
+import moe.rukamori.archivetune.constants.DiscordTokenKey
+import moe.rukamori.archivetune.constants.DiscordUsernameKey
+import moe.rukamori.archivetune.utils.dataStore
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -17,21 +32,6 @@ import java.net.URLEncoder
 import java.security.MessageDigest
 import java.security.SecureRandom
 import java.util.Base64
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.withContext
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import moe.rukamori.archivetune.BuildConfig
-import moe.rukamori.archivetune.constants.DiscordNameKey
-import moe.rukamori.archivetune.constants.DiscordAvatarUrlKey
-import moe.rukamori.archivetune.constants.DiscordRefreshTokenKey
-import moe.rukamori.archivetune.constants.DiscordTokenExpiresAtKey
-import moe.rukamori.archivetune.constants.DiscordTokenKey
-import moe.rukamori.archivetune.constants.DiscordUsernameKey
-import moe.rukamori.archivetune.utils.dataStore
 
 data class DiscordAuthorizationSession(
     val state: String,
@@ -54,10 +54,11 @@ data class DiscordAuthSession(
 )
 
 object DiscordAuthCoordinator {
-    val redirects = MutableSharedFlow<Uri>(
-        replay = 1,
-        extraBufferCapacity = 1,
-    )
+    val redirects =
+        MutableSharedFlow<Uri>(
+            replay = 1,
+            extraBufferCapacity = 1,
+        )
 
     fun emit(uri: Uri) {
         redirects.tryEmit(uri)
@@ -84,22 +85,25 @@ object DiscordOAuthRepository {
         val state = randomUrlSafeString(byteCount = 32)
         val verifier = randomUrlSafeString(byteCount = 64)
         val challenge = sha256Base64Url(verifier)
-        val scopes = listOf(
-            "openid",
-            "identify",
-            "sdk.social_layer_presence",
-        ).joinToString(separator = " ")
+        val scopes =
+            listOf(
+                "openid",
+                "identify",
+                "sdk.social_layer_presence",
+            ).joinToString(separator = " ")
 
-        val uri = Uri.parse(AUTHORIZATION_ENDPOINT)
-            .buildUpon()
-            .appendQueryParameter("client_id", BuildConfig.DISCORD_APPLICATION_ID)
-            .appendQueryParameter("response_type", "code")
-            .appendQueryParameter("redirect_uri", redirectUri)
-            .appendQueryParameter("scope", scopes)
-            .appendQueryParameter("state", state)
-            .appendQueryParameter("code_challenge", challenge)
-            .appendQueryParameter("code_challenge_method", "S256")
-            .build()
+        val uri =
+            Uri
+                .parse(AUTHORIZATION_ENDPOINT)
+                .buildUpon()
+                .appendQueryParameter("client_id", BuildConfig.DISCORD_APPLICATION_ID)
+                .appendQueryParameter("response_type", "code")
+                .appendQueryParameter("redirect_uri", redirectUri)
+                .appendQueryParameter("scope", scopes)
+                .appendQueryParameter("state", state)
+                .appendQueryParameter("code_challenge", challenge)
+                .appendQueryParameter("code_challenge_method", "S256")
+                .build()
 
         return DiscordAuthorizationSession(
             state = state,
@@ -112,87 +116,96 @@ object DiscordOAuthRepository {
         context: Context,
         session: DiscordAuthorizationSession,
         redirect: Uri,
-    ): Result<DiscordAuthSession> = withContext(Dispatchers.IO) {
-        runCatching {
-            require(redirect.scheme == BuildConfig.DISCORD_REDIRECT_SCHEME) {
-                "Unexpected Discord redirect scheme"
-            }
-            require(redirect.path == "/authorize/callback") {
-                "Unexpected Discord redirect target"
-            }
-            require(redirect.getQueryParameter("state") == session.state) {
-                "Discord authorization state mismatch"
-            }
+    ): Result<DiscordAuthSession> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                require(redirect.scheme == BuildConfig.DISCORD_REDIRECT_SCHEME) {
+                    "Unexpected Discord redirect scheme"
+                }
+                require(redirect.path == "/authorize/callback") {
+                    "Unexpected Discord redirect target"
+                }
+                require(redirect.getQueryParameter("state") == session.state) {
+                    "Discord authorization state mismatch"
+                }
 
-            redirect.getQueryParameter("error")?.let { error ->
-                val description = redirect.getQueryParameter("error_description")
-                throw IllegalStateException(description ?: error)
+                redirect.getQueryParameter("error")?.let { error ->
+                    val description = redirect.getQueryParameter("error_description")
+                    throw IllegalStateException(description ?: error)
+                }
+
+                val code =
+                    requireNotNull(redirect.getQueryParameter("code")) {
+                        "Discord authorization code is missing"
+                    }
+
+                val token = exchangeAuthorizationCode(code, session.codeVerifier)
+                val account = runCatching { fetchAccount(token.accessToken) }.getOrNull()
+                val authSession = token.toAuthSession(account)
+                storeSession(context, authSession)
+                authSession
             }
-
-            val code = requireNotNull(redirect.getQueryParameter("code")) {
-                "Discord authorization code is missing"
-            }
-
-            val token = exchangeAuthorizationCode(code, session.codeVerifier)
-            val account = runCatching { fetchAccount(token.accessToken) }.getOrNull()
-            val authSession = token.toAuthSession(account)
-            storeSession(context, authSession)
-            authSession
-        }
-    }
-
-    suspend fun getValidAccessToken(context: Context): String? = withContext(Dispatchers.IO) {
-        val prefs = context.dataStore.data.first()
-        val currentToken = prefs[DiscordTokenKey]?.trim().orEmpty()
-        if (currentToken.isBlank()) {
-            return@withContext null
         }
 
-        val expiresAt = prefs[DiscordTokenExpiresAtKey] ?: 0L
-        if (expiresAt == 0L || System.currentTimeMillis() + EXPIRY_SKEW_MS < expiresAt) {
-            return@withContext currentToken
+    suspend fun getValidAccessToken(context: Context): String? =
+        withContext(Dispatchers.IO) {
+            val prefs = context.dataStore.data.first()
+            val currentToken = prefs[DiscordTokenKey]?.trim().orEmpty()
+            if (currentToken.isBlank()) {
+                return@withContext null
+            }
+
+            val expiresAt = prefs[DiscordTokenExpiresAtKey] ?: 0L
+            if (expiresAt == 0L || System.currentTimeMillis() + EXPIRY_SKEW_MS < expiresAt) {
+                return@withContext currentToken
+            }
+
+            val refreshToken = prefs[DiscordRefreshTokenKey]?.trim().orEmpty()
+            if (refreshToken.isBlank()) {
+                return@withContext currentToken
+            }
+
+            refreshAccessToken(context, refreshToken)
+                .getOrNull()
+                ?.accessToken
+                ?: currentToken
         }
 
-        val refreshToken = prefs[DiscordRefreshTokenKey]?.trim().orEmpty()
-        if (refreshToken.isBlank()) {
-            return@withContext currentToken
+    suspend fun fetchAccount(accessToken: String): DiscordAccount =
+        withContext(Dispatchers.IO) {
+            val response =
+                getJson(
+                    url = CURRENT_USER_ENDPOINT,
+                    bearerToken = accessToken,
+                )
+            val userInfo = json.decodeFromString<UserInfoResponse>(response)
+            val userId =
+                userInfo.id
+                    ?: userInfo.sub
+                    ?: ""
+            val username =
+                userInfo.preferredUsername
+                    ?: userInfo.username
+                    ?: userId
+            val displayName =
+                userInfo.nickname
+                    ?: userInfo.globalName
+                    ?: userInfo.name
+                    ?: username
+
+            DiscordAccount(
+                id = userId,
+                username = username,
+                displayName = displayName,
+                avatarUrl =
+                    userInfo.picture?.takeIf { it.isNotBlank() }
+                        ?: buildAvatarUrl(
+                            userId = userId,
+                            avatarHash = userInfo.avatar,
+                            discriminator = userInfo.discriminator,
+                        ),
+            )
         }
-
-        refreshAccessToken(context, refreshToken)
-            .getOrNull()
-            ?.accessToken
-            ?: currentToken
-    }
-
-    suspend fun fetchAccount(accessToken: String): DiscordAccount = withContext(Dispatchers.IO) {
-        val response = getJson(
-            url = CURRENT_USER_ENDPOINT,
-            bearerToken = accessToken,
-        )
-        val userInfo = json.decodeFromString<UserInfoResponse>(response)
-        val userId = userInfo.id
-            ?: userInfo.sub
-            ?: ""
-        val username = userInfo.preferredUsername
-            ?: userInfo.username
-            ?: userId
-        val displayName = userInfo.nickname
-            ?: userInfo.globalName
-            ?: userInfo.name
-            ?: username
-
-        DiscordAccount(
-            id = userId,
-            username = username,
-            displayName = displayName,
-            avatarUrl = userInfo.picture?.takeIf { it.isNotBlank() }
-                ?: buildAvatarUrl(
-                    userId = userId,
-                    avatarHash = userInfo.avatar,
-                    discriminator = userInfo.discriminator,
-                ),
-        )
-    }
 
     suspend fun clearSession(context: Context) {
         withContext(Dispatchers.IO) {
@@ -210,23 +223,26 @@ object DiscordOAuthRepository {
     private suspend fun refreshAccessToken(
         context: Context,
         refreshToken: String,
-    ): Result<DiscordAuthSession> = withContext(Dispatchers.IO) {
-        runCatching {
-            val token = postForm(
-                url = TOKEN_ENDPOINT,
-                params = mapOf(
-                    "client_id" to BuildConfig.DISCORD_APPLICATION_ID,
-                    "grant_type" to "refresh_token",
-                    "refresh_token" to refreshToken,
-                ),
-            ).let { json.decodeFromString<TokenResponse>(it) }
+    ): Result<DiscordAuthSession> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val token =
+                    postForm(
+                        url = TOKEN_ENDPOINT,
+                        params =
+                            mapOf(
+                                "client_id" to BuildConfig.DISCORD_APPLICATION_ID,
+                                "grant_type" to "refresh_token",
+                                "refresh_token" to refreshToken,
+                            ),
+                    ).let { json.decodeFromString<TokenResponse>(it) }
 
-            val account = runCatching { fetchAccount(token.accessToken) }.getOrNull()
-            val session = token.toAuthSession(account, fallbackRefreshToken = refreshToken)
-            storeSession(context, session)
-            session
+                val account = runCatching { fetchAccount(token.accessToken) }.getOrNull()
+                val session = token.toAuthSession(account, fallbackRefreshToken = refreshToken)
+                storeSession(context, session)
+                session
+            }
         }
-    }
 
     private fun exchangeAuthorizationCode(
         code: String,
@@ -234,16 +250,20 @@ object DiscordOAuthRepository {
     ): TokenResponse =
         postForm(
             url = TOKEN_ENDPOINT,
-            params = mapOf(
-                "client_id" to BuildConfig.DISCORD_APPLICATION_ID,
-                "grant_type" to "authorization_code",
-                "code" to code,
-                "redirect_uri" to redirectUri,
-                "code_verifier" to codeVerifier,
-            ),
+            params =
+                mapOf(
+                    "client_id" to BuildConfig.DISCORD_APPLICATION_ID,
+                    "grant_type" to "authorization_code",
+                    "code" to code,
+                    "redirect_uri" to redirectUri,
+                    "code_verifier" to codeVerifier,
+                ),
         ).let { json.decodeFromString(it) }
 
-    private suspend fun storeSession(context: Context, session: DiscordAuthSession) {
+    private suspend fun storeSession(
+        context: Context,
+        session: DiscordAuthSession,
+    ) {
         context.dataStore.edit { prefs ->
             prefs[DiscordTokenKey] = session.accessToken
             session.refreshToken?.takeIf { it.isNotBlank() }?.let {
@@ -273,12 +293,13 @@ object DiscordOAuthRepository {
             return "https://cdn.discordapp.com/avatars/$userId/$normalizedAvatarHash.$extension?size=256"
         }
 
-        val defaultIndex = discriminator
-            ?.toIntOrNull()
-            ?.takeIf { it > 0 }
-            ?.rem(5)
-            ?: userId.toLongOrNull()?.let { ((it shr 22) % 6L).toInt() }
-            ?: 0
+        val defaultIndex =
+            discriminator
+                ?.toIntOrNull()
+                ?.takeIf { it > 0 }
+                ?.rem(5)
+                ?: userId.toLongOrNull()?.let { ((it shr 22) % 6L).toInt() }
+                ?: 0
         return "https://cdn.discordapp.com/embed/avatars/$defaultIndex.png"
     }
 
@@ -287,11 +308,12 @@ object DiscordOAuthRepository {
         fallbackRefreshToken: String? = null,
     ): DiscordAuthSession {
         val expiresInMillis = expiresInSeconds.coerceAtLeast(0L) * 1000L
-        val expiresAt = if (expiresInMillis > 0L) {
-            System.currentTimeMillis() + expiresInMillis
-        } else {
-            0L
-        }
+        val expiresAt =
+            if (expiresInMillis > 0L) {
+                System.currentTimeMillis() + expiresInMillis
+            } else {
+                0L
+            }
 
         return DiscordAuthSession(
             accessToken = accessToken,
@@ -305,17 +327,19 @@ object DiscordOAuthRepository {
         url: String,
         params: Map<String, String>,
     ): String {
-        val body = params.entries.joinToString(separator = "&") { (key, value) ->
-            "${key.urlEncode()}=${value.urlEncode()}"
-        }
-        val connection = (URL(url).openConnection() as HttpURLConnection).apply {
-            requestMethod = "POST"
-            connectTimeout = REQUEST_TIMEOUT_MS
-            readTimeout = REQUEST_TIMEOUT_MS
-            doOutput = true
-            setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
-            setRequestProperty("Accept", "application/json")
-        }
+        val body =
+            params.entries.joinToString(separator = "&") { (key, value) ->
+                "${key.urlEncode()}=${value.urlEncode()}"
+            }
+        val connection =
+            (URL(url).openConnection() as HttpURLConnection).apply {
+                requestMethod = "POST"
+                connectTimeout = REQUEST_TIMEOUT_MS
+                readTimeout = REQUEST_TIMEOUT_MS
+                doOutput = true
+                setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+                setRequestProperty("Accept", "application/json")
+            }
 
         connection.outputStream.use { output ->
             output.write(body.toByteArray(Charsets.UTF_8))
@@ -328,13 +352,14 @@ object DiscordOAuthRepository {
         url: String,
         bearerToken: String,
     ): String {
-        val connection = (URL(url).openConnection() as HttpURLConnection).apply {
-            requestMethod = "GET"
-            connectTimeout = REQUEST_TIMEOUT_MS
-            readTimeout = REQUEST_TIMEOUT_MS
-            setRequestProperty("Authorization", "Bearer $bearerToken")
-            setRequestProperty("Accept", "application/json")
-        }
+        val connection =
+            (URL(url).openConnection() as HttpURLConnection).apply {
+                requestMethod = "GET"
+                connectTimeout = REQUEST_TIMEOUT_MS
+                readTimeout = REQUEST_TIMEOUT_MS
+                setRequestProperty("Authorization", "Bearer $bearerToken")
+                setRequestProperty("Accept", "application/json")
+            }
 
         return connection.readResponse()
     }
@@ -355,21 +380,24 @@ object DiscordOAuthRepository {
     private fun randomUrlSafeString(byteCount: Int): String {
         val bytes = ByteArray(byteCount)
         secureRandom.nextBytes(bytes)
-        return Base64.getUrlEncoder()
+        return Base64
+            .getUrlEncoder()
             .withoutPadding()
             .encodeToString(bytes)
     }
 
     private fun sha256Base64Url(value: String): String {
-        val digest = MessageDigest.getInstance("SHA-256")
-            .digest(value.toByteArray(Charsets.US_ASCII))
-        return Base64.getUrlEncoder()
+        val digest =
+            MessageDigest
+                .getInstance("SHA-256")
+                .digest(value.toByteArray(Charsets.US_ASCII))
+        return Base64
+            .getUrlEncoder()
             .withoutPadding()
             .encodeToString(digest)
     }
 
-    private fun String.urlEncode(): String =
-        URLEncoder.encode(this, Charsets.UTF_8.name())
+    private fun String.urlEncode(): String = URLEncoder.encode(this, Charsets.UTF_8.name())
 
     @Serializable
     private data class TokenResponse(

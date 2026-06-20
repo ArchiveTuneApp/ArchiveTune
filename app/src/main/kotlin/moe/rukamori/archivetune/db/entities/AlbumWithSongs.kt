@@ -21,11 +21,11 @@ data class AlbumWithSongs(
         entityColumn = "id",
         parentColumn = "id",
         associateBy =
-        Junction(
-            value = AlbumArtistMap::class,
-            parentColumn = "albumId",
-            entityColumn = "artistId",
-        ),
+            Junction(
+                value = AlbumArtistMap::class,
+                parentColumn = "albumId",
+                entityColumn = "artistId",
+            ),
     )
     val artists: List<ArtistEntity>,
     @Relation(
@@ -33,11 +33,11 @@ data class AlbumWithSongs(
         entityColumn = "id",
         parentColumn = "id",
         associateBy =
-        Junction(
-            value = SortedSongAlbumMap::class,
-            parentColumn = "albumId",
-            entityColumn = "songId",
-        ),
+            Junction(
+                value = SortedSongAlbumMap::class,
+                parentColumn = "albumId",
+                entityColumn = "songId",
+            ),
     )
     val songs: List<Song>,
 )

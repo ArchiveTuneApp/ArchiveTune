@@ -9,8 +9,8 @@ package moe.rukamori.archivetune.ui.player
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,8 +30,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -40,6 +40,8 @@ import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.toBitmap
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import moe.rukamori.archivetune.LocalPlayerConnection
 import moe.rukamori.archivetune.constants.MiniPlayerBackgroundStyle
 import moe.rukamori.archivetune.constants.MiniPlayerBackgroundStyleKey
@@ -47,8 +49,6 @@ import moe.rukamori.archivetune.constants.SwipeSensitivityKey
 import moe.rukamori.archivetune.ui.theme.PlayerColorExtractor
 import moe.rukamori.archivetune.utils.rememberEnumPreference
 import moe.rukamori.archivetune.utils.rememberPreference
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 private const val MiniPlayerPaletteCacheSize = 24
@@ -64,7 +64,7 @@ fun MiniPlayer(
         position = position,
         duration = duration,
         modifier = modifier,
-        pureBlack = pureBlack
+        pureBlack = pureBlack,
     )
 }
 
@@ -89,13 +89,13 @@ private fun NewMiniPlayer(
     var gradientColors by remember {
         mutableStateOf<List<Color>>(emptyList())
     }
-    val gradientColorsCache = remember {
-        object : LinkedHashMap<String, List<Color>>(MiniPlayerPaletteCacheSize, 0.75f, true) {
-            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, List<Color>>?): Boolean {
-                return size > MiniPlayerPaletteCacheSize
+    val gradientColorsCache =
+        remember {
+            object : LinkedHashMap<String, List<Color>>(MiniPlayerPaletteCacheSize, 0.75f, true) {
+                override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, List<Color>>?): Boolean =
+                    size > MiniPlayerPaletteCacheSize
             }
         }
-    }
     val fallbackColor = MaterialTheme.colorScheme.surface.toArgb()
     val shouldUseArtworkBackground = miniPlayerBackgroundStyle != MiniPlayerBackgroundStyle.THEME
 
@@ -123,28 +123,34 @@ private fun NewMiniPlayer(
             return@LaunchedEffect
         }
 
-        val request = ImageRequest.Builder(context)
-            .data(thumbnailUrl)
-            .size(PlayerColorExtractor.Config.IMAGE_SIZE, PlayerColorExtractor.Config.IMAGE_SIZE)
-            .allowHardware(false)
-            .build()
+        val request =
+            ImageRequest
+                .Builder(context)
+                .data(thumbnailUrl)
+                .size(PlayerColorExtractor.Config.IMAGE_SIZE, PlayerColorExtractor.Config.IMAGE_SIZE)
+                .allowHardware(false)
+                .build()
 
-        val extractedColors = runCatching {
-            val result = withContext(Dispatchers.IO) {
-                context.imageLoader.execute(request)
-            }
-            val bitmap = result.image?.toBitmap() ?: return@runCatching emptyList()
-            val palette = withContext(Dispatchers.Default) {
-                Palette.from(bitmap)
-                    .maximumColorCount(PlayerColorExtractor.Config.MAX_COLOR_COUNT)
-                    .resizeBitmapArea(PlayerColorExtractor.Config.BITMAP_AREA)
-                    .generate()
-            }
-            PlayerColorExtractor.extractGradientColors(
-                palette = palette,
-                fallbackColor = fallbackColor,
-            )
-        }.getOrDefault(emptyList())
+        val extractedColors =
+            runCatching {
+                val result =
+                    withContext(Dispatchers.IO) {
+                        context.imageLoader.execute(request)
+                    }
+                val bitmap = result.image?.toBitmap() ?: return@runCatching emptyList()
+                val palette =
+                    withContext(Dispatchers.Default) {
+                        Palette
+                            .from(bitmap)
+                            .maximumColorCount(PlayerColorExtractor.Config.MAX_COLOR_COUNT)
+                            .resizeBitmapArea(PlayerColorExtractor.Config.BITMAP_AREA)
+                            .generate()
+                    }
+                PlayerColorExtractor.extractGradientColors(
+                    palette = palette,
+                    fallbackColor = fallbackColor,
+                )
+            }.getOrDefault(emptyList())
 
         if (extractedColors.isNotEmpty()) {
             gradientColorsCache[currentMetadata.id] = extractedColors
@@ -152,9 +158,10 @@ private fun NewMiniPlayer(
         gradientColors = extractedColors
     }
 
-    val backgroundPalette = remember(gradientColors) {
-        MiniPlayerBackgroundPalette.from(gradientColors)
-    }
+    val backgroundPalette =
+        remember(gradientColors) {
+            MiniPlayerBackgroundPalette.from(gradientColors)
+        }
     val effectiveBackgroundStyle =
         if (shouldUseArtworkBackground && backgroundPalette != null) {
             miniPlayerBackgroundStyle
@@ -162,9 +169,10 @@ private fun NewMiniPlayer(
             MiniPlayerBackgroundStyle.THEME
         }
 
-    val contentColors = rememberMiniPlayerContentColors(
-        useArtworkBackground = effectiveBackgroundStyle != MiniPlayerBackgroundStyle.THEME,
-    )
+    val contentColors =
+        rememberMiniPlayerContentColors(
+            useArtworkBackground = effectiveBackgroundStyle != MiniPlayerBackgroundStyle.THEME,
+        )
 
     SwipeableMiniPlayerBox(
         modifier = modifier,
@@ -174,14 +182,15 @@ private fun NewMiniPlayer(
         layoutDirection = layoutDirection,
         coroutineScope = coroutineScope,
         pureBlack = pureBlack,
-        useLegacyBackground = false
+        useLegacyBackground = false,
     ) { offsetX ->
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(64.dp)
-                .offset { IntOffset(offsetX.roundToInt(), 0) }
-                .clip(RoundedCornerShape(32.dp))
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+                    .offset { IntOffset(offsetX.roundToInt(), 0) }
+                    .clip(RoundedCornerShape(32.dp)),
         ) {
             MiniPlayerBackground(
                 style = effectiveBackgroundStyle,
@@ -199,9 +208,7 @@ private fun NewMiniPlayer(
 }
 
 @Composable
-private fun rememberMiniPlayerContentColors(
-    useArtworkBackground: Boolean,
-): MiniPlayerContentColors {
+private fun rememberMiniPlayerContentColors(useArtworkBackground: Boolean): MiniPlayerContentColors {
     val colorScheme = MaterialTheme.colorScheme
     return remember(
         useArtworkBackground,
@@ -257,7 +264,7 @@ private fun MiniPlayerBackground(
     when (style) {
         MiniPlayerBackgroundStyle.THEME -> {
             Box(
-                modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainer)
+                modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainer),
             )
         }
 
@@ -265,22 +272,25 @@ private fun MiniPlayerBackground(
             val colors = requireNotNull(palette)
             Box(modifier = modifier) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                colorStops = arrayOf(
-                                    0f to colors.first.copy(alpha = 0.95f),
-                                    0.52f to colors.second.copy(alpha = 0.82f),
-                                    1f to colors.third.copy(alpha = 0.72f),
-                                )
-                            )
-                        )
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colorStops =
+                                        arrayOf(
+                                            0f to colors.first.copy(alpha = 0.95f),
+                                            0.52f to colors.second.copy(alpha = 0.82f),
+                                            1f to colors.third.copy(alpha = 0.72f),
+                                        ),
+                                ),
+                            ),
                 )
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.32f))
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.32f)),
                 )
             }
         }
@@ -288,39 +298,44 @@ private fun MiniPlayerBackground(
         MiniPlayerBackgroundStyle.GLOW -> {
             val colors = requireNotNull(palette)
             Box(
-                modifier = modifier.drawWithCache {
-                    val width = size.width
-                    val height = size.height
-                    val startGlow = Brush.radialGradient(
-                        colors = listOf(colors.first.copy(alpha = 0.82f), colors.first.copy(alpha = 0.38f), Color.Transparent),
-                        center = Offset(width * 0.12f, height * 0.42f),
-                        radius = width * 0.72f,
-                    )
-                    val endGlow = Brush.radialGradient(
-                        colors = listOf(colors.second.copy(alpha = 0.78f), colors.second.copy(alpha = 0.34f), Color.Transparent),
-                        center = Offset(width * 0.88f, height * 0.58f),
-                        radius = width * 0.72f,
-                    )
-                    val topGlow = Brush.radialGradient(
-                        colors = listOf(colors.third.copy(alpha = 0.58f), Color.Transparent),
-                        center = Offset(width * 0.52f, height * 0.05f),
-                        radius = width * 0.54f,
-                    )
-                    val bottomGlow = Brush.radialGradient(
-                        colors = listOf(colors.fourth.copy(alpha = 0.46f), Color.Transparent),
-                        center = Offset(width * 0.46f, height * 1.05f),
-                        radius = width * 0.54f,
-                    )
+                modifier =
+                    modifier.drawWithCache {
+                        val width = size.width
+                        val height = size.height
+                        val startGlow =
+                            Brush.radialGradient(
+                                colors = listOf(colors.first.copy(alpha = 0.82f), colors.first.copy(alpha = 0.38f), Color.Transparent),
+                                center = Offset(width * 0.12f, height * 0.42f),
+                                radius = width * 0.72f,
+                            )
+                        val endGlow =
+                            Brush.radialGradient(
+                                colors = listOf(colors.second.copy(alpha = 0.78f), colors.second.copy(alpha = 0.34f), Color.Transparent),
+                                center = Offset(width * 0.88f, height * 0.58f),
+                                radius = width * 0.72f,
+                            )
+                        val topGlow =
+                            Brush.radialGradient(
+                                colors = listOf(colors.third.copy(alpha = 0.58f), Color.Transparent),
+                                center = Offset(width * 0.52f, height * 0.05f),
+                                radius = width * 0.54f,
+                            )
+                        val bottomGlow =
+                            Brush.radialGradient(
+                                colors = listOf(colors.fourth.copy(alpha = 0.46f), Color.Transparent),
+                                center = Offset(width * 0.46f, height * 1.05f),
+                                radius = width * 0.54f,
+                            )
 
-                    onDrawBehind {
-                        drawRect(Color.Black)
-                        drawRect(startGlow)
-                        drawRect(endGlow)
-                        drawRect(topGlow)
-                        drawRect(bottomGlow)
-                        drawRect(Color.Black.copy(alpha = 0.24f))
-                    }
-                }
+                        onDrawBehind {
+                            drawRect(Color.Black)
+                            drawRect(startGlow)
+                            drawRect(endGlow)
+                            drawRect(topGlow)
+                            drawRect(bottomGlow)
+                            drawRect(Color.Black.copy(alpha = 0.24f))
+                        }
+                    },
             )
         }
     }

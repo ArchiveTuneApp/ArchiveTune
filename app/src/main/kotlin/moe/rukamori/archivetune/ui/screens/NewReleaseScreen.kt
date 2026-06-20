@@ -9,6 +9,7 @@
 
 package moe.rukamori.archivetune.ui.screens
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -22,8 +23,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -53,15 +54,14 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.annotation.StringRes
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -182,10 +182,11 @@ fun NewReleaseScreen(
                 NewReleaseUiState.Error -> {
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues)
-                            .padding(horizontal = 24.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .padding(paddingValues)
+                                .padding(horizontal = 24.dp),
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(
@@ -222,10 +223,11 @@ fun NewReleaseScreen(
                 NewReleaseUiState.Empty -> {
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues)
-                            .padding(horizontal = 24.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .padding(paddingValues)
+                                .padding(horizontal = 24.dp),
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
@@ -297,12 +299,14 @@ private fun NewReleaseGridContent(
     onReleaseLongClick: (AlbumItem) -> Unit,
     onRefresh: () -> Unit,
 ) {
-    val allSections = remember(content) {
-        content.releaseSections()
-    }
-    val releases = remember(content, selectedTab) {
-        if (selectedTab == NewReleaseTab.All) emptyList() else content.releasesFor(selectedTab)
-    }
+    val allSections =
+        remember(content) {
+            content.releaseSections()
+        }
+    val releases =
+        remember(content, selectedTab) {
+            if (selectedTab == NewReleaseTab.All) emptyList() else content.releasesFor(selectedTab)
+        }
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = GridThumbnailHeight + 24.dp),
@@ -370,12 +374,13 @@ private fun NewReleaseGridContent(
                     isPlaying = isPlaying,
                     fillMaxWidth = true,
                     coroutineScope = coroutineScope,
-                    modifier = Modifier
-                        .animateItem()
-                        .combinedClickable(
-                            onClick = { onReleaseClick(album) },
-                            onLongClick = { onReleaseLongClick(album) },
-                        ),
+                    modifier =
+                        Modifier
+                            .animateItem()
+                            .combinedClickable(
+                                onClick = { onReleaseClick(album) },
+                                onLongClick = { onReleaseLongClick(album) },
+                            ),
                 )
             }
         }
@@ -388,9 +393,10 @@ private fun NewReleaseSectionHeader(
     count: Int,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 20.dp, top = 10.dp, end = 20.dp, bottom = 2.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(start = 20.dp, top = 10.dp, end = 20.dp, bottom = 2.dp),
     ) {
         Text(
             text = title,
@@ -421,9 +427,10 @@ private fun NewReleaseHorizontalSection(
         rows = GridCells.Fixed(1),
         contentPadding = PaddingValues(horizontal = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(0.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(216.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(216.dp),
     ) {
         items(
             items = releases,
@@ -436,12 +443,13 @@ private fun NewReleaseHorizontalSection(
                 isPlaying = isPlaying,
                 fillMaxWidth = false,
                 coroutineScope = coroutineScope,
-                modifier = Modifier
-                    .animateItem()
-                    .combinedClickable(
-                        onClick = { onReleaseClick(album) },
-                        onLongClick = { onReleaseLongClick(album) },
-                    ),
+                modifier =
+                    Modifier
+                        .animateItem()
+                        .combinedClickable(
+                            onClick = { onReleaseClick(album) },
+                            onLongClick = { onReleaseLongClick(album) },
+                        ),
             )
         }
     }
@@ -459,9 +467,10 @@ private fun NewReleaseSummaryCard(
         shape = summaryShape,
         color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.86f),
         tonalElevation = 3.dp,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         Column(
             modifier = Modifier.padding(start = 20.dp, top = 18.dp, end = 20.dp, bottom = 10.dp),
@@ -509,22 +518,25 @@ private fun NewReleaseTabs(
         indicator = { tabPositions ->
             Box(
                 contentAlignment = Alignment.BottomCenter,
-                modifier = Modifier
-                    .tabIndicatorOffset(tabPositions[selectedTabIndex])
-                    .fillMaxSize(),
+                modifier =
+                    Modifier
+                        .tabIndicatorOffset(tabPositions[selectedTabIndex])
+                        .fillMaxSize(),
             ) {
                 Box(
-                    modifier = Modifier
-                        .width(76.dp)
-                        .height(3.dp)
-                        .clip(RoundedCornerShape(3.dp))
-                        .background(indicatorColor),
+                    modifier =
+                        Modifier
+                            .width(76.dp)
+                            .height(3.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(indicatorColor),
                 )
             }
         },
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(66.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(66.dp),
     ) {
         tabs.forEach { tab ->
             val selected = tab == selectedTab
@@ -542,25 +554,25 @@ private fun NewReleaseTabs(
                 },
                 selectedContentColor = selectedContentColor,
                 unselectedContentColor = unselectedContentColor,
-                modifier = Modifier
-                    .padding(horizontal = 3.dp, vertical = 6.dp)
-                    .height(56.dp)
-                    .clip(tabShape)
-                    .background(if (selected) selectedContainer else unselectedContainer),
+                modifier =
+                    Modifier
+                        .padding(horizontal = 3.dp, vertical = 6.dp)
+                        .height(56.dp)
+                        .clip(tabShape)
+                        .background(if (selected) selectedContainer else unselectedContainer),
             )
         }
     }
 }
 
 @Composable
-private fun NewReleaseCategoryEmptyState(
-    onRefresh: () -> Unit,
-) {
+private fun NewReleaseCategoryEmptyState(onRefresh: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 56.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 56.dp),
     ) {
         Text(
             text = stringResource(R.string.no_releases_found),
@@ -578,17 +590,16 @@ private fun NewReleaseCategoryEmptyState(
     }
 }
 
-private fun NewReleaseContent.releasesFor(tab: NewReleaseTab): List<AlbumItem> {
-    return when (tab) {
+private fun NewReleaseContent.releasesFor(tab: NewReleaseTab): List<AlbumItem> =
+    when (tab) {
         NewReleaseTab.All -> emptyList()
         NewReleaseTab.Albums -> albums
         NewReleaseTab.Singles -> singles
         NewReleaseTab.Ep -> eps
     }
-}
 
-private fun NewReleaseContent.releaseSections(): List<NewReleaseSection> {
-    return buildList {
+private fun NewReleaseContent.releaseSections(): List<NewReleaseSection> =
+    buildList {
         if (albums.isNotEmpty()) {
             add(NewReleaseSection(NewReleaseTab.Albums, albums))
         }
@@ -599,4 +610,3 @@ private fun NewReleaseContent.releaseSections(): List<NewReleaseSection> {
             add(NewReleaseSection(NewReleaseTab.Ep, eps))
         }
     }
-}

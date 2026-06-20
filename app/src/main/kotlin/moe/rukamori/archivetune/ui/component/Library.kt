@@ -11,27 +11,27 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import moe.rukamori.archivetune.innertube.models.PlaylistItem
-import moe.rukamori.archivetune.innertube.models.WatchEndpoint
+import kotlinx.coroutines.CoroutineScope
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.db.entities.Album
 import moe.rukamori.archivetune.db.entities.Artist
 import moe.rukamori.archivetune.db.entities.Playlist
+import moe.rukamori.archivetune.innertube.models.PlaylistItem
+import moe.rukamori.archivetune.innertube.models.WatchEndpoint
 import moe.rukamori.archivetune.ui.menu.AlbumMenu
 import moe.rukamori.archivetune.ui.menu.ArtistMenu
 import moe.rukamori.archivetune.ui.menu.PlaylistMenu
 import moe.rukamori.archivetune.ui.menu.YouTubePlaylistMenu
-import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun LibraryArtistListItem(
@@ -39,7 +39,7 @@ fun LibraryArtistListItem(
     menuState: MenuState,
     coroutineScope: CoroutineScope,
     artist: Artist,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) = ArtistListItem(
     artist = artist,
     trailingContent = {
@@ -49,22 +49,23 @@ fun LibraryArtistListItem(
                     ArtistMenu(
                         originalArtist = artist,
                         coroutineScope = coroutineScope,
-                        onDismiss = menuState::dismiss
+                        onDismiss = menuState::dismiss,
                     )
                 }
-            }
+            },
         ) {
             Icon(
                 painter = painterResource(R.drawable.more_vert),
-                contentDescription = null
+                contentDescription = null,
             )
         }
     },
-    modifier = modifier
-        .fillMaxWidth()
-        .clickable {
-            navController.navigate("artist/${artist.id}")
-        }
+    modifier =
+        modifier
+            .fillMaxWidth()
+            .clickable {
+                navController.navigate("artist/${artist.id}")
+            },
 )
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -74,26 +75,27 @@ fun LibraryArtistGridItem(
     menuState: MenuState,
     coroutineScope: CoroutineScope,
     artist: Artist,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) = ArtistGridItem(
     artist = artist,
     fillMaxWidth = true,
-    modifier = modifier
-        .fillMaxWidth()
-        .combinedClickable(
-            onClick = {
-                navController.navigate("artist/${artist.id}")
-            },
-            onLongClick = {
-                menuState.show {
-                    ArtistMenu(
-                        originalArtist = artist,
-                        coroutineScope = coroutineScope,
-                        onDismiss = menuState::dismiss
-                    )
-                }
-            }
-        )
+    modifier =
+        modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = {
+                    navController.navigate("artist/${artist.id}")
+                },
+                onLongClick = {
+                    menuState.show {
+                        ArtistMenu(
+                            originalArtist = artist,
+                            coroutineScope = coroutineScope,
+                            onDismiss = menuState::dismiss,
+                        )
+                    }
+                },
+            ),
 )
 
 @Composable
@@ -103,7 +105,7 @@ fun LibraryAlbumListItem(
     menuState: MenuState,
     album: Album,
     isActive: Boolean = false,
-    isPlaying: Boolean = false
+    isPlaying: Boolean = false,
 ) = AlbumListItem(
     album = album,
     isActive = isActive,
@@ -115,22 +117,23 @@ fun LibraryAlbumListItem(
                     AlbumMenu(
                         originalAlbum = album,
                         navController = navController,
-                        onDismiss = menuState::dismiss
+                        onDismiss = menuState::dismiss,
                     )
                 }
-            }
+            },
         ) {
             Icon(
                 painter = painterResource(R.drawable.more_vert),
-                contentDescription = null
+                contentDescription = null,
             )
         }
     },
-    modifier = modifier
-        .fillMaxWidth()
-        .clickable {
-            navController.navigate("album/${album.id}")
-        }
+    modifier =
+        modifier
+            .fillMaxWidth()
+            .clickable {
+                navController.navigate("album/${album.id}")
+            },
 )
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -142,29 +145,30 @@ fun LibraryAlbumGridItem(
     coroutineScope: CoroutineScope,
     album: Album,
     isActive: Boolean = false,
-    isPlaying: Boolean = false
+    isPlaying: Boolean = false,
 ) = AlbumGridItem(
     album = album,
     isActive = isActive,
     isPlaying = isPlaying,
     coroutineScope = coroutineScope,
     fillMaxWidth = true,
-    modifier = modifier
-        .fillMaxWidth()
-        .combinedClickable(
-            onClick = {
-                navController.navigate("album/${album.id}")
-            },
-            onLongClick = {
-                menuState.show {
-                    AlbumMenu(
-                        originalAlbum = album,
-                        navController = navController,
-                        onDismiss = menuState::dismiss
-                    )
-                }
-            }
-        )
+    modifier =
+        modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = {
+                    navController.navigate("album/${album.id}")
+                },
+                onLongClick = {
+                    menuState.show {
+                        AlbumMenu(
+                            originalAlbum = album,
+                            navController = navController,
+                            onDismiss = menuState::dismiss,
+                        )
+                    }
+                },
+            ),
 )
 
 @Composable
@@ -197,42 +201,46 @@ fun LibraryPlaylistListItem(
                         PlaylistMenu(
                             playlist = playlist,
                             coroutineScope = coroutineScope,
-                            onDismiss = menuState::dismiss
+                            onDismiss = menuState::dismiss,
                         )
                     } else {
                         playlist.playlist.browseId?.let { browseId ->
                             YouTubePlaylistMenu(
-                                playlist = PlaylistItem(
-                                    id = browseId,
-                                    title = playlist.playlist.name,
-                                    author = null,
-                                    songCountText = null,
-                                    thumbnail = playlist.thumbnails.getOrNull(0) ?: "",
-                                    playEndpoint = WatchEndpoint(
-                                        playlistId = browseId,
-                                        params = playlist.playlist.playEndpointParams
+                                playlist =
+                                    PlaylistItem(
+                                        id = browseId,
+                                        title = playlist.playlist.name,
+                                        author = null,
+                                        songCountText = null,
+                                        thumbnail = playlist.thumbnails.getOrNull(0) ?: "",
+                                        playEndpoint =
+                                            WatchEndpoint(
+                                                playlistId = browseId,
+                                                params = playlist.playlist.playEndpointParams,
+                                            ),
+                                        shuffleEndpoint =
+                                            WatchEndpoint(
+                                                playlistId = browseId,
+                                                params = playlist.playlist.shuffleEndpointParams,
+                                            ),
+                                        radioEndpoint =
+                                            WatchEndpoint(
+                                                playlistId = "RDAMPL$browseId",
+                                                params = playlist.playlist.radioEndpointParams,
+                                            ),
+                                        isEditable = false,
                                     ),
-                                    shuffleEndpoint = WatchEndpoint(
-                                        playlistId = browseId,
-                                        params = playlist.playlist.shuffleEndpointParams
-                                    ),
-                                    radioEndpoint = WatchEndpoint(
-                                        playlistId = "RDAMPL$browseId",
-                                        params = playlist.playlist.radioEndpointParams
-                                    ),
-                                    isEditable = false
-                                ),
                                 coroutineScope = coroutineScope,
-                                onDismiss = menuState::dismiss
+                                onDismiss = menuState::dismiss,
                             )
                         }
                     }
                 }
-            }
+            },
         ) {
             Icon(
                 painter = painterResource(R.drawable.more_vert),
-                contentDescription = null
+                contentDescription = null,
             )
         }
     }
@@ -253,9 +261,10 @@ fun LibraryPlaylistListItem(
         playlist = playlist,
         shape = shape,
         trailingContent = trailing,
-        modifier = modifier
-            .fillMaxWidth()
-            .focusable()
-            .clickable(onClick = openPlaylist),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .focusable()
+                .clickable(onClick = openPlaylist),
     )
 }

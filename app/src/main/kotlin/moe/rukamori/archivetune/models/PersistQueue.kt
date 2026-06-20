@@ -26,12 +26,15 @@ sealed class QueueType : Serializable {
     object LIST : QueueType() {
         private const val serialVersionUID = 1L
     }
+
     object YOUTUBE : QueueType() {
         private const val serialVersionUID = 1L
     }
+
     object YOUTUBE_ALBUM_RADIO : QueueType() {
         private const val serialVersionUID = 1L
     }
+
     object LOCAL_ALBUM_RADIO : QueueType() {
         private const val serialVersionUID = 1L
     }
@@ -53,19 +56,19 @@ sealed class QueueData : Serializable {
         val playlistId: String,
         val albumSongCount: Int = 0,
         val continuation: String? = null,
-        val firstTimeLoaded: Boolean = false
+        val firstTimeLoaded: Boolean = false,
     ) : QueueData() {
         companion object {
             private const val serialVersionUID = 1L
         }
     }
-    
+
     data class LocalAlbumRadioData(
         val albumId: String,
         val startIndex: Int = 0,
         val playlistId: String? = null,
         val continuation: String? = null,
-        val firstTimeLoaded: Boolean = false
+        val firstTimeLoaded: Boolean = false,
     ) : QueueData() {
         companion object {
             private const val serialVersionUID = 1L

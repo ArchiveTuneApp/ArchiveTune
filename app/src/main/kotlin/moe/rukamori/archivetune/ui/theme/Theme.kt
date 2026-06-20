@@ -84,19 +84,20 @@ fun ArchiveTuneTheme(
     val useSystemDynamicColor =
         (seedPalette == null && themeColor == DefaultThemeColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
 
-    val customFontFamily = produceState<FontFamily?>(
-        initialValue = null,
-        context,
-        fontPreference,
-        customFontUri,
-    ) {
-        value =
-            if (fontPreference == AppFontPreference.CUSTOM && customFontUri.isNotBlank()) {
-                CustomFontLoader.loadFontFamily(context.applicationContext, customFontUri)
-            } else {
-                null
-            }
-    }.value
+    val customFontFamily =
+        produceState<FontFamily?>(
+            initialValue = null,
+            context,
+            fontPreference,
+            customFontUri,
+        ) {
+            value =
+                if (fontPreference == AppFontPreference.CUSTOM && customFontUri.isNotBlank()) {
+                    CustomFontLoader.loadFontFamily(context.applicationContext, customFontUri)
+                } else {
+                    null
+                }
+        }.value
     val resolvedFontFamily =
         remember(fontPreference, customFontFamily) {
             when (fontPreference) {
@@ -105,17 +106,19 @@ fun ArchiveTuneTheme(
                 AppFontPreference.CUSTOM -> customFontFamily ?: AppFontFamily
             }
         }
-    val typography = remember(resolvedFontFamily) {
-        when (resolvedFontFamily) {
-            AppFontFamily -> AppTypography
-            FontFamily.Default -> SystemTypography
-            else -> typographyFor(resolvedFontFamily)
+    val typography =
+        remember(resolvedFontFamily) {
+            when (resolvedFontFamily) {
+                AppFontFamily -> AppTypography
+                FontFamily.Default -> SystemTypography
+                else -> typographyFor(resolvedFontFamily)
+            }
         }
-    }
     val expressiveMotionScheme = remember { MotionScheme.expressive() }
-    val paletteStyle = remember(themeColor, seedPalette) {
-        paletteStyleFor(seedPalette?.primary ?: themeColor)
-    }
+    val paletteStyle =
+        remember(themeColor, seedPalette) {
+            paletteStyleFor(seedPalette?.primary ?: themeColor)
+        }
 
     val appColorScheme =
         remember(seedPalette, themeColor, darkTheme) {
@@ -140,21 +143,33 @@ fun ArchiveTuneTheme(
             appColorScheme
         }
 
-    val colorScheme = remember(baseColorScheme, pureBlack, darkTheme) {
-        if (darkTheme && pureBlack) baseColorScheme.pureBlack(true) else baseColorScheme
-    }
+    val colorScheme =
+        remember(baseColorScheme, pureBlack, darkTheme) {
+            if (darkTheme && pureBlack) baseColorScheme.pureBlack(true) else baseColorScheme
+        }
 
     val animatedColorScheme = if (disableAnimations) colorScheme else animateColorScheme(colorScheme)
 
-    val expressiveShapes = remember {
-        Shapes(
-            extraSmall = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
-            small = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
-            medium = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-            large = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
-            extraLarge = androidx.compose.foundation.shape.RoundedCornerShape(32.dp),
-        )
-    }
+    val expressiveShapes =
+        remember {
+            Shapes(
+                extraSmall =
+                    androidx.compose.foundation.shape
+                        .RoundedCornerShape(8.dp),
+                small =
+                    androidx.compose.foundation.shape
+                        .RoundedCornerShape(12.dp),
+                medium =
+                    androidx.compose.foundation.shape
+                        .RoundedCornerShape(16.dp),
+                large =
+                    androidx.compose.foundation.shape
+                        .RoundedCornerShape(24.dp),
+                extraLarge =
+                    androidx.compose.foundation.shape
+                        .RoundedCornerShape(32.dp),
+            )
+        }
 
     CompositionLocalProvider(
         LocalArchiveTuneFontPreference provides fontPreference,
@@ -182,11 +197,21 @@ private fun animateColorScheme(targetColorScheme: ColorScheme): ColorScheme {
         secondary = animateColorAsState(targetColorScheme.secondary, animationSpec, label = "secondary").value,
         onSecondary = animateColorAsState(targetColorScheme.onSecondary, animationSpec, label = "onSecondary").value,
         secondaryContainer = animateColorAsState(targetColorScheme.secondaryContainer, animationSpec, label = "secondaryContainer").value,
-        onSecondaryContainer = animateColorAsState(targetColorScheme.onSecondaryContainer, animationSpec, label = "onSecondaryContainer").value,
+        onSecondaryContainer =
+            animateColorAsState(
+                targetColorScheme.onSecondaryContainer,
+                animationSpec,
+                label = "onSecondaryContainer",
+            ).value,
         tertiary = animateColorAsState(targetColorScheme.tertiary, animationSpec, label = "tertiary").value,
         onTertiary = animateColorAsState(targetColorScheme.onTertiary, animationSpec, label = "onTertiary").value,
         tertiaryContainer = animateColorAsState(targetColorScheme.tertiaryContainer, animationSpec, label = "tertiaryContainer").value,
-        onTertiaryContainer = animateColorAsState(targetColorScheme.onTertiaryContainer, animationSpec, label = "onTertiaryContainer").value,
+        onTertiaryContainer =
+            animateColorAsState(
+                targetColorScheme.onTertiaryContainer,
+                animationSpec,
+                label = "onTertiaryContainer",
+            ).value,
         background = animateColorAsState(targetColorScheme.background, animationSpec, label = "background").value,
         onBackground = animateColorAsState(targetColorScheme.onBackground, animationSpec, label = "onBackground").value,
         surface = animateColorAsState(targetColorScheme.surface, animationSpec, label = "surface").value,
@@ -206,38 +231,60 @@ private fun animateColorScheme(targetColorScheme: ColorScheme): ColorScheme {
         surfaceBright = animateColorAsState(targetColorScheme.surfaceBright, animationSpec, label = "surfaceBright").value,
         surfaceDim = animateColorAsState(targetColorScheme.surfaceDim, animationSpec, label = "surfaceDim").value,
         surfaceContainer = animateColorAsState(targetColorScheme.surfaceContainer, animationSpec, label = "surfaceContainer").value,
-        surfaceContainerLow = animateColorAsState(targetColorScheme.surfaceContainerLow, animationSpec, label = "surfaceContainerLow").value,
-        surfaceContainerLowest = animateColorAsState(targetColorScheme.surfaceContainerLowest, animationSpec, label = "surfaceContainerLowest").value,
-        surfaceContainerHigh = animateColorAsState(targetColorScheme.surfaceContainerHigh, animationSpec, label = "surfaceContainerHigh").value,
-        surfaceContainerHighest = animateColorAsState(targetColorScheme.surfaceContainerHighest, animationSpec, label = "surfaceContainerHighest").value,
+        surfaceContainerLow =
+            animateColorAsState(
+                targetColorScheme.surfaceContainerLow,
+                animationSpec,
+                label = "surfaceContainerLow",
+            ).value,
+        surfaceContainerLowest =
+            animateColorAsState(
+                targetColorScheme.surfaceContainerLowest,
+                animationSpec,
+                label = "surfaceContainerLowest",
+            ).value,
+        surfaceContainerHigh =
+            animateColorAsState(
+                targetColorScheme.surfaceContainerHigh,
+                animationSpec,
+                label = "surfaceContainerHigh",
+            ).value,
+        surfaceContainerHighest =
+            animateColorAsState(
+                targetColorScheme.surfaceContainerHighest,
+                animationSpec,
+                label = "surfaceContainerHighest",
+            ).value,
     )
 }
 
 private fun exactPaletteColorScheme(
     palette: ThemeSeedPalette,
     isDark: Boolean,
-): ColorScheme = mergedSeedColorScheme(
-    primarySeed = palette.primary,
-    secondarySeed = palette.secondary,
-    tertiarySeed = palette.tertiary,
-    neutralSeed = palette.neutral,
-    isDark = isDark,
-)
+): ColorScheme =
+    mergedSeedColorScheme(
+        primarySeed = palette.primary,
+        secondarySeed = palette.secondary,
+        tertiarySeed = palette.tertiary,
+        neutralSeed = palette.neutral,
+        isDark = isDark,
+    )
 
 private fun materialKolorDynamicColorScheme(
     keyColor: Color,
     isDark: Boolean,
     contrastLevel: Double = 0.0,
     style: PaletteStyle,
-): ColorScheme = mergedSeedColorScheme(
-    primarySeed = keyColor,
-    secondarySeed = keyColor,
-    tertiarySeed = keyColor,
-    neutralSeed = keyColor,
-    isDark = isDark,
-    contrastLevel = contrastLevel,
-    style = style,
-)
+): ColorScheme =
+    mergedSeedColorScheme(
+        primarySeed = keyColor,
+        secondarySeed = keyColor,
+        tertiarySeed = keyColor,
+        neutralSeed = keyColor,
+        isDark = isDark,
+        contrastLevel = contrastLevel,
+        style = style,
+    )
 
 private fun mergedSeedColorScheme(
     primarySeed: Color,
@@ -259,17 +306,14 @@ private fun mergedSeedColorScheme(
         primaryContainer = primaryScheme.primaryContainer,
         onPrimaryContainer = primaryScheme.onPrimaryContainer,
         inversePrimary = primaryScheme.inversePrimary,
-
         secondary = secondaryScheme.primary,
         onSecondary = secondaryScheme.onPrimary,
         secondaryContainer = secondaryScheme.primaryContainer,
         onSecondaryContainer = secondaryScheme.onPrimaryContainer,
-
         tertiary = tertiaryScheme.primary,
         onTertiary = tertiaryScheme.onPrimary,
         tertiaryContainer = tertiaryScheme.primaryContainer,
         onTertiaryContainer = tertiaryScheme.onPrimaryContainer,
-
         background = neutralScheme.background,
         onBackground = neutralScheme.onBackground,
         surface = neutralScheme.surface,
@@ -278,7 +322,6 @@ private fun mergedSeedColorScheme(
         onSurfaceVariant = neutralScheme.onSurfaceVariant,
         inverseSurface = neutralScheme.inverseSurface,
         inverseOnSurface = neutralScheme.inverseOnSurface,
-
         surfaceBright = neutralScheme.surfaceBright,
         surfaceDim = neutralScheme.surfaceDim,
         surfaceContainer = neutralScheme.surfaceContainer,
@@ -286,15 +329,12 @@ private fun mergedSeedColorScheme(
         surfaceContainerLowest = neutralScheme.surfaceContainerLowest,
         surfaceContainerHigh = neutralScheme.surfaceContainerHigh,
         surfaceContainerHighest = neutralScheme.surfaceContainerHighest,
-
         outline = neutralScheme.outline,
         outlineVariant = neutralScheme.outlineVariant,
-
         error = primaryScheme.error,
         onError = primaryScheme.onError,
         errorContainer = primaryScheme.errorContainer,
         onErrorContainer = primaryScheme.onErrorContainer,
-
         scrim = neutralScheme.scrim,
         surfaceTint = primaryScheme.surfaceTint,
     )
@@ -305,12 +345,13 @@ private fun materialKolorScheme(
     isDark: Boolean,
     contrastLevel: Double,
     style: PaletteStyle,
-): ColorScheme = dynamicColorScheme(
-    seedColor = seedColor,
-    isDark = isDark,
-    contrastLevel = contrastLevel,
-    style = style,
-)
+): ColorScheme =
+    dynamicColorScheme(
+        seedColor = seedColor,
+        isDark = isDark,
+        contrastLevel = contrastLevel,
+        style = style,
+    )
 
 private fun paletteStyleFor(seedColor: Color): PaletteStyle {
     val chroma = seedColor.toHct().chroma
@@ -324,9 +365,11 @@ private fun paletteStyleFor(seedColor: Color): PaletteStyle {
 private fun Int.toComposeColor(): Color = Color(this.toLong() and 0xFFFFFFFFL)
 
 fun Bitmap.extractThemeColor(): Color {
-    val palette = Palette.from(this)
-        .maximumColorCount(16)
-        .generate()
+    val palette =
+        Palette
+            .from(this)
+            .maximumColorCount(16)
+            .generate()
 
     val swatch =
         palette.vibrantSwatch
@@ -341,13 +384,16 @@ fun Bitmap.extractThemeColor(): Color {
 }
 
 fun Bitmap.extractGradientColors(): List<Color> {
-    val palette = Palette.from(this)
-        .maximumColorCount(48)
-        .generate()
+    val palette =
+        Palette
+            .from(this)
+            .maximumColorCount(48)
+            .generate()
 
-    val swatches = palette.swatches
-        .filter { it.population > 0 }
-        .sortedByDescending { it.population }
+    val swatches =
+        palette.swatches
+            .filter { it.population > 0 }
+            .sortedByDescending { it.population }
 
     if (swatches.isEmpty()) {
         return listOf(Color(0xFF595959), Color(0xFF0D0D0D))
@@ -378,15 +424,21 @@ fun Bitmap.extractGradientColors(): List<Color> {
 }
 
 fun ColorScheme.pureBlack(apply: Boolean) =
-    if (apply) copy(
-        surface = Color.Black,
-        background = Color.Black
-    ) else this
+    if (apply) {
+        copy(
+            surface = Color.Black,
+            background = Color.Black,
+        )
+    } else {
+        this
+    }
 
-val ColorSaver = object : Saver<Color, Int> {
-    override fun restore(value: Int): Color = value.toComposeColor()
-    override fun SaverScope.save(value: Color): Int = value.toArgb()
-}
+val ColorSaver =
+    object : Saver<Color, Int> {
+        override fun restore(value: Int): Color = value.toComposeColor()
+
+        override fun SaverScope.save(value: Color): Int = value.toArgb()
+    }
 
 @Serializable
 data class ThemeExportV1(
@@ -400,23 +452,28 @@ data class ThemeExportV1(
 
 object ThemeSeedPaletteCodec {
     private const val PreferencePrefix = "seedPalette:"
-    private val json = Json {
-        prettyPrint = true
-        ignoreUnknownKeys = true
-        encodeDefaults = true
-        isLenient = true
-    }
+    private val json =
+        Json {
+            prettyPrint = true
+            ignoreUnknownKeys = true
+            encodeDefaults = true
+            isLenient = true
+        }
 
-    fun encodeForPreference(palette: ThemeSeedPalette, name: String? = null): String {
-        val payload = json.encodeToString(
-            ThemeExportV1(
-                name = name,
-                primary = palette.primary.toHexArgbString(),
-                secondary = palette.secondary.toHexArgbString(),
-                tertiary = palette.tertiary.toHexArgbString(),
-                neutral = palette.neutral.toHexArgbString(),
+    fun encodeForPreference(
+        palette: ThemeSeedPalette,
+        name: String? = null,
+    ): String {
+        val payload =
+            json.encodeToString(
+                ThemeExportV1(
+                    name = name,
+                    primary = palette.primary.toHexArgbString(),
+                    secondary = palette.secondary.toHexArgbString(),
+                    tertiary = palette.tertiary.toHexArgbString(),
+                    neutral = palette.neutral.toHexArgbString(),
+                ),
             )
-        )
         val b64 = Base64.encodeToString(payload.toByteArray(Charsets.UTF_8), Base64.URL_SAFE or Base64.NO_WRAP)
         return PreferencePrefix + b64
     }
@@ -433,7 +490,10 @@ object ThemeSeedPaletteCodec {
         return decodeFromJson(decoded)
     }
 
-    fun encodeAsJson(palette: ThemeSeedPalette, name: String? = null): String =
+    fun encodeAsJson(
+        palette: ThemeSeedPalette,
+        name: String? = null,
+    ): String =
         json.encodeToString(
             ThemeExportV1(
                 name = name,
@@ -441,7 +501,7 @@ object ThemeSeedPaletteCodec {
                 secondary = palette.secondary.toHexArgbString(),
                 tertiary = palette.tertiary.toHexArgbString(),
                 neutral = palette.neutral.toHexArgbString(),
-            )
+            ),
         )
 
     fun decodeFromJson(text: String): ThemeSeedPalette? {
@@ -480,7 +540,10 @@ object ThemeSeedPaletteCodec {
         if (trimmed.isEmpty()) return null
         return runCatching {
             val element: JsonElement = json.parseToJsonElement(trimmed)
-            element.jsonObject["name"]?.jsonPrimitive?.content?.takeIf { it.isNotBlank() }
+            element.jsonObject["name"]
+                ?.jsonPrimitive
+                ?.content
+                ?.takeIf { it.isNotBlank() }
         }.getOrNull()
     }
 

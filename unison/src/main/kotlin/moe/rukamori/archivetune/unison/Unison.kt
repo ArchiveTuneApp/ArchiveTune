@@ -7,9 +7,6 @@
 
 package moe.rukamori.archivetune.unison
 
-import moe.rukamori.archivetune.unison.models.UnisonEntry
-import moe.rukamori.archivetune.unison.models.UnisonResponse
-import moe.rukamori.archivetune.unison.models.UnisonSearchResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpTimeout
@@ -23,6 +20,9 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.serialization.json.Json
+import moe.rukamori.archivetune.unison.models.UnisonEntry
+import moe.rukamori.archivetune.unison.models.UnisonResponse
+import moe.rukamori.archivetune.unison.models.UnisonSearchResponse
 
 object Unison {
     private const val API_BASE_URL = "https://unison.boidu.dev/"
@@ -82,9 +82,10 @@ object Unison {
 
     private suspend fun fetchByVideoId(videoId: String): UnisonEntry? {
         return try {
-            val response = client.get("lyrics") {
-                parameter("v", videoId)
-            }
+            val response =
+                client.get("lyrics") {
+                    parameter("v", videoId)
+                }
             logger?.invoke("Unison videoId response status: ${response.status}")
             if (!response.status.isSuccess()) return null
             val body = response.bodyAsText()
@@ -105,12 +106,13 @@ object Unison {
     ): UnisonEntry? {
         logger?.invoke("Fetching Unison lyrics by metadata: title=$title, artist=$artist, album=$album, duration=$durationSeconds")
         return try {
-            val response = client.get("lyrics") {
-                parameter("song", title)
-                parameter("artist", artist)
-                if (!album.isNullOrBlank()) parameter("album", album)
-                if (durationSeconds > 0) parameter("duration", durationSeconds)
-            }
+            val response =
+                client.get("lyrics") {
+                    parameter("song", title)
+                    parameter("artist", artist)
+                    if (!album.isNullOrBlank()) parameter("album", album)
+                    if (durationSeconds > 0) parameter("duration", durationSeconds)
+                }
             logger?.invoke("Unison metadata response status: ${response.status}")
             if (!response.status.isSuccess()) return null
             val body = response.bodyAsText()
@@ -135,12 +137,13 @@ object Unison {
 
         logger?.invoke("Searching Unison lyrics: title=$cleanTitle, artist=$cleanArtist")
         return try {
-            val response = client.get("lyrics/search") {
-                parameter("song", cleanTitle)
-                parameter("artist", cleanArtist)
-                if (!album.isNullOrBlank()) parameter("album", album.trim())
-                if (durationSeconds > 0) parameter("duration", durationSeconds)
-            }
+            val response =
+                client.get("lyrics/search") {
+                    parameter("song", cleanTitle)
+                    parameter("artist", cleanArtist)
+                    if (!album.isNullOrBlank()) parameter("album", album.trim())
+                    if (durationSeconds > 0) parameter("duration", durationSeconds)
+                }
             logger?.invoke("Unison search response status: ${response.status}")
             if (!response.status.isSuccess()) return emptyList()
             val body = response.bodyAsText()
@@ -159,13 +162,15 @@ object Unison {
         artist: String,
         album: String? = null,
         durationSeconds: Int = -1,
-    ): Result<String> = runCatching {
-        require(title.isNotBlank() && artist.isNotBlank()) { "Song title and artist are required" }
-        val entry = fetchEntry(videoId, title, artist, album, durationSeconds)
-            ?: throw IllegalStateException("Lyrics unavailable")
-        logger?.invoke("Unison got lyrics: format=${entry.format}, syncType=${entry.syncType}, length=${entry.lyrics.length}")
-        entry.lyrics
-    }
+    ): Result<String> =
+        runCatching {
+            require(title.isNotBlank() && artist.isNotBlank()) { "Song title and artist are required" }
+            val entry =
+                fetchEntry(videoId, title, artist, album, durationSeconds)
+                    ?: throw IllegalStateException("Lyrics unavailable")
+            logger?.invoke("Unison got lyrics: format=${entry.format}, syncType=${entry.syncType}, length=${entry.lyrics.length}")
+            entry.lyrics
+        }
 
     suspend fun getAllLyrics(
         videoId: String? = null,

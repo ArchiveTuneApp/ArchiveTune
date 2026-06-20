@@ -28,55 +28,59 @@ object DiscordSocialPresenceClient {
     suspend fun updatePresence(
         accessToken: String,
         activity: DiscordPresenceActivity,
-    ): Result<Unit> = withContext(Dispatchers.IO) {
-        mutex.withLock {
-            val token = accessToken.trim()
-            if (token.isBlank()) {
-                return@withLock Result.failure(IllegalArgumentException("Discord access token is missing"))
-            }
+    ): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            mutex.withLock {
+                val token = accessToken.trim()
+                if (token.isBlank()) {
+                    return@withLock Result.failure(IllegalArgumentException("Discord access token is missing"))
+                }
 
-            val connectResult = ensureConnected(token)
-            if (connectResult.isFailure) return@withLock connectResult
+                val connectResult = ensureConnected(token)
+                if (connectResult.isFailure) return@withLock connectResult
 
-            val presenceJson = buildPresencePayload(token, activity)
-            val sent = gateway?.sendPresenceUpdate(presenceJson) ?: false
-            if (!sent) {
-                return@withLock Result.failure(Exception("Failed to send presence update"))
+                val presenceJson = buildPresencePayload(token, activity)
+                val sent = gateway?.sendPresenceUpdate(presenceJson) ?: false
+                if (!sent) {
+                    return@withLock Result.failure(Exception("Failed to send presence update"))
+                }
+                Result.success(Unit)
             }
-            Result.success(Unit)
         }
-    }
 
-    suspend fun clearPresence(accessToken: String? = null): Result<Unit> = withContext(Dispatchers.IO) {
-        mutex.withLock {
-            var g = gateway
-            if (g == null && !accessToken.isNullOrBlank()) {
-                ensureConnected(accessToken)
-                g = gateway
+    suspend fun clearPresence(accessToken: String? = null): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            mutex.withLock {
+                var g = gateway
+                if (g == null && !accessToken.isNullOrBlank()) {
+                    ensureConnected(accessToken)
+                    g = gateway
+                }
+                g ?: return@withLock Result.failure(Exception("Not connected"))
+                val empty =
+                    JSONObject().apply {
+                        put("activities", JSONArray())
+                        put("afk", false)
+                        put("since", JSONObject.NULL)
+                        put("status", "online")
+                    }
+                g.sendPresenceUpdate(empty)
+                Result.success(Unit)
             }
-            g ?: return@withLock Result.failure(Exception("Not connected"))
-            val empty = JSONObject().apply {
-                put("activities", JSONArray())
-                put("afk", false)
-                put("since", JSONObject.NULL)
-                put("status", "online")
-            }
-            g.sendPresenceUpdate(empty)
-            Result.success(Unit)
         }
-    }
 
-    suspend fun close(): Result<Unit> = withContext(Dispatchers.IO) {
-        mutex.withLock {
-            gateway?.disconnect()
-            gateway = null
-            scope?.cancel()
-            scope = null
-            activeToken = null
-            DiscordAssetRegistrar.clearCache()
-            Result.success(Unit)
+    suspend fun close(): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            mutex.withLock {
+                gateway?.disconnect()
+                gateway = null
+                scope?.cancel()
+                scope = null
+                activeToken = null
+                DiscordAssetRegistrar.clearCache()
+                Result.success(Unit)
+            }
         }
-    }
 
     private fun ensureConnected(token: String): Result<Unit> {
         if (activeToken == token && gateway != null) return Result.success(Unit)
@@ -103,11 +107,12 @@ object DiscordSocialPresenceClient {
         token: String,
         activity: DiscordPresenceActivity,
     ): JSONObject {
-        val (resolvedLarge, resolvedSmall) = DiscordAssetRegistrar.resolveImages(
-            accessToken = token,
-            largeImage = activity.assets.largeImage,
-            smallImage = activity.assets.smallImage,
-        )
+        val (resolvedLarge, resolvedSmall) =
+            DiscordAssetRegistrar.resolveImages(
+                accessToken = token,
+                largeImage = activity.assets.largeImage,
+                smallImage = activity.assets.smallImage,
+            )
 
         val activityJson = JSONObject()
 
@@ -161,11 +166,14 @@ object DiscordSocialPresenceClient {
         payload.put("activities", activities)
         payload.put("afk", false)
         payload.put("since", JSONObject.NULL)
-        payload.put("status", when (activity.onlineStatus) {
-            DiscordOnlineStatus.Idle -> "idle"
-            DiscordOnlineStatus.Dnd -> "dnd"
-            else -> "online"
-        })
+        payload.put(
+            "status",
+            when (activity.onlineStatus) {
+                DiscordOnlineStatus.Idle -> "idle"
+                DiscordOnlineStatus.Dnd -> "dnd"
+                else -> "online"
+            },
+        )
 
         return payload
     }

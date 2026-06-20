@@ -132,15 +132,26 @@ private fun TagsManagementContent(
         )
 
         when (state) {
-            PlaylistTagsScreenState.Loading -> PlaylistTagsLoadingContent()
-            PlaylistTagsScreenState.Empty -> PlaylistTagsEmptyContent(onAddTag = onAddTag)
-            is PlaylistTagsScreenState.Error -> PlaylistTagsErrorContent(messageResId = state.messageResId)
-            is PlaylistTagsScreenState.Success -> TagsManagementList(
-                tags = state.tags,
-                onEditTag = onEditTag,
-                onChangeColor = onChangeColor,
-                onDeleteTag = onDeleteTag,
-            )
+            PlaylistTagsScreenState.Loading -> {
+                PlaylistTagsLoadingContent()
+            }
+
+            PlaylistTagsScreenState.Empty -> {
+                PlaylistTagsEmptyContent(onAddTag = onAddTag)
+            }
+
+            is PlaylistTagsScreenState.Error -> {
+                PlaylistTagsErrorContent(messageResId = state.messageResId)
+            }
+
+            is PlaylistTagsScreenState.Success -> {
+                TagsManagementList(
+                    tags = state.tags,
+                    onEditTag = onEditTag,
+                    onChangeColor = onChangeColor,
+                    onDeleteTag = onDeleteTag,
+                )
+            }
         }
 
         FlowRow(
@@ -179,9 +190,10 @@ private fun TagsManagementList(
     onDeleteTag: (String) -> Unit,
 ) {
     LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(max = 420.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .heightIn(max = 420.dp),
         verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
     ) {
         itemsIndexed(
@@ -218,10 +230,11 @@ private fun EditableTagRow(
         selected = false,
         onClick = onEdit,
         shapes = ListItemDefaults.segmentedShapes(index = index, count = count),
-        colors = ListItemDefaults.segmentedColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-        ),
+        colors =
+            ListItemDefaults.segmentedColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+            ),
         leadingContent = {
             PlaylistTagColorSwatch(
                 color = tag.color,
@@ -270,11 +283,12 @@ private fun AddEditTagDialog(
     onSave: () -> Unit,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
-    val title = if (editor.tagId == null) {
-        stringResource(R.string.add_tag)
-    } else {
-        stringResource(R.string.edit_tag)
-    }
+    val title =
+        if (editor.tagId == null) {
+            stringResource(R.string.add_tag)
+        } else {
+            stringResource(R.string.edit_tag)
+        }
 
     PlaylistTagsDialogScaffold(onDismiss = onDismiss) {
         Column(
@@ -294,20 +308,22 @@ private fun AddEditTagDialog(
                 shape = MaterialTheme.shapes.large,
                 colors = OutlinedTextFieldDefaults.colors(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        if (!editor.canSave) return@KeyboardActions
-                        keyboardController?.hide()
-                        onSave()
-                    },
-                ),
+                keyboardActions =
+                    KeyboardActions(
+                        onDone = {
+                            if (!editor.canSave) return@KeyboardActions
+                            keyboardController?.hide()
+                            onSave()
+                        },
+                    ),
                 modifier = Modifier.fillMaxWidth(),
             )
 
             Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onColorClick),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable(onClick = onColorClick),
                 shape = MaterialTheme.shapes.extraLarge,
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
             ) {
@@ -460,9 +476,10 @@ private fun PlaylistTagsHeader(
 @Composable
 private fun PlaylistTagsLoadingContent() {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 36.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 36.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -476,9 +493,7 @@ private fun PlaylistTagsLoadingContent() {
 }
 
 @Composable
-private fun PlaylistTagsEmptyContent(
-    onAddTag: () -> Unit,
-) {
+private fun PlaylistTagsEmptyContent(onAddTag: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
@@ -517,9 +532,7 @@ private fun PlaylistTagsEmptyContent(
 }
 
 @Composable
-private fun PlaylistTagsErrorContent(
-    messageResId: Int,
-) {
+private fun PlaylistTagsErrorContent(messageResId: Int) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
@@ -560,19 +573,21 @@ private fun PlaylistTagColorSwatch(
         label = "tagColorSwatchSize",
     )
     val borderColor by animateColorAsState(
-        targetValue = if (selected) {
-            MaterialTheme.colorScheme.primary
-        } else {
-            MaterialTheme.colorScheme.outline
-        },
+        targetValue =
+            if (selected) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.outline
+            },
         animationSpec = motionScheme.defaultEffectsSpec(),
         label = "tagColorSwatchBorder",
     )
 
     Surface(
-        modifier = Modifier
-            .size(size)
-            .clickable(onClick = onClick),
+        modifier =
+            Modifier
+                .size(size)
+                .clickable(onClick = onClick),
         shape = if (selected) MaterialTheme.shapes.extraLarge else MaterialTheme.shapes.large,
         color = swatchColor,
         border = BorderStroke(2.dp, borderColor),
@@ -608,17 +623,19 @@ private fun PlaylistTagsDialogScaffold(
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp)
-                .imePadding()
-                .navigationBarsPadding(),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(24.dp)
+                    .imePadding()
+                    .navigationBarsPadding(),
             contentAlignment = Alignment.Center,
         ) {
             Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = maxHeight),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = maxHeight),
                 shape = AlertDialogDefaults.shape,
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 tonalElevation = AlertDialogDefaults.TonalElevation,

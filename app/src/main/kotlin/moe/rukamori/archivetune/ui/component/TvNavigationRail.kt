@@ -72,9 +72,10 @@ fun TvNavigationRail(
         contentColor = MaterialTheme.colorScheme.onSurface,
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(horizontal = 16.dp, vertical = 24.dp),
+            modifier =
+                Modifier
+                    .fillMaxHeight()
+                    .padding(horizontal = 16.dp, vertical = 24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -82,23 +83,23 @@ fun TvNavigationRail(
                 TvNavigationRailItem(
                     screen = screen,
                     selected = selectedItemRoute == screen.route,
-                    modifier = Modifier
-                        .then(
-                            if (index == 0 && firstItemFocusRequester != null) {
-                                Modifier.focusRequester(firstItemFocusRequester)
-                            } else {
-                                Modifier
-                            }
-                        )
-                        .then(
-                            if (contentFocusRequester != null) {
-                                Modifier.focusProperties {
-                                    right = contentFocusRequester
-                                }
-                            } else {
-                                Modifier
-                            }
-                        ),
+                    modifier =
+                        Modifier
+                            .then(
+                                if (index == 0 && firstItemFocusRequester != null) {
+                                    Modifier.focusRequester(firstItemFocusRequester)
+                                } else {
+                                    Modifier
+                                },
+                            ).then(
+                                if (contentFocusRequester != null) {
+                                    Modifier.focusProperties {
+                                        right = contentFocusRequester
+                                    }
+                                } else {
+                                    Modifier
+                                },
+                            ),
                     onClick = { onItemClick(screen) },
                 )
             }
@@ -117,54 +118,60 @@ private fun TvNavigationRailItem(
     val focused = interactionSource.collectIsFocusedAsState().value
     val scale by animateFloatAsState(
         targetValue = if (focused) 1.04f else 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMediumLow,
-        ),
+        animationSpec =
+            spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessMediumLow,
+            ),
         label = "",
     )
     val containerColor by animateColorAsState(
-        targetValue = when {
-            focused -> MaterialTheme.colorScheme.secondaryContainer
-            selected -> MaterialTheme.colorScheme.surfaceContainerHighest
-            else -> MaterialTheme.colorScheme.surfaceContainerLow
-        },
+        targetValue =
+            when {
+                focused -> MaterialTheme.colorScheme.secondaryContainer
+                selected -> MaterialTheme.colorScheme.surfaceContainerHighest
+                else -> MaterialTheme.colorScheme.surfaceContainerLow
+            },
         label = "",
     )
     val contentColor by animateColorAsState(
-        targetValue = when {
-            focused -> MaterialTheme.colorScheme.onSecondaryContainer
-            selected -> MaterialTheme.colorScheme.onSurface
-            else -> MaterialTheme.colorScheme.onSurfaceVariant
-        },
+        targetValue =
+            when {
+                focused -> MaterialTheme.colorScheme.onSecondaryContainer
+                selected -> MaterialTheme.colorScheme.onSurface
+                else -> MaterialTheme.colorScheme.onSurfaceVariant
+            },
         label = "",
     )
 
     Column(
-        modifier = modifier
-            .scale(scale)
-            .width(104.dp)
-            .clip(RoundedCornerShape(28.dp))
-            .background(containerColor)
-            .onKeyEvent { event ->
-                if (event.type != KeyEventType.KeyDown) return@onKeyEvent false
-                when (event.key) {
-                    Key(KEYCODE_DPAD_CENTER.toLong()),
-                    Key(KEYCODE_ENTER.toLong()),
-                    Key(KEYCODE_NUMPAD_ENTER.toLong()) -> {
-                        onClick()
-                        true
+        modifier =
+            modifier
+                .scale(scale)
+                .width(104.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(containerColor)
+                .onKeyEvent { event ->
+                    if (event.type != KeyEventType.KeyDown) return@onKeyEvent false
+                    when (event.key) {
+                        Key(KEYCODE_DPAD_CENTER.toLong()),
+                        Key(KEYCODE_ENTER.toLong()),
+                        Key(KEYCODE_NUMPAD_ENTER.toLong()),
+                        -> {
+                            onClick()
+                            true
+                        }
+
+                        else -> {
+                            false
+                        }
                     }
-                    else -> false
-                }
-            }
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                role = Role.Tab,
-                onClick = onClick,
-            )
-            .padding(horizontal = 12.dp, vertical = 14.dp),
+                }.clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    role = Role.Tab,
+                    onClick = onClick,
+                ).padding(horizontal = 12.dp, vertical = 14.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -173,9 +180,10 @@ private fun TvNavigationRailItem(
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                painter = painterResource(
-                    if (selected || focused) screen.iconIdActive else screen.iconIdInactive,
-                ),
+                painter =
+                    painterResource(
+                        if (selected || focused) screen.iconIdActive else screen.iconIdInactive,
+                    ),
                 contentDescription = stringResource(screen.titleId),
                 tint = contentColor,
             )

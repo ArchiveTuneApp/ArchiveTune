@@ -43,11 +43,13 @@ import androidx.glance.text.TextStyle
 import moe.rukamori.archivetune.R
 
 class PlaybackDeckWidget : GlanceAppWidget() {
-
     override val stateDefinition = PreferencesGlanceStateDefinition
     override val sizeMode = SizeMode.Exact
 
-    override suspend fun provideGlance(context: Context, id: GlanceId) {
+    override suspend fun provideGlance(
+        context: Context,
+        id: GlanceId,
+    ) {
         provideContent {
             PlaybackDeckContent(context)
         }
@@ -60,22 +62,24 @@ private fun PlaybackDeckContent(context: Context) {
     val state = prefs.toWidgetPlaybackState(context)
 
     GlanceTheme(
-        colors = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            GlanceTheme.colors
-        } else {
-            ArchiveTuneWidgetColors.providers
-        },
+        colors =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                GlanceTheme.colors
+            } else {
+                ArchiveTuneWidgetColors.providers
+            },
     ) {
         val palette = rememberWidgetPalette(state.dominantColor)
         val size = LocalSize.current
 
         Box(
-            modifier = GlanceModifier
-                .fillMaxSize()
-                .background(palette.surface)
-                .cornerRadius(30.dp)
-                .padding(if (size.height < 150.dp) 8.dp else 14.dp)
-                .clickable(openArchiveTuneAction(context)),
+            modifier =
+                GlanceModifier
+                    .fillMaxSize()
+                    .background(palette.surface)
+                    .cornerRadius(30.dp)
+                    .padding(if (size.height < 150.dp) 8.dp else 14.dp)
+                    .clickable(openArchiveTuneAction(context)),
         ) {
             if (size.width < 260.dp || size.height < 150.dp) {
                 PlaybackDeckCompact(state = state, palette = palette, context = context)
@@ -114,19 +118,21 @@ private fun PlaybackDeckCompact(
         ) {
             Text(
                 text = state.title,
-                style = TextStyle(
-                    color = palette.onSurface,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                ),
+                style =
+                    TextStyle(
+                        color = palette.onSurface,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                    ),
                 maxLines = 1,
             )
             Text(
                 text = state.artist,
-                style = TextStyle(
-                    color = palette.onSurfaceVariant,
-                    fontSize = 12.sp,
-                ),
+                style =
+                    TextStyle(
+                        color = palette.onSurfaceVariant,
+                        fontSize = 12.sp,
+                    ),
                 maxLines = 1,
             )
         }
@@ -137,9 +143,10 @@ private fun PlaybackDeckCompact(
                 modifier = GlanceModifier.size(50.dp),
                 action = playPauseAction(),
                 icon = if (state.isPlaying) R.drawable.pause else R.drawable.play,
-                contentDescription = context.getString(
-                    if (state.isPlaying) R.string.widget_pause else R.string.play,
-                ),
+                contentDescription =
+                    context.getString(
+                        if (state.isPlaying) R.string.widget_pause else R.string.play,
+                    ),
                 backgroundColor = palette.primaryContainer,
                 contentColor = palette.onPrimaryContainer,
                 cornerRadius = if (state.isPlaying) 14.dp else 25.dp,
@@ -166,20 +173,22 @@ private fun PlaybackDeckPanel(
             targetSize = artworkHeight,
             cornerRadius = 24.dp,
             palette = palette,
-            modifier = GlanceModifier
-                .fillMaxWidth()
-                .height(artworkHeight),
+            modifier =
+                GlanceModifier
+                    .fillMaxWidth()
+                    .height(artworkHeight),
         )
 
         Spacer(GlanceModifier.height(12.dp))
 
         Text(
             text = state.title,
-            style = TextStyle(
-                color = palette.onSurface,
-                fontSize = 19.sp,
-                fontWeight = FontWeight.Bold,
-            ),
+            style =
+                TextStyle(
+                    color = palette.onSurface,
+                    fontSize = 19.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
             maxLines = 2,
         )
 
@@ -187,10 +196,11 @@ private fun PlaybackDeckPanel(
 
         Text(
             text = state.artist,
-            style = TextStyle(
-                color = palette.onSurfaceVariant,
-                fontSize = 13.sp,
-            ),
+            style =
+                TextStyle(
+                    color = palette.onSurfaceVariant,
+                    fontSize = 13.sp,
+                ),
             maxLines = 1,
         )
 
@@ -200,20 +210,22 @@ private fun PlaybackDeckPanel(
             PlaybackDeckControls(state = state, palette = palette, context = context)
         } else {
             Box(
-                modifier = GlanceModifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-                    .background(palette.secondaryContainer)
-                    .cornerRadius(26.dp),
+                modifier =
+                    GlanceModifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                        .background(palette.secondaryContainer)
+                        .cornerRadius(26.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = context.getString(R.string.widget_tap_to_open),
-                    style = TextStyle(
-                        color = palette.onSecondaryContainer,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium,
-                    ),
+                    style =
+                        TextStyle(
+                            color = palette.onSecondaryContainer,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                        ),
                     maxLines = 1,
                 )
             }
@@ -225,10 +237,11 @@ private fun PlaybackDeckPanel(
                 progress = state.playbackPosition,
                 color = palette.progress,
                 backgroundColor = palette.progressTrack,
-                modifier = GlanceModifier
-                    .fillMaxWidth()
-                    .height(6.dp)
-                    .cornerRadius(3.dp),
+                modifier =
+                    GlanceModifier
+                        .fillMaxWidth()
+                        .height(6.dp)
+                        .cornerRadius(3.dp),
             )
         }
     }
@@ -255,14 +268,16 @@ private fun PlaybackDeckControls(
         )
         Spacer(GlanceModifier.width(8.dp))
         WidgetControlButton(
-            modifier = GlanceModifier
-                .defaultWeight()
-                .height(52.dp),
+            modifier =
+                GlanceModifier
+                    .defaultWeight()
+                    .height(52.dp),
             action = playPauseAction(),
             icon = if (state.isPlaying) R.drawable.pause else R.drawable.play,
-            contentDescription = context.getString(
-                if (state.isPlaying) R.string.widget_pause else R.string.play,
-            ),
+            contentDescription =
+                context.getString(
+                    if (state.isPlaying) R.string.widget_pause else R.string.play,
+                ),
             backgroundColor = palette.primaryContainer,
             contentColor = palette.onPrimaryContainer,
             cornerRadius = if (state.isPlaying) 16.dp else 26.dp,

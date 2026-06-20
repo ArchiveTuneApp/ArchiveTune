@@ -7,8 +7,6 @@
 
 @file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
 
-
-
 package moe.rukamori.archivetune.ui.component
 
 import androidx.compose.foundation.basicMarquee
@@ -52,22 +50,24 @@ fun NewActionButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     backgroundColor: Color = Color.Unspecified,
-    contentColor: Color = Color.Unspecified
+    contentColor: Color = Color.Unspecified,
 ) {
     val containerColor = if (backgroundColor.isSpecified) backgroundColor else MaterialTheme.colorScheme.surfaceContainerHigh
     val actionContentColor = if (contentColor.isSpecified) contentColor else MaterialTheme.colorScheme.onSurfaceVariant
 
     FilledTonalButton(
         onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(min = 96.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .heightIn(min = 96.dp),
         enabled = enabled,
         shape = ButtonDefaults.squareShape,
-        colors = ButtonDefaults.filledTonalButtonColors(
-            containerColor = containerColor,
-            contentColor = actionContentColor,
-        ),
+        colors =
+            ButtonDefaults.filledTonalButtonColors(
+                containerColor = containerColor,
+                contentColor = actionContentColor,
+            ),
         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 14.dp),
     ) {
         Column(
@@ -103,7 +103,7 @@ fun NewMenuItem(
     supportingContent: @Composable (() -> Unit)? = null,
     onClick: (() -> Unit)? = null,
     enabled: Boolean = true,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val content: @Composable () -> Unit = {
         ListItem(
@@ -137,7 +137,7 @@ fun NewMenuItem(
 @Composable
 fun NewMenuSectionHeader(
     text: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Text(
         text = text,
@@ -152,7 +152,7 @@ fun NewMenuSectionHeader(
 fun NewActionGrid(
     actions: List<NewAction>,
     modifier: Modifier = Modifier,
-    columns: Int = 3
+    columns: Int = 3,
 ) {
     if (actions.isEmpty()) return
 
@@ -194,7 +194,7 @@ data class NewAction(
     val onClick: () -> Unit,
     val enabled: Boolean = true,
     val backgroundColor: Color = Color.Unspecified,
-    val contentColor: Color = Color.Unspecified
+    val contentColor: Color = Color.Unspecified,
 )
 
 @Composable
@@ -202,7 +202,7 @@ fun NewMenuContent(
     headerContent: @Composable (() -> Unit)? = null,
     actionGrid: @Composable (() -> Unit)? = null,
     menuItems: @Composable (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier,
@@ -229,7 +229,7 @@ fun NewIconButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     backgroundColor: Color = Color.Unspecified,
-    contentColor: Color = Color.Unspecified
+    contentColor: Color = Color.Unspecified,
 ) {
     val containerColor = if (backgroundColor.isSpecified) backgroundColor else MaterialTheme.colorScheme.surfaceContainerHigh
     val iconContentColor = if (contentColor.isSpecified) contentColor else MaterialTheme.colorScheme.onSurfaceVariant
@@ -239,10 +239,11 @@ fun NewIconButton(
         modifier = modifier,
         enabled = enabled,
         shapes = IconButtonDefaults.shapes(),
-        colors = IconButtonDefaults.filledTonalIconButtonColors(
-            containerColor = containerColor,
-            contentColor = iconContentColor,
-        ),
+        colors =
+            IconButtonDefaults.filledTonalIconButtonColors(
+                containerColor = containerColor,
+                contentColor = iconContentColor,
+            ),
     ) {
         icon()
     }
@@ -251,13 +252,14 @@ fun NewIconButton(
 @Composable
 fun NewMenuContainer(
     content: @Composable () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-            .padding(bottom = 32.dp)
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 32.dp),
     ) {
         content()
     }

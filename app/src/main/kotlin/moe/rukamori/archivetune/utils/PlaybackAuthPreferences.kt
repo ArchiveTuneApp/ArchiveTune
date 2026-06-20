@@ -11,6 +11,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import kotlinx.coroutines.flow.first
 import moe.rukamori.archivetune.constants.AccountChannelHandleKey
 import moe.rukamori.archivetune.constants.AccountEmailKey
 import moe.rukamori.archivetune.constants.AccountNameKey
@@ -24,7 +25,6 @@ import moe.rukamori.archivetune.constants.VisitorDataKey
 import moe.rukamori.archivetune.constants.WebClientPoTokenEnabledKey
 import moe.rukamori.archivetune.innertube.PlaybackAuthState
 import moe.rukamori.archivetune.innertube.YouTube
-import kotlinx.coroutines.flow.first
 
 fun Preferences.toPlaybackAuthState(): PlaybackAuthState =
     PlaybackAuthState(
@@ -56,8 +56,7 @@ fun MutablePreferences.clearPlaybackLoginContext() {
     remove(DataSyncIdKey)
 }
 
-fun PlaybackAuthState.withoutPlaybackLoginContext(): PlaybackAuthState =
-    copy(dataSyncId = null).normalized()
+fun PlaybackAuthState.withoutPlaybackLoginContext(): PlaybackAuthState = copy(dataSyncId = null).normalized()
 
 fun MutablePreferences.putLegacyPoToken(value: String?) {
     val normalized = value?.trim()?.takeIf { it.isNotEmpty() && !it.equals("null", ignoreCase = true) }
@@ -80,9 +79,7 @@ suspend fun Context.resetPlaybackLoginContext(): PlaybackAuthState {
     return authState
 }
 
-suspend fun <T> Context.retryWithoutPlaybackLoginContext(
-    block: suspend () -> Result<T>,
-): Result<T> {
+suspend fun <T> Context.retryWithoutPlaybackLoginContext(block: suspend () -> Result<T>): Result<T> {
     val initialAuthState = YouTube.currentPlaybackAuthState()
     val initialResult = block()
     if (initialResult.isSuccess) {

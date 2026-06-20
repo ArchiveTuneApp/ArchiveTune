@@ -42,8 +42,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -74,8 +74,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -107,17 +107,16 @@ import moe.rukamori.archivetune.ui.component.MenuSurfaceSection
 import moe.rukamori.archivetune.ui.component.NewAction
 import moe.rukamori.archivetune.ui.component.NewActionGrid
 import moe.rukamori.archivetune.ui.component.TextFieldDialog
-import moe.rukamori.archivetune.utils.rememberEnumPreference
-import moe.rukamori.archivetune.utils.rememberPreference
 import moe.rukamori.archivetune.utils.TranslatorLang
 import moe.rukamori.archivetune.utils.TranslatorLanguages
+import moe.rukamori.archivetune.utils.rememberEnumPreference
+import moe.rukamori.archivetune.utils.rememberPreference
+import moe.rukamori.archivetune.viewmodels.LyricsMenuViewModel
 import moe.rukamori.archivetune.viewmodels.LyricsSearchResultUiModel
 import moe.rukamori.archivetune.viewmodels.LyricsSearchScreenState
-import moe.rukamori.archivetune.viewmodels.LyricsMenuViewModel
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.roundToInt
-
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -197,19 +196,22 @@ fun LyricsMenu(
     val (aiCustomEndpoint) = rememberPreference(AiCustomEndpointKey, "")
     val (aiValidationStatus) = rememberEnumPreference(AiApiValidationStatusKey, AiApiValidationStatus.UNKNOWN)
     var expandedSearchResultId by rememberSaveable { mutableStateOf<String?>(null) }
-    val expandedSearchResult = (lyricsSearchState as? LyricsSearchScreenState.Success)
-        ?.results
-        ?.firstOrNull { result -> result.id == expandedSearchResultId }
-    val isTranslateEnabled = !isTtml(lyricsProvider()?.lyrics.orEmpty()) &&
-        (expandedSearchResult?.let { !it.isWordSynced } ?: true)
+    val expandedSearchResult =
+        (lyricsSearchState as? LyricsSearchScreenState.Success)
+            ?.results
+            ?.firstOrNull { result -> result.id == expandedSearchResultId }
+    val isTranslateEnabled =
+        !isTtml(lyricsProvider()?.lyrics.orEmpty()) &&
+            (expandedSearchResult?.let { !it.isWordSynced } ?: true)
     val currentLyrics = lyricsProvider()?.lyrics.orEmpty()
     val isAiProviderConfigured = aiProvider != AiProvider.NONE
-    val isAiTranslationEnabled = currentLyrics.isNotBlank() &&
-        currentLyrics != LyricsEntity.LYRICS_NOT_FOUND &&
-        isAiProviderConfigured &&
-        aiApiKey.isNotBlank() &&
-        (aiProvider != AiProvider.CUSTOM || aiCustomEndpoint.isNotBlank()) &&
-        aiValidationStatus != AiApiValidationStatus.FAILED
+    val isAiTranslationEnabled =
+        currentLyrics.isNotBlank() &&
+            currentLyrics != LyricsEntity.LYRICS_NOT_FOUND &&
+            isAiProviderConfigured &&
+            aiApiKey.isNotBlank() &&
+            (aiProvider != AiProvider.CUSTOM || aiCustomEndpoint.isNotBlank()) &&
+            aiValidationStatus != AiApiValidationStatus.FAILED
 
     LaunchedEffect(Unit) {
         viewModel.aiTranslationEvents.collect { message ->
@@ -260,7 +262,7 @@ fun LyricsMenu(
                         Intent(Intent.ACTION_WEB_SEARCH).apply {
                             putExtra(
                                 SearchManager.QUERY,
-                                "${artistField.text} ${titleField.text} lyrics"
+                                "${artistField.text} ${titleField.text} lyrics",
                             )
                         },
                     )
@@ -273,14 +275,14 @@ fun LyricsMenu(
                     titleField.text,
                     artistField.text,
                     searchMediaMetadata.album?.title,
-                    searchMediaMetadata.duration
+                    searchMediaMetadata.duration,
                 )
                 showSearchResultDialog = true
 
                 if (!isNetworkAvailable) {
                     Toast.makeText(context, context.getString(R.string.error_no_internet), Toast.LENGTH_SHORT).show()
                 }
-            }
+            },
         )
     }
 
@@ -347,16 +349,16 @@ fun LyricsMenu(
                 ) {
                     Text(stringResource(android.R.string.ok))
                 }
-            }
+            },
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(16.dp),
             ) {
                 Text(
                     text = formatLyricsSyncOffset(tempLyricsSyncOffset.roundToInt()),
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = 16.dp),
                 )
 
                 Slider(
@@ -364,7 +366,7 @@ fun LyricsMenu(
                     onValueChange = { tempLyricsSyncOffset = it },
                     valueRange = -1000f..1000f,
                     steps = 79,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }
@@ -376,70 +378,80 @@ fun LyricsMenu(
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
     if (showTranslateDialog) {
-            val initialText = lyricsProvider()?.lyrics.orEmpty()
-            val (textFieldValue, setTextFieldValue) =
-                rememberSaveable(stateSaver = TextFieldValue.Saver) {
-                    mutableStateOf(TextFieldValue(text = initialText))
-                }
-
-            val languages by produceState(initialValue = emptyList<TranslatorLang>()) {
-                withContext(Dispatchers.IO) {
-                    value = TranslatorLanguages.load(context)
-                }
+        val initialText = lyricsProvider()?.lyrics.orEmpty()
+        val (textFieldValue, setTextFieldValue) =
+            rememberSaveable(stateSaver = TextFieldValue.Saver) {
+                mutableStateOf(TextFieldValue(text = initialText))
             }
-            var expanded by remember { mutableStateOf(false) }
-            val defaultLanguageCode = remember(configuration) {
-                configuration.locales.get(0)
+
+        val languages by produceState(initialValue = emptyList<TranslatorLang>()) {
+            withContext(Dispatchers.IO) {
+                value = TranslatorLanguages.load(context)
+            }
+        }
+        var expanded by remember { mutableStateOf(false) }
+        val defaultLanguageCode =
+            remember(configuration) {
+                configuration.locales
+                    .get(0)
                     .getDisplayLanguage(Locale.ENGLISH)
                     .uppercase(Locale.US)
                     .replace(' ', '_')
             }
-            var selectedLanguageCode by rememberSaveable { mutableStateOf(defaultLanguageCode) }
-            var isTranslating by remember { mutableStateOf(false) }
-            val selectedLanguageName =
-                languages.firstOrNull { it.code == selectedLanguageCode }?.name ?: selectedLanguageCode
+        var selectedLanguageCode by rememberSaveable { mutableStateOf(defaultLanguageCode) }
+        var isTranslating by remember { mutableStateOf(false) }
+        val selectedLanguageName =
+            languages.firstOrNull { it.code == selectedLanguageCode }?.name ?: selectedLanguageCode
 
-            DefaultDialog(
-                onDismiss = { showTranslateDialog = false },
-                icon = {
-                    Icon(painter = painterResource(R.drawable.translate), contentDescription = null)
-                },
-                title = { Text(stringResource(R.string.translate)) },
-                buttons = {
-                    TextButton(onClick = { showTranslateDialog = false }, shapes = ButtonDefaults.shapes()) {
-                        Text(stringResource(android.R.string.cancel))
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    if (isTranslating) {
-                        CircularWavyProgressIndicator(
-                        modifier = Modifier
-                        .size(20.dp)
-                        .align(Alignment.CenterVertically),
-                        )
-                    } else {
-                        TextButton(onClick = {
-                            isTranslating = true
-                            val inputText = textFieldValue.text
-                            val languageCode = selectedLanguageCode
-                            val languageName = selectedLanguageName
-                            coroutineScope.launch {
-                                try {
-                                    val lang = try {
+        DefaultDialog(
+            onDismiss = { showTranslateDialog = false },
+            icon = {
+                Icon(painter = painterResource(R.drawable.translate), contentDescription = null)
+            },
+            title = { Text(stringResource(R.string.translate)) },
+            buttons = {
+                TextButton(onClick = { showTranslateDialog = false }, shapes = ButtonDefaults.shapes()) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+                Spacer(Modifier.width(8.dp))
+                if (isTranslating) {
+                    CircularWavyProgressIndicator(
+                        modifier =
+                            Modifier
+                                .size(20.dp)
+                                .align(Alignment.CenterVertically),
+                    )
+                } else {
+                    TextButton(onClick = {
+                        isTranslating = true
+                        val inputText = textFieldValue.text
+                        val languageCode = selectedLanguageCode
+                        val languageName = selectedLanguageName
+                        coroutineScope.launch {
+                            try {
+                                val lang =
+                                    try {
                                         Language(languageCode)
                                     } catch (e: Exception) {
-                                        try { Language(languageName) } catch (_: Exception) { null }
+                                        try {
+                                            Language(languageName)
+                                        } catch (_: Exception) {
+                                            null
+                                        }
                                     }
 
-                                    if (lang == null) {
-                                        Toast.makeText(
+                                if (lang == null) {
+                                    Toast
+                                        .makeText(
                                             context,
                                             context.getString(R.string.unsupported_language, languageName),
-                                            Toast.LENGTH_SHORT
+                                            Toast.LENGTH_SHORT,
                                         ).show()
-                                        return@launch
-                                    }
+                                    return@launch
+                                }
 
-                                    val translatedLyrics = withContext(Dispatchers.IO) {
+                                val translatedLyrics =
+                                    withContext(Dispatchers.IO) {
                                         val translator = Translator()
 
                                         val lines = inputText.split("\n")
@@ -483,11 +495,15 @@ fun LyricsMenu(
                                                 while (cursor < translatableIndices.size && batchIndices.size < maxItemsPerBatch) {
                                                     val idx = translatableIndices[cursor]
                                                     val pieceLen = contents[idx]!!.length
-                                                    if (batchIndices.isEmpty() || currentChars + pieceLen + sep.length <= maxCharsPerRequest) {
+                                                    if (batchIndices.isEmpty() ||
+                                                        currentChars + pieceLen + sep.length <= maxCharsPerRequest
+                                                    ) {
                                                         batchIndices.add(idx)
                                                         currentChars += pieceLen + sep.length
                                                         cursor++
-                                                    } else break
+                                                    } else {
+                                                        break
+                                                    }
                                                 }
 
                                                 val batchTexts = batchIndices.map { contents[it]!! }
@@ -503,9 +519,10 @@ fun LyricsMenu(
                                                 } else {
                                                     for (idx in batchIndices) {
                                                         val original = contents[idx]!!
-                                                        val singleTranslated = runCatching {
-                                                            translator.translateBlocking(original, lang).translatedText
-                                                        }.getOrNull() ?: original
+                                                        val singleTranslated =
+                                                            runCatching {
+                                                                translator.translateBlocking(original, lang).translatedText
+                                                            }.getOrNull() ?: original
                                                         translatedMap[idx] = singleTranslated
                                                     }
                                                 }
@@ -526,184 +543,189 @@ fun LyricsMenu(
 
                                         out.joinToString("\n")
                                     }
-                                    viewModel.updateLyrics(
-                                        mediaMetadata = mediaMetadataProvider(),
-                                        lyrics = translatedLyrics,
-                                        source = LyricsEntity.Source.AI_TRANSLATION,
-                                    )
-                                    showTranslateDialog = false
-                                } catch (e: Exception) {
-                                    Toast.makeText(
+                                viewModel.updateLyrics(
+                                    mediaMetadata = mediaMetadataProvider(),
+                                    lyrics = translatedLyrics,
+                                    source = LyricsEntity.Source.AI_TRANSLATION,
+                                )
+                                showTranslateDialog = false
+                            } catch (e: Exception) {
+                                Toast
+                                    .makeText(
                                         context,
                                         context.getString(R.string.translation_failed) + ": " + (e.localizedMessage ?: e.toString()),
-                                        Toast.LENGTH_SHORT
+                                        Toast.LENGTH_SHORT,
                                     ).show()
-                                } finally {
-                                    isTranslating = false
-                                }
+                            } finally {
+                                isTranslating = false
                             }
-                        }, shapes = ButtonDefaults.shapes()) {
-                            Text(stringResource(R.string.translate))
                         }
+                    }, shapes = ButtonDefaults.shapes()) {
+                        Text(stringResource(R.string.translate))
                     }
                 }
-            ) {
-                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                    OutlinedTextField(
-                        value = textFieldValue,
-                        onValueChange = setTextFieldValue,
-                        singleLine = false,
-                        label = { Text(stringResource(R.string.lyrics)) },
-                        modifier = Modifier
+            },
+        ) {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                OutlinedTextField(
+                    value = textFieldValue,
+                    onValueChange = setTextFieldValue,
+                    singleLine = false,
+                    label = { Text(stringResource(R.string.lyrics)) },
+                    modifier =
+                        Modifier
                             .fillMaxWidth()
-                            .heightIn(min = 80.dp, max = 220.dp)
+                            .heightIn(min = 80.dp, max = 220.dp),
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = stringResource(R.string.language_label),
+                        modifier = Modifier.width(96.dp),
                     )
 
-                    Spacer(Modifier.height(12.dp))
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = stringResource(R.string.language_label),
-                            modifier = Modifier.width(96.dp)
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = it },
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        OutlinedTextField(
+                            value = selectedLanguageName,
+                            onValueChange = {},
+                            readOnly = true,
+                            singleLine = true,
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                            },
+                            modifier =
+                                Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth(),
                         )
 
-                        ExposedDropdownMenuBox(
+                        ExposedDropdownMenu(
                             expanded = expanded,
-                            onExpandedChange = { expanded = it },
-                            modifier = Modifier.weight(1f),
+                            onDismissRequest = { expanded = false },
                         ) {
-                            OutlinedTextField(
-                                value = selectedLanguageName,
-                                onValueChange = {},
-                                readOnly = true,
-                                singleLine = true,
-                                trailingIcon = {
-                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                                },
-                                modifier = Modifier
-                                    .menuAnchor()
-                                    .fillMaxWidth()
-                            )
-
-                            ExposedDropdownMenu(
-                                expanded = expanded,
-                                onDismissRequest = { expanded = false }
-                            ) {
-                                languages.forEach { lang ->
-                                    DropdownMenuItem(
-                                        text = { Text(lang.name) },
-                                        onClick = {
-                                            selectedLanguageCode = lang.code
-                                            expanded = false
-                                        }
-                                    )
-                                }
+                            languages.forEach { lang ->
+                                DropdownMenuItem(
+                                    text = { Text(lang.name) },
+                                    onClick = {
+                                        selectedLanguageCode = lang.code
+                                        expanded = false
+                                    },
+                                )
                             }
                         }
                     }
                 }
             }
+        }
     }
 
     LazyColumn(
         userScrollEnabled = true,
-        contentPadding = PaddingValues(
-            start = 0.dp,
-            top = 0.dp,
-            end = 0.dp,
-            bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
-        ),
+        contentPadding =
+            PaddingValues(
+                start = 0.dp,
+                top = 0.dp,
+                end = 0.dp,
+                bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+            ),
     ) {
         item {
             MenuSurfaceSection(modifier = Modifier.padding(vertical = 6.dp)) {
                 NewActionGrid(
-                    actions = listOf(
-                        NewAction(
-                            icon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.edit),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(28.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            text = stringResource(R.string.edit),
-                            onClick = { showEditDialog = true }
-                        ),
-                        NewAction(
-                            icon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.cached),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(28.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            text = stringResource(R.string.refetch),
-                            onClick = {
-                                showRefetchLoadingDialog = true
-                                viewModel.refetchLyrics(mediaMetadataProvider())
-                            }
-                        ),
-                        NewAction(
-                            icon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.translate),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(28.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            text = stringResource(R.string.translate),
-                            onClick = { showTranslateDialog = true },
-                            enabled = isTranslateEnabled
-                        ),
-                        NewAction(
-                            icon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.auto_awesome),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(28.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            text = stringResource(R.string.ai_translation_menu),
-                            onClick = {
-                                if (isAiProviderConfigured) {
-                                    viewModel.translateLyricsWithAi(
-                                        mediaMetadata = mediaMetadataProvider(),
-                                        lyrics = lyricsProvider()?.lyrics.orEmpty(),
+                    actions =
+                        listOf(
+                            NewAction(
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(R.drawable.edit),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(28.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
-                                }
-                            },
-                            enabled = isAiProviderConfigured && isAiTranslationEnabled && !isAiTranslating
+                                },
+                                text = stringResource(R.string.edit),
+                                onClick = { showEditDialog = true },
+                            ),
+                            NewAction(
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(R.drawable.cached),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(28.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                },
+                                text = stringResource(R.string.refetch),
+                                onClick = {
+                                    showRefetchLoadingDialog = true
+                                    viewModel.refetchLyrics(mediaMetadataProvider())
+                                },
+                            ),
+                            NewAction(
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(R.drawable.translate),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(28.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                },
+                                text = stringResource(R.string.translate),
+                                onClick = { showTranslateDialog = true },
+                                enabled = isTranslateEnabled,
+                            ),
+                            NewAction(
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(R.drawable.auto_awesome),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(28.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                },
+                                text = stringResource(R.string.ai_translation_menu),
+                                onClick = {
+                                    if (isAiProviderConfigured) {
+                                        viewModel.translateLyricsWithAi(
+                                            mediaMetadata = mediaMetadataProvider(),
+                                            lyrics = lyricsProvider()?.lyrics.orEmpty(),
+                                        )
+                                    }
+                                },
+                                enabled = isAiProviderConfigured && isAiTranslationEnabled && !isAiTranslating,
+                            ),
+                            NewAction(
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(R.drawable.speed),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(28.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                },
+                                text = stringResource(R.string.lyrics_sync_offset),
+                                onClick = { showLyricsSyncOffsetDialog = true },
+                            ),
+                            NewAction(
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(R.drawable.search),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(28.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                },
+                                text = stringResource(R.string.search),
+                                onClick = { showSearchDialog = true },
+                            ),
                         ),
-                        NewAction(
-                            icon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.speed),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(28.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            text = stringResource(R.string.lyrics_sync_offset),
-                            onClick = { showLyricsSyncOffsetDialog = true }
-                        ),
-                        NewAction(
-                            icon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.search),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(28.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            text = stringResource(R.string.search),
-                            onClick = { showSearchDialog = true }
-                        )
-                    ),
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp)
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
                 )
             }
         }
@@ -724,23 +746,26 @@ private fun LyricsSearchResultDialog(
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp)
-                .imePadding()
-                .navigationBarsPadding(),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(24.dp)
+                    .imePadding()
+                    .navigationBarsPadding(),
             contentAlignment = Alignment.Center,
         ) {
-            val listContentPadding = remember {
-                PaddingValues(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 20.dp)
-            }
+            val listContentPadding =
+                remember {
+                    PaddingValues(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 20.dp)
+                }
             val listArrangement = remember { Arrangement.spacedBy(10.dp) }
 
             Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .widthIn(max = 640.dp)
-                    .heightIn(max = maxHeight),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .widthIn(max = 640.dp)
+                        .heightIn(max = maxHeight),
                 shape = MaterialTheme.shapes.extraLarge,
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 tonalElevation = AlertDialogDefaults.TonalElevation,
@@ -751,9 +776,10 @@ private fun LyricsSearchResultDialog(
                         onDismiss = onDismiss,
                     )
                     LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f, fill = false),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .weight(1f, fill = false),
                         contentPadding = listContentPadding,
                         verticalArrangement = listArrangement,
                     ) {
@@ -809,17 +835,30 @@ private fun LyricsSearchResultHeader(
     state: LyricsSearchScreenState,
     onDismiss: () -> Unit,
 ) {
-    val subtitle = when (state) {
-        LyricsSearchScreenState.Loading -> stringResource(R.string.lyrics_searching_providers)
-        LyricsSearchScreenState.Empty -> stringResource(R.string.lyrics_not_found)
-        is LyricsSearchScreenState.Error -> stringResource(state.messageResId)
-        is LyricsSearchScreenState.Success -> stringResource(
-            R.string.lyrics_search_results_count,
-            state.results.size,
-        )
-    }
-    val isSearching = state == LyricsSearchScreenState.Loading ||
-        state is LyricsSearchScreenState.Success && state.isSearching
+    val subtitle =
+        when (state) {
+            LyricsSearchScreenState.Loading -> {
+                stringResource(R.string.lyrics_searching_providers)
+            }
+
+            LyricsSearchScreenState.Empty -> {
+                stringResource(R.string.lyrics_not_found)
+            }
+
+            is LyricsSearchScreenState.Error -> {
+                stringResource(state.messageResId)
+            }
+
+            is LyricsSearchScreenState.Success -> {
+                stringResource(
+                    R.string.lyrics_search_results_count,
+                    state.results.size,
+                )
+            }
+        }
+    val isSearching =
+        state == LyricsSearchScreenState.Loading ||
+            state is LyricsSearchScreenState.Success && state.isSearching
     val rowArrangement = remember { Arrangement.spacedBy(16.dp) }
 
     Surface(
@@ -892,39 +931,45 @@ private fun LyricsSearchResultItem(
     onResultSelected: () -> Unit,
 ) {
     val motionScheme = MaterialTheme.motionScheme
-    val lyricsType = when {
-        result.isWordSynced -> stringResource(R.string.lyrics_word_sync)
-        result.isLineSynced -> stringResource(R.string.lyrics_synced_badge)
-        else -> stringResource(R.string.lyrics_search_plain_badge)
-    }
-    val stats = stringResource(
-        R.string.lyrics_search_result_stats,
-        result.lineCount,
-        result.characterCount,
-    )
+    val lyricsType =
+        when {
+            result.isWordSynced -> stringResource(R.string.lyrics_word_sync)
+            result.isLineSynced -> stringResource(R.string.lyrics_synced_badge)
+            else -> stringResource(R.string.lyrics_search_plain_badge)
+        }
+    val stats =
+        stringResource(
+            R.string.lyrics_search_result_stats,
+            result.lineCount,
+            result.characterCount,
+        )
     val metadataArrangement = remember { Arrangement.spacedBy(8.dp) }
-    val containerColor = if (isExpanded) {
-        MaterialTheme.colorScheme.secondaryContainer
-    } else {
-        MaterialTheme.colorScheme.surfaceContainerHighest
-    }
-    val contentColor = if (isExpanded) {
-        MaterialTheme.colorScheme.onSecondaryContainer
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }
-    val outlineColor = if (isExpanded) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.outlineVariant
-    }
+    val containerColor =
+        if (isExpanded) {
+            MaterialTheme.colorScheme.secondaryContainer
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerHighest
+        }
+    val contentColor =
+        if (isExpanded) {
+            MaterialTheme.colorScheme.onSecondaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurface
+        }
+    val outlineColor =
+        if (isExpanded) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.outlineVariant
+        }
     val itemArrangement = remember { Arrangement.spacedBy(14.dp) }
 
     Surface(
         onClick = onResultSelected,
-        modifier = Modifier
-            .fillMaxWidth()
-            .animateContentSize(animationSpec = motionScheme.defaultSpatialSpec()),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .animateContentSize(animationSpec = motionScheme.defaultSpatialSpec()),
         shape = MaterialTheme.shapes.extraLarge,
         color = containerColor,
         contentColor = contentColor,
@@ -963,9 +1008,10 @@ private fun LyricsSearchResultItem(
                     modifier = Modifier.size(48.dp),
                 ) {
                     Icon(
-                        painter = painterResource(
-                            if (isExpanded) R.drawable.expand_less else R.drawable.expand_more,
-                        ),
+                        painter =
+                            painterResource(
+                                if (isExpanded) R.drawable.expand_less else R.drawable.expand_more,
+                            ),
                         contentDescription = stringResource(R.string.details),
                         tint = contentColor,
                     )
@@ -1003,21 +1049,24 @@ private fun LyricsSearchTypeIcon(
     result: LyricsSearchResultUiModel,
     isExpanded: Boolean,
 ) {
-    val icon = when {
-        result.isWordSynced -> R.drawable.lyrics
-        result.isLineSynced -> R.drawable.sync
-        else -> R.drawable.format_align_left
-    }
-    val containerColor = if (isExpanded) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.tertiaryContainer
-    }
-    val contentColor = if (isExpanded) {
-        MaterialTheme.colorScheme.onPrimary
-    } else {
-        MaterialTheme.colorScheme.onTertiaryContainer
-    }
+    val icon =
+        when {
+            result.isWordSynced -> R.drawable.lyrics
+            result.isLineSynced -> R.drawable.sync
+            else -> R.drawable.format_align_left
+        }
+    val containerColor =
+        if (isExpanded) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.tertiaryContainer
+        }
+    val contentColor =
+        if (isExpanded) {
+            MaterialTheme.colorScheme.onPrimary
+        } else {
+            MaterialTheme.colorScheme.onTertiaryContainer
+        }
 
     Surface(
         shape = MaterialTheme.shapes.extraLarge,
@@ -1058,16 +1107,18 @@ private fun LyricsSearchMetadataPill(
     isExpanded: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val containerColor = if (isExpanded) {
-        MaterialTheme.colorScheme.surface.copy(alpha = 0.52f)
-    } else {
-        MaterialTheme.colorScheme.surfaceContainerHigh
-    }
-    val contentColor = if (isExpanded) {
-        MaterialTheme.colorScheme.onSecondaryContainer
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
+    val containerColor =
+        if (isExpanded) {
+            MaterialTheme.colorScheme.surface.copy(alpha = 0.52f)
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerHigh
+        }
+    val contentColor =
+        if (isExpanded) {
+            MaterialTheme.colorScheme.onSecondaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        }
     val pillArrangement = remember { Arrangement.spacedBy(6.dp) }
 
     Surface(
@@ -1100,9 +1151,10 @@ private fun LyricsSearchMetadataPill(
 @Composable
 private fun LyricsSearchLoadingContent() {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 40.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 40.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -1119,9 +1171,10 @@ private fun LyricsSearchLoadingContent() {
 @Composable
 private fun LyricsSearchFooterLoading() {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 12.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
     ) {
@@ -1145,9 +1198,7 @@ private fun LyricsSearchEmptyContent() {
 }
 
 @Composable
-private fun LyricsSearchErrorContent(
-    messageResId: Int,
-) {
+private fun LyricsSearchErrorContent(messageResId: Int) {
     LyricsSearchMessageContent(
         icon = R.drawable.error,
         text = stringResource(messageResId),
@@ -1164,9 +1215,10 @@ private fun LyricsSearchMessageContent(
     contentColor: Color,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 40.dp, horizontal = 24.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 40.dp, horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -1193,9 +1245,7 @@ private fun LyricsSearchMessageContent(
     }
 }
 
-private fun formatLyricsSyncOffset(offsetMs: Int): String {
-    return if (offsetMs > 0) "+$offsetMs ms" else "$offsetMs ms"
-}
+private fun formatLyricsSyncOffset(offsetMs: Int): String = if (offsetMs > 0) "+$offsetMs ms" else "$offsetMs ms"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -1215,10 +1265,11 @@ private fun SearchLyricsInputDialog(
 
     BasicAlertDialog(
         onDismissRequest = onDismiss,
-        modifier = Modifier
-            .padding(horizontal = 24.dp)
-            .navigationBarsPadding()
-            .imePadding(),
+        modifier =
+            Modifier
+                .padding(horizontal = 24.dp)
+                .navigationBarsPadding()
+                .imePadding(),
     ) {
         Surface(
             shape = MaterialTheme.shapes.extraLarge,
@@ -1227,9 +1278,10 @@ private fun SearchLyricsInputDialog(
             modifier = Modifier.widthIn(max = 520.dp),
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
                 verticalArrangement = contentArrangement,
             ) {
                 LyricsSearchInputHeader(onDismiss = onDismiss)
@@ -1265,9 +1317,7 @@ private fun SearchLyricsInputDialog(
 }
 
 @Composable
-private fun LyricsSearchInputHeader(
-    onDismiss: () -> Unit,
-) {
+private fun LyricsSearchInputHeader(onDismiss: () -> Unit) {
     val titleArrangement = remember { Arrangement.spacedBy(16.dp) }
 
     Row(
@@ -1329,30 +1379,34 @@ private fun LyricsSearchTextField(
                 modifier = Modifier.size(20.dp),
             )
         },
-        trailingIcon = if (value.text.isNotEmpty()) {
-            {
-                IconButton(onClick = { onValueChange(TextFieldValue()) }) {
-                    Icon(
-                        painter = painterResource(R.drawable.close),
-                        contentDescription = stringResource(R.string.clear),
-                    )
+        trailingIcon =
+            if (value.text.isNotEmpty()) {
+                {
+                    IconButton(onClick = { onValueChange(TextFieldValue()) }) {
+                        Icon(
+                            painter = painterResource(R.drawable.close),
+                            contentDescription = stringResource(R.string.clear),
+                        )
+                    }
                 }
-            }
-        } else {
-            null
-        },
+            } else {
+                null
+            },
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        ),
-        keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Search,
-        ),
-        keyboardActions = KeyboardActions(
-            onSearch = { onSearch() },
-        ),
+        colors =
+            OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
+        keyboardOptions =
+            KeyboardOptions(
+                imeAction = ImeAction.Search,
+            ),
+        keyboardActions =
+            KeyboardActions(
+                onSearch = { onSearch() },
+            ),
     )
 }
 
@@ -1363,9 +1417,10 @@ private fun LyricsSearchInputActions(
     onSearch: () -> Unit,
 ) {
     val compactActionArrangement = remember { Arrangement.spacedBy(8.dp) }
-    val expandedActionArrangement = remember {
-        Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween, Alignment.End)
-    }
+    val expandedActionArrangement =
+        remember {
+            Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween, Alignment.End)
+        }
 
     if (useStackedActions) {
         Column(
@@ -1388,9 +1443,10 @@ private fun LyricsSearchInputActions(
 
             FilledTonalButton(
                 onClick = onSearchOnline,
-                colors = ButtonDefaults.filledTonalButtonColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                ),
+                colors =
+                    ButtonDefaults.filledTonalButtonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    ),
                 shapes = ButtonDefaults.shapes(),
                 modifier = Modifier.fillMaxWidth(),
             ) {
@@ -1413,13 +1469,15 @@ private fun LyricsSearchInputActions(
 
             FilledTonalButton(
                 onClick = onSearchOnline,
-                colors = ButtonDefaults.filledTonalButtonColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                ),
-                shapes = ButtonDefaults.shapes(
-                    shape = ButtonGroupDefaults.connectedLeadingButtonShape,
-                    pressedShape = ButtonGroupDefaults.connectedLeadingButtonPressShape,
-                ),
+                colors =
+                    ButtonDefaults.filledTonalButtonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    ),
+                shapes =
+                    ButtonDefaults.shapes(
+                        shape = ButtonGroupDefaults.connectedLeadingButtonShape,
+                        pressedShape = ButtonGroupDefaults.connectedLeadingButtonPressShape,
+                    ),
             ) {
                 Icon(
                     painter = painterResource(R.drawable.language),
@@ -1432,10 +1490,11 @@ private fun LyricsSearchInputActions(
 
             Button(
                 onClick = onSearch,
-                shapes = ButtonDefaults.shapes(
-                    shape = ButtonGroupDefaults.connectedTrailingButtonShape,
-                    pressedShape = ButtonGroupDefaults.connectedTrailingButtonPressShape,
-                ),
+                shapes =
+                    ButtonDefaults.shapes(
+                        shape = ButtonGroupDefaults.connectedTrailingButtonShape,
+                        pressedShape = ButtonGroupDefaults.connectedTrailingButtonPressShape,
+                    ),
             ) {
                 Icon(
                     painter = painterResource(R.drawable.search),

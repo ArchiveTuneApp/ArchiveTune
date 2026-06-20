@@ -237,8 +237,6 @@
     <string name="theme_presets_title">Шаблоны</string>
     <string name="theme_preview_trackline">Превью карта премиум-класса</string>
     <string name="canvas_cache">Кеш обложек</string>
-    <string name="canvas_cache_items">%d элементов</string>
-    <string name="canvas_cache_usage">%1$s / %2$s</string>
     <string name="clear_canvas_cache">Очистить кеш обложек</string>
     <string name="clear_canvas_cache_dialog">Вы уверены что хотите очистить все кешированные обложки?</string>
     <string name="playlist_private_title">Этот плейлист был приватным</string>

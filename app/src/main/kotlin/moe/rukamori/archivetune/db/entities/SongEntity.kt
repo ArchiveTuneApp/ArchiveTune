@@ -12,11 +12,11 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import moe.rukamori.archivetune.innertube.YouTube
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import moe.rukamori.archivetune.innertube.YouTube
 import java.time.LocalDateTime
 
 @Immutable
@@ -24,9 +24,9 @@ import java.time.LocalDateTime
     tableName = "song",
     indices = [
         Index(
-            value = ["albumId"]
-        )
-    ]
+            value = ["albumId"],
+        ),
+    ],
 )
 data class SongEntity(
     @PrimaryKey val id: String,
@@ -46,12 +46,13 @@ data class SongEntity(
     val inLibrary: LocalDateTime? = null,
     val dateDownload: LocalDateTime? = LocalDateTime.now(),
     @ColumnInfo(name = "isLocal", defaultValue = "0")
-    val isLocal: Boolean = false
+    val isLocal: Boolean = false,
 ) {
-    fun localToggleLike() = copy(
-        liked = !liked,
-        likedDate = if (!liked) LocalDateTime.now() else null,
-    )
+    fun localToggleLike() =
+        copy(
+            liked = !liked,
+            likedDate = if (!liked) LocalDateTime.now() else null,
+        )
 
     fun toggleLike() =
         if (isLocal) {
@@ -69,9 +70,10 @@ data class SongEntity(
             }
         }
 
-    fun toggleLibrary() = copy(
-        liked = if (inLibrary == null) liked else false,
-        inLibrary = if (inLibrary == null) LocalDateTime.now() else null,
-        likedDate = if (inLibrary == null) likedDate else null
-    )
+    fun toggleLibrary() =
+        copy(
+            liked = if (inLibrary == null) liked else false,
+            inLibrary = if (inLibrary == null) LocalDateTime.now() else null,
+            likedDate = if (inLibrary == null) likedDate else null,
+        )
 }

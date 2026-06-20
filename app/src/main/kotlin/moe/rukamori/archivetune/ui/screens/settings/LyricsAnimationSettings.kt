@@ -54,9 +54,10 @@ fun LyricsAnimationSettings(
     val (lrcBounceEnabled, onLrcBounceEnabledChange) = rememberPreference(LyricsV2LrcBounceEnabledKey, defaultValue = true)
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
     ) {
         TopAppBar(
             title = { Text(text = stringResource(R.string.lyrics_animation_style)) },
@@ -75,15 +76,15 @@ fun LyricsAnimationSettings(
         )
 
         Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .windowInsetsPadding(
-                    LocalPlayerAwareWindowInsets.current.only(
-                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
-                    )
-                )
-                .padding(bottom = 16.dp)
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .windowInsetsPadding(
+                        LocalPlayerAwareWindowInsets.current.only(
+                            WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                        ),
+                    ).padding(bottom = SettingsDimensions.ScreenBottomPadding),
         ) {
             PreferenceGroup(title = "Animation Tuning") {
                 item {
@@ -96,7 +97,7 @@ fun LyricsAnimationSettings(
                                 checked = lrcBounceEnabled,
                                 onCheckedChange = onLrcBounceEnabledChange,
                             )
-                        }
+                        },
                     )
                 }
 
@@ -111,7 +112,7 @@ fun LyricsAnimationSettings(
                                 onValueChange = onBounceFactorChange,
                                 valueRange = 0f..2f,
                             )
-                        }
+                        },
                     )
                 }
 
@@ -126,7 +127,7 @@ fun LyricsAnimationSettings(
                                 onValueChange = onGlowFactorChange,
                                 valueRange = 0f..2f,
                             )
-                        }
+                        },
                     )
                 }
 
@@ -141,7 +142,7 @@ fun LyricsAnimationSettings(
                                 onValueChange = onFillTransitionWidthChange,
                                 valueRange = 2f..24f,
                             )
-                        }
+                        },
                     )
                 }
             }

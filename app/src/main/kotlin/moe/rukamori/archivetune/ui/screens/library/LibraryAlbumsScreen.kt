@@ -17,10 +17,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -72,6 +75,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import moe.rukamori.archivetune.LocalDatabase
+import moe.rukamori.archivetune.LocalPlayerAwareWindowInsets
 import moe.rukamori.archivetune.LocalPlayerConnection
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.constants.AlbumFilter
@@ -89,10 +93,6 @@ import moe.rukamori.archivetune.ui.menu.AlbumMenu
 import moe.rukamori.archivetune.utils.rememberEnumPreference
 import moe.rukamori.archivetune.utils.rememberPreference
 import moe.rukamori.archivetune.viewmodels.LibraryAlbumsViewModel
-import moe.rukamori.archivetune.LocalPlayerAwareWindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.only
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -110,10 +110,11 @@ fun LibraryAlbumsScreen(
     val database = LocalDatabase.current
 
     var filter by rememberEnumPreference(AlbumFilterKey, AlbumFilter.LIKED)
-    val (sortType, onSortTypeChange) = rememberEnumPreference(
-        AlbumSortTypeKey,
-        AlbumSortType.CREATE_DATE
-    )
+    val (sortType, onSortTypeChange) =
+        rememberEnumPreference(
+            AlbumSortTypeKey,
+            AlbumSortType.CREATE_DATE,
+        )
     val (sortDescending, onSortDescendingChange) = rememberPreference(AlbumSortDescendingKey, true)
     val (ytmSync) = rememberPreference(YtmSyncKey, true)
     val hideExplicit by rememberPreference(key = HideExplicitKey, defaultValue = false)
@@ -133,17 +134,19 @@ fun LibraryAlbumsScreen(
 
     val featuredAlbum = albums.firstOrNull()
 
-    val filteredAlbums = if (hideExplicit) {
-        albums.filter { !it.album.explicit }
-    } else {
-        albums
-    }
+    val filteredAlbums =
+        if (hideExplicit) {
+            albums.filter { !it.album.explicit }
+        } else {
+            albums
+        }
 
     // Issue 2: player-aware bottom padding
-    val playerAwareBottomPadding = LocalPlayerAwareWindowInsets.current
-        .only(WindowInsetsSides.Bottom)
-        .asPaddingValues()
-        .calculateBottomPadding() + 12.dp
+    val playerAwareBottomPadding =
+        LocalPlayerAwareWindowInsets.current
+            .only(WindowInsetsSides.Bottom)
+            .asPaddingValues()
+            .calculateBottomPadding() + 12.dp
 
     ExpressivePullToRefreshBox(
         isRefreshing = isRefreshing,
@@ -153,64 +156,106 @@ fun LibraryAlbumsScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             // Sub-header controls (Sort dropdown, genres/filters, list/grid toggle)
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 8.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 var showSortMenu by remember { mutableStateOf(false) }
-                val currentSortLabel = when (sortType) {
-                    AlbumSortType.CREATE_DATE -> if (sortDescending) stringResource(R.string.newest_first) else stringResource(R.string.oldest_first)
-                    AlbumSortType.NAME -> if (sortDescending) stringResource(R.string.sort_z_to_a) else stringResource(R.string.sort_a_to_z)
-                    AlbumSortType.ARTIST -> stringResource(R.string.sort_artist)
-                    AlbumSortType.YEAR -> if (sortDescending) stringResource(R.string.newest_year) else stringResource(R.string.oldest_year)
-                    AlbumSortType.SONG_COUNT -> if (sortDescending) stringResource(R.string.most_tracks) else stringResource(R.string.least_tracks)
-                    AlbumSortType.LENGTH -> if (sortDescending) stringResource(R.string.longest_duration) else stringResource(R.string.shortest_duration)
-                    AlbumSortType.PLAY_TIME -> stringResource(R.string.most_played_sort)
-                }
+                val currentSortLabel =
+                    when (sortType) {
+                        AlbumSortType.CREATE_DATE -> {
+                            if (sortDescending) {
+                                stringResource(
+                                    R.string.newest_first,
+                                )
+                            } else {
+                                stringResource(R.string.oldest_first)
+                            }
+                        }
+
+                        AlbumSortType.NAME -> {
+                            if (sortDescending) stringResource(R.string.sort_z_to_a) else stringResource(R.string.sort_a_to_z)
+                        }
+
+                        AlbumSortType.ARTIST -> {
+                            stringResource(R.string.sort_artist)
+                        }
+
+                        AlbumSortType.YEAR -> {
+                            if (sortDescending) stringResource(R.string.newest_year) else stringResource(R.string.oldest_year)
+                        }
+
+                        AlbumSortType.SONG_COUNT -> {
+                            if (sortDescending) {
+                                stringResource(
+                                    R.string.most_tracks,
+                                )
+                            } else {
+                                stringResource(R.string.least_tracks)
+                            }
+                        }
+
+                        AlbumSortType.LENGTH -> {
+                            if (sortDescending) {
+                                stringResource(
+                                    R.string.longest_duration,
+                                )
+                            } else {
+                                stringResource(R.string.shortest_duration)
+                            }
+                        }
+
+                        AlbumSortType.PLAY_TIME -> {
+                            stringResource(R.string.most_played_sort)
+                        }
+                    }
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box {
                         Row(
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                                .clickable { showSortMenu = true }
-                                .padding(horizontal = 14.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            modifier =
+                                Modifier
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                    .clickable { showSortMenu = true }
+                                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
                                 text = currentSortLabel,
                                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Icon(
                                 painter = painterResource(id = R.drawable.expand_more),
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(16.dp),
                             )
                         }
 
                         DropdownMenu(
                             expanded = showSortMenu,
-                            onDismissRequest = { showSortMenu = false }
+                            onDismissRequest = { showSortMenu = false },
                         ) {
                             AlbumSortType.entries.forEach { type ->
-                                val label = when (type) {
-                                    AlbumSortType.CREATE_DATE -> stringResource(R.string.recently_added)
-                                    AlbumSortType.NAME -> stringResource(R.string.sort_a_to_z)
-                                    AlbumSortType.ARTIST -> stringResource(R.string.sort_artist)
-                                    AlbumSortType.YEAR -> stringResource(R.string.year_sort)
-                                    AlbumSortType.SONG_COUNT -> stringResource(R.string.tracks_count_label)
-                                    AlbumSortType.LENGTH -> stringResource(R.string.duration_sort)
-                                    AlbumSortType.PLAY_TIME -> stringResource(R.string.most_played_sort)
-                                }
+                                val label =
+                                    when (type) {
+                                        AlbumSortType.CREATE_DATE -> stringResource(R.string.recently_added)
+                                        AlbumSortType.NAME -> stringResource(R.string.sort_a_to_z)
+                                        AlbumSortType.ARTIST -> stringResource(R.string.sort_artist)
+                                        AlbumSortType.YEAR -> stringResource(R.string.year_sort)
+                                        AlbumSortType.SONG_COUNT -> stringResource(R.string.tracks_count_label)
+                                        AlbumSortType.LENGTH -> stringResource(R.string.duration_sort)
+                                        AlbumSortType.PLAY_TIME -> stringResource(R.string.most_played_sort)
+                                    }
                                 DropdownMenuItem(
                                     text = { Text(label) },
                                     onClick = {
@@ -218,7 +263,7 @@ fun LibraryAlbumsScreen(
                                         // Issue 4: A-Z sort defaults to ascending
                                         if (type == AlbumSortType.NAME) onSortDescendingChange(false)
                                         showSortMenu = false
-                                    }
+                                    },
                                 )
                             }
                         }
@@ -227,59 +272,71 @@ fun LibraryAlbumsScreen(
                     // Sort direction toggle button
                     Spacer(modifier = Modifier.width(4.dp))
                     Box(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                            .clickable { onSortDescendingChange(!sortDescending) }
-                            .padding(horizontal = 10.dp, vertical = 8.dp)
+                        modifier =
+                            Modifier
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                .clickable { onSortDescendingChange(!sortDescending) }
+                                .padding(horizontal = 10.dp, vertical = 8.dp),
                     ) {
                         Icon(
-                            painter = painterResource(
-                                id = if (sortDescending) R.drawable.arrow_downward else R.drawable.arrow_upward
-                            ),
-                            contentDescription = if (sortDescending) stringResource(R.string.sort_descending) else stringResource(R.string.sort_ascending),
+                            painter =
+                                painterResource(
+                                    id = if (sortDescending) R.drawable.arrow_downward else R.drawable.arrow_upward,
+                                ),
+                            contentDescription =
+                                if (sortDescending) {
+                                    stringResource(
+                                        R.string.sort_descending,
+                                    )
+                                } else {
+                                    stringResource(R.string.sort_ascending)
+                                },
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(16.dp),
                         )
                     }
                 }
 
                 // Grid / List Toggle layout controls
                 Row(
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                        .padding(horizontal = 4.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier =
+                        Modifier
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                            .padding(horizontal = 4.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(if (!isGridView) MaterialTheme.colorScheme.primary else Color.Transparent)
-                            .clickable { isGridView = false },
-                        contentAlignment = Alignment.Center
+                        modifier =
+                            Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(if (!isGridView) MaterialTheme.colorScheme.primary else Color.Transparent)
+                                .clickable { isGridView = false },
+                        contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.queue_music),
                             contentDescription = stringResource(R.string.list_view),
                             tint = if (!isGridView) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(16.dp),
                         )
                     }
                     Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(if (isGridView) MaterialTheme.colorScheme.primary else Color.Transparent)
-                            .clickable { isGridView = true },
-                        contentAlignment = Alignment.Center
+                        modifier =
+                            Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(if (isGridView) MaterialTheme.colorScheme.primary else Color.Transparent)
+                                .clickable { isGridView = true },
+                        contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.album),
                             contentDescription = stringResource(R.string.grid_view),
                             tint = if (isGridView) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(16.dp),
                         )
                     }
                 }
@@ -294,33 +351,34 @@ fun LibraryAlbumsScreen(
                     contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = playerAwareBottomPadding),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 ) {
                     // Featured Album spotlight card span all 4 columns
                     item(span = { GridItemSpan(4) }, key = "featured_album_card") {
                         featuredAlbum?.let { album ->
                             Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(36.dp))
-                                    .background(MaterialTheme.colorScheme.primaryContainer)
-                                    .clickable {
-                                        navController.navigate("album/${album.id}")
-                                    }
-                                    .padding(20.dp)
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(36.dp))
+                                        .background(MaterialTheme.colorScheme.primaryContainer)
+                                        .clickable {
+                                            navController.navigate("album/${album.id}")
+                                        }.padding(20.dp),
                             ) {
                                 Column {
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically
+                                        verticalAlignment = Alignment.CenterVertically,
                                     ) {
                                         AsyncImage(
                                             model = album.album.thumbnailUrl,
                                             contentDescription = null,
                                             contentScale = ContentScale.Crop,
-                                            modifier = Modifier
-                                                .size(80.dp)
-                                                .clip(RoundedCornerShape(24.dp))
+                                            modifier =
+                                                Modifier
+                                                    .size(80.dp)
+                                                    .clip(RoundedCornerShape(24.dp)),
                                         )
 
                                         Spacer(modifier = Modifier.width(16.dp))
@@ -328,11 +386,12 @@ fun LibraryAlbumsScreen(
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(
                                                 text = stringResource(R.string.featured_album_badge),
-                                                style = MaterialTheme.typography.labelSmall.copy(
-                                                    fontWeight = FontWeight.Bold,
-                                                    letterSpacing = 1.sp
-                                                ),
-                                                color = MaterialTheme.colorScheme.primary
+                                                style =
+                                                    MaterialTheme.typography.labelSmall.copy(
+                                                        fontWeight = FontWeight.Bold,
+                                                        letterSpacing = 1.sp,
+                                                    ),
+                                                color = MaterialTheme.colorScheme.primary,
                                             )
                                             Spacer(modifier = Modifier.height(4.dp))
                                             Text(
@@ -340,14 +399,14 @@ fun LibraryAlbumsScreen(
                                                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                                 maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
+                                                overflow = TextOverflow.Ellipsis,
                                             )
                                             Text(
                                                 text = album.artists.joinToString(", ") { it.name },
                                                 style = MaterialTheme.typography.bodyMedium,
                                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
                                                 maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
+                                                overflow = TextOverflow.Ellipsis,
                                             )
                                         }
                                     }
@@ -357,7 +416,7 @@ fun LibraryAlbumsScreen(
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
+                                        verticalAlignment = Alignment.CenterVertically,
                                     ) {
                                         Button(
                                             onClick = {
@@ -368,19 +427,23 @@ fun LibraryAlbumsScreen(
                                                 }
                                             },
                                             shape = CircleShape,
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = MaterialTheme.colorScheme.primary,
-                                                contentColor = MaterialTheme.colorScheme.onPrimary
-                                            ),
-                                            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp)
+                                            colors =
+                                                ButtonDefaults.buttonColors(
+                                                    containerColor = MaterialTheme.colorScheme.primary,
+                                                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                                                ),
+                                            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
                                         ) {
                                             Icon(
                                                 painter = painterResource(id = R.drawable.play),
                                                 contentDescription = null,
-                                                modifier = Modifier.size(16.dp)
+                                                modifier = Modifier.size(16.dp),
                                             )
                                             Spacer(modifier = Modifier.width(6.dp))
-                                            Text(stringResource(R.string.play), style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                                            Text(
+                                                stringResource(R.string.play),
+                                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                            )
                                         }
 
                                         IconButton(
@@ -389,15 +452,15 @@ fun LibraryAlbumsScreen(
                                                     AlbumMenu(
                                                         originalAlbum = album,
                                                         navController = navController,
-                                                        onDismiss = menuState::dismiss
+                                                        onDismiss = menuState::dismiss,
                                                     )
                                                 }
-                                            }
+                                            },
                                         ) {
                                             Icon(
                                                 painter = painterResource(id = R.drawable.more_vert),
                                                 contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                             )
                                         }
                                     }
@@ -409,56 +472,59 @@ fun LibraryAlbumsScreen(
                     // 4-column albums list
                     items(filteredAlbums, key = { it.id }) { album ->
                         Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .combinedClickable(
-                                    onClick = { navController.navigate("album/${album.id}") },
-                                    onLongClick = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        menuState.show {
-                                            AlbumMenu(
-                                                originalAlbum = album,
-                                                navController = navController,
-                                                onDismiss = menuState::dismiss
-                                            )
-                                        }
-                                    }
-                                )
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .combinedClickable(
+                                        onClick = { navController.navigate("album/${album.id}") },
+                                        onLongClick = {
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            menuState.show {
+                                                AlbumMenu(
+                                                    originalAlbum = album,
+                                                    navController = navController,
+                                                    onDismiss = menuState::dismiss,
+                                                )
+                                            }
+                                        },
+                                    ),
                         ) {
                             Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .aspectRatio(1f)
-                                    .clip(RoundedCornerShape(22.dp))
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .aspectRatio(1f)
+                                        .clip(RoundedCornerShape(22.dp)),
                             ) {
                                 AsyncImage(
                                     model = album.album.thumbnailUrl,
                                     contentDescription = null,
                                     contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize()
+                                    modifier = Modifier.fillMaxSize(),
                                 )
                                 // Play Overlay button on cover
                                 Box(
-                                    modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .padding(6.dp)
-                                        .size(24.dp)
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.primary)
-                                        .clickable {
-                                            coroutineScope.launch {
-                                                database.albumWithSongs(album.id).firstOrNull()?.let { albumWithSongs ->
-                                                    playerConnection.playQueue(LocalAlbumRadio(albumWithSongs))
+                                    modifier =
+                                        Modifier
+                                            .align(Alignment.BottomEnd)
+                                            .padding(6.dp)
+                                            .size(24.dp)
+                                            .clip(CircleShape)
+                                            .background(MaterialTheme.colorScheme.primary)
+                                            .clickable {
+                                                coroutineScope.launch {
+                                                    database.albumWithSongs(album.id).firstOrNull()?.let { albumWithSongs ->
+                                                        playerConnection.playQueue(LocalAlbumRadio(albumWithSongs))
+                                                    }
                                                 }
-                                            }
-                                        },
-                                    contentAlignment = Alignment.Center
+                                            },
+                                    contentAlignment = Alignment.Center,
                                 ) {
                                     Icon(
                                         painter = painterResource(id = R.drawable.play),
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.onPrimary,
-                                        modifier = Modifier.size(12.dp)
+                                        modifier = Modifier.size(12.dp),
                                     )
                                 }
                             }
@@ -468,14 +534,14 @@ fun LibraryAlbumsScreen(
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                 color = MaterialTheme.colorScheme.onBackground,
                                 maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+                                overflow = TextOverflow.Ellipsis,
                             )
                             Text(
                                 text = album.artists.joinToString(", ") { it.name },
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
                                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                                 maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+                                overflow = TextOverflow.Ellipsis,
                             )
                         }
                     }
@@ -485,37 +551,38 @@ fun LibraryAlbumsScreen(
                 LazyColumn(
                     contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = playerAwareBottomPadding),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 ) {
                     items(filteredAlbums, key = { it.id }) { album ->
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(28.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
-                                .combinedClickable(
-                                    onClick = { navController.navigate("album/${album.id}") },
-                                    onLongClick = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        menuState.show {
-                                            AlbumMenu(
-                                                originalAlbum = album,
-                                                navController = navController,
-                                                onDismiss = menuState::dismiss
-                                            )
-                                        }
-                                    }
-                                )
-                                .padding(10.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(28.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+                                    .combinedClickable(
+                                        onClick = { navController.navigate("album/${album.id}") },
+                                        onLongClick = {
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            menuState.show {
+                                                AlbumMenu(
+                                                    originalAlbum = album,
+                                                    navController = navController,
+                                                    onDismiss = menuState::dismiss,
+                                                )
+                                            }
+                                        },
+                                    ).padding(10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             AsyncImage(
                                 model = album.album.thumbnailUrl,
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(60.dp)
-                                    .clip(RoundedCornerShape(20.dp))
+                                modifier =
+                                    Modifier
+                                        .size(60.dp)
+                                        .clip(RoundedCornerShape(20.dp)),
                             )
                             Spacer(modifier = Modifier.width(14.dp))
                             Column(modifier = Modifier.weight(1f)) {
@@ -524,14 +591,14 @@ fun LibraryAlbumsScreen(
                                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                                     color = MaterialTheme.colorScheme.onBackground,
                                     maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    overflow = TextOverflow.Ellipsis,
                                 )
                                 Text(
                                     text = album.artists.joinToString(", ") { it.name },
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                                     maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    overflow = TextOverflow.Ellipsis,
                                 )
                             }
 
@@ -543,16 +610,17 @@ fun LibraryAlbumsScreen(
                                         }
                                     }
                                 },
-                                colors = IconButtonDefaults.iconButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                    contentColor = MaterialTheme.colorScheme.primary
-                                ),
-                                modifier = Modifier.size(36.dp)
+                                colors =
+                                    IconButtonDefaults.iconButtonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                        contentColor = MaterialTheme.colorScheme.primary,
+                                    ),
+                                modifier = Modifier.size(36.dp),
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.play),
                                     contentDescription = stringResource(R.string.play),
-                                    modifier = Modifier.size(16.dp)
+                                    modifier = Modifier.size(16.dp),
                                 )
                             }
                         }
@@ -562,4 +630,3 @@ fun LibraryAlbumsScreen(
         }
     }
 }
-

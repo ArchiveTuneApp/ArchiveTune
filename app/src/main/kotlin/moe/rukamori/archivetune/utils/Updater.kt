@@ -8,8 +8,14 @@
 package moe.rukamori.archivetune.utils
 
 import androidx.datastore.preferences.core.edit
-import moe.rukamori.archivetune.BuildConfig
+import io.ktor.client.HttpClient
+import io.ktor.client.request.get
+import io.ktor.client.request.headers
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpStatusCode
 import moe.rukamori.archivetune.App
+import moe.rukamori.archivetune.BuildConfig
 import moe.rukamori.archivetune.constants.DailyNightlyReleasesEtagKey
 import moe.rukamori.archivetune.constants.DailyNightlyReleasesFingerprintKey
 import moe.rukamori.archivetune.constants.DailyNightlyReleasesJsonKey
@@ -18,12 +24,6 @@ import moe.rukamori.archivetune.constants.GitHubReleasesEtagKey
 import moe.rukamori.archivetune.constants.GitHubReleasesFingerprintKey
 import moe.rukamori.archivetune.constants.GitHubReleasesJsonKey
 import moe.rukamori.archivetune.constants.GitHubReleasesLastCheckedAtKey
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
-import io.ktor.client.request.headers
-import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.HttpStatusCode
 import org.json.JSONArray
 
 data class GitCommit(
@@ -31,7 +31,7 @@ data class GitCommit(
     val message: String,
     val author: String,
     val date: String,
-    val url: String
+    val url: String,
 )
 
 data class ReleaseInfo(
@@ -39,7 +39,7 @@ data class ReleaseInfo(
     val name: String,
     val body: String?,
     val publishedAt: String,
-    val htmlUrl: String
+    val htmlUrl: String,
 )
 
 private data class ReleasesNetworkResult(
@@ -60,18 +60,20 @@ object Updater {
     private var latestDailyNightlyReleaseTag: String? = null
 
     private val isUpdaterDistribution: Boolean
-        get() = BuildConfig.UPDATER_AVAILABLE &&
-            when (BuildConfig.DISTRIBUTION) {
-                "gms", "foss" -> true
-                else -> false
-            }
+        get() =
+            BuildConfig.UPDATER_AVAILABLE &&
+                when (BuildConfig.DISTRIBUTION) {
+                    "gms", "foss" -> true
+                    else -> false
+                }
 
     private val distributionArtifactPrefix: String
-        get() = when (BuildConfig.DISTRIBUTION) {
-            "gms" -> ""
-            "foss" -> "foss-"
-            else -> ""
-        }
+        get() =
+            when (BuildConfig.DISTRIBUTION) {
+                "gms" -> ""
+                "foss" -> "foss-"
+                else -> ""
+            }
 
     private data class SemVer(
         val major: Int,
@@ -165,7 +167,10 @@ object Updater {
     private fun parseReleaseSemVerOrNull(release: ReleaseInfo): SemVer? =
         parseSemVerOrNull(release.tagName) ?: parseSemVerOrNull(release.name)
 
-    internal fun isSameVersion(a: String, b: String): Boolean {
+    internal fun isSameVersion(
+        a: String,
+        b: String,
+    ): Boolean {
         val aSemVer = parseSemVerOrNull(a)
         val bSemVer = parseSemVerOrNull(b)
         return if (aSemVer != null && bSemVer != null) {
@@ -178,7 +183,10 @@ object Updater {
         }
     }
 
-    internal fun isUpdateAvailable(latestVersion: String, currentVersion: String): Boolean {
+    internal fun isUpdateAvailable(
+        latestVersion: String,
+        currentVersion: String,
+    ): Boolean {
         val latestSemVer = parseSemVerOrNull(latestVersion)
         val currentSemVer = parseSemVerOrNull(currentVersion)
         return if (latestSemVer != null && currentSemVer != null) {
@@ -202,9 +210,7 @@ object Updater {
         return candidates.maxWithOrNull(compareBy({ it.first }, { it.second.publishedAt }))?.second
     }
 
-    internal fun findLatestDailyNightlyRelease(
-        releases: List<ReleaseInfo>,
-    ): ReleaseInfo? {
+    internal fun findLatestDailyNightlyRelease(releases: List<ReleaseInfo>): ReleaseInfo? {
         if (releases.isEmpty()) return null
         return releases.maxByOrNull { release ->
             val dateTag = release.tagName.removePrefix("N").takeWhile { it.isDigit() }
@@ -212,12 +218,9 @@ object Updater {
         }
     }
 
-    private fun preferredReleaseVersionNameOrNull(release: ReleaseInfo): String? =
-        parseReleaseSemVerOrNull(release)?.normalizedName()
+    private fun preferredReleaseVersionNameOrNull(release: ReleaseInfo): String? = parseReleaseSemVerOrNull(release)?.normalizedName()
 
-    private fun parseReleasesJson(
-        json: String,
-    ): List<ReleaseInfo> {
+    private fun parseReleasesJson(json: String): List<ReleaseInfo> {
         val jsonArray = JSONArray(json)
         val releases = ArrayList<ReleaseInfo>(jsonArray.length())
         for (i in 0 until jsonArray.length()) {
@@ -228,8 +231,8 @@ object Updater {
                     name = item.optString("name", ""),
                     body = if (item.has("body")) item.optString("body") else null,
                     publishedAt = item.optString("published_at", ""),
-                    htmlUrl = item.optString("html_url", "")
-                )
+                    htmlUrl = item.optString("html_url", ""),
+                ),
             )
         }
         return releases
@@ -262,19 +265,21 @@ object Updater {
             }
         val etag = response.headers["ETag"]
         return when (response.status) {
-            HttpStatusCode.NotModified ->
+            HttpStatusCode.NotModified -> {
                 ReleasesNetworkResult(
                     status = response.status,
                     body = null,
                     etag = cachedEtag ?: etag,
                 )
+            }
 
-            else ->
+            else -> {
                 ReleasesNetworkResult(
                     status = response.status,
                     body = response.bodyAsText(),
                     etag = etag,
                 )
+            }
         }
     }
 
@@ -295,8 +300,7 @@ object Updater {
             preferredReleaseVersionNameOrNull(latest) ?: latest.name.ifBlank { latest.tagName }
         }
 
-    suspend fun getLatestReleaseNotes(): Result<String?> =
-        getLatestReleaseInfo().map { it.body }
+    suspend fun getLatestReleaseNotes(): Result<String?> = getLatestReleaseInfo().map { it.body }
 
     suspend fun getLatestReleaseInfo(): Result<ReleaseInfo> =
         runCatching {
@@ -305,21 +309,26 @@ object Updater {
             }
 
             val releases = getAllReleases().getOrThrow()
-            val latest = findLatestRelease(releases)
-                ?: throw IllegalStateException("No releases found")
+            val latest =
+                findLatestRelease(releases)
+                    ?: throw IllegalStateException("No releases found")
             lastCheckTime = System.currentTimeMillis()
             latestReleaseTag = latest.tagName
             latest
         }
 
-    suspend fun getCommitHistory(count: Int = 20, branch: String = "dev"): Result<List<GitCommit>> =
+    suspend fun getCommitHistory(
+        count: Int = 20,
+        branch: String = "dev",
+    ): Result<List<GitCommit>> =
         runCatching {
             if (!isUpdaterDistribution) {
                 return@runCatching emptyList()
             }
 
             val response =
-                client.get("https://api.github.com/repos/ArchiveTuneApp/ArchiveTune/commits?sha=$branch&per_page=$count")
+                client
+                    .get("https://api.github.com/repos/ArchiveTuneApp/ArchiveTune/commits?sha=$branch&per_page=$count")
                     .bodyAsText()
             val jsonArray = JSONArray(response)
             val commits = mutableListOf<GitCommit>()
@@ -333,8 +342,8 @@ object Updater {
                         message = commit.optString("message", "").lines().firstOrNull() ?: "",
                         author = authorObj?.optString("name", "Unknown") ?: "Unknown",
                         date = authorObj?.optString("date", "") ?: "",
-                        url = commitObj.optString("html_url", "")
-                    )
+                        url = commitObj.optString("html_url", ""),
+                    ),
                 )
             }
             commits
@@ -365,8 +374,7 @@ object Updater {
             latest.tagName.ifBlank { latest.name }
         }
 
-    suspend fun getLatestDailyNightlyReleaseNotes(): Result<String?> =
-        getLatestDailyNightlyReleaseInfo().map { it.body }
+    suspend fun getLatestDailyNightlyReleaseNotes(): Result<String?> = getLatestDailyNightlyReleaseInfo().map { it.body }
 
     suspend fun getLatestDailyNightlyReleaseInfo(): Result<ReleaseInfo> =
         runCatching {
@@ -375,8 +383,9 @@ object Updater {
             }
 
             val releases = getAllDailyNightlyReleases().getOrThrow()
-            val latest = findLatestDailyNightlyRelease(releases)
-                ?: throw IllegalStateException("No daily-nightly releases found")
+            val latest =
+                findLatestDailyNightlyRelease(releases)
+                    ?: throw IllegalStateException("No daily-nightly releases found")
             lastCheckTime = System.currentTimeMillis()
             latestDailyNightlyReleaseTag = latest.tagName
             latest
@@ -421,12 +430,13 @@ object Updater {
                 return@runCatching cachedReleases ?: emptyList()
             }
 
-            val networkResult = runCatching {
-                fetchDailyNightlyReleasesNetwork(
-                    perPage = perPage,
-                    cachedEtag = cachedEtag,
-                )
-            }.getOrNull()
+            val networkResult =
+                runCatching {
+                    fetchDailyNightlyReleasesNetwork(
+                        perPage = perPage,
+                        cachedEtag = cachedEtag,
+                    )
+                }.getOrNull()
 
             if (networkResult == null) {
                 val fallback = cachedReleases
@@ -495,19 +505,21 @@ object Updater {
             }
         val etag = response.headers["ETag"]
         return when (response.status) {
-            HttpStatusCode.NotModified ->
+            HttpStatusCode.NotModified -> {
                 ReleasesNetworkResult(
                     status = response.status,
                     body = null,
                     etag = cachedEtag ?: etag,
                 )
+            }
 
-            else ->
+            else -> {
                 ReleasesNetworkResult(
                     status = response.status,
                     body = response.bodyAsText(),
                     etag = etag,
                 )
+            }
         }
     }
 
@@ -562,12 +574,13 @@ object Updater {
                 return@runCatching cachedReleases ?: emptyList()
             }
 
-            val networkResult = runCatching {
-                fetchReleasesNetwork(
-                    perPage = perPage,
-                    cachedEtag = cachedEtag,
-                )
-            }.getOrNull()
+            val networkResult =
+                runCatching {
+                    fetchReleasesNetwork(
+                        perPage = perPage,
+                        cachedEtag = cachedEtag,
+                    )
+                }.getOrNull()
 
             if (networkResult == null) {
                 val fallback = cachedReleases

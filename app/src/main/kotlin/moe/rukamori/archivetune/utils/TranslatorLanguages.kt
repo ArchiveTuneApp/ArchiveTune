@@ -10,7 +10,10 @@ package moe.rukamori.archivetune.utils
 import android.content.Context
 import org.json.JSONArray
 
-data class TranslatorLang(val name: String, val code: String)
+data class TranslatorLang(
+    val name: String,
+    val code: String,
+)
 
 object TranslatorLanguages {
     /**
@@ -20,7 +23,11 @@ object TranslatorLanguages {
      */
     fun load(context: Context): List<TranslatorLang> {
         try {
-            val json = context.assets.open("translator_languages.json").bufferedReader().use { it.readText() }
+            val json =
+                context.assets
+                    .open("translator_languages.json")
+                    .bufferedReader()
+                    .use { it.readText() }
             val arr = JSONArray(json)
             val out = mutableListOf<TranslatorLang>()
             for (i in 0 until arr.length()) {
@@ -49,7 +56,7 @@ object TranslatorLanguages {
             TranslatorLang("Chinese", "CHINESE"),
             TranslatorLang("Korean", "KOREAN"),
             TranslatorLang("French", "FRENCH"),
-            TranslatorLang("German", "GERMAN")
+            TranslatorLang("German", "GERMAN"),
         )
     }
 }

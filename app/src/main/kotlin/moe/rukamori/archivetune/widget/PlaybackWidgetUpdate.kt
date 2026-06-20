@@ -18,21 +18,26 @@ import java.util.concurrent.TimeUnit
 
 internal suspend fun requestPlaybackWidgetUpdate(context: Context) {
     try {
-        val token = SessionToken(
-            context,
-            ComponentName(context, MusicService::class.java),
-        )
+        val token =
+            SessionToken(
+                context,
+                ComponentName(context, MusicService::class.java),
+            )
         val future = MediaController.Builder(context, token).buildAsync()
-        val controller = withContext(Dispatchers.IO) {
-            future.get(2, TimeUnit.SECONDS)
-        }
+        val controller =
+            withContext(Dispatchers.IO) {
+                future.get(2, TimeUnit.SECONDS)
+            }
 
         try {
             val serviceIntent = android.content.Intent(context, MusicService::class.java)
             context.bindService(
                 serviceIntent,
                 object : android.content.ServiceConnection {
-                    override fun onServiceConnected(name: ComponentName?, binder: android.os.IBinder?) {
+                    override fun onServiceConnected(
+                        name: ComponentName?,
+                        binder: android.os.IBinder?,
+                    ) {
                         val service = (binder as? MusicService.MusicBinder)?.service
                         service?.updateWidget()
                         runCatching { context.unbindService(this) }

@@ -46,9 +46,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -65,26 +65,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import moe.rukamori.archivetune.innertube.utils.hasYouTubeLoginCookie
-import moe.rukamori.archivetune.LocalDatabase
-import moe.rukamori.archivetune.R
-import moe.rukamori.archivetune.constants.InnerTubeCookieKey
-import moe.rukamori.archivetune.db.entities.Playlist
-import moe.rukamori.archivetune.ui.component.CreatePlaylistDialog
-import moe.rukamori.archivetune.ui.component.DefaultDialog
-import moe.rukamori.archivetune.ui.component.PlaylistListItem
-import moe.rukamori.archivetune.utils.rememberPreference
-import moe.rukamori.archivetune.innertube.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import moe.rukamori.archivetune.LocalDatabase
+import moe.rukamori.archivetune.R
+import moe.rukamori.archivetune.constants.InnerTubeCookieKey
+import moe.rukamori.archivetune.db.entities.Playlist
+import moe.rukamori.archivetune.innertube.YouTube
+import moe.rukamori.archivetune.innertube.utils.hasYouTubeLoginCookie
+import moe.rukamori.archivetune.ui.component.CreatePlaylistDialog
+import moe.rukamori.archivetune.ui.component.DefaultDialog
+import moe.rukamori.archivetune.ui.component.PlaylistListItem
+import moe.rukamori.archivetune.utils.rememberPreference
 import java.time.LocalDateTime
 import java.util.Locale
 
@@ -122,8 +122,7 @@ internal fun playlistsForAddToPlaylist(playlists: List<Playlist>): List<Playlist
         .values
         .map { candidates ->
             candidates.reduce(::preferredAddTargetPlaylist)
-        }
-        .toList()
+        }.toList()
 
 internal enum class AddToPlaylistSortOption {
     RECENTLY_MODIFIED,
@@ -146,14 +145,16 @@ internal fun visiblePlaylistsForAddToPlaylist(
 
     return filteredPlaylists.sortedWith { first, second ->
         when (sortOption) {
-            AddToPlaylistSortOption.RECENTLY_MODIFIED ->
+            AddToPlaylistSortOption.RECENTLY_MODIFIED -> {
                 compareNullableDates(
                     second.playlist.lastUpdateTime ?: second.playlist.createdAt,
                     first.playlist.lastUpdateTime ?: first.playlist.createdAt,
                 )
+            }
 
-            AddToPlaylistSortOption.RECENTLY_CREATED ->
+            AddToPlaylistSortOption.RECENTLY_CREATED -> {
                 compareNullableDates(second.playlist.createdAt, first.playlist.createdAt)
+            }
 
             AddToPlaylistSortOption.MOST_PLAYED -> {
                 compareValues(
@@ -202,17 +203,19 @@ fun AddToPlaylistDialog(
     var sortOption by rememberSaveable { mutableStateOf(AddToPlaylistSortOption.RECENTLY_CREATED) }
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var showSearchField by rememberSaveable { mutableStateOf(false) }
-    val availablePlaylists = remember(allPlaylists) {
-        playlistsForAddToPlaylist(allPlaylists)
-    }
-    val playlists = remember(availablePlaylists, sortOption, searchQuery, playlistPlayCounts) {
-        visiblePlaylistsForAddToPlaylist(
-            playlists = availablePlaylists,
-            sortOption = sortOption,
-            query = searchQuery,
-            playlistPlayCounts = playlistPlayCounts.associate { it.playlistId to it.playCount },
-        )
-    }
+    val availablePlaylists =
+        remember(allPlaylists) {
+            playlistsForAddToPlaylist(allPlaylists)
+        }
+    val playlists =
+        remember(availablePlaylists, sortOption, searchQuery, playlistPlayCounts) {
+            visiblePlaylistsForAddToPlaylist(
+                playlists = availablePlaylists,
+                sortOption = sortOption,
+                query = searchQuery,
+                playlistPlayCounts = playlistPlayCounts.associate { it.playlistId to it.playCount },
+            )
+        }
     var showCreatePlaylistDialog by rememberSaveable { mutableStateOf(false) }
     var showDuplicateDialog by remember { mutableStateOf(false) }
     var playlistsWithDuplicates by remember { mutableStateOf<List<Playlist>>(emptyList()) }
@@ -286,33 +289,35 @@ fun AddToPlaylistDialog(
             properties = DialogProperties(usePlatformDefaultWidth = false),
         ) {
             Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
                 shape = RoundedCornerShape(28.dp),
                 color = AlertDialogDefaults.containerColor,
                 tonalElevation = AlertDialogDefaults.TonalElevation,
             ) {
                 Column {
                     Column(
-                        modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 16.dp)
+                        modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 16.dp),
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             Box(
                                 contentAlignment = Alignment.Center,
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.secondaryContainer)
+                                modifier =
+                                    Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.secondaryContainer),
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.playlist_add),
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                    modifier = Modifier.size(22.dp)
+                                    modifier = Modifier.size(22.dp),
                                 )
                             }
 
@@ -340,12 +345,13 @@ fun AddToPlaylistDialog(
                                     } else {
                                         showSearchField = true
                                     }
-                                }
+                                },
                             ) {
                                 Icon(
-                                    painter = painterResource(
-                                        if (showSearchField) R.drawable.close else R.drawable.search
-                                    ),
+                                    painter =
+                                        painterResource(
+                                            if (showSearchField) R.drawable.close else R.drawable.search,
+                                        ),
                                     contentDescription = stringResource(R.string.search),
                                 )
                             }
@@ -373,20 +379,23 @@ fun AddToPlaylistDialog(
                                         }
                                     }
                                 },
-                                keyboardOptions = KeyboardOptions(
-                                    imeAction = ImeAction.Search,
-                                ),
-                                colors = TextFieldDefaults.colors(
-                                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent,
-                                ),
+                                keyboardOptions =
+                                    KeyboardOptions(
+                                        imeAction = ImeAction.Search,
+                                    ),
+                                colors =
+                                    TextFieldDefaults.colors(
+                                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                        disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = Color.Transparent,
+                                    ),
                                 shape = RoundedCornerShape(18.dp),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 16.dp)
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 16.dp),
                             )
                         }
                     }
@@ -394,11 +403,12 @@ fun AddToPlaylistDialog(
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState())
-                            .padding(horizontal = 20.dp, vertical = 12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState())
+                                .padding(horizontal = 20.dp, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         AddToPlaylistSortChip(
                             label = stringResource(R.string.sort_by_last_updated),
@@ -422,23 +432,25 @@ fun AddToPlaylistDialog(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { showCreatePlaylistDialog = true }
-                            .padding(horizontal = 20.dp, vertical = 14.dp)
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable { showCreatePlaylistDialog = true }
+                                .padding(horizontal = 20.dp, vertical = 14.dp),
                     ) {
                         Box(
                             contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(MaterialTheme.colorScheme.primaryContainer)
+                            modifier =
+                                Modifier
+                                    .size(44.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.add),
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(20.dp),
                             )
                         }
 
@@ -453,61 +465,69 @@ fun AddToPlaylistDialog(
                     if (playlists.isNotEmpty()) {
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = 20.dp),
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
                         )
 
                         LazyColumn(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(max = 360.dp)
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(max = 360.dp),
                         ) {
                             items(playlists, key = { it.id }) { playlist ->
                                 val isSelected = selectedPlaylistIds.contains(playlist.id)
                                 val rowBackground by animateColorAsState(
-                                    targetValue = if (isSelected)
-                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
-                                    else
-                                        androidx.compose.ui.graphics.Color.Transparent,
+                                    targetValue =
+                                        if (isSelected) {
+                                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+                                        } else {
+                                            androidx.compose.ui.graphics.Color.Transparent
+                                        },
                                     animationSpec = tween(durationMillis = 180),
                                     label = "rowBackground",
                                 )
 
                                 Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(rowBackground)
-                                        .clickable(enabled = !isAddingToPlaylist) {
-                                            selectedPlaylistIds =
-                                                if (isSelected) {
-                                                    selectedPlaylistIds - playlist.id
-                                                } else {
-                                                    selectedPlaylistIds + playlist.id
-                                                }
-                                        },
+                                    modifier =
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .background(rowBackground)
+                                            .clickable(enabled = !isAddingToPlaylist) {
+                                                selectedPlaylistIds =
+                                                    if (isSelected) {
+                                                        selectedPlaylistIds - playlist.id
+                                                    } else {
+                                                        selectedPlaylistIds + playlist.id
+                                                    }
+                                            },
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     PlaylistListItem(
                                         playlist = playlist,
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f),
                                     )
 
                                     Box(
                                         contentAlignment = Alignment.Center,
-                                        modifier = Modifier
-                                            .padding(end = 16.dp)
-                                            .size(28.dp)
-                                            .clip(CircleShape)
-                                            .background(
-                                                if (isSelected) MaterialTheme.colorScheme.primary
-                                                else MaterialTheme.colorScheme.surfaceVariant
-                                            )
+                                        modifier =
+                                            Modifier
+                                                .padding(end = 16.dp)
+                                                .size(28.dp)
+                                                .clip(CircleShape)
+                                                .background(
+                                                    if (isSelected) {
+                                                        MaterialTheme.colorScheme.primary
+                                                    } else {
+                                                        MaterialTheme.colorScheme.surfaceVariant
+                                                    },
+                                                ),
                                     ) {
                                         if (isSelected) {
                                             Icon(
                                                 painter = painterResource(R.drawable.done),
                                                 contentDescription = null,
                                                 tint = MaterialTheme.colorScheme.onPrimary,
-                                                modifier = Modifier.size(16.dp)
+                                                modifier = Modifier.size(16.dp),
                                             )
                                         }
                                     }
@@ -517,16 +537,18 @@ fun AddToPlaylistDialog(
                     } else {
                         Box(
                             contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(96.dp)
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(96.dp),
                         ) {
                             Text(
-                                text = if (searchQuery.isBlank()) {
-                                    "No playlists yet"
-                                } else {
-                                    stringResource(R.string.no_matching_playlists)
-                                },
+                                text =
+                                    if (searchQuery.isBlank()) {
+                                        "No playlists yet"
+                                    } else {
+                                        stringResource(R.string.no_matching_playlists)
+                                    },
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -536,9 +558,10 @@ fun AddToPlaylistDialog(
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -551,14 +574,15 @@ fun AddToPlaylistDialog(
                         Button(
                             enabled = selectedPlaylistIds.isNotEmpty() && !isAddingToPlaylist,
                             onClick = {
-                                    val selectedPlaylistIdsSnapshot = selectedPlaylistIds
-                                    isAddingToPlaylist = true
-                                    coroutineScope.launch {
-                                        val currentSongIds = withContext(Dispatchers.IO) {
+                                val selectedPlaylistIdsSnapshot = selectedPlaylistIds
+                                isAddingToPlaylist = true
+                                coroutineScope.launch {
+                                    val currentSongIds =
+                                        withContext(Dispatchers.IO) {
                                             songIds ?: onGetSong()
                                         }
 
-                                        if (currentSongIds.isNullOrEmpty()) {
+                                    if (currentSongIds.isNullOrEmpty()) {
                                         isAddingToPlaylist = false
                                         onDismiss()
                                         return@launch
@@ -572,34 +596,37 @@ fun AddToPlaylistDialog(
                                         return@launch
                                     }
 
-                                    val (withDuplicates, duplicatesMap, successfullyAddedPlaylistIds) = withContext(Dispatchers.IO) {
-                                        val tempDuplicatesMap = mutableMapOf<String, List<String>>()
-                                        val addedPlaylistIds = mutableSetOf<String>()
+                                    val (withDuplicates, duplicatesMap, successfullyAddedPlaylistIds) =
+                                        withContext(Dispatchers.IO) {
+                                            val tempDuplicatesMap = mutableMapOf<String, List<String>>()
+                                            val addedPlaylistIds = mutableSetOf<String>()
 
-                                        val (playlistsWithDups, playlistsWithoutDups) = selectedPlaylists.partition { playlist ->
-                                            val dups = database.playlistDuplicates(playlist.id, currentSongIds)
-                                            if (dups.isNotEmpty()) {
-                                                tempDuplicatesMap[playlist.id] = dups
-                                                true
-                                            } else {
-                                                false
-                                            }
-                                        }
+                                            val (playlistsWithDups, playlistsWithoutDups) =
+                                                selectedPlaylists.partition { playlist ->
+                                                    val dups = database.playlistDuplicates(playlist.id, currentSongIds)
+                                                    if (dups.isNotEmpty()) {
+                                                        tempDuplicatesMap[playlist.id] = dups
+                                                        true
+                                                    } else {
+                                                        false
+                                                    }
+                                                }
 
-                                        playlistsWithoutDups.forEach { playlist ->
-                                            val addedCount = addSongsToPlaylistSafely(playlist, currentSongIds)
-                                            if (addedCount > 0) {
-                                                addedPlaylistIds += playlist.id
+                                            playlistsWithoutDups.forEach { playlist ->
+                                                val addedCount = addSongsToPlaylistSafely(playlist, currentSongIds)
+                                                if (addedCount > 0) {
+                                                    addedPlaylistIds += playlist.id
+                                                }
                                             }
+                                            Triple(playlistsWithDups, tempDuplicatesMap, addedPlaylistIds)
                                         }
-                                        Triple(playlistsWithDups, tempDuplicatesMap, addedPlaylistIds)
-                                    }
 
                                     isAddingToPlaylist = false
 
-                                    val addedPlaylistNames = selectedPlaylists
-                                        .filter { successfullyAddedPlaylistIds.contains(it.id) }
-                                        .map { it.playlist.name }
+                                    val addedPlaylistNames =
+                                        selectedPlaylists
+                                            .filter { successfullyAddedPlaylistIds.contains(it.id) }
+                                            .map { it.playlist.name }
                                     if (addedPlaylistNames.isNotEmpty()) {
                                         onAddComplete?.invoke(currentSongIds.size, addedPlaylistNames)
                                     }
@@ -628,10 +655,12 @@ fun AddToPlaylistDialog(
                                 )
                                 Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
                                 Text(
-                                    text = if (selectedPlaylistIds.size > 1)
-                                        "Add to ${selectedPlaylistIds.size}"
-                                    else
-                                        "Add"
+                                    text =
+                                        if (selectedPlaylistIds.size > 1) {
+                                            "Add to ${selectedPlaylistIds.size}"
+                                        } else {
+                                            "Add"
+                                        },
                                 )
                             }
                         }
@@ -645,12 +674,16 @@ fun AddToPlaylistDialog(
         CreatePlaylistDialog(
             onDismiss = { showCreatePlaylistDialog = false },
             initialTextFieldValue = initialTextFieldValue,
-            allowSyncing = allowSyncing
+            allowSyncing = allowSyncing,
         )
     }
 
     if (showDuplicateDialog) {
-        val totalDuplicates = duplicateSongsMap.values.flatten().distinct().size
+        val totalDuplicates =
+            duplicateSongsMap.values
+                .flatten()
+                .distinct()
+                .size
         DefaultDialog(
             title = { Text(stringResource(R.string.duplicates)) },
             buttons = {
@@ -712,16 +745,17 @@ fun AddToPlaylistDialog(
                     Text(stringResource(android.R.string.cancel))
                 }
             },
-            onDismiss = { showDuplicateDialog = false }
+            onDismiss = { showDuplicateDialog = false },
         ) {
             Text(
-                text = if (totalDuplicates == 1) {
-                    stringResource(R.string.duplicates_description_single)
-                } else {
-                    stringResource(R.string.duplicates_description_multiple, totalDuplicates)
-                },
+                text =
+                    if (totalDuplicates == 1) {
+                        stringResource(R.string.duplicates_description_single)
+                    } else {
+                        stringResource(R.string.duplicates_description_multiple, totalDuplicates)
+                    },
                 textAlign = TextAlign.Start,
-                modifier = Modifier.align(Alignment.Start)
+                modifier = Modifier.align(Alignment.Start),
             )
         }
     }
@@ -751,8 +785,9 @@ private fun AddToPlaylistSortChip(
         modifier = modifier.heightIn(min = minHeight),
         shape = RoundedCornerShape(16.dp),
         border = null,
-        colors = FilterChipDefaults.filterChipColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        ),
+        colors =
+            FilterChipDefaults.filterChipColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            ),
     )
 }

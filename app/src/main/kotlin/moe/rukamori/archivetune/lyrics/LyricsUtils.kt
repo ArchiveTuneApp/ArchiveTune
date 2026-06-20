@@ -35,105 +35,336 @@ object LyricsUtils {
     private val INVISIBLE_CHARS_REGEX = Regex("""[\u200B\u200C\u200D\u2060\u00AD]""")
     private const val NBSP = '\u00A0'
     private const val GENERIC_ROMANIZATION_TRANSFORM = "Any-Latin; Latin-ASCII"
-    private val OTHER_ROMANIZATION_EXCLUDED_SCRIPTS = setOf(
-        UnicodeScript.LATIN,
-        UnicodeScript.COMMON,
-        UnicodeScript.INHERITED,
-        UnicodeScript.HAN,
-        UnicodeScript.HIRAGANA,
-        UnicodeScript.KATAKANA,
-        UnicodeScript.HANGUL,
-        UnicodeScript.DEVANAGARI,
-    )
-    private val genericRomanizationTransliterator = ThreadLocal.withInitial {
-        Transliterator.getInstance(GENERIC_ROMANIZATION_TRANSFORM)
-    }
-
-    private val KANA_ROMAJI_MAP: Map<String, String> = mapOf(
-        // Digraphs (Yōon - combinations like kya, sho)
-        "キャ" to "kya", "キュ" to "kyu", "キョ" to "kyo",
-        "シャ" to "sha", "シュ" to "shu", "ショ" to "sho",
-        "チャ" to "cha", "チュ" to "chu", "チョ" to "cho",
-        "ニャ" to "nya", "ニュ" to "nyu", "ニョ" to "nyo",
-        "ヒャ" to "hya", "ヒュ" to "hyu", "ヒョ" to "hyo",
-        "ミャ" to "mya", "ミュ" to "myu", "ミョ" to "myo",
-        "リャ" to "rya", "リュ" to "ryu", "リョ" to "ryo",
-        "ギャ" to "gya", "ギュ" to "gyu", "ギョ" to "gyo",
-        "ジャ" to "ja", "ジュ" to "ju", "ジョ" to "jo",
-        "ヂャ" to "ja", "ヂュ" to "ju", "ヂョ" to "jo", // ヂ variants, also commonly 'ja', 'ju', 'jo'
-        "ビャ" to "bya", "ビュ" to "byu", "ビョ" to "byo",
-        "ピャ" to "pya", "ピュ" to "pyu", "ピョ" to "pyo",
-
-        // Basic Katakana Characters
-        "ア" to "a", "イ" to "i", "ウ" to "u", "エ" to "e", "オ" to "o",
-        "カ" to "ka", "キ" to "ki", "ク" to "ku", "ケ" to "ke", "コ" to "ko",
-        "サ" to "sa", "シ" to "shi", "ス" to "su", "セ" to "se", "ソ" to "so",
-        "タ" to "ta", "チ" to "chi", "ツ" to "tsu", "テ" to "te", "ト" to "to",
-        "ナ" to "na", "ニ" to "ni", "ヌ" to "nu", "ネ" to "ne", "ノ" to "no",
-        "ハ" to "ha", "ヒ" to "hi", "フ" to "fu", "ヘ" to "he", "ホ" to "ho",
-        "マ" to "ma", "ミ" to "mi", "ム" to "mu", "メ" to "me", "モ" to "mo",
-        "ヤ" to "ya", "ユ" to "yu", "ヨ" to "yo",
-        "ラ" to "ra", "リ" to "ri", "ル" to "ru", "レ" to "re", "ロ" to "ro",
-        "ワ" to "wa", "ヲ" to "o", // ヲ is pronounced 'o'
-        "ン" to "n",
-
-        // Dakuten (voiced consonants)
-        "ガ" to "ga", "ギ" to "gi", "グ" to "gu", "ゲ" to "ge", "ゴ" to "go",
-        "ザ" to "za", "ジ" to "ji", "ズ" to "zu", "ゼ" to "ze", "ゾ" to "zo",
-        "ダ" to "da", "ヂ" to "ji", "ヅ" to "zu", "デ" to "de", "ド" to "do", // ヂ and ヅ are often 'ji' and 'zu'
-
-        // Handakuten (p-sounds for 'h' group) / Dakuten for 'h' group
-        "バ" to "ba", "ビ" to "bi", "ブ" to "bu", "ベ" to "be", "ボ" to "bo", // Dakuten for ハ행 (ha-row)
-        "パ" to "pa", "ピ" to "pi", "プ" to "pu", "ペ" to "pe", "ポ" to "po", // Handakuten for ハ행 (ha-row)
-
-        // Chōonpu (long vowel mark) - removed as per original logic
-        "ー" to ""
-    )
-
-    private val HANGUL_ROMAJA_MAP: Map<String, Map<String, String>> = mapOf(
-        "cho" to mapOf(
-            "ᄀ" to "g",  "ᄁ" to "kk", "ᄂ" to "n",  "ᄃ" to "d", 
-            "ᄄ" to "tt", "ᄅ" to "r",  "ᄆ" to "m",  "ᄇ" to "b",
-            "ᄈ" to "pp", "ᄉ" to "s",  "ᄊ" to "ss", "ᄋ" to "",
-            "ᄌ" to "j",  "ᄍ" to "jj", "ᄎ" to "ch", "ᄏ" to "k",
-            "ᄐ" to "t",  "ᄑ" to "p",  "ᄒ" to "h"
-        ),
-        "jung" to mapOf(
-            "ᅡ" to "a",  "ᅢ" to "ae", "ᅣ" to "ya",  "ᅤ" to "yae", 
-            "ᅥ" to "eo", "ᅦ" to "e",  "ᅧ" to "yeo", "ᅨ" to "ye", 
-            "ᅩ" to "o",  "ᅪ" to "wa", "ᅫ" to "wae", "ᅬ" to "oe",
-            "ᅭ" to "yo", "ᅮ" to "u",  "ᅯ" to "wo",  "ᅰ" to "we",
-            "ᅱ" to "wi", "ᅲ" to "yu", "ᅳ" to "eu",  "ᅴ" to "eui",
-            "ᅵ" to "i"
-        ),
-        "jong" to mapOf(
-            "ᆨ" to "k",     "ᆨᄋ" to "g",   "ᆨᄂ" to "ngn", "ᆨᄅ" to "ngn", "ᆨᄆ" to "ngm", "ᆨᄒ" to "kh",
-            "ᆩ" to "kk",    "ᆩᄋ" to "kg",  "ᆩᄂ" to "ngn", "ᆩᄅ" to "ngn", "ᆩᄆ" to "ngm", "ᆩᄒ" to "kh",
-            "ᆪ" to "k",     "ᆪᄋ" to "ks",  "ᆪᄂ" to "ngn", "ᆪᄅ" to "ngn", "ᆪᄆ" to "ngm", "ᆪᄒ" to "kch",
-            "ᆫ" to "n",     "ᆫᄅ" to "ll",  "ᆬ" to "n",     "ᆬᄋ" to "nj",  "ᆬᄂ" to "nn",  "ᆬᄅ" to "nn",
-            "ᆬᄆ" to "nm",  "ᆬㅎ" to "nch", "ᆭ" to "n",     "ᆭᄋ" to "nh",  "ᆭᄅ" to "nn",  "ᆮ" to "t",
-            "ᆮᄋ" to "d",   "ᆮᄂ" to "nn",  "ᆮᄅ" to "nn",  "ᆮᄆ" to "nm",  "ᆮᄒ" to "th",  "ᆯ" to "l",
-            "ᆯᄋ" to "r",   "ᆯᄂ" to "ll",  "ᆯᄅ" to "ll",  "ᆰ" to "k",     "ᆰᄋ" to "lg",  "ᆰᄂ" to "ngn",
-            "ᆰᄅ" to "ngn", "ᆰᄆ" to "ngm", "ᆰᄒ" to "lkh", "ᆱ" to "m",     "ᆱᄋ" to "lm",  "ᆱᄂ" to "mn",
-            "ᆱᄅ" to "mn",  "ᆱᄆ" to "mm",  "ᆱᄒ" to "lmh", "ᆲ" to "p",     "ᆲᄋ" to "lb",  "ᆲᄂ" to "mn",
-            "ᆲᄅ" to "mn",  "ᆲᄆ" to "mm",  "ᆲᄒ" to "lph", "ᆳ" to "t",     "ᆳᄋ" to "ls",  "ᆳᄂ" to "nn",
-            "ᆳᄅ" to "nn",  "ᆳᄆ" to "nm",  "ᆳᄒ" to "lsh", "ᆴ" to "t",     "ᆴᄋ" to "lt",  "ᆴᄂ" to "nn",
-            "ᆴᄅ" to "nn",  "ᆴᄆ" to "nm",  "ᆴᄒ" to "lth", "ᆵ" to "p",     "ᆵᄋ" to "lp",  "ᆵᄂ" to "mn",
-            "ᆵᄅ" to "mn",  "ᆵᄆ" to "mm",  "ᆵᄒ" to "lph", "ᆶ" to "l",     "ᆶᄋ" to "lh",  "ᆶᄂ" to "ll",
-            "ᆶᄅ" to "ll",  "ᆶᄆ" to "lm",  "ᆶᄒ" to "lh",  "ᆷ" to "m",     "ᆷᄅ" to "mn",  "ᆸ" to "p",
-            "ᆸᄋ" to "b",   "ᆸᄂ" to "mn",  "ᆸᄅ" to "mn",  "ᆸᄆ" to "mm",  "ᆸᄒ" to "ph",  "ᆹ" to "p",
-            "ᆹᄋ" to "ps",  "ᆹᄂ" to "mn",  "ᆹᄅ" to "mn",  "ᆹᄆ" to "mm",  "ᆹᄒ" to "psh", "ᆺ" to "t",
-            "ᆺᄋ" to "s",   "ᆺᄂ" to "nn",  "ᆺᄅ" to "nn",  "ᆺᄆ" to "nm",  "ᆺᄒ" to "sh",  "ᆻ" to "t",
-            "ᆻᄋ" to "ss",  "ᆻᄂ" to "tn",  "ᆻᄅ" to "tn",  "ᆻᄆ" to "nm",  "ᆻᄒ" to "th",  "ᆼ" to "ng",
-            "ᆽ" to "t",     "ᆽᄋ" to "j",   "ᆽᄂ" to "nn",  "ᆽᄅ" to "nn",  "ᆽᄆ" to "nm",  "ᆽᄒ" to "ch",
-            "ᆾ" to "t",     "ᆾᄋ" to "ch",  "ᆾᄂ" to "nn",  "ᆾᄅ" to "nn",  "ᆾᄆ" to "nm",  "ᆾᄒ" to "ch",
-            "ᆿ" to "k",     "ᆿᄋ" to "k",   "ᆿᄂ" to "ngn", "ᆿᄅ" to "ngn", "ᆿᄆ" to "ngm", "ᆿᄒ" to "kh",
-            "ᇀ" to "t",     "ᇀᄋ" to "t",   "ᇀᄂ" to "nn",  "ᇀᄅ" to "nn",  "ᇀᄆ" to "nm",  "ᇀᄒ" to "th",
-            "ᇁ" to "p",     "ᇁᄋ" to "p",   "ᇁᄂ" to "mn",  "ᇁᄅ" to "mn",  "ᇁᄆ" to "mm",  "ᇁᄒ" to "ph",
-            "ᇂ" to "t",     "ᇂᄋ" to "h",   "ᇂᄂ" to "nn",  "ᇂᄅ" to "nn",  "ᇂᄆ" to "mm",  "ᇂᄒ" to "t",
-            "ᇂᄀ" to "k",
+    private val OTHER_ROMANIZATION_EXCLUDED_SCRIPTS =
+        setOf(
+            UnicodeScript.LATIN,
+            UnicodeScript.COMMON,
+            UnicodeScript.INHERITED,
+            UnicodeScript.HAN,
+            UnicodeScript.HIRAGANA,
+            UnicodeScript.KATAKANA,
+            UnicodeScript.HANGUL,
+            UnicodeScript.DEVANAGARI,
         )
-    )
+    private val genericRomanizationTransliterator =
+        ThreadLocal.withInitial {
+            Transliterator.getInstance(GENERIC_ROMANIZATION_TRANSFORM)
+        }
+
+    private val KANA_ROMAJI_MAP: Map<String, String> =
+        mapOf(
+            // Digraphs (Yōon - combinations like kya, sho)
+            "キャ" to "kya",
+            "キュ" to "kyu",
+            "キョ" to "kyo",
+            "シャ" to "sha",
+            "シュ" to "shu",
+            "ショ" to "sho",
+            "チャ" to "cha",
+            "チュ" to "chu",
+            "チョ" to "cho",
+            "ニャ" to "nya",
+            "ニュ" to "nyu",
+            "ニョ" to "nyo",
+            "ヒャ" to "hya",
+            "ヒュ" to "hyu",
+            "ヒョ" to "hyo",
+            "ミャ" to "mya",
+            "ミュ" to "myu",
+            "ミョ" to "myo",
+            "リャ" to "rya",
+            "リュ" to "ryu",
+            "リョ" to "ryo",
+            "ギャ" to "gya",
+            "ギュ" to "gyu",
+            "ギョ" to "gyo",
+            "ジャ" to "ja",
+            "ジュ" to "ju",
+            "ジョ" to "jo",
+            "ヂャ" to "ja",
+            "ヂュ" to "ju",
+            "ヂョ" to "jo", // ヂ variants, also commonly 'ja', 'ju', 'jo'
+            "ビャ" to "bya",
+            "ビュ" to "byu",
+            "ビョ" to "byo",
+            "ピャ" to "pya",
+            "ピュ" to "pyu",
+            "ピョ" to "pyo",
+            // Basic Katakana Characters
+            "ア" to "a",
+            "イ" to "i",
+            "ウ" to "u",
+            "エ" to "e",
+            "オ" to "o",
+            "カ" to "ka",
+            "キ" to "ki",
+            "ク" to "ku",
+            "ケ" to "ke",
+            "コ" to "ko",
+            "サ" to "sa",
+            "シ" to "shi",
+            "ス" to "su",
+            "セ" to "se",
+            "ソ" to "so",
+            "タ" to "ta",
+            "チ" to "chi",
+            "ツ" to "tsu",
+            "テ" to "te",
+            "ト" to "to",
+            "ナ" to "na",
+            "ニ" to "ni",
+            "ヌ" to "nu",
+            "ネ" to "ne",
+            "ノ" to "no",
+            "ハ" to "ha",
+            "ヒ" to "hi",
+            "フ" to "fu",
+            "ヘ" to "he",
+            "ホ" to "ho",
+            "マ" to "ma",
+            "ミ" to "mi",
+            "ム" to "mu",
+            "メ" to "me",
+            "モ" to "mo",
+            "ヤ" to "ya",
+            "ユ" to "yu",
+            "ヨ" to "yo",
+            "ラ" to "ra",
+            "リ" to "ri",
+            "ル" to "ru",
+            "レ" to "re",
+            "ロ" to "ro",
+            "ワ" to "wa",
+            "ヲ" to "o", // ヲ is pronounced 'o'
+            "ン" to "n",
+            // Dakuten (voiced consonants)
+            "ガ" to "ga",
+            "ギ" to "gi",
+            "グ" to "gu",
+            "ゲ" to "ge",
+            "ゴ" to "go",
+            "ザ" to "za",
+            "ジ" to "ji",
+            "ズ" to "zu",
+            "ゼ" to "ze",
+            "ゾ" to "zo",
+            "ダ" to "da",
+            "ヂ" to "ji",
+            "ヅ" to "zu",
+            "デ" to "de",
+            "ド" to "do", // ヂ and ヅ are often 'ji' and 'zu'
+            // Handakuten (p-sounds for 'h' group) / Dakuten for 'h' group
+            "バ" to "ba",
+            "ビ" to "bi",
+            "ブ" to "bu",
+            "ベ" to "be",
+            "ボ" to "bo", // Dakuten for ハ행 (ha-row)
+            "パ" to "pa",
+            "ピ" to "pi",
+            "プ" to "pu",
+            "ペ" to "pe",
+            "ポ" to "po", // Handakuten for ハ행 (ha-row)
+            // Chōonpu (long vowel mark) - removed as per original logic
+            "ー" to "",
+        )
+
+    private val HANGUL_ROMAJA_MAP: Map<String, Map<String, String>> =
+        mapOf(
+            "cho" to
+                mapOf(
+                    "ᄀ" to "g",
+                    "ᄁ" to "kk",
+                    "ᄂ" to "n",
+                    "ᄃ" to "d",
+                    "ᄄ" to "tt",
+                    "ᄅ" to "r",
+                    "ᄆ" to "m",
+                    "ᄇ" to "b",
+                    "ᄈ" to "pp",
+                    "ᄉ" to "s",
+                    "ᄊ" to "ss",
+                    "ᄋ" to "",
+                    "ᄌ" to "j",
+                    "ᄍ" to "jj",
+                    "ᄎ" to "ch",
+                    "ᄏ" to "k",
+                    "ᄐ" to "t",
+                    "ᄑ" to "p",
+                    "ᄒ" to "h",
+                ),
+            "jung" to
+                mapOf(
+                    "ᅡ" to "a",
+                    "ᅢ" to "ae",
+                    "ᅣ" to "ya",
+                    "ᅤ" to "yae",
+                    "ᅥ" to "eo",
+                    "ᅦ" to "e",
+                    "ᅧ" to "yeo",
+                    "ᅨ" to "ye",
+                    "ᅩ" to "o",
+                    "ᅪ" to "wa",
+                    "ᅫ" to "wae",
+                    "ᅬ" to "oe",
+                    "ᅭ" to "yo",
+                    "ᅮ" to "u",
+                    "ᅯ" to "wo",
+                    "ᅰ" to "we",
+                    "ᅱ" to "wi",
+                    "ᅲ" to "yu",
+                    "ᅳ" to "eu",
+                    "ᅴ" to "eui",
+                    "ᅵ" to "i",
+                ),
+            "jong" to
+                mapOf(
+                    "ᆨ" to "k",
+                    "ᆨᄋ" to "g",
+                    "ᆨᄂ" to "ngn",
+                    "ᆨᄅ" to "ngn",
+                    "ᆨᄆ" to "ngm",
+                    "ᆨᄒ" to "kh",
+                    "ᆩ" to "kk",
+                    "ᆩᄋ" to "kg",
+                    "ᆩᄂ" to "ngn",
+                    "ᆩᄅ" to "ngn",
+                    "ᆩᄆ" to "ngm",
+                    "ᆩᄒ" to "kh",
+                    "ᆪ" to "k",
+                    "ᆪᄋ" to "ks",
+                    "ᆪᄂ" to "ngn",
+                    "ᆪᄅ" to "ngn",
+                    "ᆪᄆ" to "ngm",
+                    "ᆪᄒ" to "kch",
+                    "ᆫ" to "n",
+                    "ᆫᄅ" to "ll",
+                    "ᆬ" to "n",
+                    "ᆬᄋ" to "nj",
+                    "ᆬᄂ" to "nn",
+                    "ᆬᄅ" to "nn",
+                    "ᆬᄆ" to "nm",
+                    "ᆬㅎ" to "nch",
+                    "ᆭ" to "n",
+                    "ᆭᄋ" to "nh",
+                    "ᆭᄅ" to "nn",
+                    "ᆮ" to "t",
+                    "ᆮᄋ" to "d",
+                    "ᆮᄂ" to "nn",
+                    "ᆮᄅ" to "nn",
+                    "ᆮᄆ" to "nm",
+                    "ᆮᄒ" to "th",
+                    "ᆯ" to "l",
+                    "ᆯᄋ" to "r",
+                    "ᆯᄂ" to "ll",
+                    "ᆯᄅ" to "ll",
+                    "ᆰ" to "k",
+                    "ᆰᄋ" to "lg",
+                    "ᆰᄂ" to "ngn",
+                    "ᆰᄅ" to "ngn",
+                    "ᆰᄆ" to "ngm",
+                    "ᆰᄒ" to "lkh",
+                    "ᆱ" to "m",
+                    "ᆱᄋ" to "lm",
+                    "ᆱᄂ" to "mn",
+                    "ᆱᄅ" to "mn",
+                    "ᆱᄆ" to "mm",
+                    "ᆱᄒ" to "lmh",
+                    "ᆲ" to "p",
+                    "ᆲᄋ" to "lb",
+                    "ᆲᄂ" to "mn",
+                    "ᆲᄅ" to "mn",
+                    "ᆲᄆ" to "mm",
+                    "ᆲᄒ" to "lph",
+                    "ᆳ" to "t",
+                    "ᆳᄋ" to "ls",
+                    "ᆳᄂ" to "nn",
+                    "ᆳᄅ" to "nn",
+                    "ᆳᄆ" to "nm",
+                    "ᆳᄒ" to "lsh",
+                    "ᆴ" to "t",
+                    "ᆴᄋ" to "lt",
+                    "ᆴᄂ" to "nn",
+                    "ᆴᄅ" to "nn",
+                    "ᆴᄆ" to "nm",
+                    "ᆴᄒ" to "lth",
+                    "ᆵ" to "p",
+                    "ᆵᄋ" to "lp",
+                    "ᆵᄂ" to "mn",
+                    "ᆵᄅ" to "mn",
+                    "ᆵᄆ" to "mm",
+                    "ᆵᄒ" to "lph",
+                    "ᆶ" to "l",
+                    "ᆶᄋ" to "lh",
+                    "ᆶᄂ" to "ll",
+                    "ᆶᄅ" to "ll",
+                    "ᆶᄆ" to "lm",
+                    "ᆶᄒ" to "lh",
+                    "ᆷ" to "m",
+                    "ᆷᄅ" to "mn",
+                    "ᆸ" to "p",
+                    "ᆸᄋ" to "b",
+                    "ᆸᄂ" to "mn",
+                    "ᆸᄅ" to "mn",
+                    "ᆸᄆ" to "mm",
+                    "ᆸᄒ" to "ph",
+                    "ᆹ" to "p",
+                    "ᆹᄋ" to "ps",
+                    "ᆹᄂ" to "mn",
+                    "ᆹᄅ" to "mn",
+                    "ᆹᄆ" to "mm",
+                    "ᆹᄒ" to "psh",
+                    "ᆺ" to "t",
+                    "ᆺᄋ" to "s",
+                    "ᆺᄂ" to "nn",
+                    "ᆺᄅ" to "nn",
+                    "ᆺᄆ" to "nm",
+                    "ᆺᄒ" to "sh",
+                    "ᆻ" to "t",
+                    "ᆻᄋ" to "ss",
+                    "ᆻᄂ" to "tn",
+                    "ᆻᄅ" to "tn",
+                    "ᆻᄆ" to "nm",
+                    "ᆻᄒ" to "th",
+                    "ᆼ" to "ng",
+                    "ᆽ" to "t",
+                    "ᆽᄋ" to "j",
+                    "ᆽᄂ" to "nn",
+                    "ᆽᄅ" to "nn",
+                    "ᆽᄆ" to "nm",
+                    "ᆽᄒ" to "ch",
+                    "ᆾ" to "t",
+                    "ᆾᄋ" to "ch",
+                    "ᆾᄂ" to "nn",
+                    "ᆾᄅ" to "nn",
+                    "ᆾᄆ" to "nm",
+                    "ᆾᄒ" to "ch",
+                    "ᆿ" to "k",
+                    "ᆿᄋ" to "k",
+                    "ᆿᄂ" to "ngn",
+                    "ᆿᄅ" to "ngn",
+                    "ᆿᄆ" to "ngm",
+                    "ᆿᄒ" to "kh",
+                    "ᇀ" to "t",
+                    "ᇀᄋ" to "t",
+                    "ᇀᄂ" to "nn",
+                    "ᇀᄅ" to "nn",
+                    "ᇀᄆ" to "nm",
+                    "ᇀᄒ" to "th",
+                    "ᇁ" to "p",
+                    "ᇁᄋ" to "p",
+                    "ᇁᄂ" to "mn",
+                    "ᇁᄅ" to "mn",
+                    "ᇁᄆ" to "mm",
+                    "ᇁᄒ" to "ph",
+                    "ᇂ" to "t",
+                    "ᇂᄋ" to "h",
+                    "ᇂᄂ" to "nn",
+                    "ᇂᄅ" to "nn",
+                    "ᇂᄆ" to "mm",
+                    "ᇂᄒ" to "t",
+                    "ᇂᄀ" to "k",
+                ),
+        )
 
     // Lazy initialized Tokenizer
     private val kuromojiTokenizer: Tokenizer by lazy {
@@ -145,40 +376,43 @@ object LyricsUtils {
         if (!trimmed.startsWith("<")) return false
 
         return trimmed.contains("<tt", ignoreCase = true) ||
-                trimmed.contains("http://www.w3.org/ns/ttml", ignoreCase = true)
+            trimmed.contains("http://www.w3.org/ns/ttml", ignoreCase = true)
     }
 
-    fun isLineSyncedLrc(lyrics: String): Boolean =
-        lyrics.lineSequence().any { line -> LINE_REGEX.matches(line.trim()) }
+    fun isLineSyncedLrc(lyrics: String): Boolean = lyrics.lineSequence().any { line -> LINE_REGEX.matches(line.trim()) }
 
-    fun parseTtml(lyrics: String, durationSeconds: Int? = null): List<LyricsEntry> {
+    fun parseTtml(
+        lyrics: String,
+        durationSeconds: Int? = null,
+    ): List<LyricsEntry> {
         val parsedLines = TTMLParser.parseTTML(normalizeLyricsText(lyrics))
         if (parsedLines.isEmpty()) return emptyList()
         val scale = 1.0
 
-        return parsedLines.map { line ->
-            val words =
-                line.words
-                    .filter { it.text.isNotEmpty() }
-                    .map { word ->
-                        WordTimestamp(
-                            text = word.text,
-                            startTime = word.startTime * scale,
-                            endTime = word.endTime * scale,
-                            isBackground = word.isBackground,
-                        )
-                    }.takeIf { it.isNotEmpty() }
+        return parsedLines
+            .map { line ->
+                val words =
+                    line.words
+                        .filter { it.text.isNotEmpty() }
+                        .map { word ->
+                            WordTimestamp(
+                                text = word.text,
+                                startTime = word.startTime * scale,
+                                endTime = word.endTime * scale,
+                                isBackground = word.isBackground,
+                            )
+                        }.takeIf { it.isNotEmpty() }
 
-            LyricsEntry(
-                time = (line.startTime * scale * 1000.0).toLong(),
-                text = line.text,
-                words = words,
-                agent = line.agent,
-                providerRomanizedText = line.providerRomanizedText,
-                providerRomanizedWords = line.providerRomanizedWords,
-                providerRomanizedLanguage = line.providerRomanizedLanguage,
-            )
-        }.sorted()
+                LyricsEntry(
+                    time = (line.startTime * scale * 1000.0).toLong(),
+                    text = line.text,
+                    words = words,
+                    agent = line.agent,
+                    providerRomanizedText = line.providerRomanizedText,
+                    providerRomanizedWords = line.providerRomanizedWords,
+                    providerRomanizedLanguage = line.providerRomanizedLanguage,
+                )
+            }.sorted()
     }
 
     fun parseLyrics(lyrics: String): List<LyricsEntry> {
@@ -195,22 +429,24 @@ object LyricsUtils {
     }
 
     fun normalizeLyricsText(lyrics: String): String {
-        val raw = lyrics
-            .replace("\uFEFF", "")
-            .replace(INVISIBLE_CHARS_REGEX, "")
-            .trim { it.isWhitespace() || it == NBSP }
+        val raw =
+            lyrics
+                .replace("\uFEFF", "")
+                .replace(INVISIBLE_CHARS_REGEX, "")
+                .trim { it.isWhitespace() || it == NBSP }
 
         val unwrapped = stripCodeFence(raw)
-        val normalized = if (isEscapedTtml(unwrapped)) {
-            unwrapped
-                .replace("&lt;", "<")
-                .replace("&gt;", ">")
-                .replace("&quot;", "\"")
-                .replace("&#39;", "'")
-                .replace("&apos;", "'")
-        } else {
-            unwrapped
-        }
+        val normalized =
+            if (isEscapedTtml(unwrapped)) {
+                unwrapped
+                    .replace("&lt;", "<")
+                    .replace("&gt;", ">")
+                    .replace("&quot;", "\"")
+                    .replace("&#39;", "'")
+                    .replace("&apos;", "'")
+            } else {
+                unwrapped
+            }
 
         return normalized.trim { it.isWhitespace() || it == NBSP }
     }
@@ -219,20 +455,20 @@ object LyricsUtils {
         val raw = normalizeLyricsText(lyrics)
         if (raw.isEmpty() || raw == LyricsEntity.LYRICS_NOT_FOUND) return ""
 
-        val visibleLines = when {
-            isTtml(raw) -> runCatching { parseTtml(raw).map { it.text } }.getOrElse { emptyList() }
-            isLineSyncedLrc(raw) -> runCatching { parseLyrics(raw).map { it.text } }.getOrElse { emptyList() }
-            raw.startsWith("<") -> emptyList()
-            else -> raw.lines()
-        }
+        val visibleLines =
+            when {
+                isTtml(raw) -> runCatching { parseTtml(raw).map { it.text } }.getOrElse { emptyList() }
+                isLineSyncedLrc(raw) -> runCatching { parseLyrics(raw).map { it.text } }.getOrElse { emptyList() }
+                raw.startsWith("<") -> emptyList()
+                else -> raw.lines()
+            }
 
         return visibleLines
             .map { line ->
                 line
                     .replace(WHITESPACE_REGEX, " ")
                     .trim { it.isWhitespace() || it == NBSP }
-            }
-            .filter { it.isNotEmpty() }
+            }.filter { it.isNotEmpty() }
             .joinToString("\n")
     }
 
@@ -249,13 +485,14 @@ object LyricsUtils {
         val lines = lyrics.lines()
         if (lines.size <= 1) return lyrics
 
-        val bodyLines = lines.drop(1).let { remainingLines ->
-            if (remainingLines.lastOrNull()?.trim() == "```") {
-                remainingLines.dropLast(1)
-            } else {
-                remainingLines
+        val bodyLines =
+            lines.drop(1).let { remainingLines ->
+                if (remainingLines.lastOrNull()?.trim() == "```") {
+                    remainingLines.dropLast(1)
+                } else {
+                    remainingLines
+                }
             }
-        }
 
         return bodyLines.joinToString("\n").trim { it.isWhitespace() || it == NBSP }
     }
@@ -263,12 +500,15 @@ object LyricsUtils {
     private fun isEscapedTtml(lyrics: String): Boolean {
         val trimmed = lyrics.trimStart()
         return trimmed.startsWith("&lt;tt", ignoreCase = true) ||
-                trimmed.contains("&lt;tt", ignoreCase = true) ||
-                trimmed.contains("http://www.w3.org/ns/ttml", ignoreCase = true) &&
-                trimmed.contains("&lt;", ignoreCase = true)
+            trimmed.contains("&lt;tt", ignoreCase = true) ||
+            trimmed.contains("http://www.w3.org/ns/ttml", ignoreCase = true) &&
+            trimmed.contains("&lt;", ignoreCase = true)
     }
 
-    fun insertInstrumentalBreaks(entries: List<LyricsEntry>, songDurationMs: Long = 0L): List<LyricsEntry> {
+    fun insertInstrumentalBreaks(
+        entries: List<LyricsEntry>,
+        songDurationMs: Long = 0L,
+    ): List<LyricsEntry> {
         if (entries.isEmpty()) return entries
         val result = mutableListOf<LyricsEntry>()
         insertIntroInstrumentalIfNeeded(entries, result)
@@ -295,7 +535,7 @@ object LyricsUtils {
                 text = "",
                 isInstrumental = true,
                 durationMs = introGapMs,
-            )
+            ),
         )
     }
 
@@ -316,7 +556,7 @@ object LyricsUtils {
                 text = "",
                 isInstrumental = true,
                 durationMs = outroDurationMs,
-            )
+            ),
         )
     }
 
@@ -415,27 +655,31 @@ object LyricsUtils {
      * Expected impact: Faster tokenization due to reused Tokenizer instance and faster
      * per-token romanization.
      */
-    suspend fun romanizeJapanese(text: String): String = withContext(Dispatchers.Default) {
-        // Use the lazily initialized tokenizer
-        val tokens = kuromojiTokenizer.tokenize(text)
+    suspend fun romanizeJapanese(text: String): String =
+        withContext(Dispatchers.Default) {
+            // Use the lazily initialized tokenizer
+            val tokens = kuromojiTokenizer.tokenize(text)
 
-        val romanizedTokens = tokens.mapIndexed { index, token ->
-            val currentReading = if (token.reading.isNullOrEmpty() || token.reading == "*") {
-                token.surface
-            } else {
-                token.reading
-            }
+            val romanizedTokens =
+                tokens.mapIndexed { index, token ->
+                    val currentReading =
+                        if (token.reading.isNullOrEmpty() || token.reading == "*") {
+                            token.surface
+                        } else {
+                            token.reading
+                        }
 
-            // Pass the next token's reading for sokuon handling if applicable
-            val nextTokenReading = if (index + 1 < tokens.size) {
-                tokens[index + 1].reading?.takeIf { it.isNotEmpty() && it != "*" } ?: tokens[index + 1].surface
-            } else {
-                null
-            }
-            katakanaToRomaji(currentReading, nextTokenReading)
+                    // Pass the next token's reading for sokuon handling if applicable
+                    val nextTokenReading =
+                        if (index + 1 < tokens.size) {
+                            tokens[index + 1].reading?.takeIf { it.isNotEmpty() && it != "*" } ?: tokens[index + 1].surface
+                        } else {
+                            null
+                        }
+                    katakanaToRomaji(currentReading, nextTokenReading)
+                }
+            romanizedTokens.joinToString(" ")
         }
-        romanizedTokens.joinToString(" ")
-    }
 
     /**
      * Converts a Katakana string to Romaji.
@@ -445,7 +689,10 @@ object LyricsUtils {
      * @param katakana The Katakana string to convert.
      * @param nextKatakana Optional: The next Katakana string (from the next token) to help with sokuon (ッ) gemination.
      */
-    fun katakanaToRomaji(katakana: String?, nextKatakana: String? = null): String {
+    fun katakanaToRomaji(
+        katakana: String?,
+        nextKatakana: String? = null,
+    ): String {
         if (katakana.isNullOrEmpty()) return ""
 
         val romajiBuilder = StringBuilder(katakana.length) // Initial capacity
@@ -468,8 +715,9 @@ object LyricsUtils {
             if (!consumed && katakana[i] == 'ッ') {
                 val nextCharToDouble = nextKatakana?.getOrNull(0)
                 if (nextCharToDouble != null) {
-                    val nextCharRomaji = KANA_ROMAJI_MAP[nextCharToDouble.toString()]?.getOrNull(0)?.toString()
-                        ?: nextCharToDouble.toString()
+                    val nextCharRomaji =
+                        KANA_ROMAJI_MAP[nextCharToDouble.toString()]?.getOrNull(0)?.toString()
+                            ?: nextCharToDouble.toString()
                     romajiBuilder.append(nextCharRomaji.lowercase().trim())
                 }
                 // Sokuon itself doesn't have a direct romaji representation other than geminating the next consonant.
@@ -494,83 +742,83 @@ object LyricsUtils {
         return romajiBuilder.toString().lowercase()
     }
 
-    suspend fun romanizeKorean(text: String): String = withContext(Dispatchers.Default) {
-        val romajaBuilder = StringBuilder()
-        var prevFinal: String? = null
+    suspend fun romanizeKorean(text: String): String =
+        withContext(Dispatchers.Default) {
+            val romajaBuilder = StringBuilder()
+            var prevFinal: String? = null
 
-        for (i in text.indices) {
-            val char = text[i]
+            for (i in text.indices) {
+                val char = text[i]
 
-            if (char in '\uAC00'..'\uD7A3') {
-                val syllableIndex = char.code - 0xAC00
-                
-                val choIndex = syllableIndex / (21 * 28)
-                val jungIndex = (syllableIndex % (21 * 28)) / 28
-                val jongIndex = syllableIndex % 28
+                if (char in '\uAC00'..'\uD7A3') {
+                    val syllableIndex = char.code - 0xAC00
 
-                val choChar = (0x1100 + choIndex).toChar().toString()
-                val jungChar = (0x1161 + jungIndex).toChar().toString()
-                val jongChar = if (jongIndex == 0) null else (0x11A7 + jongIndex).toChar().toString()
+                    val choIndex = syllableIndex / (21 * 28)
+                    val jungIndex = (syllableIndex % (21 * 28)) / 28
+                    val jongIndex = syllableIndex % 28
 
-                if (prevFinal != null) {
-                    val contextKey = prevFinal + choChar
-                    val jong = HANGUL_ROMAJA_MAP["jong"]?.get(contextKey)
-                        ?: HANGUL_ROMAJA_MAP["jong"]?.get(prevFinal)
-                        ?: prevFinal
-                    romajaBuilder.append(jong)
+                    val choChar = (0x1100 + choIndex).toChar().toString()
+                    val jungChar = (0x1161 + jungIndex).toChar().toString()
+                    val jongChar = if (jongIndex == 0) null else (0x11A7 + jongIndex).toChar().toString()
+
+                    if (prevFinal != null) {
+                        val contextKey = prevFinal + choChar
+                        val jong =
+                            HANGUL_ROMAJA_MAP["jong"]?.get(contextKey)
+                                ?: HANGUL_ROMAJA_MAP["jong"]?.get(prevFinal)
+                                ?: prevFinal
+                        romajaBuilder.append(jong)
+                    }
+
+                    val cho = HANGUL_ROMAJA_MAP["cho"]?.get(choChar) ?: choChar
+                    val jung = HANGUL_ROMAJA_MAP["jung"]?.get(jungChar) ?: jungChar
+                    romajaBuilder.append(cho).append(jung)
+
+                    prevFinal = jongChar
+                } else {
+                    if (prevFinal != null) {
+                        val jong = HANGUL_ROMAJA_MAP["jong"]?.get(prevFinal) ?: prevFinal
+                        romajaBuilder.append(jong)
+                        prevFinal = null
+                    }
+                    romajaBuilder.append(char)
                 }
-
-                val cho = HANGUL_ROMAJA_MAP["cho"]?.get(choChar) ?: choChar
-                val jung = HANGUL_ROMAJA_MAP["jung"]?.get(jungChar) ?: jungChar
-                romajaBuilder.append(cho).append(jung)
-
-                prevFinal = jongChar
-            } else {
-                if (prevFinal != null) {
-                    val jong = HANGUL_ROMAJA_MAP["jong"]?.get(prevFinal) ?: prevFinal
-                    romajaBuilder.append(jong)
-                    prevFinal = null
-                }
-                romajaBuilder.append(char)
             }
-        }
 
-        if (prevFinal != null) {
-            val jong = HANGUL_ROMAJA_MAP["jong"]?.get(prevFinal) ?: prevFinal
-            romajaBuilder.append(jong)
-        }
+            if (prevFinal != null) {
+                val jong = HANGUL_ROMAJA_MAP["jong"]?.get(prevFinal) ?: prevFinal
+                romajaBuilder.append(jong)
+            }
 
-        romajaBuilder.toString()
-    }
+            romajaBuilder.toString()
+        }
 
     /**
      * Checks if the given text contains any Japanese characters (Hiragana, Katakana, or common Kanji).
      * This function is generally efficient due to '.any' and early exit.
      * No major performance bottlenecks expected here for typical inputs.
      */
-    fun isJapanese(text: String): Boolean {
-        return text.any { char ->
+    fun isJapanese(text: String): Boolean =
+        text.any { char ->
             (char in '\u3040'..'\u309F') || // Hiragana
-            (char in '\u30A0'..'\u30FF') || // Katakana
-            // CJK Unified Ideographs (covers most common Kanji)
-            // Note: This range also includes many Chinese Hanzi.
-            // Differentiating Japanese Kanji from Chinese Hanzi solely based on Unicode
-            // ranges is challenging as they share many characters.
-            // For more accurate Japanese detection, one might need to analyze
-            // the presence of Hiragana/Katakana alongside Kanji.
-            (char in '\u4E00'..'\u9FFF')
+                (char in '\u30A0'..'\u30FF') || // Katakana
+                // CJK Unified Ideographs (covers most common Kanji)
+                // Note: This range also includes many Chinese Hanzi.
+                // Differentiating Japanese Kanji from Chinese Hanzi solely based on Unicode
+                // ranges is challenging as they share many characters.
+                // For more accurate Japanese detection, one might need to analyze
+                // the presence of Hiragana/Katakana alongside Kanji.
+                (char in '\u4E00'..'\u9FFF')
         }
-    }
 
     /**
      * Checks if the given text contains any Korean characters (Hangul Syllables, Jamo, etc.).
      */
-    fun isKorean(text: String): Boolean {
-        return text.any { char ->
+    fun isKorean(text: String): Boolean =
+        text.any { char ->
             (char in '\uAC00'..'\uD7A3') // Hangul Syllables
         }
-    }
-        
+
     /**
      * Checks if the given text contains any Chinese characters (common Hanzi).
      * This function is generally efficient due to '.any' and early exit.
@@ -626,17 +874,19 @@ object LyricsUtils {
         preferences: LyricsRomanizationPreferences,
     ): Boolean {
         if (!preferences.isEnabled || originalText.isBlank()) return false
-        val normalized = providerRomanizedText
-            ?.replace(WHITESPACE_REGEX, " ")
-            ?.trim()
-            ?.takeIf { it.isNotEmpty() }
-            ?: return false
+        val normalized =
+            providerRomanizedText
+                ?.replace(WHITESPACE_REGEX, " ")
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() }
+                ?: return false
         if (normalized.equals(originalText.trim(), ignoreCase = true)) return false
 
-        val language = providerRomanizedLanguage
-            ?.substringBefore("-")
-            ?.substringBefore("_")
-            ?.lowercase()
+        val language =
+            providerRomanizedLanguage
+                ?.substringBefore("-")
+                ?.substringBefore("_")
+                ?.lowercase()
 
         return when (language) {
             "ja" -> preferences.romanizeJapanese
@@ -651,8 +901,8 @@ object LyricsUtils {
     fun providedRomanizedTextForEntry(
         entry: LyricsEntry,
         preferences: LyricsRomanizationPreferences,
-    ): String? {
-        return entry.providerRomanizedText
+    ): String? =
+        entry.providerRomanizedText
             ?.replace(WHITESPACE_REGEX, " ")
             ?.trim()
             ?.takeIf {
@@ -663,7 +913,6 @@ object LyricsUtils {
                     preferences = preferences,
                 )
             }
-    }
 
     fun providedRomanizedWordsForEntry(
         entry: LyricsEntry,
@@ -673,11 +922,12 @@ object LyricsUtils {
         if (expectedWordCount <= 0) return null
         if (providedRomanizedTextForEntry(entry, preferences) == null) return null
 
-        val words = entry.providerRomanizedWords
-            ?.map { word -> word.replace(WHITESPACE_REGEX, " ").trim() }
-            ?.filter { it.isNotEmpty() }
-            ?.takeIf { it.size == expectedWordCount }
-            ?: return null
+        val words =
+            entry.providerRomanizedWords
+                ?.map { word -> word.replace(WHITESPACE_REGEX, " ").trim() }
+                ?.filter { it.isNotEmpty() }
+                ?.takeIf { it.size == expectedWordCount }
+                ?: return null
 
         return words
     }
@@ -688,14 +938,15 @@ object LyricsUtils {
     ): String? {
         if (!shouldRomanizeLyricsLine(text, preferences)) return null
 
-        val romanized = when {
-            preferences.romanizeJapanese && looksJapanese(text) -> romanizeJapanese(text)
-            preferences.romanizeKorean && isKorean(text) -> romanizeKorean(text)
-            preferences.romanizeHindi && isHindi(text) -> romanizeWithIcu(text)
-            preferences.romanizeChinese && isChinese(text) -> romanizeWithIcu(text)
-            preferences.romanizeOther && hasOtherRomanizableScript(text) -> romanizeWithIcu(text)
-            else -> null
-        }
+        val romanized =
+            when {
+                preferences.romanizeJapanese && looksJapanese(text) -> romanizeJapanese(text)
+                preferences.romanizeKorean && isKorean(text) -> romanizeKorean(text)
+                preferences.romanizeHindi && isHindi(text) -> romanizeWithIcu(text)
+                preferences.romanizeChinese && isChinese(text) -> romanizeWithIcu(text)
+                preferences.romanizeOther && hasOtherRomanizableScript(text) -> romanizeWithIcu(text)
+                else -> null
+            }
 
         return normalizeRomanizedText(text, romanized)
     }
@@ -706,42 +957,48 @@ object LyricsUtils {
         preferences: LyricsRomanizationPreferences,
     ): String? {
         if (word.isBlank()) return null
-        val romanized = when {
-            preferences.romanizeJapanese && looksJapanese(lineText) -> romanizeJapanese(word)
-            preferences.romanizeKorean && isKorean(lineText) -> romanizeKorean(word)
-            preferences.romanizeHindi && isHindi(lineText) -> romanizeWithIcu(word)
-            preferences.romanizeChinese && isChinese(lineText) -> romanizeWithIcu(word)
-            preferences.romanizeOther && hasOtherRomanizableScript(lineText) -> romanizeWithIcu(word)
-            else -> null
-        }
+        val romanized =
+            when {
+                preferences.romanizeJapanese && looksJapanese(lineText) -> romanizeJapanese(word)
+                preferences.romanizeKorean && isKorean(lineText) -> romanizeKorean(word)
+                preferences.romanizeHindi && isHindi(lineText) -> romanizeWithIcu(word)
+                preferences.romanizeChinese && isChinese(lineText) -> romanizeWithIcu(word)
+                preferences.romanizeOther && hasOtherRomanizableScript(lineText) -> romanizeWithIcu(word)
+                else -> null
+            }
         return normalizeRomanizedText(word, romanized)
     }
 
-    private suspend fun romanizeWithIcu(text: String): String = withContext(Dispatchers.Default) {
-        genericRomanizationTransliterator.get().transliterate(text)
-    }
+    private suspend fun romanizeWithIcu(text: String): String =
+        withContext(Dispatchers.Default) {
+            genericRomanizationTransliterator.get().transliterate(text)
+        }
 
-    private fun normalizeRomanizedText(original: String, romanized: String?): String? {
-        val normalized = romanized
-            ?.replace(WHITESPACE_REGEX, " ")
-            ?.trim()
-            ?.takeIf { it.isNotEmpty() }
-            ?: return null
+    private fun normalizeRomanizedText(
+        original: String,
+        romanized: String?,
+    ): String? {
+        val normalized =
+            romanized
+                ?.replace(WHITESPACE_REGEX, " ")
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() }
+                ?: return null
 
         return normalized.takeUnless { it.equals(original.trim(), ignoreCase = true) }
     }
 
-    private fun looksJapanese(text: String): Boolean {
-        return text.any {
+    private fun looksJapanese(text: String): Boolean =
+        text.any {
             hasScript(it, UnicodeScript.HIRAGANA) ||
                 hasScript(it, UnicodeScript.KATAKANA) ||
                 it == '々' ||
                 it == '〆' ||
                 it == 'ヶ'
         }
-    }
 
-    private fun hasScript(char: Char, script: UnicodeScript): Boolean {
-        return char.isLetter() && UnicodeScript.of(char.code) == script
-    }
+    private fun hasScript(
+        char: Char,
+        script: UnicodeScript,
+    ): Boolean = char.isLetter() && UnicodeScript.of(char.code) == script
 }

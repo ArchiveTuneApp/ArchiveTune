@@ -16,7 +16,5 @@ data class AuthScopedCacheValue(
         authFingerprint: String,
         nowMs: Long = System.currentTimeMillis(),
         minimumRemainingMs: Long = 0L,
-    ): Boolean {
-        return this.authFingerprint == authFingerprint && expiresAtMs > nowMs + minimumRemainingMs
-    }
+    ): Boolean = this.authFingerprint == authFingerprint && expiresAtMs > nowMs + minimumRemainingMs
 }

@@ -95,8 +95,8 @@ import moe.rukamori.archivetune.db.entities.ListeningBySlot
 import moe.rukamori.archivetune.db.entities.ListeningSummary
 import moe.rukamori.archivetune.db.entities.Song
 import moe.rukamori.archivetune.db.entities.SongWithStats
-import moe.rukamori.archivetune.extensions.togglePlayPause
 import moe.rukamori.archivetune.extensions.toMediaItem
+import moe.rukamori.archivetune.extensions.togglePlayPause
 import moe.rukamori.archivetune.innertube.models.WatchEndpoint
 import moe.rukamori.archivetune.models.toMediaMetadata
 import moe.rukamori.archivetune.playback.queues.ListQueue
@@ -150,47 +150,52 @@ fun StatsScreen(
     val currentDate = remember { LocalDateTime.now() }
     var isYearPickerOpen by remember { mutableStateOf(false) }
 
-    val availableYears = remember(currentDate, firstEvent) {
-        val startYear = firstEvent?.event?.timestamp?.year ?: currentDate.year
-        (currentDate.year downTo startYear).toList()
-    }
+    val availableYears =
+        remember(currentDate, firstEvent) {
+            val startYear = firstEvent?.event?.timestamp?.year ?: currentDate.year
+            (currentDate.year downTo startYear).toList()
+        }
 
-    val weeklyDates = remember(currentDate, firstEvent) {
-        val first = firstEvent ?: return@remember emptyList<Pair<Int, String>>()
-        generateSequence(currentDate) { it.minusWeeks(1) }
-            .takeWhile { it.isAfter(first.event.timestamp.minusWeeks(1)) }
-            .mapIndexed { index, date ->
-                val endDate = date.plusWeeks(1).minusDays(1).coerceAtMost(currentDate)
-                val formatter = DateTimeFormatter.ofPattern("dd MMM")
-                val startDateFormatted = formatter.format(date)
-                val endDateFormatted = formatter.format(endDate)
-                val text = when {
-                    date.year != currentDate.year -> "$startDateFormatted, ${date.year} - $endDateFormatted, ${endDate.year}"
-                    date.month != endDate.month -> "$startDateFormatted - $endDateFormatted"
-                    else -> "${date.dayOfMonth} - $endDateFormatted"
-                }
-                Pair(index, text)
-            }.toList()
-    }
+    val weeklyDates =
+        remember(currentDate, firstEvent) {
+            val first = firstEvent ?: return@remember emptyList<Pair<Int, String>>()
+            generateSequence(currentDate) { it.minusWeeks(1) }
+                .takeWhile { it.isAfter(first.event.timestamp.minusWeeks(1)) }
+                .mapIndexed { index, date ->
+                    val endDate = date.plusWeeks(1).minusDays(1).coerceAtMost(currentDate)
+                    val formatter = DateTimeFormatter.ofPattern("dd MMM")
+                    val startDateFormatted = formatter.format(date)
+                    val endDateFormatted = formatter.format(endDate)
+                    val text =
+                        when {
+                            date.year != currentDate.year -> "$startDateFormatted, ${date.year} - $endDateFormatted, ${endDate.year}"
+                            date.month != endDate.month -> "$startDateFormatted - $endDateFormatted"
+                            else -> "${date.dayOfMonth} - $endDateFormatted"
+                        }
+                    Pair(index, text)
+                }.toList()
+        }
 
-    val monthlyDates = remember(currentDate, firstEvent) {
-        val first = firstEvent ?: return@remember emptyList<Pair<Int, String>>()
-        generateSequence(currentDate.plusMonths(1).withDayOfMonth(1).minusDays(1)) { it.minusMonths(1) }
-            .takeWhile { it.isAfter(first.event.timestamp.withDayOfMonth(1)) }
-            .mapIndexed { index, date ->
-                val formatter = DateTimeFormatter.ofPattern("MMM")
-                val text = if (date.year != currentDate.year) "${formatter.format(date)} ${date.year}" else formatter.format(date)
-                Pair(index, text)
-            }.toList()
-    }
+    val monthlyDates =
+        remember(currentDate, firstEvent) {
+            val first = firstEvent ?: return@remember emptyList<Pair<Int, String>>()
+            generateSequence(currentDate.plusMonths(1).withDayOfMonth(1).minusDays(1)) { it.minusMonths(1) }
+                .takeWhile { it.isAfter(first.event.timestamp.withDayOfMonth(1)) }
+                .mapIndexed { index, date ->
+                    val formatter = DateTimeFormatter.ofPattern("MMM")
+                    val text = if (date.year != currentDate.year) "${formatter.format(date)} ${date.year}" else formatter.format(date)
+                    Pair(index, text)
+                }.toList()
+        }
 
-    val yearlyDates = remember(currentDate, firstEvent) {
-        val first = firstEvent ?: return@remember emptyList<Pair<Int, String>>()
-        generateSequence(currentDate.plusYears(1).withDayOfYear(1).minusDays(1)) { it.minusYears(1) }
-            .takeWhile { it.isAfter(first.event.timestamp) }
-            .mapIndexed { index, date -> Pair(index, "${date.year}") }
-            .toList()
-    }
+    val yearlyDates =
+        remember(currentDate, firstEvent) {
+            val first = firstEvent ?: return@remember emptyList<Pair<Int, String>>()
+            generateSequence(currentDate.plusYears(1).withDayOfYear(1).minusDays(1)) { it.minusYears(1) }
+                .takeWhile { it.isAfter(first.event.timestamp) }
+                .mapIndexed { index, date -> Pair(index, "${date.year}") }
+                .toList()
+        }
 
     val (disableBlur) = rememberPreference(DisableBlurKey, false)
     val color1 = MaterialTheme.colorScheme.primary
@@ -203,76 +208,150 @@ fun StatsScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         if (!disableBlur) {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxSize(0.7f)
-                    .align(Alignment.TopCenter)
-                    .zIndex(-1f)
-                    .drawWithCache {
-                        val width = this.size.width
-                        val height = this.size.height
-                        val brush1 = Brush.radialGradient(
-                            colors = listOf(color1.copy(alpha = 0.38f), color1.copy(alpha = 0.24f), color1.copy(alpha = 0.14f), color1.copy(alpha = 0.06f), Color.Transparent),
-                            center = Offset(width * 0.15f, height * 0.1f), radius = width * 0.55f,
-                        )
-                        val brush2 = Brush.radialGradient(
-                            colors = listOf(color2.copy(alpha = 0.34f), color2.copy(alpha = 0.2f), color2.copy(alpha = 0.11f), color2.copy(alpha = 0.05f), Color.Transparent),
-                            center = Offset(width * 0.85f, height * 0.2f), radius = width * 0.65f,
-                        )
-                        val brush3 = Brush.radialGradient(
-                            colors = listOf(color3.copy(alpha = 0.3f), color3.copy(alpha = 0.17f), color3.copy(alpha = 0.09f), color3.copy(alpha = 0.04f), Color.Transparent),
-                            center = Offset(width * 0.3f, height * 0.45f), radius = width * 0.6f,
-                        )
-                        val brush4 = Brush.radialGradient(
-                            colors = listOf(color4.copy(alpha = 0.26f), color4.copy(alpha = 0.14f), color4.copy(alpha = 0.08f), color4.copy(alpha = 0.03f), Color.Transparent),
-                            center = Offset(width * 0.7f, height * 0.5f), radius = width * 0.7f,
-                        )
-                        val brush5 = Brush.radialGradient(
-                            colors = listOf(color5.copy(alpha = 0.22f), color5.copy(alpha = 0.12f), color5.copy(alpha = 0.06f), color5.copy(alpha = 0.02f), Color.Transparent),
-                            center = Offset(width * 0.5f, height * 0.75f), radius = width * 0.8f,
-                        )
-                        val overlayBrush = Brush.verticalGradient(
-                            colors = listOf(Color.Transparent, Color.Transparent, surfaceColor.copy(alpha = 0.22f), surfaceColor.copy(alpha = 0.55f), surfaceColor),
-                            startY = height * 0.4f, endY = height,
-                        )
-                        onDrawBehind {
-                            drawRect(brush = brush1); drawRect(brush = brush2); drawRect(brush = brush3)
-                            drawRect(brush = brush4); drawRect(brush = brush5); drawRect(brush = overlayBrush)
-                        }
-                    }
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .fillMaxSize(0.7f)
+                        .align(Alignment.TopCenter)
+                        .zIndex(-1f)
+                        .drawWithCache {
+                            val width = this.size.width
+                            val height = this.size.height
+                            val brush1 =
+                                Brush.radialGradient(
+                                    colors =
+                                        listOf(
+                                            color1.copy(alpha = 0.38f),
+                                            color1.copy(alpha = 0.24f),
+                                            color1.copy(alpha = 0.14f),
+                                            color1.copy(alpha = 0.06f),
+                                            Color.Transparent,
+                                        ),
+                                    center = Offset(width * 0.15f, height * 0.1f),
+                                    radius = width * 0.55f,
+                                )
+                            val brush2 =
+                                Brush.radialGradient(
+                                    colors =
+                                        listOf(
+                                            color2.copy(alpha = 0.34f),
+                                            color2.copy(alpha = 0.2f),
+                                            color2.copy(alpha = 0.11f),
+                                            color2.copy(alpha = 0.05f),
+                                            Color.Transparent,
+                                        ),
+                                    center = Offset(width * 0.85f, height * 0.2f),
+                                    radius = width * 0.65f,
+                                )
+                            val brush3 =
+                                Brush.radialGradient(
+                                    colors =
+                                        listOf(
+                                            color3.copy(alpha = 0.3f),
+                                            color3.copy(alpha = 0.17f),
+                                            color3.copy(alpha = 0.09f),
+                                            color3.copy(alpha = 0.04f),
+                                            Color.Transparent,
+                                        ),
+                                    center = Offset(width * 0.3f, height * 0.45f),
+                                    radius = width * 0.6f,
+                                )
+                            val brush4 =
+                                Brush.radialGradient(
+                                    colors =
+                                        listOf(
+                                            color4.copy(alpha = 0.26f),
+                                            color4.copy(alpha = 0.14f),
+                                            color4.copy(alpha = 0.08f),
+                                            color4.copy(alpha = 0.03f),
+                                            Color.Transparent,
+                                        ),
+                                    center = Offset(width * 0.7f, height * 0.5f),
+                                    radius = width * 0.7f,
+                                )
+                            val brush5 =
+                                Brush.radialGradient(
+                                    colors =
+                                        listOf(
+                                            color5.copy(alpha = 0.22f),
+                                            color5.copy(alpha = 0.12f),
+                                            color5.copy(alpha = 0.06f),
+                                            color5.copy(alpha = 0.02f),
+                                            Color.Transparent,
+                                        ),
+                                    center = Offset(width * 0.5f, height * 0.75f),
+                                    radius = width * 0.8f,
+                                )
+                            val overlayBrush =
+                                Brush.verticalGradient(
+                                    colors =
+                                        listOf(
+                                            Color.Transparent,
+                                            Color.Transparent,
+                                            surfaceColor.copy(alpha = 0.22f),
+                                            surfaceColor.copy(alpha = 0.55f),
+                                            surfaceColor,
+                                        ),
+                                    startY = height * 0.4f,
+                                    endY = height,
+                                )
+                            onDrawBehind {
+                                drawRect(brush = brush1)
+                                drawRect(brush = brush2)
+                                drawRect(brush = brush3)
+                                drawRect(brush = brush4)
+                                drawRect(brush = brush5)
+                                drawRect(brush = overlayBrush)
+                            }
+                        },
             )
         }
 
         LazyColumn(
             state = lazyListState,
-            contentPadding = LocalPlayerAwareWindowInsets.current
-                .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
-                .asPaddingValues(),
-            modifier = Modifier.windowInsetsPadding(
-                LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)
-            ),
+            contentPadding =
+                LocalPlayerAwareWindowInsets.current
+                    .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
+                    .asPaddingValues(),
+            modifier =
+                Modifier.windowInsetsPadding(
+                    LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top),
+                ),
         ) {
             item(contentType = "chips") {
                 ChoiceChipsRow(
-                    chips = when (selectedOption) {
-                        OptionStats.WEEKS -> weeklyDates
-                        OptionStats.MONTHS -> monthlyDates
-                        OptionStats.YEARS -> yearlyDates
-                        OptionStats.CONTINUOUS -> listOf(
-                            StatPeriod.WEEK_1.ordinal to pluralStringResource(R.plurals.n_week, 1, 1),
-                            StatPeriod.MONTH_1.ordinal to pluralStringResource(R.plurals.n_month, 1, 1),
-                            StatPeriod.MONTH_3.ordinal to pluralStringResource(R.plurals.n_month, 3, 3),
-                            StatPeriod.MONTH_6.ordinal to pluralStringResource(R.plurals.n_month, 6, 6),
-                            StatPeriod.YEAR_1.ordinal to pluralStringResource(R.plurals.n_year, 1, 1),
-                            StatPeriod.ALL.ordinal to stringResource(R.string.filter_all),
-                        )
-                    },
-                    options = listOf(
-                        OptionStats.CONTINUOUS to stringResource(id = R.string.continuous),
-                        OptionStats.WEEKS to stringResource(R.string.weeks),
-                        OptionStats.MONTHS to stringResource(R.string.months),
-                        OptionStats.YEARS to stringResource(R.string.years),
-                    ),
+                    chips =
+                        when (selectedOption) {
+                            OptionStats.WEEKS -> {
+                                weeklyDates
+                            }
+
+                            OptionStats.MONTHS -> {
+                                monthlyDates
+                            }
+
+                            OptionStats.YEARS -> {
+                                yearlyDates
+                            }
+
+                            OptionStats.CONTINUOUS -> {
+                                listOf(
+                                    StatPeriod.WEEK_1.ordinal to pluralStringResource(R.plurals.n_week, 1, 1),
+                                    StatPeriod.MONTH_1.ordinal to pluralStringResource(R.plurals.n_month, 1, 1),
+                                    StatPeriod.MONTH_3.ordinal to pluralStringResource(R.plurals.n_month, 3, 3),
+                                    StatPeriod.MONTH_6.ordinal to pluralStringResource(R.plurals.n_month, 6, 6),
+                                    StatPeriod.YEAR_1.ordinal to pluralStringResource(R.plurals.n_year, 1, 1),
+                                    StatPeriod.ALL.ordinal to stringResource(R.string.filter_all),
+                                )
+                            }
+                        },
+                    options =
+                        listOf(
+                            OptionStats.CONTINUOUS to stringResource(id = R.string.continuous),
+                            OptionStats.WEEKS to stringResource(R.string.weeks),
+                            OptionStats.MONTHS to stringResource(R.string.months),
+                            OptionStats.YEARS to stringResource(R.string.years),
+                        ),
                     selectedOption = selectedOption,
                     onSelectionChange = viewModel::onOptionSelected,
                     currentValue = indexChips,
@@ -285,7 +364,7 @@ fun StatsScreen(
                     targetState = listeningSummary,
                     transitionSpec = {
                         slideInVertically(tween(300)) { it / 4 } + fadeIn(tween(300)) togetherWith
-                                slideOutVertically(tween(200)) { -it / 4 } + fadeOut(tween(200))
+                            slideOutVertically(tween(200)) { -it / 4 } + fadeOut(tween(200))
                     },
                     modifier = Modifier.animateItem(),
                     label = "summary",
@@ -299,7 +378,7 @@ fun StatsScreen(
                     targetState = mostPlayedArtists.firstOrNull() to mostPlayedSongsStats.firstOrNull(),
                     transitionSpec = {
                         slideInVertically(tween(300)) { it / 4 } + fadeIn(tween(300)) togetherWith
-                                slideOutVertically(tween(200)) { -it / 4 } + fadeOut(tween(200))
+                            slideOutVertically(tween(200)) { -it / 4 } + fadeOut(tween(200))
                     },
                     modifier = Modifier.animateItem(),
                     label = "highlights",
@@ -319,10 +398,11 @@ fun StatsScreen(
                     SegmentedArtistChart(
                         artists = mostPlayedArtists.take(5),
                         totalTimeListened = listeningSummary.totalTimeListened,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                            .animateItem(),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .animateItem(),
                     )
                     Spacer(modifier = Modifier.size(8.dp))
                 }
@@ -333,10 +413,11 @@ fun StatsScreen(
                     ListeningByDayChart(
                         slots = listeningByDayOfWeek,
                         currentDayOfWeek = remember { LocalDateTime.now().dayOfWeek.value % 7 },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                            .animateItem(),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .animateItem(),
                     )
                     Spacer(modifier = Modifier.size(8.dp))
                 }
@@ -346,10 +427,11 @@ fun StatsScreen(
                 if (listeningByHour.isNotEmpty()) {
                     ListeningByHourChart(
                         slots = listeningByHour,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                            .animateItem(),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .animateItem(),
                     )
                     Spacer(modifier = Modifier.size(8.dp))
                 }
@@ -370,20 +452,22 @@ fun StatsScreen(
                 contentType = { _, _ -> "ranked_song" },
             ) { index, song ->
                 val playFraction = song.songCountListened.toFloat() / maxPlayCount
-                val medalColor = when (index) {
-                    0 -> Color(0xFFFFD700)
-                    1 -> Color(0xFFC0C0C0)
-                    2 -> Color(0xFFCD7F32)
-                    else -> null
-                }
+                val medalColor =
+                    when (index) {
+                        0 -> Color(0xFFFFD700)
+                        1 -> Color(0xFFC0C0C0)
+                        2 -> Color(0xFFCD7F32)
+                        else -> null
+                    }
                 val progressBarColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
 
                 ListItem(
                     title = "${index + 1}. ${song.title}",
-                    subtitle = joinByBullet(
-                        pluralStringResource(R.plurals.n_time, song.songCountListened, song.songCountListened),
-                        makeTimeString(song.timeListened),
-                    ),
+                    subtitle =
+                        joinByBullet(
+                            pluralStringResource(R.plurals.n_time, song.songCountListened, song.songCountListened),
+                            makeTimeString(song.timeListened),
+                        ),
                     thumbnailContent = {
                         Box {
                             ItemThumbnail(
@@ -395,11 +479,12 @@ fun StatsScreen(
                             )
                             if (medalColor != null) {
                                 Box(
-                                    modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .size(18.dp)
-                                        .clip(CircleShape)
-                                        .background(medalColor),
+                                    modifier =
+                                        Modifier
+                                            .align(Alignment.BottomEnd)
+                                            .size(18.dp)
+                                            .clip(CircleShape)
+                                            .background(medalColor),
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     Text(
@@ -412,39 +497,38 @@ fun StatsScreen(
                             }
                         }
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .drawBehind {
-                            drawRect(
-                                color = progressBarColor,
-                                size = Size(size.width * playFraction, size.height),
-                            )
-                        }
-                        .combinedClickable(
-                            onClick = {
-                                if (song.id == mediaMetadata?.id) {
-                                    playerConnection.player.togglePlayPause()
-                                } else {
-                                    playerConnection.playQueue(
-                                        YouTubeQueue(
-                                            endpoint = WatchEndpoint(song.id),
-                                            preloadItem = mostPlayedSongs[index].toMediaMetadata(),
-                                        ),
-                                    )
-                                }
-                            },
-                            onLongClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                menuState.show {
-                                    SongMenu(
-                                        originalSong = mostPlayedSongs[index],
-                                        navController = navController,
-                                        onDismiss = menuState::dismiss,
-                                    )
-                                }
-                            },
-                        )
-                        .animateItem(),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .drawBehind {
+                                drawRect(
+                                    color = progressBarColor,
+                                    size = Size(size.width * playFraction, size.height),
+                                )
+                            }.combinedClickable(
+                                onClick = {
+                                    if (song.id == mediaMetadata?.id) {
+                                        playerConnection.player.togglePlayPause()
+                                    } else {
+                                        playerConnection.playQueue(
+                                            YouTubeQueue(
+                                                endpoint = WatchEndpoint(song.id),
+                                                preloadItem = mostPlayedSongs[index].toMediaMetadata(),
+                                            ),
+                                        )
+                                    }
+                                },
+                                onLongClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    menuState.show {
+                                        SongMenu(
+                                            originalSong = mostPlayedSongs[index],
+                                            navController = navController,
+                                            onDismiss = menuState::dismiss,
+                                        )
+                                    }
+                                },
+                            ).animateItem(),
                 )
             }
 
@@ -461,35 +545,37 @@ fun StatsScreen(
                 contentType = { _, _ -> "artist_row" },
             ) { _, rowArtists ->
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     rowArtists.forEach { artist ->
                         LocalArtistsGrid(
                             title = artist.artist.name,
-                            subtitle = joinByBullet(
-                                pluralStringResource(R.plurals.n_time, artist.songCount, artist.songCount),
-                                makeTimeString(artist.timeListened?.toLong()),
-                            ),
+                            subtitle =
+                                joinByBullet(
+                                    pluralStringResource(R.plurals.n_time, artist.songCount, artist.songCount),
+                                    makeTimeString(artist.timeListened?.toLong()),
+                                ),
                             thumbnailUrl = artist.artist.thumbnailUrl,
-                            modifier = Modifier
-                                .weight(1f)
-                                .combinedClickable(
-                                    onClick = { navController.navigate("artist/${artist.id}") },
-                                    onLongClick = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        menuState.show {
-                                            ArtistMenu(
-                                                originalArtist = artist,
-                                                coroutineScope = coroutineScope,
-                                                onDismiss = menuState::dismiss,
-                                            )
-                                        }
-                                    },
-                                )
-                                .animateItem(),
+                            modifier =
+                                Modifier
+                                    .weight(1f)
+                                    .combinedClickable(
+                                        onClick = { navController.navigate("artist/${artist.id}") },
+                                        onLongClick = {
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            menuState.show {
+                                                ArtistMenu(
+                                                    originalArtist = artist,
+                                                    coroutineScope = coroutineScope,
+                                                    onDismiss = menuState::dismiss,
+                                                )
+                                            }
+                                        },
+                                    ).animateItem(),
                         )
                     }
                     repeat(2 - rowArtists.size) { Spacer(modifier = Modifier.weight(1f)) }
@@ -516,29 +602,30 @@ fun StatsScreen(
                         ) { index, album ->
                             LocalAlbumsGrid(
                                 title = "${index + 1}. ${album.album.title}",
-                                subtitle = joinByBullet(
-                                    pluralStringResource(R.plurals.n_time, album.songCountListened!!, album.songCountListened),
-                                    makeTimeString(album.timeListened?.toLong()),
-                                ),
+                                subtitle =
+                                    joinByBullet(
+                                        pluralStringResource(R.plurals.n_time, album.songCountListened!!, album.songCountListened),
+                                        makeTimeString(album.timeListened?.toLong()),
+                                    ),
                                 thumbnailUrl = album.album.thumbnailUrl,
                                 isActive = album.id == mediaMetadata?.album?.id,
                                 isPlaying = isPlaying,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .combinedClickable(
-                                        onClick = { navController.navigate("album/${album.id}") },
-                                        onLongClick = {
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            menuState.show {
-                                                AlbumMenu(
-                                                    originalAlbum = album,
-                                                    navController = navController,
-                                                    onDismiss = menuState::dismiss,
-                                                )
-                                            }
-                                        },
-                                    )
-                                    .animateItem(),
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .combinedClickable(
+                                            onClick = { navController.navigate("album/${album.id}") },
+                                            onLongClick = {
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                menuState.show {
+                                                    AlbumMenu(
+                                                        originalAlbum = album,
+                                                        navController = navController,
+                                                        onDismiss = menuState::dismiss,
+                                                    )
+                                                }
+                                            },
+                                        ).animateItem(),
                             )
                         }
                     }
@@ -557,7 +644,7 @@ fun StatsScreen(
                         ListQueue(
                             title = context.getString(R.string.most_played_songs),
                             items = mostPlayedSongs.map { it.toMediaMetadata().toMediaItem() }.shuffled(),
-                        )
+                        ),
                     )
                 },
             )
@@ -584,10 +671,11 @@ fun StatsScreen(
                     )
                 }
             },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Transparent,
-                scrolledContainerColor = Color.Transparent,
-            ),
+            colors =
+                TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = Color.Transparent,
+                ),
         )
 
         if (isYearPickerOpen) {
@@ -630,24 +718,25 @@ private fun StatsYearPickerDialog(
                     val isSelected = year == selectedYear
                     Text(
                         text = year.toString(),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(
-                                if (isSelected) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-                                }
-                            )
-                            .clickable { onSelectYear(year) }
-                            .padding(horizontal = 20.dp, vertical = 12.dp),
+                        modifier =
+                            Modifier
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(
+                                    if (isSelected) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                                    },
+                                ).clickable { onSelectYear(year) }
+                                .padding(horizontal = 20.dp, vertical = 12.dp),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = if (isSelected) {
-                            MaterialTheme.colorScheme.onPrimary
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        },
+                        color =
+                            if (isSelected) {
+                                MaterialTheme.colorScheme.onPrimary
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
                     )
                 }
             }
@@ -668,9 +757,10 @@ private fun StatsSummarySection(
     if (summary.totalPlayCount == 0) return
 
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         ElevatedCard(
@@ -761,16 +851,19 @@ private fun StatsHighlightsSection(
     if (topArtist == null && topSong == null) return
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         if (topArtist != null) {
             StatsHighlightCard(
                 title = stringResource(R.string.stats_favourite_artist),
                 mainText = topArtist.artist.name,
-                subText = "${topArtist.songCount} ${stringResource(R.string.songs).lowercase()} • ${makeTimeString(topArtist.timeListened?.toLong())}",
+                subText = "${topArtist.songCount} ${stringResource(
+                    R.string.songs,
+                ).lowercase()} • ${makeTimeString(topArtist.timeListened?.toLong())}",
                 imageUrl = topArtist.artist.thumbnailUrl,
                 useCircleShape = true,
                 onClick = { navController.navigate("artist/${topArtist.id}") },
@@ -780,7 +873,11 @@ private fun StatsHighlightsSection(
             StatsHighlightCard(
                 title = stringResource(R.string.stats_favourite_song),
                 mainText = topSong.title,
-                subText = "${pluralStringResource(R.plurals.n_time, topSong.songCountListened, topSong.songCountListened)} • ${makeTimeString(topSong.timeListened)}",
+                subText = "${pluralStringResource(
+                    R.plurals.n_time,
+                    topSong.songCountListened,
+                    topSong.songCountListened,
+                )} • ${makeTimeString(topSong.timeListened)}",
                 imageUrl = topSong.thumbnailUrl,
                 useCircleShape = false,
                 onClick = {},
@@ -805,9 +902,10 @@ private fun StatsHighlightCard(
         colors = CardDefaults.elevatedCardColors(),
     ) {
         Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
+            modifier =
+                Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -815,9 +913,10 @@ private fun StatsHighlightCard(
                 model = imageUrl,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(if (useCircleShape) CircleShape else MaterialTheme.shapes.medium),
+                modifier =
+                    Modifier
+                        .size(80.dp)
+                        .clip(if (useCircleShape) CircleShape else MaterialTheme.shapes.medium),
             )
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
@@ -849,39 +948,48 @@ private fun SegmentedArtistChart(
     modifier: Modifier = Modifier,
 ) {
     val visibleArtistTime = remember(artists) { artists.sumOf { it.timeListened?.toLong() ?: 0L } }
-    val displayTotalTime = remember(totalTimeListened, visibleArtistTime) {
-        totalTimeListened.takeIf { it > 0L } ?: visibleArtistTime
-    }
-    val chartTotalTime = remember(displayTotalTime, visibleArtistTime) {
-        maxOf(displayTotalTime, visibleArtistTime)
-    }
+    val displayTotalTime =
+        remember(totalTimeListened, visibleArtistTime) {
+            totalTimeListened.takeIf { it > 0L } ?: visibleArtistTime
+        }
+    val chartTotalTime =
+        remember(displayTotalTime, visibleArtistTime) {
+            maxOf(displayTotalTime, visibleArtistTime)
+        }
     if (chartTotalTime == 0L) return
 
-    val segmentData = remember(artists, chartTotalTime) {
-        var startAngle = -90f
-        artists.mapNotNull { artist ->
-            val time = artist.timeListened?.toLong() ?: 0L
-            val sweep = (time.toFloat() / chartTotalTime) * 360f
-            if (sweep < 1f) return@mapNotNull null
-            val entry = Triple(artist, startAngle, sweep)
-            startAngle += sweep
-            entry
+    val segmentData =
+        remember(artists, chartTotalTime) {
+            var startAngle = -90f
+            artists.mapNotNull { artist ->
+                val time = artist.timeListened?.toLong() ?: 0L
+                val sweep = (time.toFloat() / chartTotalTime) * 360f
+                if (sweep < 1f) return@mapNotNull null
+                val entry = Triple(artist, startAngle, sweep)
+                startAngle += sweep
+                entry
+            }
         }
-    }
-    val visibleSegmentSweep = remember(segmentData) {
-        segmentData.sumOf { it.third.toDouble() }.toFloat()
-    }
-    val remainingSweep = remember(visibleSegmentSweep) {
-        (360f - visibleSegmentSweep)
-            .takeIf { it >= 1f }
-    }
+    val visibleSegmentSweep =
+        remember(segmentData) {
+            segmentData.sumOf { it.third.toDouble() }.toFloat()
+        }
+    val remainingSweep =
+        remember(visibleSegmentSweep) {
+            (360f - visibleSegmentSweep)
+                .takeIf { it >= 1f }
+        }
 
-    val segmentColors = remember {
-        listOf(
-            Color(0xFF6750A4), Color(0xFF4A8FA8), Color(0xFF4CAF50),
-            Color(0xFFFF9800), Color(0xFFE91E63),
-        )
-    }
+    val segmentColors =
+        remember {
+            listOf(
+                Color(0xFF6750A4),
+                Color(0xFF4A8FA8),
+                Color(0xFF4CAF50),
+                Color(0xFFFF9800),
+                Color(0xFFE91E63),
+            )
+        }
     val remainingColor = MaterialTheme.colorScheme.surfaceVariant
 
     ElevatedCard(
@@ -890,48 +998,53 @@ private fun SegmentedArtistChart(
         colors = CardDefaults.elevatedCardColors(),
     ) {
         Row(
-            modifier = Modifier
-                .padding(20.dp)
-                .fillMaxWidth(),
+            modifier =
+                Modifier
+                    .padding(20.dp)
+                    .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             Box(
-                modifier = Modifier
-                    .size(140.dp)
-                    .drawWithCache {
-                        val strokeWidth = size.width * 0.18f
-                        val inset = strokeWidth / 2f
-                        val arcRect = Rect(
-                            left = inset, top = inset,
-                            right = size.width - inset, bottom = size.height - inset,
-                        )
-                        onDrawBehind {
-                            segmentData.forEachIndexed { i, (_, startAngle, sweep) ->
-                                val gapDeg = if (segmentData.size > 1) 2f else 0f
-                                drawArc(
-                                    color = segmentColors[i % segmentColors.size],
-                                    startAngle = startAngle + gapDeg / 2f,
-                                    sweepAngle = (sweep - gapDeg).coerceAtLeast(0f),
-                                    useCenter = false,
-                                    topLeft = arcRect.topLeft,
-                                    size = Size(arcRect.width, arcRect.height),
-                                    style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
+                modifier =
+                    Modifier
+                        .size(140.dp)
+                        .drawWithCache {
+                            val strokeWidth = size.width * 0.18f
+                            val inset = strokeWidth / 2f
+                            val arcRect =
+                                Rect(
+                                    left = inset,
+                                    top = inset,
+                                    right = size.width - inset,
+                                    bottom = size.height - inset,
                                 )
+                            onDrawBehind {
+                                segmentData.forEachIndexed { i, (_, startAngle, sweep) ->
+                                    val gapDeg = if (segmentData.size > 1) 2f else 0f
+                                    drawArc(
+                                        color = segmentColors[i % segmentColors.size],
+                                        startAngle = startAngle + gapDeg / 2f,
+                                        sweepAngle = (sweep - gapDeg).coerceAtLeast(0f),
+                                        useCenter = false,
+                                        topLeft = arcRect.topLeft,
+                                        size = Size(arcRect.width, arcRect.height),
+                                        style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
+                                    )
+                                }
+                                remainingSweep?.let { sweep ->
+                                    drawArc(
+                                        color = remainingColor,
+                                        startAngle = -90f + visibleSegmentSweep,
+                                        sweepAngle = sweep,
+                                        useCenter = false,
+                                        topLeft = arcRect.topLeft,
+                                        size = Size(arcRect.width, arcRect.height),
+                                        style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
+                                    )
+                                }
                             }
-                            remainingSweep?.let { sweep ->
-                                drawArc(
-                                    color = remainingColor,
-                                    startAngle = -90f + visibleSegmentSweep,
-                                    sweepAngle = sweep,
-                                    useCenter = false,
-                                    topLeft = arcRect.topLeft,
-                                    size = Size(arcRect.width, arcRect.height),
-                                    style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
-                                )
-                            }
-                        }
-                    },
+                        },
             )
 
             Column(
@@ -945,10 +1058,11 @@ private fun SegmentedArtistChart(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Box(
-                            modifier = Modifier
-                                .size(10.dp)
-                                .clip(CircleShape)
-                                .background(segmentColors[i % segmentColors.size]),
+                            modifier =
+                                Modifier
+                                    .size(10.dp)
+                                    .clip(CircleShape)
+                                    .background(segmentColors[i % segmentColors.size]),
                         )
                         Text(
                             text = artist.artist.name,
@@ -987,10 +1101,16 @@ private fun ListeningByDayChart(
     currentDayOfWeek: Int,
     modifier: Modifier = Modifier,
 ) {
-    val dayLabels = listOf(
-        R.string.day_sun, R.string.day_mon, R.string.day_tue, R.string.day_wed,
-        R.string.day_thu, R.string.day_fri, R.string.day_sat,
-    )
+    val dayLabels =
+        listOf(
+            R.string.day_sun,
+            R.string.day_mon,
+            R.string.day_tue,
+            R.string.day_wed,
+            R.string.day_thu,
+            R.string.day_fri,
+            R.string.day_sat,
+        )
     val slotMap = remember(slots) { slots.associateBy { it.slot } }
     val maxTime = remember(slots) { slots.maxOfOrNull { it.timeListened } ?: 1L }
     val primaryColor = MaterialTheme.colorScheme.primary
@@ -1028,17 +1148,19 @@ private fun ListeningByDayChart(
                         modifier = Modifier.weight(1f),
                     ) {
                         Box(
-                            modifier = Modifier
-                                .width(24.dp)
-                                .height(80.dp),
+                            modifier =
+                                Modifier
+                                    .width(24.dp)
+                                    .height(80.dp),
                             contentAlignment = Alignment.BottomCenter,
                         ) {
                             Box(
-                                modifier = Modifier
-                                    .width(24.dp)
-                                    .height((80 * animatedFraction).dp.coerceAtLeast(2.dp))
-                                    .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
-                                    .background(barColor),
+                                modifier =
+                                    Modifier
+                                        .width(24.dp)
+                                        .height((80 * animatedFraction).dp.coerceAtLeast(2.dp))
+                                        .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
+                                        .background(barColor),
                             )
                         }
                         Text(
@@ -1065,14 +1187,15 @@ private fun ListeningByHourChart(
     val primaryColor = MaterialTheme.colorScheme.primary
     val containerColor = MaterialTheme.colorScheme.primaryContainer
 
-    val peakLabel = remember(peakSlot) {
-        peakSlot?.let {
-            val hour = it % 12
-            val adjusted = if (hour == 0) 12 else hour
-            val amPm = if (it < 12) "AM" else "PM"
-            "$adjusted$amPm"
+    val peakLabel =
+        remember(peakSlot) {
+            peakSlot?.let {
+                val hour = it % 12
+                val adjusted = if (hour == 0) 12 else hour
+                val amPm = if (it < 12) "AM" else "PM"
+                "$adjusted$amPm"
+            }
         }
-    }
 
     ElevatedCard(
         modifier = modifier,
@@ -1115,17 +1238,19 @@ private fun ListeningByHourChart(
                         label = "hour_$hour",
                     )
                     Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(48.dp),
+                        modifier =
+                            Modifier
+                                .weight(1f)
+                                .height(48.dp),
                         contentAlignment = Alignment.BottomCenter,
                     ) {
                         Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height((48 * animatedFraction).dp.coerceAtLeast(2.dp))
-                                .clip(RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp))
-                                .background(barColor),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height((48 * animatedFraction).dp.coerceAtLeast(2.dp))
+                                    .clip(RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp))
+                                    .background(barColor),
                         )
                     }
                 }

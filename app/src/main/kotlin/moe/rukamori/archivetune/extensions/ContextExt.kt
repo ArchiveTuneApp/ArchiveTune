@@ -12,13 +12,11 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import moe.rukamori.archivetune.constants.InnerTubeCookieKey
 import moe.rukamori.archivetune.constants.YtmSyncKey
+import moe.rukamori.archivetune.innertube.utils.hasYouTubeLoginCookie
 import moe.rukamori.archivetune.utils.dataStore
 import moe.rukamori.archivetune.utils.get
-import moe.rukamori.archivetune.innertube.utils.hasYouTubeLoginCookie
 
-fun Context.isSyncEnabled(): Boolean {
-    return dataStore.get(YtmSyncKey, true) && isUserLoggedIn()
-}
+fun Context.isSyncEnabled(): Boolean = dataStore.get(YtmSyncKey, true) && isUserLoggedIn()
 
 fun Context.isUserLoggedIn(): Boolean {
     val cookie = dataStore[InnerTubeCookieKey] ?: ""

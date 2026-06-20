@@ -32,11 +32,12 @@ class ShazamSignatureGenerator(
 
     private val sampleRateHz = 16000
     private val fft = Fft(2048)
-    private val window = DoubleArray(2048) { i ->
-        val n = 2050
-        val j = i + 1
-        0.5 - 0.5 * cos(2.0 * PI * j / (n - 1))
-    }
+    private val window =
+        DoubleArray(2048) { i ->
+            val n = 2050
+            val j = i + 1
+            0.5 - 0.5 * cos(2.0 * PI * j / (n - 1))
+        }
     private val realBuffer = DoubleArray(2048)
     private val imagBuffer = DoubleArray(2048)
 
@@ -80,7 +81,7 @@ class ShazamSignatureGenerator(
             (
                 signatureNumberSamples.toDouble() / sampleRateHz < maxTimeSeconds ||
                     bandToPeaks.values.sumOf { it.size } < maxPeaks
-                )
+            )
         ) {
             processInput(pending, processedSamples, processedSamples + 128)
             processedSamples += 128
@@ -88,25 +89,31 @@ class ShazamSignatureGenerator(
 
         if (bandToPeaks.isEmpty()) return null
 
-        val message = DecodedMessage(
-            sampleRateHz = sampleRateHz,
-            numberSamples = signatureNumberSamples,
-            frequencyBandToSoundPeaks =
-                bandToPeaks
-                    .toSortedMap(compareBy { it.value })
-                    .mapValues { it.value.toList() },
-        )
+        val message =
+            DecodedMessage(
+                sampleRateHz = sampleRateHz,
+                numberSamples = signatureNumberSamples,
+                frequencyBandToSoundPeaks =
+                    bandToPeaks
+                        .toSortedMap(compareBy { it.value })
+                        .mapValues { it.value.toList() },
+            )
 
-        val signature = ShazamSignature(
-            uri = message.encodeToUri(),
-            sampleDurationMs = (signatureNumberSamples * 1000L) / sampleRateHz,
-        )
+        val signature =
+            ShazamSignature(
+                uri = message.encodeToUri(),
+                sampleDurationMs = (signatureNumberSamples * 1000L) / sampleRateHz,
+            )
 
         reset()
         return signature
     }
 
-    private fun processInput(samples: IntArrayList, start: Int, endExclusive: Int) {
+    private fun processInput(
+        samples: IntArrayList,
+        start: Int,
+        endExclusive: Int,
+    ) {
         val count = endExclusive - start
         signatureNumberSamples += count
 
@@ -118,7 +125,11 @@ class ShazamSignatureGenerator(
         }
     }
 
-    private fun doFft(samples: IntArrayList, start: Int, endExclusive: Int) {
+    private fun doFft(
+        samples: IntArrayList,
+        start: Int,
+        endExclusive: Int,
+    ) {
         var i = start
         while (i < endExclusive) {
             ringSamples[ringSamplePos] = samples[i]
@@ -220,22 +231,23 @@ class ShazamSignatureGenerator(
 
                 if (energy > maxNeighbor) {
                     var maxTimeNeighbor = maxNeighbor
-                    val timeOffsets = intArrayOf(
-                        -53,
-                        -45,
-                        165,
-                        172,
-                        179,
-                        186,
-                        193,
-                        200,
-                        214,
-                        221,
-                        228,
-                        235,
-                        242,
-                        249,
-                    )
+                    val timeOffsets =
+                        intArrayOf(
+                            -53,
+                            -45,
+                            165,
+                            172,
+                            179,
+                            186,
+                            193,
+                            200,
+                            214,
+                            221,
+                            228,
+                            235,
+                            242,
+                            249,
+                        )
                     var ti = 0
                     while (ti < timeOffsets.size) {
                         val idx = (spreadPos + timeOffsets[ti]).floorMod(spreadOutputs.size)
@@ -284,7 +296,9 @@ class ShazamSignatureGenerator(
         }
     }
 
-    private enum class FrequencyBand(val value: Int) {
+    private enum class FrequencyBand(
+        val value: Int,
+    ) {
         HZ_250_520(0),
         HZ_520_1450(1),
         HZ_1450_3500(2),
@@ -335,21 +349,22 @@ class ShazamSignatureGenerator(
             val contentsValue = contents.toByteArray()
             val sizeMinusHeader = contentsValue.size + 8
 
-            val header = ByteBuffer.allocate(48).order(ByteOrder.LITTLE_ENDIAN).apply {
-                putInt(0xCAFE2580.toInt())
-                putInt(0)
-                putInt(sizeMinusHeader)
-                putInt(0x94119C00.toInt())
-                putInt(0)
-                putInt(0)
-                putInt(0)
-                val sampleRateId = 3
-                putInt(sampleRateId shl 27)
-                putInt(0)
-                putInt(0)
-                putInt((numberSamples + sampleRateHz * 0.24).toInt())
-                putInt((15 shl 19) + 0x40000)
-            }
+            val header =
+                ByteBuffer.allocate(48).order(ByteOrder.LITTLE_ENDIAN).apply {
+                    putInt(0xCAFE2580.toInt())
+                    putInt(0)
+                    putInt(sizeMinusHeader)
+                    putInt(0x94119C00.toInt())
+                    putInt(0)
+                    putInt(0)
+                    putInt(0)
+                    val sampleRateId = 3
+                    putInt(sampleRateId shl 27)
+                    putInt(0)
+                    putInt(0)
+                    putInt((numberSamples + sampleRateHz * 0.24).toInt())
+                    putInt((15 shl 19) + 0x40000)
+                }
 
             val full = ByteArrayOutputStream()
             full.write(header.array())
@@ -372,7 +387,9 @@ private fun Int.floorMod(mod: Int): Int {
     return if (r < 0) r + mod else r
 }
 
-private class IntArrayList(initialCapacity: Int = 8192) {
+private class IntArrayList(
+    initialCapacity: Int = 8192,
+) {
     private var array = IntArray(initialCapacity)
     var size: Int = 0
         private set
@@ -404,17 +421,23 @@ private fun ByteArrayOutputStream.writeLittleShort(value: Int) {
     write((value ushr 8) and 0xFF)
 }
 
-private class Fft(private val n: Int) {
+private class Fft(
+    private val n: Int,
+) {
     private val cosTable = DoubleArray(n / 2) { i -> cos(2.0 * PI * i / n) }
     private val sinTable = DoubleArray(n / 2) { i -> sin(2.0 * PI * i / n) }
-    private val bitReversal = IntArray(n).also { out ->
-        val bits = Integer.numberOfTrailingZeros(n)
-        for (i in 0 until n) {
-            out[i] = i.reverseBits(bits)
+    private val bitReversal =
+        IntArray(n).also { out ->
+            val bits = Integer.numberOfTrailingZeros(n)
+            for (i in 0 until n) {
+                out[i] = i.reverseBits(bits)
+            }
         }
-    }
 
-    fun fft(real: DoubleArray, imag: DoubleArray) {
+    fun fft(
+        real: DoubleArray,
+        imag: DoubleArray,
+    ) {
         for (i in 0 until n) {
             val j = bitReversal[i]
             if (j > i) {

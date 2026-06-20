@@ -54,22 +54,19 @@ private fun normalizeCanvasSongTitle(raw: String): String {
                     RegexOption.IGNORE_CASE,
                 ),
                 "",
-            )
-            .replace(
+            ).replace(
                 Regex(
                     "\\s*\\((?:official\\s*)?(?:music\\s*)?(?:video|mv|lyrics?|audio|visualizer|live|remaster(?:ed)?|version|edit|mix|remix)[^)]*\\)",
                     RegexOption.IGNORE_CASE,
                 ),
                 "",
-            )
-            .replace(
+            ).replace(
                 Regex(
                     "\\s*-\\s*(?:official\\s*)?(?:music\\s*)?(?:video|mv|lyrics?|audio|visualizer|live|remaster(?:ed)?|version|edit|mix|remix)\\b.*$",
                     RegexOption.IGNORE_CASE,
                 ),
                 "",
-            )
-            .replace(Regex("\\s+"), " ")
+            ).replace(Regex("\\s+"), " ")
             .trim()
 
     return stripped
@@ -87,7 +84,8 @@ private fun normalizeCanvasArtistName(raw: String): String {
                     RegexOption.IGNORE_CASE,
                 ),
                 limit = 2,
-            ).firstOrNull().orEmpty()
+            ).firstOrNull()
+            .orEmpty()
 
     return first.replace(Regex("\\s+"), " ").trim()
 }

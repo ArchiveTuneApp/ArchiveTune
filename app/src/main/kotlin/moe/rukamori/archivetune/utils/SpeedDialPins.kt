@@ -7,16 +7,17 @@
 
 package moe.rukamori.archivetune.utils
 
-enum class SpeedDialPinType(val value: String) {
+enum class SpeedDialPinType(
+    val value: String,
+) {
     SONG("song"),
     ALBUM("album"),
     ARTIST("artist"),
-    PLAYLIST("playlist");
+    PLAYLIST("playlist"),
+    ;
 
     companion object {
-        fun from(raw: String): SpeedDialPinType? {
-            return entries.firstOrNull { it.value == raw.lowercase() }
-        }
+        fun from(raw: String): SpeedDialPinType? = entries.firstOrNull { it.value == raw.lowercase() }
     }
 }
 
@@ -42,17 +43,17 @@ data class SpeedDialPin(
     }
 }
 
-fun parseSpeedDialPins(raw: String, maxItems: Int = 25): List<SpeedDialPin> {
-    return raw
+fun parseSpeedDialPins(
+    raw: String,
+    maxItems: Int = 25,
+): List<SpeedDialPin> =
+    raw
         .split(",")
         .mapNotNull(SpeedDialPin::decode)
         .distinctBy { "${it.type.value}:${it.id}" }
         .take(maxItems)
-}
 
-fun serializeSpeedDialPins(pins: List<SpeedDialPin>): String {
-    return pins.joinToString(",") { it.encode() }
-}
+fun serializeSpeedDialPins(pins: List<SpeedDialPin>): String = pins.joinToString(",") { it.encode() }
 
 fun toggleSpeedDialPin(
     pins: List<SpeedDialPin>,

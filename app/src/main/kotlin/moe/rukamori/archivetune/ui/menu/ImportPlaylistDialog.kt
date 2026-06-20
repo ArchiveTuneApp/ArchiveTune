@@ -9,6 +9,7 @@
 
 package moe.rukamori.archivetune.ui.menu
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -16,10 +17,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import moe.rukamori.archivetune.ui.component.DefaultDialog
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,21 +28,21 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import moe.rukamori.archivetune.LocalDatabase
-import moe.rukamori.archivetune.R
-import moe.rukamori.archivetune.db.entities.PlaylistEntity
-import moe.rukamori.archivetune.db.entities.PlaylistSongMap
-import moe.rukamori.archivetune.ui.component.TextFieldDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import android.widget.Toast
+import moe.rukamori.archivetune.LocalDatabase
+import moe.rukamori.archivetune.R
+import moe.rukamori.archivetune.db.entities.PlaylistEntity
+import moe.rukamori.archivetune.db.entities.PlaylistSongMap
+import moe.rukamori.archivetune.ui.component.DefaultDialog
+import moe.rukamori.archivetune.ui.component.TextFieldDialog
 import java.time.LocalDateTime
 
 @Composable
@@ -126,8 +126,8 @@ fun ImportPlaylistDialog(
                                         update(
                                             existing.playlist.copy(
                                                 bookmarkedAt = LocalDateTime.now(),
-                                                lastUpdateTime = LocalDateTime.now()
-                                            )
+                                                lastUpdateTime = LocalDateTime.now(),
+                                            ),
                                         )
                                     }
                                 }
@@ -140,12 +140,13 @@ fun ImportPlaylistDialog(
                             }
                         }
 
-                        val newPlaylist = PlaylistEntity(
-                            name = finalName,
-                            browseId = browseId,
-                            isEditable = browseId == null,
-                            bookmarkedAt = LocalDateTime.now()
-                        )
+                        val newPlaylist =
+                            PlaylistEntity(
+                                name = finalName,
+                                browseId = browseId,
+                                isEditable = browseId == null,
+                                bookmarkedAt = LocalDateTime.now(),
+                            )
                         database.query { insert(newPlaylist) }
 
                         val playlist = database.playlist(newPlaylist.id).firstOrNull()
@@ -167,7 +168,7 @@ fun ImportPlaylistDialog(
                         }
                     }
                 }
-            }
+            },
         )
     }
 
@@ -195,7 +196,7 @@ fun ImportPlaylistDialog(
                         resetState()
                         onDismiss()
                     },
-                    shapes = ButtonDefaults.shapes()
+                    shapes = ButtonDefaults.shapes(),
                 ) { Text(text = stringResource(android.R.string.cancel)) }
 
                 TextButton(
@@ -221,13 +222,17 @@ fun ImportPlaylistDialog(
                                             update(
                                                 playlist.playlist.copy(
                                                     bookmarkedAt = LocalDateTime.now(),
-                                                    lastUpdateTime = LocalDateTime.now()
-                                                )
+                                                    lastUpdateTime = LocalDateTime.now(),
+                                                ),
                                             )
                                         }
                                     }
-                                    val existingSongIds = database.playlistSongs(playlist.id).firstOrNull()
-                                        ?.map { it.song.id }?.toSet() ?: emptySet()
+                                    val existingSongIds =
+                                        database
+                                            .playlistSongs(playlist.id)
+                                            .firstOrNull()
+                                            ?.map { it.song.id }
+                                            ?.toSet() ?: emptySet()
                                     val newSongIds = ids.filterNot { it in existingSongIds }
 
                                     if (newSongIds.isEmpty()) {
@@ -240,8 +245,8 @@ fun ImportPlaylistDialog(
                                                     PlaylistSongMap(
                                                         songId = songId,
                                                         playlistId = playlist.id,
-                                                        position = position++
-                                                    )
+                                                        position = position++,
+                                                    ),
                                                 )
                                             }
                                         }
@@ -265,7 +270,7 @@ fun ImportPlaylistDialog(
                             }
                         }
                     },
-                    shapes = ButtonDefaults.shapes()
+                    shapes = ButtonDefaults.shapes(),
                 ) { Text(text = stringResource(R.string.update_button)) }
 
                 TextButton(
@@ -284,11 +289,12 @@ fun ImportPlaylistDialog(
                                     return@launch
                                 }
 
-                                val newPlaylist = PlaylistEntity(
-                                    name = currentPlaylistName,
-                                    browseId = null,
-                                    bookmarkedAt = LocalDateTime.now()
-                                )
+                                val newPlaylist =
+                                    PlaylistEntity(
+                                        name = currentPlaylistName,
+                                        browseId = null,
+                                        bookmarkedAt = LocalDateTime.now(),
+                                    )
                                 database.query { insert(newPlaylist) }
 
                                 val playlist = database.playlist(newPlaylist.id).firstOrNull()
@@ -313,9 +319,9 @@ fun ImportPlaylistDialog(
                             }
                         }
                     },
-                    shapes = ButtonDefaults.shapes()
+                    shapes = ButtonDefaults.shapes(),
                 ) { Text(text = stringResource(R.string.import_playlist)) }
-            }
+            },
         )
     }
 }

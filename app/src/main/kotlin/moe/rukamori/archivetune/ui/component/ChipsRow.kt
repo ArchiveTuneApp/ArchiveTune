@@ -64,10 +64,10 @@ fun <E> ChipsRow(
 ) {
     Row(
         modifier =
-        modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .horizontalScroll(rememberScrollState()),
+            modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+                .horizontalScroll(rememberScrollState()),
     ) {
         Spacer(Modifier.width(12.dp))
 
@@ -96,9 +96,10 @@ fun <E> ChipsRow(
                 },
                 shape = RoundedCornerShape(16.dp),
                 border = null,
-                colors = FilterChipDefaults.filterChipColors(
-                    containerColor = containerColor,
-                ),
+                colors =
+                    FilterChipDefaults.filterChipColors(
+                        containerColor = containerColor,
+                    ),
             )
 
             Spacer(Modifier.width(8.dp))
@@ -127,9 +128,9 @@ fun <Int> ChoiceChipsRow(
 
     Row(
         modifier =
-        modifier
-            .fillMaxWidth()
-            .padding(start = 12.dp),
+            modifier
+                .fillMaxWidth()
+                .padding(start = 12.dp),
     ) {
         var expanded by remember { mutableStateOf(false) }
 
@@ -142,12 +143,12 @@ fun <Int> ChoiceChipsRow(
                 label = {
                     Text(
                         text =
-                        when (selectedOption) {
-                            OptionStats.WEEKS -> stringResource(id = R.string.weeks)
-                            OptionStats.MONTHS -> stringResource(id = R.string.months)
-                            OptionStats.YEARS -> stringResource(id = R.string.years)
-                            OptionStats.CONTINUOUS -> stringResource(id = R.string.continuous)
-                        },
+                            when (selectedOption) {
+                                OptionStats.WEEKS -> stringResource(id = R.string.weeks)
+                                OptionStats.MONTHS -> stringResource(id = R.string.months)
+                                OptionStats.YEARS -> stringResource(id = R.string.years)
+                                OptionStats.CONTINUOUS -> stringResource(id = R.string.continuous)
+                            },
                     )
                 },
                 trailingIcon = {
@@ -159,10 +160,11 @@ fun <Int> ChoiceChipsRow(
                 },
                 shape = RoundedCornerShape(16.dp),
                 border = null,
-                colors = AssistChipDefaults.assistChipColors(
-                    containerColor = containerColor,
-                    labelColor = MaterialTheme.colorScheme.onSurface
-                )
+                colors =
+                    AssistChipDefaults.assistChipColors(
+                        containerColor = containerColor,
+                        labelColor = MaterialTheme.colorScheme.onSurface,
+                    ),
             )
 
             AnimatedVisibility(
@@ -199,9 +201,9 @@ fun <Int> ChoiceChipsRow(
         ) {
             Row(
                 modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
+                    Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
             ) {
                 chips.forEach { (value, label) ->
                     Spacer(Modifier.width(8.dp))
@@ -209,12 +211,13 @@ fun <Int> ChoiceChipsRow(
                     FilterChip(
                         label = { Text(label) },
                         selected = currentValue == value,
-                        colors = FilterChipDefaults.filterChipColors(
-                            containerColor = containerColor,
-                        ),
+                        colors =
+                            FilterChipDefaults.filterChipColors(
+                                containerColor = containerColor,
+                            ),
                         onClick = { onValueUpdate(value) },
                         shape = RoundedCornerShape(16.dp),
-                        border = null
+                        border = null,
                     )
                 }
             }

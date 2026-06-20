@@ -24,7 +24,8 @@ data class AiServiceConfig(
     val model: String,
 ) {
     val canCallApi: Boolean
-        get() = provider != AiProvider.NONE &&
-            apiKey.isNotBlank() &&
-            (provider != AiProvider.CUSTOM || customEndpoint.isNotBlank())
+        get() =
+            provider != AiProvider.NONE &&
+                apiKey.isNotBlank() &&
+                (provider != AiProvider.CUSTOM || customEndpoint.isNotBlank())
 }

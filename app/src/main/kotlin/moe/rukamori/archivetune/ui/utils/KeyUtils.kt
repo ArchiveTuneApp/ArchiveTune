@@ -14,12 +14,15 @@ import java.util.concurrent.atomic.AtomicLong
  */
 object KeyUtils {
     private val counter = AtomicLong(0)
-    
+
     /**
      * Generates a unique key by combining a base identifier with a unique counter
      * This prevents duplicate keys in LazyColumn/LazyRow implementations
      */
-    fun generateUniqueKey(baseId: String, prefix: String = ""): String {
+    fun generateUniqueKey(
+        baseId: String,
+        prefix: String = "",
+    ): String {
         val uniqueId = counter.incrementAndGet()
         return if (prefix.isNotEmpty()) {
             "${prefix}_${baseId}_$uniqueId"
@@ -27,12 +30,16 @@ object KeyUtils {
             "${baseId}_$uniqueId"
         }
     }
-    
+
     /**
      * Generates a unique key for items in a list with their index
      * Useful for preventing duplicate keys when items might have the same ID
      */
-    fun generateIndexedKey(baseId: String, index: Int, prefix: String = ""): String {
+    fun generateIndexedKey(
+        baseId: String,
+        index: Int,
+        prefix: String = "",
+    ): String {
         val uniqueId = counter.incrementAndGet()
         return if (prefix.isNotEmpty()) {
             "${prefix}_${baseId}_${index}_$uniqueId"
@@ -40,12 +47,15 @@ object KeyUtils {
             "${baseId}_${index}_$uniqueId"
         }
     }
-    
+
     /**
      * Generates a timestamp-based unique key for dynamic content
      * Useful for content that changes frequently
      */
-    fun generateTimestampKey(baseId: String, prefix: String = ""): String {
+    fun generateTimestampKey(
+        baseId: String,
+        prefix: String = "",
+    ): String {
         val timestamp = System.currentTimeMillis()
         val uniqueId = counter.incrementAndGet()
         return if (prefix.isNotEmpty()) {

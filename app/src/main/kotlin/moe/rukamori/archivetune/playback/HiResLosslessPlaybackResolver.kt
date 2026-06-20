@@ -25,7 +25,7 @@ object HiResLosslessPlaybackResolver {
                     title = identity.title,
                     artists = identity.artists,
                     durationSeconds = identity.durationSeconds,
-                )
+                ),
             ).map { stream -> stream.toPlaybackData() }
 
     private fun NewPipeUtils.ExternalAudioStream.toPlaybackData(): YTPlayerUtils.PlaybackData {
@@ -62,7 +62,7 @@ object HiResLosslessPlaybackResolver {
                     lastModified = null,
                     signatureCipher = null,
                     cipher = null,
-            ),
+                ),
             streamUrl = streamUrl,
             streamExpiresInSeconds = EXTERNAL_STREAM_CACHE_SECONDS,
             authFingerprint = EXTERNAL_AUTH_FINGERPRINT,

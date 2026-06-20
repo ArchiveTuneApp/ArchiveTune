@@ -143,10 +143,11 @@ fun AodCustomizedScreen(
     navController: NavController,
     scrollBehavior: androidx.compose.material3.TopAppBarScrollBehavior,
 ) {
-    val (thumbnailShape, onThumbnailShapeChange) = rememberEnumPreference(
-        AodThumbnailShapeKey,
-        defaultValue = AodThumbnailShape.ROUNDED,
-    )
+    val (thumbnailShape, onThumbnailShapeChange) =
+        rememberEnumPreference(
+            AodThumbnailShapeKey,
+            defaultValue = AodThumbnailShape.ROUNDED,
+        )
     val (thumbnailSize, onThumbnailSizeChange) = rememberPreference(AodThumbnailSizeKey, defaultValue = 260f)
     val (thumbnailShapeRotation, onThumbnailShapeRotationChange) = rememberPreference(AodThumbnailShapeRotationKey, defaultValue = 0)
     val (thumbnailCornerRadius) = rememberPreference(ThumbnailCornerRadiusKey, defaultValue = 16f)
@@ -158,86 +159,93 @@ fun AodCustomizedScreen(
     val (showControls, onShowControlsChange) = rememberPreference(AodShowControlsKey, defaultValue = true)
     val (showExitButton, onShowExitButtonChange) = rememberPreference(AodShowExitButtonKey, defaultValue = true)
     val (artworkGlow, onArtworkGlowChange) = rememberPreference(AodArtworkGlowKey, defaultValue = true)
-    val (backgroundStyle, onBackgroundStyleChange) = rememberEnumPreference(
-        AodBackgroundStyleKey,
-        defaultValue = AodBackgroundStyle.PURE_BLACK,
-    )
-    val (accentStyle, onAccentStyleChange) = rememberEnumPreference(
-        AodAccentStyleKey,
-        defaultValue = AodAccentStyle.MONOCHROME,
-    )
-    val (contentPosition, onContentPositionChange) = rememberEnumPreference(
-        AodContentPositionKey,
-        defaultValue = AodContentPosition.CENTER,
-    )
-    val (textAlignment, onTextAlignmentChange) = rememberEnumPreference(
-        AodTextAlignmentKey,
-        defaultValue = AodTextAlignment.CENTER,
-    )
-    val (controlStyle, onControlStyleChange) = rememberEnumPreference(
-        AodControlStyleKey,
-        defaultValue = AodControlStyle.FILLED,
-    )
+    val (backgroundStyle, onBackgroundStyleChange) =
+        rememberEnumPreference(
+            AodBackgroundStyleKey,
+            defaultValue = AodBackgroundStyle.PURE_BLACK,
+        )
+    val (accentStyle, onAccentStyleChange) =
+        rememberEnumPreference(
+            AodAccentStyleKey,
+            defaultValue = AodAccentStyle.MONOCHROME,
+        )
+    val (contentPosition, onContentPositionChange) =
+        rememberEnumPreference(
+            AodContentPositionKey,
+            defaultValue = AodContentPosition.CENTER,
+        )
+    val (textAlignment, onTextAlignmentChange) =
+        rememberEnumPreference(
+            AodTextAlignmentKey,
+            defaultValue = AodTextAlignment.CENTER,
+        )
+    val (controlStyle, onControlStyleChange) =
+        rememberEnumPreference(
+            AodControlStyleKey,
+            defaultValue = AodControlStyle.FILLED,
+        )
     val (controlSize, onControlSizeChange) = rememberPreference(AodControlSizeKey, defaultValue = 64f)
     val (horizontalPadding, onHorizontalPaddingChange) = rememberPreference(AodHorizontalPaddingKey, defaultValue = 40f)
     val (verticalSpacing, onVerticalSpacingChange) = rememberPreference(AodVerticalSpacingKey, defaultValue = 20f)
     val (titleMaxLines, onTitleMaxLinesChange) = rememberPreference(AodTitleMaxLinesKey, defaultValue = 1)
     val (ambientIntensity, onAmbientIntensityChange) = rememberPreference(AodAmbientIntensityKey, defaultValue = 0.18f)
 
-    val previewSettings = remember(
-        thumbnailShape,
-        thumbnailSize,
-        thumbnailShapeRotation,
-        thumbnailCornerRadius,
-        showThumbnail,
-        showArtist,
-        showAlbum,
-        showProgress,
-        showTimeLabels,
-        showControls,
-        showExitButton,
-        artworkGlow,
-        backgroundStyle,
-        accentStyle,
-        contentPosition,
-        textAlignment,
-        controlStyle,
-        controlSize,
-        horizontalPadding,
-        verticalSpacing,
-        titleMaxLines,
-        ambientIntensity,
-    ) {
-        AodPreviewSettings(
-            thumbnailShape = thumbnailShape,
-            thumbnailSize = thumbnailSize,
-            thumbnailShapeRotation = thumbnailShapeRotation,
-            thumbnailCornerRadius = thumbnailCornerRadius,
-            showThumbnail = showThumbnail,
-            showArtist = showArtist,
-            showAlbum = showAlbum,
-            showProgress = showProgress,
-            showTimeLabels = showTimeLabels,
-            showControls = showControls,
-            showExitButton = showExitButton,
-            artworkGlow = artworkGlow,
-            backgroundStyle = backgroundStyle,
-            accentStyle = accentStyle,
-            contentPosition = contentPosition,
-            textAlignment = textAlignment,
-            controlStyle = controlStyle,
-            controlSize = controlSize,
-            horizontalPadding = horizontalPadding,
-            verticalSpacing = verticalSpacing,
-            titleMaxLines = titleMaxLines,
-            ambientIntensity = ambientIntensity,
-        )
-    }
+    val previewSettings =
+        remember(
+            thumbnailShape,
+            thumbnailSize,
+            thumbnailShapeRotation,
+            thumbnailCornerRadius,
+            showThumbnail,
+            showArtist,
+            showAlbum,
+            showProgress,
+            showTimeLabels,
+            showControls,
+            showExitButton,
+            artworkGlow,
+            backgroundStyle,
+            accentStyle,
+            contentPosition,
+            textAlignment,
+            controlStyle,
+            controlSize,
+            horizontalPadding,
+            verticalSpacing,
+            titleMaxLines,
+            ambientIntensity,
+        ) {
+            AodPreviewSettings(
+                thumbnailShape = thumbnailShape,
+                thumbnailSize = thumbnailSize,
+                thumbnailShapeRotation = thumbnailShapeRotation,
+                thumbnailCornerRadius = thumbnailCornerRadius,
+                showThumbnail = showThumbnail,
+                showArtist = showArtist,
+                showAlbum = showAlbum,
+                showProgress = showProgress,
+                showTimeLabels = showTimeLabels,
+                showControls = showControls,
+                showExitButton = showExitButton,
+                artworkGlow = artworkGlow,
+                backgroundStyle = backgroundStyle,
+                accentStyle = accentStyle,
+                contentPosition = contentPosition,
+                textAlignment = textAlignment,
+                controlStyle = controlStyle,
+                controlSize = controlSize,
+                horizontalPadding = horizontalPadding,
+                verticalSpacing = verticalSpacing,
+                titleMaxLines = titleMaxLines,
+                ambientIntensity = ambientIntensity,
+            )
+        }
 
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.surface,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
@@ -267,22 +275,24 @@ fun AodCustomizedScreen(
                     }
                 },
                 scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.largeTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                ),
+                colors =
+                    TopAppBarDefaults.largeTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    ),
             )
         },
     ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .windowInsetsPadding(
-                    LocalPlayerAwareWindowInsets.current.only(
-                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .windowInsetsPadding(
+                        LocalPlayerAwareWindowInsets.current.only(
+                            WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                        ),
                     ),
-                ),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item(
@@ -530,7 +540,7 @@ fun AodCustomizedScreen(
                 key = "aod_bottom_space",
                 contentType = "spacer",
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(SettingsDimensions.ScreenBottomPadding))
             }
         }
     }
@@ -541,15 +551,17 @@ private fun AodPreviewCard(
     settings: AodPreviewSettings,
     modifier: Modifier = Modifier,
 ) {
-    val accentColor = when (settings.accentStyle) {
-        AodAccentStyle.MONOCHROME -> Color.White
-        AodAccentStyle.THEME -> MaterialTheme.colorScheme.primary
-    }
+    val accentColor =
+        when (settings.accentStyle) {
+            AodAccentStyle.MONOCHROME -> Color.White
+            AodAccentStyle.THEME -> MaterialTheme.colorScheme.primary
+        }
     val supportsArtworkGlowShadow = settings.thumbnailShape.supportsArtworkGlowShadow()
-    val thumbnailShape = settings.thumbnailShape.toComposeShape(
-        cornerRadius = settings.thumbnailCornerRadius,
-        startAngle = settings.thumbnailShapeRotation,
-    )
+    val thumbnailShape =
+        settings.thumbnailShape.toComposeShape(
+            cornerRadius = settings.thumbnailCornerRadius,
+            startAngle = settings.thumbnailShapeRotation,
+        )
     val textAlign = settings.textAlignment.toTextAlign()
     val horizontalAlignment = settings.textAlignment.toHorizontalAlignment()
     val contentAlignment = settings.contentPosition.toBoxAlignment()
@@ -561,9 +573,10 @@ private fun AodPreviewCard(
     ElevatedCard(
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
+        colors =
+            CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ),
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -575,51 +588,54 @@ private fun AodPreviewCard(
                 fontWeight = FontWeight.Bold,
             )
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 560.dp)
-                    .aspectRatio(0.64f)
-                    .clip(MaterialTheme.shapes.extraLarge)
-                    .aodPreviewBackground(
-                        style = settings.backgroundStyle,
-                        accentColor = accentColor,
-                        ambientIntensity = settings.ambientIntensity,
-                    )
-                    .border(
-                        width = 1.dp,
-                        color = Color.White.copy(alpha = 0.12f),
-                        shape = MaterialTheme.shapes.extraLarge,
-                    ),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 560.dp)
+                        .aspectRatio(0.64f)
+                        .clip(MaterialTheme.shapes.extraLarge)
+                        .aodPreviewBackground(
+                            style = settings.backgroundStyle,
+                            accentColor = accentColor,
+                            ambientIntensity = settings.ambientIntensity,
+                        ).border(
+                            width = 1.dp,
+                            color = Color.White.copy(alpha = 0.12f),
+                            shape = MaterialTheme.shapes.extraLarge,
+                        ),
             ) {
                 if (settings.showExitButton) {
                     Icon(
                         painter = painterResource(R.drawable.close),
                         contentDescription = null,
                         tint = Color.White.copy(alpha = 0.72f),
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(16.dp)
-                            .size(20.dp),
+                        modifier =
+                            Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(16.dp)
+                                .size(20.dp),
                     )
                 }
 
                 Column(
                     horizontalAlignment = horizontalAlignment,
                     verticalArrangement = Arrangement.spacedBy(previewSpacing),
-                    modifier = Modifier
-                        .align(contentAlignment)
-                        .fillMaxWidth()
-                        .padding(horizontal = previewHorizontalPadding)
-                        .padding(vertical = 28.dp),
+                    modifier =
+                        Modifier
+                            .align(contentAlignment)
+                            .fillMaxWidth()
+                            .padding(horizontal = previewHorizontalPadding)
+                            .padding(vertical = 28.dp),
                 ) {
                     if (settings.showThumbnail) {
                         PreviewArtwork(
                             shape = thumbnailShape,
                             accentColor = accentColor,
                             showGlow = settings.artworkGlow && supportsArtworkGlowShadow,
-                            modifier = Modifier
-                                .align(Alignment.CenterHorizontally)
-                                .size(previewArtworkSize),
+                            modifier =
+                                Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .size(previewArtworkSize),
                         )
                     }
 
@@ -689,31 +705,33 @@ private fun PreviewArtwork(
     modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier
-            .then(
-                if (showGlow) {
-                    Modifier.shadow(24.dp, shape = shape, clip = false, ambientColor = accentColor, spotColor = accentColor)
-                } else {
-                    Modifier
-                },
-            )
-            .clip(shape)
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(
-                        accentColor.copy(alpha = 0.92f),
-                        Color(0xFF141414),
+        modifier =
+            modifier
+                .then(
+                    if (showGlow) {
+                        Modifier.shadow(24.dp, shape = shape, clip = false, ambientColor = accentColor, spotColor = accentColor)
+                    } else {
+                        Modifier
+                    },
+                ).clip(shape)
+                .background(
+                    Brush.linearGradient(
+                        colors =
+                            listOf(
+                                accentColor.copy(alpha = 0.92f),
+                                Color(0xFF141414),
+                            ),
                     ),
                 ),
-            ),
     ) {
         Icon(
             painter = painterResource(R.drawable.music_note),
             contentDescription = null,
             tint = Color.White.copy(alpha = 0.78f),
-            modifier = Modifier
-                .align(Alignment.Center)
-                .size(42.dp),
+            modifier =
+                Modifier
+                    .align(Alignment.Center)
+                    .size(42.dp),
         )
     }
 }
@@ -728,18 +746,20 @@ private fun PreviewProgress(
         verticalArrangement = Arrangement.spacedBy(5.dp),
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(4.dp)
-                .clip(MaterialTheme.shapes.extraSmall)
-                .background(Color.White.copy(alpha = 0.22f)),
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(0.46f)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
                     .height(4.dp)
                     .clip(MaterialTheme.shapes.extraSmall)
-                    .background(accentColor),
+                    .background(Color.White.copy(alpha = 0.22f)),
+        ) {
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth(0.46f)
+                        .height(4.dp)
+                        .clip(MaterialTheme.shapes.extraSmall)
+                        .background(accentColor),
             )
         }
         if (showTimeLabels) {
@@ -768,16 +788,20 @@ private fun PreviewControls(
     controlStyle: AodControlStyle,
     controlSize: androidx.compose.ui.unit.Dp,
 ) {
-    val centerContainer = when (controlStyle) {
-        AodControlStyle.FILLED -> Color.White
-        AodControlStyle.TONAL -> accentColor.copy(alpha = 0.22f)
-        AodControlStyle.MINIMAL -> Color.Transparent
-    }
-    val centerContent = when (controlStyle) {
-        AodControlStyle.FILLED -> Color.Black
-        AodControlStyle.TONAL,
-        AodControlStyle.MINIMAL -> Color.White
-    }
+    val centerContainer =
+        when (controlStyle) {
+            AodControlStyle.FILLED -> Color.White
+            AodControlStyle.TONAL -> accentColor.copy(alpha = 0.22f)
+            AodControlStyle.MINIMAL -> Color.Transparent
+        }
+    val centerContent =
+        when (controlStyle) {
+            AodControlStyle.FILLED -> Color.Black
+
+            AodControlStyle.TONAL,
+            AodControlStyle.MINIMAL,
+            -> Color.White
+        }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -815,11 +839,12 @@ private fun PreviewControlIcon(
     borderColor: Color = Color.Transparent,
 ) {
     Box(
-        modifier = Modifier
-            .size(size)
-            .clip(MaterialTheme.shapes.extraLarge)
-            .background(containerColor)
-            .border(1.dp, borderColor, MaterialTheme.shapes.extraLarge),
+        modifier =
+            Modifier
+                .size(size)
+                .clip(MaterialTheme.shapes.extraLarge)
+                .background(containerColor)
+                .border(1.dp, borderColor, MaterialTheme.shapes.extraLarge),
         contentAlignment = Alignment.Center,
     ) {
         Icon(
@@ -844,9 +869,10 @@ private fun AodShapePicker(
     ElevatedCard(
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
+        colors =
+            CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ),
     ) {
         Column(
             modifier = Modifier.padding(18.dp),
@@ -896,30 +922,34 @@ private fun AodShapeOption(
         if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
 
     Card(
-        modifier = Modifier
-            .width(102.dp)
-            .heightIn(min = 112.dp)
-            .selectable(
-                selected = selected,
-                onClick = onClick,
-                role = Role.RadioButton,
-            ),
+        modifier =
+            Modifier
+                .width(102.dp)
+                .heightIn(min = 112.dp)
+                .selectable(
+                    selected = selected,
+                    onClick = onClick,
+                    role = Role.RadioButton,
+                ),
         shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(
-            containerColor = if (selected) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceContainerHigh
-            },
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor =
+                    if (selected) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.surfaceContainerHigh
+                    },
+            ),
         border = BorderStroke(1.dp, borderColor),
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
         ) {
             Surface(
                 modifier = Modifier.size(48.dp),
@@ -980,10 +1010,11 @@ private fun AodSliderPreference(
                 valueRange = valueRange,
                 steps = steps,
                 enabled = isEnabled,
-                colors = SliderDefaults.colors(
-                    activeTrackColor = MaterialTheme.colorScheme.primary,
-                    thumbColor = MaterialTheme.colorScheme.primary,
-                ),
+                colors =
+                    SliderDefaults.colors(
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                    ),
                 modifier = Modifier.fillMaxWidth(),
             )
         },
@@ -1021,10 +1052,11 @@ private fun AodIntSliderPreference(
                 valueRange = valueRange.first.toFloat()..valueRange.last.toFloat(),
                 steps = steps,
                 enabled = isEnabled,
-                colors = SliderDefaults.colors(
-                    activeTrackColor = MaterialTheme.colorScheme.primary,
-                    thumbColor = MaterialTheme.colorScheme.primary,
-                ),
+                colors =
+                    SliderDefaults.colors(
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                    ),
                 modifier = Modifier.fillMaxWidth(),
             )
         },
@@ -1038,31 +1070,46 @@ private fun Modifier.aodPreviewBackground(
     ambientIntensity: Float,
 ): Modifier {
     val alpha = ambientIntensity.coerceIn(0f, 1f)
-    val brush = remember(style, accentColor, alpha) {
-        when (style) {
-            AodBackgroundStyle.PURE_BLACK -> Brush.verticalGradient(listOf(Color.Black, Color.Black))
-            AodBackgroundStyle.SOFT_RADIAL -> Brush.radialGradient(
-                colors = listOf(
-                    accentColor.copy(alpha = 0.22f * alpha),
-                    Color.Black,
-                ),
-            )
-            AodBackgroundStyle.TONAL_EDGE -> Brush.verticalGradient(
-                colors = listOf(
-                    accentColor.copy(alpha = 0.18f * alpha),
-                    Color.Black,
-                    accentColor.copy(alpha = 0.12f * alpha),
-                ),
-            )
-            AodBackgroundStyle.AMBIENT_GLOW -> Brush.linearGradient(
-                colors = listOf(
-                    accentColor.copy(alpha = 0.28f * alpha),
-                    Color.Black,
-                    Color(0xFF101010),
-                ),
-            )
+    val brush =
+        remember(style, accentColor, alpha) {
+            when (style) {
+                AodBackgroundStyle.PURE_BLACK -> {
+                    Brush.verticalGradient(listOf(Color.Black, Color.Black))
+                }
+
+                AodBackgroundStyle.SOFT_RADIAL -> {
+                    Brush.radialGradient(
+                        colors =
+                            listOf(
+                                accentColor.copy(alpha = 0.22f * alpha),
+                                Color.Black,
+                            ),
+                    )
+                }
+
+                AodBackgroundStyle.TONAL_EDGE -> {
+                    Brush.verticalGradient(
+                        colors =
+                            listOf(
+                                accentColor.copy(alpha = 0.18f * alpha),
+                                Color.Black,
+                                accentColor.copy(alpha = 0.12f * alpha),
+                            ),
+                    )
+                }
+
+                AodBackgroundStyle.AMBIENT_GLOW -> {
+                    Brush.linearGradient(
+                        colors =
+                            listOf(
+                                accentColor.copy(alpha = 0.28f * alpha),
+                                Color.Black,
+                                Color(0xFF101010),
+                            ),
+                    )
+                }
+            }
         }
-    }
 
     return background(brush)
 }

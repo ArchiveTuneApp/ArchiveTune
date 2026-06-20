@@ -16,11 +16,11 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import java.util.concurrent.TimeUnit
 import moe.rukamori.archivetune.BuildConfig
 import moe.rukamori.archivetune.constants.AiProvider
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.concurrent.TimeUnit
 
 class AiServiceException(
     message: String,
@@ -51,13 +51,14 @@ object AiTextService {
         }
 
     suspend fun test(config: AiServiceConfig) {
-        val response = complete(
-            config = config.copy(model = config.model.ifBlank { defaultModelFor(config.provider) }),
-            systemPrompt = "You are a health check endpoint. Reply with OK only.",
-            userPrompt = "Reply exactly OK.",
-            temperature = 0.0,
-            maxTokens = 32,
-        ).trim()
+        val response =
+            complete(
+                config = config.copy(model = config.model.ifBlank { defaultModelFor(config.provider) }),
+                systemPrompt = "You are a health check endpoint. Reply with OK only.",
+                userPrompt = "Reply exactly OK.",
+                temperature = 0.0,
+                maxTokens = 32,
+            ).trim()
         if (!response.equals("OK", ignoreCase = true)) {
             throw AiServiceException("AI API returned an unexpected test response")
         }
@@ -72,20 +73,22 @@ object AiTextService {
         if (lines.isEmpty()) return emptyList()
         val payload = JSONArray()
         lines.forEach { payload.put(it) }
-        val response = complete(
-            config = config,
-            systemPrompt = """
-                You are an expert song lyrics translator.
-                Translate each input string into $targetLanguage with natural, accurate lyric phrasing.
-                Preserve meaning, tone, profanity level, names, repeated hooks, and line-level intent.
-                Do not add timestamps, IDs, XML, markdown, explanations, or extra lines.
-                Return only a JSON array of strings with exactly ${lines.size} items in the same order.
-                The caller will reconstruct the $formatName lyrics container separately.
-            """.trimIndent(),
-            userPrompt = payload.toString(),
-            temperature = 0.15,
-            maxTokens = 8192,
-        )
+        val response =
+            complete(
+                config = config,
+                systemPrompt =
+                    """
+                    You are an expert song lyrics translator.
+                    Translate each input string into $targetLanguage with natural, accurate lyric phrasing.
+                    Preserve meaning, tone, profanity level, names, repeated hooks, and line-level intent.
+                    Do not add timestamps, IDs, XML, markdown, explanations, or extra lines.
+                    Return only a JSON array of strings with exactly ${lines.size} items in the same order.
+                    The caller will reconstruct the $formatName lyrics container separately.
+                    """.trimIndent(),
+                userPrompt = payload.toString(),
+                temperature = 0.15,
+                maxTokens = 8192,
+            )
         val array = extractJsonArray(response)
         require(array.length() == lines.size) { "AI response changed the lyric segment count" }
         return List(array.length()) { index -> array.optString(index) }
@@ -101,56 +104,68 @@ object AiTextService {
         if (!config.canCallApi) throw AiServiceException("AI provider is not configured")
         val model = config.model.ifBlank { defaultModelFor(config.provider) }
         return when (config.provider) {
-            AiProvider.CHATGPT -> completeOpenAiCompatible(
-                endpoint = OpenAiEndpoint,
-                apiKey = config.apiKey,
-                model = model,
-                systemPrompt = systemPrompt,
-                userPrompt = userPrompt,
-                temperature = temperature,
-                maxTokens = maxTokens,
-            )
+            AiProvider.CHATGPT -> {
+                completeOpenAiCompatible(
+                    endpoint = OpenAiEndpoint,
+                    apiKey = config.apiKey,
+                    model = model,
+                    systemPrompt = systemPrompt,
+                    userPrompt = userPrompt,
+                    temperature = temperature,
+                    maxTokens = maxTokens,
+                )
+            }
 
-            AiProvider.CUSTOM -> completeOpenAiCompatible(
-                endpoint = config.customEndpoint,
-                apiKey = config.apiKey,
-                model = model,
-                systemPrompt = systemPrompt,
-                userPrompt = userPrompt,
-                temperature = temperature,
-                maxTokens = maxTokens,
-            )
+            AiProvider.CUSTOM -> {
+                completeOpenAiCompatible(
+                    endpoint = config.customEndpoint,
+                    apiKey = config.apiKey,
+                    model = model,
+                    systemPrompt = systemPrompt,
+                    userPrompt = userPrompt,
+                    temperature = temperature,
+                    maxTokens = maxTokens,
+                )
+            }
 
-            AiProvider.GEMINI -> completeGemini(
-                apiKey = config.apiKey,
-                model = model,
-                systemPrompt = systemPrompt,
-                userPrompt = userPrompt,
-                temperature = temperature,
-                maxTokens = maxTokens,
-            )
+            AiProvider.GEMINI -> {
+                completeGemini(
+                    apiKey = config.apiKey,
+                    model = model,
+                    systemPrompt = systemPrompt,
+                    userPrompt = userPrompt,
+                    temperature = temperature,
+                    maxTokens = maxTokens,
+                )
+            }
 
-            AiProvider.CLAUDE -> completeClaude(
-                apiKey = config.apiKey,
-                model = model,
-                systemPrompt = systemPrompt,
-                userPrompt = userPrompt,
-                temperature = temperature,
-                maxTokens = maxTokens,
-            )
+            AiProvider.CLAUDE -> {
+                completeClaude(
+                    apiKey = config.apiKey,
+                    model = model,
+                    systemPrompt = systemPrompt,
+                    userPrompt = userPrompt,
+                    temperature = temperature,
+                    maxTokens = maxTokens,
+                )
+            }
 
-            AiProvider.OPENROUTER -> completeOpenAiCompatible(
-                endpoint = OpenRouterEndpoint,
-                apiKey = config.apiKey,
-                model = model,
-                systemPrompt = systemPrompt,
-                userPrompt = userPrompt,
-                temperature = temperature,
-                maxTokens = maxTokens,
-                extraHeaders = openRouterHeaders(),
-            )
+            AiProvider.OPENROUTER -> {
+                completeOpenAiCompatible(
+                    endpoint = OpenRouterEndpoint,
+                    apiKey = config.apiKey,
+                    model = model,
+                    systemPrompt = systemPrompt,
+                    userPrompt = userPrompt,
+                    temperature = temperature,
+                    maxTokens = maxTokens,
+                    extraHeaders = openRouterHeaders(),
+                )
+            }
 
-            AiProvider.NONE -> throw AiServiceException("AI provider is disabled")
+            AiProvider.NONE -> {
+                throw AiServiceException("AI provider is disabled")
+            }
         }
     }
 
@@ -175,30 +190,34 @@ object AiTextService {
         maxTokens: Int,
         extraHeaders: Map<String, String> = emptyMap(),
     ): String {
-        val messages = JSONArray()
-            .put(JSONObject().put("role", "system").put("content", systemPrompt))
-            .put(JSONObject().put("role", "user").put("content", userPrompt))
-        val body = JSONObject()
-            .put("model", model)
-            .put("messages", messages)
-            .put("temperature", temperature)
-            .put("max_tokens", maxTokens)
-            .toString()
-        val response = client.post(endpoint.trim()) {
-            header("Authorization", "Bearer ${apiKey.trim()}")
-            extraHeaders.forEach { (key, value) -> header(key, value) }
-            contentType(ContentType.Application.Json)
-            setBody(body)
-        }
+        val messages =
+            JSONArray()
+                .put(JSONObject().put("role", "system").put("content", systemPrompt))
+                .put(JSONObject().put("role", "user").put("content", userPrompt))
+        val body =
+            JSONObject()
+                .put("model", model)
+                .put("messages", messages)
+                .put("temperature", temperature)
+                .put("max_tokens", maxTokens)
+                .toString()
+        val response =
+            client.post(endpoint.trim()) {
+                header("Authorization", "Bearer ${apiKey.trim()}")
+                extraHeaders.forEach { (key, value) -> header(key, value) }
+                contentType(ContentType.Application.Json)
+                setBody(body)
+            }
         val raw = response.bodyAsText()
         if (response.status.value !in 200..299) throw apiException(response.status.value, raw)
         val json = JSONObject(raw)
-        val content = json
-            .optJSONArray("choices")
-            ?.optJSONObject(0)
-            ?.optJSONObject("message")
-            ?.optString("content")
-            ?.takeIf { it.isNotBlank() }
+        val content =
+            json
+                .optJSONArray("choices")
+                ?.optJSONObject(0)
+                ?.optJSONObject("message")
+                ?.optString("content")
+                ?.takeIf { it.isNotBlank() }
         return content ?: throw AiServiceException("AI API returned an empty response")
     }
 
@@ -211,39 +230,40 @@ object AiTextService {
         maxTokens: Int,
     ): String {
         val endpoint = "$GeminiBaseEndpoint/models/${model.trim()}:generateContent?key=${apiKey.trim()}"
-        val body = JSONObject()
-            .put(
-                "contents",
-                JSONArray().put(
-                    JSONObject().put(
-                        "parts",
-                        JSONArray().put(
-                            JSONObject().put("text", "$systemPrompt\n\n$userPrompt"),
+        val body =
+            JSONObject()
+                .put(
+                    "contents",
+                    JSONArray().put(
+                        JSONObject().put(
+                            "parts",
+                            JSONArray().put(
+                                JSONObject().put("text", "$systemPrompt\n\n$userPrompt"),
+                            ),
                         ),
                     ),
-                ),
-            )
-            .put(
-                "generationConfig",
-                JSONObject()
-                    .put("temperature", temperature)
-                    .put("maxOutputTokens", maxTokens),
-            )
-            .toString()
-        val response = client.post(endpoint) {
-            contentType(ContentType.Application.Json)
-            setBody(body)
-        }
+                ).put(
+                    "generationConfig",
+                    JSONObject()
+                        .put("temperature", temperature)
+                        .put("maxOutputTokens", maxTokens),
+                ).toString()
+        val response =
+            client.post(endpoint) {
+                contentType(ContentType.Application.Json)
+                setBody(body)
+            }
         val raw = response.bodyAsText()
         if (response.status.value !in 200..299) throw apiException(response.status.value, raw)
-        val content = JSONObject(raw)
-            .optJSONArray("candidates")
-            ?.optJSONObject(0)
-            ?.optJSONObject("content")
-            ?.optJSONArray("parts")
-            ?.optJSONObject(0)
-            ?.optString("text")
-            ?.takeIf { it.isNotBlank() }
+        val content =
+            JSONObject(raw)
+                .optJSONArray("candidates")
+                ?.optJSONObject(0)
+                ?.optJSONObject("content")
+                ?.optJSONArray("parts")
+                ?.optJSONObject(0)
+                ?.optString("text")
+                ?.takeIf { it.isNotBlank() }
         return content ?: throw AiServiceException("AI API returned an empty response")
     }
 
@@ -255,55 +275,58 @@ object AiTextService {
         temperature: Double,
         maxTokens: Int,
     ): String {
-        val body = JSONObject()
-            .put("model", model)
-            .put("max_tokens", maxTokens)
-            .put("temperature", temperature)
-            .put("system", systemPrompt)
-            .put(
-                "messages",
-                JSONArray().put(
-                    JSONObject()
-                        .put("role", "user")
-                        .put("content", userPrompt),
-                ),
-            )
-            .toString()
-        val response = client.post(ClaudeEndpoint) {
-            header("x-api-key", apiKey.trim())
-            header("anthropic-version", "2023-06-01")
-            contentType(ContentType.Application.Json)
-            setBody(body)
-        }
+        val body =
+            JSONObject()
+                .put("model", model)
+                .put("max_tokens", maxTokens)
+                .put("temperature", temperature)
+                .put("system", systemPrompt)
+                .put(
+                    "messages",
+                    JSONArray().put(
+                        JSONObject()
+                            .put("role", "user")
+                            .put("content", userPrompt),
+                    ),
+                ).toString()
+        val response =
+            client.post(ClaudeEndpoint) {
+                header("x-api-key", apiKey.trim())
+                header("anthropic-version", "2023-06-01")
+                contentType(ContentType.Application.Json)
+                setBody(body)
+            }
         val raw = response.bodyAsText()
         if (response.status.value !in 200..299) throw apiException(response.status.value, raw)
-        val content = JSONObject(raw)
-            .optJSONArray("content")
-            ?.let { array ->
-                buildString {
-                    for (index in 0 until array.length()) {
-                        val part = array.optJSONObject(index) ?: continue
-                        if (part.optString("type") == "text") append(part.optString("text"))
+        val content =
+            JSONObject(raw)
+                .optJSONArray("content")
+                ?.let { array ->
+                    buildString {
+                        for (index in 0 until array.length()) {
+                            val part = array.optJSONObject(index) ?: continue
+                            if (part.optString("type") == "text") append(part.optString("text"))
+                        }
                     }
-                }
-            }
-            ?.takeIf { it.isNotBlank() }
+                }?.takeIf { it.isNotBlank() }
         return content ?: throw AiServiceException("AI API returned an empty response")
     }
 
-    private fun defaultModelFor(provider: AiProvider): String = when (provider) {
-        AiProvider.CHATGPT -> "gpt-4o"
-        AiProvider.GEMINI -> "gemini-3.5-flash"
-        AiProvider.CLAUDE -> "claude-3-haiku-20240307"
-        AiProvider.OPENROUTER -> "openrouter/auto"
-        AiProvider.CUSTOM -> throw AiServiceException("No AI model configured")
-        AiProvider.NONE -> throw AiServiceException("AI provider is disabled")
-    }
+    private fun defaultModelFor(provider: AiProvider): String =
+        when (provider) {
+            AiProvider.CHATGPT -> "gpt-4o"
+            AiProvider.GEMINI -> "gemini-3.5-flash"
+            AiProvider.CLAUDE -> "claude-3-haiku-20240307"
+            AiProvider.OPENROUTER -> "openrouter/auto"
+            AiProvider.CUSTOM -> throw AiServiceException("No AI model configured")
+            AiProvider.NONE -> throw AiServiceException("AI provider is disabled")
+        }
 
     private suspend fun fetchOpenAiModels(apiKey: String): List<AiModelOption> {
-        val response = client.get(OpenAiModelsEndpoint) {
-            header("Authorization", "Bearer ${apiKey.trim()}")
-        }
+        val response =
+            client.get(OpenAiModelsEndpoint) {
+                header("Authorization", "Bearer ${apiKey.trim()}")
+            }
         val raw = response.bodyAsText()
         if (response.status.value !in 200..299) throw apiException(response.status.value, raw)
         val data = JSONObject(raw).optJSONArray("data") ?: return emptyList()
@@ -325,9 +348,10 @@ object AiTextService {
             for (i in 0 until models.length()) {
                 val obj = models.optJSONObject(i) ?: continue
                 val methods = obj.optJSONArray("supportedGenerationMethods")
-                val supportsGenerate = (0 until (methods?.length() ?: 0)).any {
-                    methods?.optString(it) == "generateContent"
-                }
+                val supportsGenerate =
+                    (0 until (methods?.length() ?: 0)).any {
+                        methods?.optString(it) == "generateContent"
+                    }
                 if (!supportsGenerate) continue
                 val id = obj.optString("name").removePrefix("models/").takeIf { it.isNotBlank() } ?: continue
                 val displayName = obj.optString("displayName").ifBlank { id }
@@ -337,10 +361,11 @@ object AiTextService {
     }
 
     private suspend fun fetchClaudeModels(apiKey: String): List<AiModelOption> {
-        val response = client.get(ClaudeModelsEndpoint) {
-            header("x-api-key", apiKey.trim())
-            header("anthropic-version", "2023-06-01")
-        }
+        val response =
+            client.get(ClaudeModelsEndpoint) {
+                header("x-api-key", apiKey.trim())
+                header("anthropic-version", "2023-06-01")
+            }
         val raw = response.bodyAsText()
         if (response.status.value !in 200..299) throw apiException(response.status.value, raw)
         val data = JSONObject(raw).optJSONArray("data") ?: return emptyList()
@@ -355,10 +380,11 @@ object AiTextService {
     }
 
     private suspend fun fetchOpenRouterModels(apiKey: String): List<AiModelOption> {
-        val response = client.get(OpenRouterModelsEndpoint) {
-            header("Authorization", "Bearer ${apiKey.trim()}")
-            openRouterHeaders().forEach { (key, value) -> header(key, value) }
-        }
+        val response =
+            client.get(OpenRouterModelsEndpoint) {
+                header("Authorization", "Bearer ${apiKey.trim()}")
+                openRouterHeaders().forEach { (key, value) -> header(key, value) }
+            }
         val raw = response.bodyAsText()
         if (response.status.value !in 200..299) throw apiException(response.status.value, raw)
         val data = JSONObject(raw).optJSONArray("data") ?: return emptyList()
@@ -384,8 +410,9 @@ object AiTextService {
         status: Int,
         raw: String,
     ): AiServiceException {
-        val message = runCatching { JSONObject(raw).readErrorMessage() }.getOrNull()
-            ?: raw.take(240).ifBlank { "HTTP $status" }
+        val message =
+            runCatching { JSONObject(raw).readErrorMessage() }.getOrNull()
+                ?: raw.take(240).ifBlank { "HTTP $status" }
         return AiServiceException("AI API failed ($status): $message")
     }
 }

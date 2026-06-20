@@ -224,8 +224,6 @@
     <string name="enable_dynamic_theme">Activar el tema dinámico</string>
     <string name="random_theme_on_startup">Tema aleatorio al inicio</string>
     <string name="random_theme_on_startup_desc">Aplicar paletas de colores aleatorias cada vez que la aplicación se inicie</string>
-    <string name="use_system_font">Usar fuente del sistema</string>
-    <string name="use_system_font_desc">Utilizar la fuente del dispositivo en lugar de la fuente de la aplicación</string>
     <string name="color_palette">Paleta de color</string>
     <string name="customize_theme_colors">Elige los colores del tema de tu aplicación</string>
     <string name="selected_theme_color">Color del tema seleccionado</string>

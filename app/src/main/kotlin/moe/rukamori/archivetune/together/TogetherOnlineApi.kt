@@ -16,10 +16,10 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import java.util.concurrent.TimeUnit
 
 @Serializable
 data class TogetherOnlineCreateSessionRequest(
@@ -167,9 +167,7 @@ class TogetherOnlineApi(
             json.decodeFromString(TogetherOnlineCreateSessionResponse.serializer(), raw)
         }
 
-    suspend fun resolveCode(
-        code: String,
-    ): TogetherOnlineResolveResponse =
+    suspend fun resolveCode(code: String): TogetherOnlineResolveResponse =
         withRetry {
             val token = normalizedBearerTokenOrNull() ?: throw TogetherOnlineApiException("Together token is missing")
             val payload =

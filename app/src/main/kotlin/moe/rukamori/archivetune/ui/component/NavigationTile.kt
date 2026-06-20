@@ -43,12 +43,12 @@ fun NavigationTile(
         Box(
             contentAlignment = Alignment.Center,
             modifier =
-            Modifier
-                .size(56.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceContainer)
-                .focusable()
-                .clickable(onClick = onClick),
+                Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                    .focusable()
+                    .clickable(onClick = onClick),
         ) {
             Icon(
                 painter = painterResource(icon),

@@ -25,8 +25,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BasicAlertDialog
@@ -66,9 +66,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil3.annotation.ExperimentalCoilApi
 import coil3.imageLoader
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import moe.rukamori.archivetune.LocalPlayerAwareWindowInsets
 import moe.rukamori.archivetune.LocalPlayerConnection
@@ -92,6 +92,8 @@ import moe.rukamori.archivetune.ui.player.CanvasArtworkPlaybackCache
 import moe.rukamori.archivetune.ui.utils.backToMain
 import moe.rukamori.archivetune.ui.utils.formatFileSize
 import moe.rukamori.archivetune.utils.rememberPreference
+import moe.rukamori.archivetune.viewmodels.StorageCacheClearUiKind
+import moe.rukamori.archivetune.viewmodels.StorageCacheClearUiModel
 import moe.rukamori.archivetune.viewmodels.StorageFolderUiModel
 import moe.rukamori.archivetune.viewmodels.StorageLocationUiModel
 import moe.rukamori.archivetune.viewmodels.StorageLocationUiOptions
@@ -129,38 +131,47 @@ fun StorageSettings(
         }
     }
 
-    val downloadCacheDir = remember(context) {
-        StorageLocationRepository.cacheDirectory(context, StorageFolderKind.DOWNLOADS)
-    }
-    val playerCacheDir = remember(context) {
-        StorageLocationRepository.cacheDirectory(context, StorageFolderKind.SONG_CACHE)
-    }
-    val cacheSizeValues = remember {
-        listOf(0, 128, 256, 512, 1024, 2048, 4096, 8192)
-    }
-    val cacheSizeValuesWithUnlimited = remember {
-        cacheSizeValues + (-1)
-    }
-    val canvasCacheSizeValues = remember {
-        listOf(0, 64, 128, 256, 512, 1024, 2048, 4096, 8192, -1)
-    }
+    val downloadCacheDir =
+        remember(context) {
+            StorageLocationRepository.cacheDirectory(context, StorageFolderKind.DOWNLOADS)
+        }
+    val playerCacheDir =
+        remember(context) {
+            StorageLocationRepository.cacheDirectory(context, StorageFolderKind.SONG_CACHE)
+        }
+    val cacheSizeValues =
+        remember {
+            listOf(0, 128, 256, 512, 1024, 2048, 4096, 8192)
+        }
+    val cacheSizeValuesWithUnlimited =
+        remember {
+            cacheSizeValues + (-1)
+        }
+    val canvasCacheSizeValues =
+        remember {
+            listOf(0, 64, 128, 256, 512, 1024, 2048, 4096, 8192, -1)
+        }
 
-    val (smartTrimmer, onSmartTrimmerChange) = rememberPreference(
-        key = SmartTrimmerKey,
-        defaultValue = false,
-    )
-    val (maxImageCacheSize, onMaxImageCacheSizeChange) = rememberPreference(
-        key = MaxImageCacheSizeKey,
-        defaultValue = 512,
-    )
-    val (maxSongCacheSize, onMaxSongCacheSizeChange) = rememberPreference(
-        key = MaxSongCacheSizeKey,
-        defaultValue = 1024,
-    )
-    val (maxCanvasCacheSize, onMaxCanvasCacheSizeChange) = rememberPreference(
-        key = MaxCanvasCacheSizeKey,
-        defaultValue = 256,
-    )
+    val (smartTrimmer, onSmartTrimmerChange) =
+        rememberPreference(
+            key = SmartTrimmerKey,
+            defaultValue = false,
+        )
+    val (maxImageCacheSize, onMaxImageCacheSizeChange) =
+        rememberPreference(
+            key = MaxImageCacheSizeKey,
+            defaultValue = 512,
+        )
+    val (maxSongCacheSize, onMaxSongCacheSizeChange) =
+        rememberPreference(
+            key = MaxSongCacheSizeKey,
+            defaultValue = 1024,
+        )
+    val (maxCanvasCacheSize, onMaxCanvasCacheSizeChange) =
+        rememberPreference(
+            key = MaxCanvasCacheSizeKey,
+            defaultValue = 256,
+        )
     var clearCacheDialog by remember { mutableStateOf(false) }
     var clearDownloads by remember { mutableStateOf(false) }
     var clearImageCacheDialog by remember { mutableStateOf(false) }
@@ -170,39 +181,44 @@ fun StorageSettings(
     var downloadCacheSize by remember { mutableStateOf(0L) }
     var canvasCacheBytes by remember { mutableStateOf(0L) }
 
-    val maxImageCacheSizeBytes = if (maxImageCacheSize > 0) {
-        cacheSizeMegabytesToBytes(maxImageCacheSize)
-    } else {
-        0L
-    }
-    val imageCacheProgress by animateFloatAsState(
-        targetValue = if (maxImageCacheSizeBytes > 0) {
-            (imageCacheSize.toFloat() / maxImageCacheSizeBytes).coerceIn(0f, 1f)
+    val maxImageCacheSizeBytes =
+        if (maxImageCacheSize > 0) {
+            cacheSizeMegabytesToBytes(maxImageCacheSize)
         } else {
-            0f
-        },
+            0L
+        }
+    val imageCacheProgress by animateFloatAsState(
+        targetValue =
+            if (maxImageCacheSizeBytes > 0) {
+                (imageCacheSize.toFloat() / maxImageCacheSizeBytes).coerceIn(0f, 1f)
+            } else {
+                0f
+            },
         label = "imageCacheProgress",
     )
-    val maxSongCacheSizeBytes = if (maxSongCacheSize > 0) {
-        cacheSizeMegabytesToBytes(maxSongCacheSize)
-    } else {
-        0L
-    }
-    val playerCacheProgress by animateFloatAsState(
-        targetValue = if (maxSongCacheSizeBytes > 0) {
-            (playerCacheSize.toFloat() / maxSongCacheSizeBytes).coerceIn(0f, 1f)
+    val maxSongCacheSizeBytes =
+        if (maxSongCacheSize > 0) {
+            cacheSizeMegabytesToBytes(maxSongCacheSize)
         } else {
-            0f
-        },
+            0L
+        }
+    val playerCacheProgress by animateFloatAsState(
+        targetValue =
+            if (maxSongCacheSizeBytes > 0) {
+                (playerCacheSize.toFloat() / maxSongCacheSizeBytes).coerceIn(0f, 1f)
+            } else {
+                0f
+            },
         label = "playerCacheProgress",
     )
     val canvasCacheProgress by animateFloatAsState(
-        targetValue = if (maxCanvasCacheSize > 0) {
-            val maxCanvasCacheSizeBytes = cacheSizeMegabytesToBytes(maxCanvasCacheSize)
-            (canvasCacheBytes.toFloat() / maxCanvasCacheSizeBytes).coerceIn(0f, 1f)
-        } else {
-            0f
-        },
+        targetValue =
+            if (maxCanvasCacheSize > 0) {
+                val maxCanvasCacheSizeBytes = cacheSizeMegabytesToBytes(maxCanvasCacheSize)
+                (canvasCacheBytes.toFloat() / maxCanvasCacheSizeBytes).coerceIn(0f, 1f)
+            } else {
+                0f
+            },
         label = "canvasCacheProgress",
     )
     val isSmartTrimmerAvailable = maxImageCacheSize != 0 || maxSongCacheSize != 0
@@ -254,9 +270,10 @@ fun StorageSettings(
     }
     LaunchedEffect(Unit) {
         while (isActive) {
-            canvasCacheBytes = withContext(Dispatchers.IO) {
-                CanvasArtworkPlaybackCache.byteSize()
-            }
+            canvasCacheBytes =
+                withContext(Dispatchers.IO) {
+                    CanvasArtworkPlaybackCache.byteSize()
+                }
             delay(StorageRefreshIntervalMillis)
         }
     }
@@ -266,7 +283,12 @@ fun StorageSettings(
             Modifier
                 .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
                 .verticalScroll(rememberScrollState())
-                .padding(12.dp),
+                .padding(
+                    start = 12.dp,
+                    top = 12.dp,
+                    end = 12.dp,
+                    bottom = SettingsDimensions.ScreenBottomPadding,
+                ),
         ) {
             Spacer(
                 Modifier.windowInsetsPadding(
@@ -317,15 +339,16 @@ fun StorageSettings(
                 item {
                     ListPreference(
                         title = { Text(stringResource(R.string.max_song_cache_size)) },
-                        description = if (maxSongCacheSize == -1) {
-                            stringResource(R.string.size_used, formatFileSize(playerCacheSize))
-                        } else {
-                            stringResource(
-                                R.string.storage_size_ratio,
-                                formatFileSize(playerCacheSize),
-                                formatFileSize(maxSongCacheSizeBytes),
-                            )
-                        },
+                        description =
+                            if (maxSongCacheSize == -1) {
+                                stringResource(R.string.size_used, formatFileSize(playerCacheSize))
+                            } else {
+                                stringResource(
+                                    R.string.storage_size_ratio,
+                                    formatFileSize(playerCacheSize),
+                                    formatFileSize(maxSongCacheSizeBytes),
+                                )
+                            },
                         icon = {
                             Icon(
                                 painter = painterResource(R.drawable.ic_music),
@@ -374,17 +397,24 @@ fun StorageSettings(
                 item {
                     ListPreference(
                         title = { Text(stringResource(R.string.max_image_cache_size)) },
-                        description = when {
-                            maxImageCacheSize < 0 -> stringResource(R.string.size_used, formatFileSize(imageCacheSize))
-                            maxImageCacheSize > 0 -> {
-                                stringResource(
-                                    R.string.storage_size_ratio,
-                                    formatFileSize(imageCacheSize),
-                                    formatFileSize(maxImageCacheSizeBytes),
-                                )
-                            }
-                            else -> stringResource(R.string.disable)
-                        },
+                        description =
+                            when {
+                                maxImageCacheSize < 0 -> {
+                                    stringResource(R.string.size_used, formatFileSize(imageCacheSize))
+                                }
+
+                                maxImageCacheSize > 0 -> {
+                                    stringResource(
+                                        R.string.storage_size_ratio,
+                                        formatFileSize(imageCacheSize),
+                                        formatFileSize(maxImageCacheSizeBytes),
+                                    )
+                                }
+
+                                else -> {
+                                    stringResource(R.string.disable)
+                                }
+                            },
                         icon = {
                             Icon(
                                 painter = painterResource(R.drawable.image),
@@ -433,17 +463,24 @@ fun StorageSettings(
                 item {
                     ListPreference(
                         title = { Text(stringResource(R.string.max_cache_size)) },
-                        description = when {
-                            maxCanvasCacheSize < 0 -> stringResource(R.string.size_used, formatFileSize(canvasCacheBytes))
-                            maxCanvasCacheSize > 0 -> {
-                                stringResource(
-                                    R.string.storage_size_ratio,
-                                    formatFileSize(canvasCacheBytes),
-                                    formatFileSize(cacheSizeMegabytesToBytes(maxCanvasCacheSize)),
-                                )
-                            }
-                            else -> stringResource(R.string.disable)
-                        },
+                        description =
+                            when {
+                                maxCanvasCacheSize < 0 -> {
+                                    stringResource(R.string.size_used, formatFileSize(canvasCacheBytes))
+                                }
+
+                                maxCanvasCacheSize > 0 -> {
+                                    stringResource(
+                                        R.string.storage_size_ratio,
+                                        formatFileSize(canvasCacheBytes),
+                                        formatFileSize(cacheSizeMegabytesToBytes(maxCanvasCacheSize)),
+                                    )
+                                }
+
+                                else -> {
+                                    stringResource(R.string.disable)
+                                }
+                            },
                         icon = {
                             Icon(
                                 painter = painterResource(R.drawable.motion_photos_on),
@@ -507,10 +544,11 @@ fun StorageSettings(
 
         SnackbarHost(
             hostState = snackbarHostState,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom))
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom))
+                    .padding(16.dp),
         )
     }
 
@@ -527,6 +565,9 @@ fun StorageSettings(
     }
     successState?.model?.migration?.let { migration ->
         StorageMigrationProgressDialog(migration = migration)
+    }
+    successState?.model?.cacheClear?.let { cacheClear ->
+        StorageCacheClearProgressDialog(cacheClear = cacheClear)
     }
 }
 
@@ -556,7 +597,9 @@ private fun StorageFolderSection(
                 }
             }
 
-            StorageSettingsScreenState.Empty -> Unit
+            StorageSettingsScreenState.Empty -> {
+                Unit
+            }
 
             is StorageSettingsScreenState.Error -> {
                 item {
@@ -615,14 +658,13 @@ private fun StorageFolderPreference(
 }
 
 @Composable
-private fun StorageMigrationProgressDialog(
-    migration: StorageMigrationUiModel,
-) {
+private fun StorageMigrationProgressDialog(migration: StorageMigrationUiModel) {
     val progress = migration.percent / 100f
-    val progressText = when (migration.phase) {
-        StorageMigrationUiPhase.CACHE -> stringResource(R.string.storage_migration_cache_progress, migration.percent)
-        StorageMigrationUiPhase.DOWNLOADS -> stringResource(R.string.storage_migration_downloads_progress, migration.percent)
-    }
+    val progressText =
+        when (migration.phase) {
+            StorageMigrationUiPhase.CACHE -> stringResource(R.string.storage_migration_cache_progress, migration.percent)
+            StorageMigrationUiPhase.DOWNLOADS -> stringResource(R.string.storage_migration_downloads_progress, migration.percent)
+        }
 
     BasicAlertDialog(
         onDismissRequest = {},
@@ -636,9 +678,10 @@ private fun StorageMigrationProgressDialog(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-                modifier = Modifier
-                    .size(280.dp)
-                    .padding(24.dp),
+                modifier =
+                    Modifier
+                        .size(280.dp)
+                        .padding(24.dp),
             ) {
                 CircularWavyProgressIndicator(
                     progress = { progress },
@@ -653,6 +696,56 @@ private fun StorageMigrationProgressDialog(
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = stringResource(R.string.storage_migration_warning),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun StorageCacheClearProgressDialog(cacheClear: StorageCacheClearUiModel) {
+    val progress = cacheClear.percent / 100f
+    val progressText =
+        when (cacheClear.kind) {
+            StorageCacheClearUiKind.SONGS -> stringResource(R.string.storage_clear_song_cache_progress, cacheClear.percent)
+            StorageCacheClearUiKind.DOWNLOADS -> stringResource(R.string.storage_clear_downloads_progress, cacheClear.percent)
+            StorageCacheClearUiKind.IMAGES -> stringResource(R.string.storage_clear_image_cache_progress, cacheClear.percent)
+            StorageCacheClearUiKind.CANVAS -> stringResource(R.string.storage_clear_canvas_cache_progress, cacheClear.percent)
+        }
+
+    BasicAlertDialog(
+        onDismissRequest = {},
+        modifier = Modifier.padding(24.dp),
+    ) {
+        Surface(
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            tonalElevation = 6.dp,
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+                modifier =
+                    Modifier
+                        .size(280.dp)
+                        .padding(24.dp),
+            ) {
+                CircularWavyProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier.size(64.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = progressText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = stringResource(R.string.storage_cache_clear_warning),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                     textAlign = TextAlign.Center,
@@ -683,10 +776,11 @@ private fun StorageLocationPickerSheet(
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .padding(bottom = 28.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 28.dp),
         ) {
             Text(
                 text = stringResource(R.string.storage_location_sheet_title),
@@ -712,9 +806,10 @@ private fun StorageLocationPickerSheet(
                 enabled = canApplySelection,
                 shapes = ButtonDefaults.shapes(),
                 contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 56.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 56.dp),
             ) {
                 Text(stringResource(R.string.storage_location_apply))
             }
@@ -728,24 +823,27 @@ private fun StorageLocationOptionRow(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
-    val containerColor = if (selected) {
-        MaterialTheme.colorScheme.primaryContainer
-    } else {
-        MaterialTheme.colorScheme.surfaceContainer
-    }
-    val contentColor = if (selected) {
-        MaterialTheme.colorScheme.onPrimaryContainer
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }
+    val containerColor =
+        if (selected) {
+            MaterialTheme.colorScheme.primaryContainer
+        } else {
+            MaterialTheme.colorScheme.surfaceContainer
+        }
+    val contentColor =
+        if (selected) {
+            MaterialTheme.colorScheme.onPrimaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurface
+        }
 
     Surface(
         color = containerColor,
         contentColor = contentColor,
         shape = MaterialTheme.shapes.large,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -768,11 +866,12 @@ private fun StorageLocationOptionRow(
                 Text(
                     text = stringResource(R.string.storage_location_free, formatFileSize(option.availableBytes)),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (selected) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
+                    color =
+                        if (selected) {
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
                 )
             }
             if (selected) {
@@ -793,16 +892,19 @@ private fun storageLocationTitle(
     volumeLabel: String?,
 ): String =
     when (kind) {
-        StorageLocationKind.INTERNAL -> stringResource(R.string.storage_location_internal)
-        StorageLocationKind.REMOVABLE -> volumeLabel
-            ?.let { label -> stringResource(R.string.storage_location_removable_named, label) }
-            ?: stringResource(R.string.storage_location_removable)
+        StorageLocationKind.INTERNAL -> {
+            stringResource(R.string.storage_location_internal)
+        }
+
+        StorageLocationKind.REMOVABLE -> {
+            volumeLabel
+                ?.let { label -> stringResource(R.string.storage_location_removable_named, label) }
+                ?: stringResource(R.string.storage_location_removable)
+        }
     }
 
 @Composable
-private fun CacheUsagePreference(
-    progress: Float,
-) {
+private fun CacheUsagePreference(progress: Float) {
     val percentage = stringResource(R.string.percentage_format, (progress * 100).toInt())
     PreferenceEntry(
         title = {
@@ -825,5 +927,4 @@ private fun CacheUsagePreference(
 private const val StorageRefreshIntervalMillis = 500L
 private const val CacheSizeBytesPerMegabyte = 1024L * 1024L
 
-private fun cacheSizeMegabytesToBytes(sizeMegabytes: Int): Long =
-    sizeMegabytes.toLong().coerceAtLeast(0L) * CacheSizeBytesPerMegabyte
+private fun cacheSizeMegabytesToBytes(sizeMegabytes: Int): Long = sizeMegabytes.toLong().coerceAtLeast(0L) * CacheSizeBytesPerMegabyte

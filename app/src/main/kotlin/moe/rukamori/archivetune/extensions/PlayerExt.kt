@@ -61,11 +61,12 @@ fun Player.getQueueWindows(): List<Timeline.Window> {
             }
         }
         if (firstMediaItemIndex != C.INDEX_UNSET && queue.size < queueSize) {
-            firstMediaItemIndex = timeline.getPreviousWindowIndex(
-                firstMediaItemIndex,
-                REPEAT_MODE_OFF,
-                shuffleModeEnabled
-            )
+            firstMediaItemIndex =
+                timeline.getPreviousWindowIndex(
+                    firstMediaItemIndex,
+                    REPEAT_MODE_OFF,
+                    shuffleModeEnabled,
+                )
             if (firstMediaItemIndex != C.INDEX_UNSET) {
                 queue.addFirst(timeline.getWindow(firstMediaItemIndex, Timeline.Window()))
             }
@@ -81,11 +82,12 @@ fun Player.getCurrentQueueIndex(): Int {
     var index = 0
     var currentMediaItemIndex = currentMediaItemIndex
     while (currentMediaItemIndex != C.INDEX_UNSET) {
-        currentMediaItemIndex = currentTimeline.getPreviousWindowIndex(
-            currentMediaItemIndex,
-            REPEAT_MODE_OFF,
-            shuffleModeEnabled
-        )
+        currentMediaItemIndex =
+            currentTimeline.getPreviousWindowIndex(
+                currentMediaItemIndex,
+                REPEAT_MODE_OFF,
+                shuffleModeEnabled,
+            )
         if (currentMediaItemIndex != C.INDEX_UNSET) {
             index++
         }

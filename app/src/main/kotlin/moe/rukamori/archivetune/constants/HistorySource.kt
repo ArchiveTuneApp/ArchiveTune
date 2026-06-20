@@ -8,5 +8,6 @@
 package moe.rukamori.archivetune.constants
 
 enum class HistorySource {
-    LOCAL, REMOTE
+    LOCAL,
+    REMOTE,
 }

@@ -35,6 +35,7 @@ interface Queue {
             } else {
                 this
             }
+
         fun filterVideo(enabled: Boolean = true) =
             if (enabled) {
                 filterItems { it.mediaMetadata.extras?.getBoolean(ExtraIsMusicVideo, false) != true }
@@ -47,16 +48,17 @@ interface Queue {
 
             val currentIndex = mediaItemIndex.coerceIn(items.indices)
             var filteredIndex = 0
-            val filteredItems = buildList(items.size) {
-                items.forEachIndexed { index, item ->
-                    if (keep(item)) {
-                        if (index < currentIndex) {
-                            filteredIndex++
+            val filteredItems =
+                buildList(items.size) {
+                    items.forEachIndexed { index, item ->
+                        if (keep(item)) {
+                            if (index < currentIndex) {
+                                filteredIndex++
+                            }
+                            add(item)
                         }
-                        add(item)
                     }
                 }
-            }
 
             if (filteredItems.isEmpty()) {
                 return copy(items = emptyList(), mediaItemIndex = 0)

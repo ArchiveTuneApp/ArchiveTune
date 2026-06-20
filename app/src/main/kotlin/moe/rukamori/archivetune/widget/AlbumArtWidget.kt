@@ -43,11 +43,13 @@ import androidx.glance.unit.ColorProvider
 import moe.rukamori.archivetune.R
 
 class AlbumArtWidget : GlanceAppWidget() {
-
     override val stateDefinition = PreferencesGlanceStateDefinition
     override val sizeMode = SizeMode.Exact
 
-    override suspend fun provideGlance(context: Context, id: GlanceId) {
+    override suspend fun provideGlance(
+        context: Context,
+        id: GlanceId,
+    ) {
         provideContent {
             AlbumArtWidgetContent(context)
         }
@@ -60,11 +62,12 @@ private fun AlbumArtWidgetContent(context: Context) {
     val state = prefs.toWidgetPlaybackState(context)
 
     GlanceTheme(
-        colors = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            GlanceTheme.colors
-        } else {
-            ArchiveTuneWidgetColors.providers
-        },
+        colors =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                GlanceTheme.colors
+            } else {
+                ArchiveTuneWidgetColors.providers
+            },
     ) {
         val palette = rememberWidgetPalette(state.dominantColor)
         val size = LocalSize.current
@@ -73,12 +76,13 @@ private fun AlbumArtWidgetContent(context: Context) {
         val artworkCorner = if (minSide < 112.dp) 22.dp else 24.dp
 
         Box(
-            modifier = GlanceModifier
-                .fillMaxSize()
-                .background(palette.surface)
-                .cornerRadius(28.dp)
-                .padding(outerPadding)
-                .clickable(openArchiveTuneAction(context)),
+            modifier =
+                GlanceModifier
+                    .fillMaxSize()
+                    .background(palette.surface)
+                    .cornerRadius(28.dp)
+                    .padding(outerPadding)
+                    .clickable(openArchiveTuneAction(context)),
         ) {
             WidgetArtwork(
                 artPath = state.artPath,
@@ -103,21 +107,23 @@ private fun AlbumArtWidgetContent(context: Context) {
                     contentAlignment = Alignment.BottomCenter,
                 ) {
                     Box(
-                        modifier = GlanceModifier
-                            .padding(bottom = 8.dp)
-                            .height(44.dp)
-                            .background(palette.secondaryContainer)
-                            .cornerRadius(22.dp)
-                            .padding(start = 16.dp, end = 16.dp),
+                        modifier =
+                            GlanceModifier
+                                .padding(bottom = 8.dp)
+                                .height(44.dp)
+                                .background(palette.secondaryContainer)
+                                .cornerRadius(22.dp)
+                                .padding(start = 16.dp, end = 16.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
                             text = context.getString(R.string.widget_tap_to_open),
-                            style = TextStyle(
-                                color = palette.onSecondaryContainer,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium,
-                            ),
+                            style =
+                                TextStyle(
+                                    color = palette.onSecondaryContainer,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium,
+                                ),
                             maxLines = 1,
                         )
                     }
@@ -141,11 +147,12 @@ private fun AlbumArtControls(
     ) {
         if (showFullControls) {
             Row(
-                modifier = GlanceModifier
-                    .padding(bottom = 8.dp)
-                    .background(palette.secondaryContainer)
-                    .cornerRadius(25.dp)
-                    .padding(3.dp),
+                modifier =
+                    GlanceModifier
+                        .padding(bottom = 8.dp)
+                        .background(palette.secondaryContainer)
+                        .cornerRadius(25.dp)
+                        .padding(3.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 WidgetControlButton(
@@ -162,9 +169,10 @@ private fun AlbumArtControls(
                     modifier = GlanceModifier.size(56.dp),
                     action = playPauseAction(),
                     icon = if (state.isPlaying) R.drawable.pause else R.drawable.play,
-                    contentDescription = context.getString(
-                        if (state.isPlaying) R.string.widget_pause else R.string.play,
-                    ),
+                    contentDescription =
+                        context.getString(
+                            if (state.isPlaying) R.string.widget_pause else R.string.play,
+                        ),
                     backgroundColor = palette.primaryContainer,
                     contentColor = palette.onPrimaryContainer,
                     cornerRadius = if (state.isPlaying) 13.dp else 28.dp,
@@ -183,14 +191,16 @@ private fun AlbumArtControls(
             }
         } else {
             WidgetControlButton(
-                modifier = GlanceModifier
-                    .padding(bottom = 8.dp)
-                    .size(52.dp),
+                modifier =
+                    GlanceModifier
+                        .padding(bottom = 8.dp)
+                        .size(52.dp),
                 action = playPauseAction(),
                 icon = if (state.isPlaying) R.drawable.pause else R.drawable.play,
-                contentDescription = context.getString(
-                    if (state.isPlaying) R.string.widget_pause else R.string.play,
-                ),
+                contentDescription =
+                    context.getString(
+                        if (state.isPlaying) R.string.widget_pause else R.string.play,
+                    ),
                 backgroundColor = palette.primaryContainer,
                 contentColor = palette.onPrimaryContainer,
                 cornerRadius = if (state.isPlaying) 13.dp else 26.dp,

@@ -47,26 +47,29 @@ fun ChangelogScreen(
     var error by remember { mutableStateOf<String?>(null) }
 
     suspend fun loadReleases(forceRefresh: Boolean) {
-        val result = when (channel) {
-            UpdateChannel.DAILY_NIGHTLY -> Updater.getAllDailyNightlyReleases(forceRefresh = forceRefresh)
-            else -> Updater.getAllReleases(forceRefresh = forceRefresh)
-        }
-        result.onSuccess { r ->
-            releases = r
-            error = null
-        }.onFailure { e ->
-            if (releases.isEmpty()) {
-                error = e.message
+        val result =
+            when (channel) {
+                UpdateChannel.DAILY_NIGHTLY -> Updater.getAllDailyNightlyReleases(forceRefresh = forceRefresh)
+                else -> Updater.getAllReleases(forceRefresh = forceRefresh)
             }
-        }
+        result
+            .onSuccess { r ->
+                releases = r
+                error = null
+            }.onFailure { e ->
+                if (releases.isEmpty()) {
+                    error = e.message
+                }
+            }
         isLoading = false
     }
 
     LaunchedEffect(Unit) {
-        val cachedReleases = when (channel) {
-            UpdateChannel.DAILY_NIGHTLY -> Updater.getCachedDailyNightlyReleases()
-            else -> Updater.getCachedReleases()
-        }
+        val cachedReleases =
+            when (channel) {
+                UpdateChannel.DAILY_NIGHTLY -> Updater.getCachedDailyNightlyReleases()
+                else -> Updater.getCachedReleases()
+            }
         if (cachedReleases.isNotEmpty()) {
             releases = cachedReleases
             isLoading = false
@@ -89,37 +92,40 @@ fun ChangelogScreen(
                         )
                     }
                 },
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
             )
-        }
+        },
     ) { paddingValues ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .windowInsetsPadding(
-                    LocalPlayerAwareWindowInsets.current.only(
-                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
-                    )
-                )
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .windowInsetsPadding(
+                        LocalPlayerAwareWindowInsets.current.only(
+                            WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                        ),
+                    ),
         ) {
             when {
                 isLoading -> {
                     CircularWavyProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center)
+                        modifier = Modifier.align(Alignment.Center),
                     )
                 }
+
                 error != null && releases.isEmpty() -> {
                     Column(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        modifier =
+                            Modifier
+                                .align(Alignment.Center)
+                                .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Text(
                             text = stringResource(R.string.error_loading_changelog),
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.error
+                            color = MaterialTheme.colorScheme.error,
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         TextButton(onClick = {
@@ -133,29 +139,33 @@ fun ChangelogScreen(
                         }
                     }
                 }
+
                 releases.isEmpty() -> {
                     Text(
                         text = stringResource(R.string.no_releases),
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(16.dp),
-                        style = MaterialTheme.typography.bodyLarge
+                        modifier =
+                            Modifier
+                                .align(Alignment.Center)
+                                .padding(16.dp),
+                        style = MaterialTheme.typography.bodyLarge,
                     )
                 }
+
                 else -> {
                     LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         item { Spacer(modifier = Modifier.height(8.dp)) }
-                        
+
                         items(releases) { release ->
                             ReleaseCard(release = release)
                         }
-                        
-                        item { Spacer(modifier = Modifier.height(8.dp)) }
+
+                        item { Spacer(modifier = Modifier.height(SettingsDimensions.ScreenBottomPadding)) }
                     }
                 }
             }
@@ -167,50 +177,52 @@ fun ChangelogScreen(
 private fun ReleaseCard(release: ReleaseInfo) {
     val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
     val displayDateFormat = remember { SimpleDateFormat("MMMM d, yyyy", Locale.getDefault()) }
-    
-    val formattedDate = remember(release.publishedAt) {
-        try {
-            val date = dateFormat.parse(release.publishedAt.substring(0, 10))
-            date?.let { displayDateFormat.format(it) } ?: release.publishedAt
-        } catch (e: Exception) {
-            release.publishedAt
+
+    val formattedDate =
+        remember(release.publishedAt) {
+            try {
+                val date = dateFormat.parse(release.publishedAt.substring(0, 10))
+                date?.let { displayDateFormat.format(it) } ?: release.publishedAt
+            } catch (e: Exception) {
+                release.publishedAt
+            }
         }
-    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-        )
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+            ),
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = release.name.ifBlank { release.tagName },
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
                 )
                 Text(
                     text = formattedDate,
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            
+
             if (!release.body.isNullOrBlank()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 MarkdownText(
                     markdown = release.body,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
         }

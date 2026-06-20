@@ -56,14 +56,14 @@ object LrcLib {
         artist: String,
         title: String,
         album: String? = null,
-    ): List<Track> = client
-        .get("/api/search") {
-            parameter("track_name", title)
-            parameter("artist_name", artist)
-            if (album != null) parameter("album_name", album)
-        }
-        .body<List<Track>>()
-        .filter { track -> track.syncedLyrics.isUsableLyrics() || track.plainLyrics.isUsableLyrics() }
+    ): List<Track> =
+        client
+            .get("/api/search") {
+                parameter("track_name", title)
+                parameter("artist_name", artist)
+                if (album != null) parameter("album_name", album)
+            }.body<List<Track>>()
+            .filter { track -> track.syncedLyrics.isUsableLyrics() || track.plainLyrics.isUsableLyrics() }
 
     suspend fun getLyrics(
         title: String,
@@ -73,10 +73,11 @@ object LrcLib {
     ) = runCatching {
         val tracks = queryLyrics(artist, title, album)
 
-        val lyrics = when {
-            duration == -1 -> tracks.bestMatchingFor(duration, title, artist)?.preferredLyrics()
-            else -> tracks.bestMatchingFor(duration)?.preferredLyrics()
-        } ?: throw IllegalStateException("Lyrics unavailable")
+        val lyrics =
+            when {
+                duration == -1 -> tracks.bestMatchingFor(duration, title, artist)?.preferredLyrics()
+                else -> tracks.bestMatchingFor(duration)?.preferredLyrics()
+            } ?: throw IllegalStateException("Lyrics unavailable")
 
         lyrics
     }
@@ -92,18 +93,24 @@ object LrcLib {
         var count = 0
         var emittedPlainLyrics = false
 
-        val sortedTracks = when {
-            duration == -1 -> tracks.sortedByDescending { track ->
-                var score = 0.0
-                if (track.syncedLyrics.isUsableLyrics()) score += 1.0
-                if (track.plainLyrics.isUsableLyrics()) score += 0.25
+        val sortedTracks =
+            when {
+                duration == -1 -> {
+                    tracks.sortedByDescending { track ->
+                        var score = 0.0
+                        if (track.syncedLyrics.isUsableLyrics()) score += 1.0
+                        if (track.plainLyrics.isUsableLyrics()) score += 0.25
 
-                val titleSimilarity = calculateStringSimilarity(title, track.trackName)
-                val artistSimilarity = calculateStringSimilarity(artist, track.artistName)
-                score + (titleSimilarity + artistSimilarity) / 2.0
+                        val titleSimilarity = calculateStringSimilarity(title, track.trackName)
+                        val artistSimilarity = calculateStringSimilarity(artist, track.artistName)
+                        score + (titleSimilarity + artistSimilarity) / 2.0
+                    }
+                }
+
+                else -> {
+                    tracks.sortedBy { track -> abs(track.duration.toInt() - duration) }
+                }
             }
-            else -> tracks.sortedBy { track -> abs(track.duration.toInt() - duration) }
-        }
 
         sortedTracks.forEach { track ->
             currentCoroutineContext().ensureActive()
@@ -128,13 +135,14 @@ object LrcLib {
     private fun Track.matchesDuration(duration: Int): Boolean =
         duration == -1 || abs(this.duration.toInt() - duration) <= MAX_DURATION_DELTA_SECONDS
 
-    private fun Track.preferredLyrics(): String? =
-        syncedLyrics.takeIf { it.isUsableLyrics() } ?: plainLyrics.takeIf { it.isUsableLyrics() }
+    private fun Track.preferredLyrics(): String? = syncedLyrics.takeIf { it.isUsableLyrics() } ?: plainLyrics.takeIf { it.isUsableLyrics() }
 
-    private fun String?.isUsableLyrics(): Boolean =
-        !isNullOrBlank()
+    private fun String?.isUsableLyrics(): Boolean = !isNullOrBlank()
 
-    private fun calculateStringSimilarity(str1: String, str2: String): Double {
+    private fun calculateStringSimilarity(
+        str1: String,
+        str2: String,
+    ): Double {
         val s1 = str1.trim().lowercase()
         val s2 = str2.trim().lowercase()
 
@@ -142,7 +150,10 @@ object LrcLib {
         if (s1.isEmpty() || s2.isEmpty()) return 0.0
 
         return when {
-            s1.contains(s2) || s2.contains(s1) -> 0.8
+            s1.contains(s2) || s2.contains(s1) -> {
+                0.8
+            }
+
             else -> {
                 val maxLength = maxOf(s1.length, s2.length)
                 val distance = levenshteinDistance(s1, s2)
@@ -151,7 +162,10 @@ object LrcLib {
         }
     }
 
-    private fun levenshteinDistance(str1: String, str2: String): Int {
+    private fun levenshteinDistance(
+        str1: String,
+        str2: String,
+    ): Int {
         val len1 = str1.length
         val len2 = str2.length
         val matrix = Array(len1 + 1) { IntArray(len2 + 1) }
@@ -162,11 +176,12 @@ object LrcLib {
         for (i in 1..len1) {
             for (j in 1..len2) {
                 val cost = if (str1[i - 1] == str2[j - 1]) 0 else 1
-                matrix[i][j] = minOf(
-                    matrix[i - 1][j] + 1,
-                    matrix[i][j - 1] + 1,
-                    matrix[i - 1][j - 1] + cost,
-                )
+                matrix[i][j] =
+                    minOf(
+                        matrix[i - 1][j] + 1,
+                        matrix[i][j - 1] + 1,
+                        matrix[i - 1][j - 1] + cost,
+                    )
             }
         }
 

@@ -44,11 +44,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.key
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -73,8 +73,8 @@ import moe.rukamori.archivetune.constants.EnablePaxsenixAppleMusicLyricsKey
 import moe.rukamori.archivetune.constants.EnablePaxsenixLyricsKey
 import moe.rukamori.archivetune.constants.EnablePaxsenixMusixmatchLyricsKey
 import moe.rukamori.archivetune.constants.EnablePaxsenixNeteaseLyricsKey
-import moe.rukamori.archivetune.constants.EnablePaxsenixYouTubeLyricsKey
 import moe.rukamori.archivetune.constants.EnablePaxsenixSpotifyLyricsKey
+import moe.rukamori.archivetune.constants.EnablePaxsenixYouTubeLyricsKey
 import moe.rukamori.archivetune.constants.EnableSimpMusicLyricsKey
 import moe.rukamori.archivetune.constants.EnableUnisonLyricsKey
 import moe.rukamori.archivetune.constants.LyricsClickKey
@@ -98,8 +98,8 @@ import moe.rukamori.archivetune.paxsenix.models.PaxsenixStats
 import moe.rukamori.archivetune.paxsenix.models.ProviderStats
 import moe.rukamori.archivetune.ui.component.ActionPromptDialog
 import moe.rukamori.archivetune.ui.component.DefaultDialog
-import moe.rukamori.archivetune.ui.component.IconButton
 import moe.rukamori.archivetune.ui.component.EnumListPreference
+import moe.rukamori.archivetune.ui.component.IconButton
 import moe.rukamori.archivetune.ui.component.NumberPickerPreference
 import moe.rukamori.archivetune.ui.component.PreferenceEntry
 import moe.rukamori.archivetune.ui.component.PreferenceGroup
@@ -129,7 +129,7 @@ fun LyricsSettings(
                 viewModel.clearLyricsCache()
                 showClearLyricsDialog = false
             },
-            onCancel = { showClearLyricsDialog = false }
+            onCancel = { showClearLyricsDialog = false },
         ) {
             Text(stringResource(R.string.clear_lyrics_cache_confirm))
         }
@@ -159,26 +159,56 @@ fun LyricsSettings(
     val (enableBetterLyrics, onEnableBetterLyricsChange) = rememberPreference(key = EnableBetterLyricsKey, defaultValue = true)
     val (enableSimpMusicLyrics, onEnableSimpMusicLyricsChange) = rememberPreference(key = EnableSimpMusicLyricsKey, defaultValue = true)
     val (enablePaxsenixLyrics, onEnablePaxsenixLyricsChange) = rememberPreference(key = EnablePaxsenixLyricsKey, defaultValue = true)
-    val (enablePaxsenixAppleMusicLyrics, onEnablePaxsenixAppleMusicLyricsChange) = rememberPreference(key = EnablePaxsenixAppleMusicLyricsKey, defaultValue = true)
-    val (enablePaxsenixNeteaseLyrics, onEnablePaxsenixNeteaseLyricsChange) = rememberPreference(key = EnablePaxsenixNeteaseLyricsKey, defaultValue = true)
-    val (enablePaxsenixSpotifyLyrics, onEnablePaxsenixSpotifyLyricsChange) = rememberPreference(key = EnablePaxsenixSpotifyLyricsKey, defaultValue = true)
-    val (enablePaxsenixMusixmatchLyrics, onEnablePaxsenixMusixmatchLyricsChange) = rememberPreference(key = EnablePaxsenixMusixmatchLyricsKey, defaultValue = true)
-    val (enablePaxsenixYouTubeLyrics, onEnablePaxsenixYouTubeLyricsChange) = rememberPreference(key = EnablePaxsenixYouTubeLyricsKey, defaultValue = true)
+    val (enablePaxsenixAppleMusicLyrics, onEnablePaxsenixAppleMusicLyricsChange) =
+        rememberPreference(
+            key = EnablePaxsenixAppleMusicLyricsKey,
+            defaultValue = true,
+        )
+    val (enablePaxsenixNeteaseLyrics, onEnablePaxsenixNeteaseLyricsChange) =
+        rememberPreference(
+            key = EnablePaxsenixNeteaseLyricsKey,
+            defaultValue = true,
+        )
+    val (enablePaxsenixSpotifyLyrics, onEnablePaxsenixSpotifyLyricsChange) =
+        rememberPreference(
+            key = EnablePaxsenixSpotifyLyricsKey,
+            defaultValue = true,
+        )
+    val (enablePaxsenixMusixmatchLyrics, onEnablePaxsenixMusixmatchLyricsChange) =
+        rememberPreference(
+            key = EnablePaxsenixMusixmatchLyricsKey,
+            defaultValue = true,
+        )
+    val (enablePaxsenixYouTubeLyrics, onEnablePaxsenixYouTubeLyricsChange) =
+        rememberPreference(
+            key = EnablePaxsenixYouTubeLyricsKey,
+            defaultValue = true,
+        )
     val (enableUnisonLyrics, onEnableUnisonLyricsChange) = rememberPreference(key = EnableUnisonLyricsKey, defaultValue = true)
-    val (providerOrderStr, onProviderOrderStrChange) = rememberPreference(
-        key = LyricsProviderOrderKey,
-        defaultValue = "",
-    )
-    val providerOrder = remember(providerOrderStr) {
-        deserializeLyricsProviderOrder(providerOrderStr)
-    }
+    val (providerOrderStr, onProviderOrderStrChange) =
+        rememberPreference(
+            key = LyricsProviderOrderKey,
+            defaultValue = "",
+        )
+    val providerOrder =
+        remember(providerOrderStr) {
+            deserializeLyricsProviderOrder(providerOrderStr)
+        }
     val (lyricsLineBlur, onLyricsLineBlurChange) = rememberPreference(LyricsLineBlurKey, defaultValue = true)
     val (lyricsRomanizeJapanese, onLyricsRomanizeJapaneseChange) = rememberPreference(LyricsRomanizeJapaneseKey, defaultValue = true)
     val (lyricsRomanizeKorean, onLyricsRomanizeKoreanChange) = rememberPreference(LyricsRomanizeKoreanKey, defaultValue = true)
     val (lyricsRomanizeChinese, onLyricsRomanizeChineseChange) = rememberPreference(LyricsRomanizeChineseKey, defaultValue = true)
     val (lyricsRomanizeHindi, onLyricsRomanizeHindiChange) = rememberPreference(LyricsRomanizeHindiKey, defaultValue = true)
-    val (lyricsRomanizeOtherLanguages, onLyricsRomanizeOtherLanguagesChange) = rememberPreference(LyricsRomanizeOtherLanguagesKey, defaultValue = true)
-    val (preloadQueueLyricsEnabled, onPreloadQueueLyricsEnabledChange) = rememberPreference(PreloadQueueLyricsEnabledKey, defaultValue = true)
+    val (lyricsRomanizeOtherLanguages, onLyricsRomanizeOtherLanguagesChange) =
+        rememberPreference(
+            LyricsRomanizeOtherLanguagesKey,
+            defaultValue = true,
+        )
+    val (preloadQueueLyricsEnabled, onPreloadQueueLyricsEnabledChange) =
+        rememberPreference(
+            PreloadQueueLyricsEnabledKey,
+            defaultValue = true,
+        )
     val (queueLyricsPreloadCount, onQueueLyricsPreloadCountChange) = rememberPreference(QueueLyricsPreloadCountKey, defaultValue = 1)
 
     var showProviderOrderDialog by rememberSaveable { mutableStateOf(false) }
@@ -197,7 +227,8 @@ fun LyricsSettings(
     Column(
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .padding(bottom = SettingsDimensions.ScreenBottomPadding),
     ) {
         var showLyricsTextSizeDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -237,22 +268,22 @@ fun LyricsSettings(
                     ) {
                         Text(stringResource(android.R.string.ok))
                     }
-                }
+                },
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(16.dp),
                 ) {
                     Text(
                         text = stringResource(R.string.lyrics_text_size),
                         style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier.padding(bottom = 16.dp),
                     )
 
                     Text(
                         text = "${tempTextSize.roundToInt()} sp",
                         style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier.padding(bottom = 16.dp),
                     )
 
                     Slider(
@@ -260,7 +291,7 @@ fun LyricsSettings(
                         onValueChange = { tempTextSize = it },
                         valueRange = 16f..36f,
                         steps = 19,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
             }
@@ -304,22 +335,22 @@ fun LyricsSettings(
                     ) {
                         Text(stringResource(android.R.string.ok))
                     }
-                }
+                },
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(16.dp),
                 ) {
                     Text(
                         text = stringResource(R.string.lyrics_line_spacing),
                         style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier.padding(bottom = 16.dp),
                     )
 
                     Text(
                         text = "${String.format("%.1f", tempLineSpacing)}x",
                         style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier.padding(bottom = 16.dp),
                     )
 
                     Slider(
@@ -327,7 +358,7 @@ fun LyricsSettings(
                         onValueChange = { tempLineSpacing = it },
                         valueRange = 1.0f..2.0f,
                         steps = 19,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
             }
@@ -393,7 +424,7 @@ fun LyricsSettings(
                     title = { Text(stringResource(R.string.lyrics_text_size)) },
                     description = "${lyricsTextSize.roundToInt()} sp",
                     icon = { Icon(painterResource(R.drawable.text_fields), null) },
-                    onClick = { showLyricsTextSizeDialog = true }
+                    onClick = { showLyricsTextSizeDialog = true },
                 )
             }
 
@@ -402,7 +433,7 @@ fun LyricsSettings(
                     title = { Text(stringResource(R.string.lyrics_line_spacing)) },
                     description = "${String.format("%.1f", lyricsLineSpacing)}x",
                     icon = { Icon(painterResource(R.drawable.text_fields), null) },
-                    onClick = { showLyricsLineSpacingDialog = true }
+                    onClick = { showLyricsLineSpacingDialog = true },
                 )
             }
         }
@@ -618,24 +649,25 @@ fun LyricsSettings(
                     contentDescription = null,
                 )
             }
-        }
+        },
     )
 }
 
 private enum class PaxsenixServerStatus { Operational, Degraded, Down }
 
-private fun PreferredLyricsProvider.displayName(): String = when (this) {
-    PreferredLyricsProvider.LRCLIB -> "LrcLib"
-    PreferredLyricsProvider.KUGOU -> "KuGou"
-    PreferredLyricsProvider.BETTER_LYRICS -> "BetterLyrics"
-    PreferredLyricsProvider.SIMPMUSIC -> "SimpMusic"
-    PreferredLyricsProvider.PAXSENIX_APPLE_MUSIC -> "Paxsenix: Apple Music"
-    PreferredLyricsProvider.PAXSENIX_NETEASE -> "Paxsenix: NetEase"
-    PreferredLyricsProvider.PAXSENIX_SPOTIFY -> "Paxsenix: Spotify"
-    PreferredLyricsProvider.PAXSENIX_MUSIXMATCH -> "Paxsenix: Musixmatch"
-    PreferredLyricsProvider.PAXSENIX_YOUTUBE -> "Paxsenix: YouTube"
-    PreferredLyricsProvider.UNISON -> "Unison"
-}
+private fun PreferredLyricsProvider.displayName(): String =
+    when (this) {
+        PreferredLyricsProvider.LRCLIB -> "LrcLib"
+        PreferredLyricsProvider.KUGOU -> "KuGou"
+        PreferredLyricsProvider.BETTER_LYRICS -> "BetterLyrics"
+        PreferredLyricsProvider.SIMPMUSIC -> "SimpMusic"
+        PreferredLyricsProvider.PAXSENIX_APPLE_MUSIC -> "Paxsenix: Apple Music"
+        PreferredLyricsProvider.PAXSENIX_NETEASE -> "Paxsenix: NetEase"
+        PreferredLyricsProvider.PAXSENIX_SPOTIFY -> "Paxsenix: Spotify"
+        PreferredLyricsProvider.PAXSENIX_MUSIXMATCH -> "Paxsenix: Musixmatch"
+        PreferredLyricsProvider.PAXSENIX_YOUTUBE -> "Paxsenix: YouTube"
+        PreferredLyricsProvider.UNISON -> "Unison"
+    }
 
 @Composable
 private fun LyricsProviderOrderDialog(
@@ -645,10 +677,11 @@ private fun LyricsProviderOrderDialog(
 ) {
     val providers = remember { mutableStateListOf(*initialOrder.toTypedArray()) }
     val lazyListState = rememberLazyListState()
-    val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
-        val item = providers.removeAt(from.index)
-        providers.add(to.index, item)
-    }
+    val reorderableState =
+        rememberReorderableLazyListState(lazyListState) { from, to ->
+            val item = providers.removeAt(from.index)
+            providers.add(to.index, item)
+        }
 
     DefaultDialog(
         onDismiss = onDismiss,
@@ -676,29 +709,35 @@ private fun LyricsProviderOrderDialog(
             )
             LazyColumn(
                 state = lazyListState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 440.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 440.dp),
             ) {
                 itemsIndexed(providers, key = { _, item -> item.name }) { index, provider ->
                     ReorderableItem(reorderableState, key = provider.name) {
                         val isFirst = index == 0
-                        val containerColor = if (isFirst)
-                            MaterialTheme.colorScheme.primaryContainer
-                        else
-                            MaterialTheme.colorScheme.surfaceContainerHigh
-                        val contentColor = if (isFirst)
-                            MaterialTheme.colorScheme.onPrimaryContainer
-                        else
-                            MaterialTheme.colorScheme.onSurface
+                        val containerColor =
+                            if (isFirst) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.surfaceContainerHigh
+                            }
+                        val contentColor =
+                            if (isFirst) {
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            }
 
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = if (index < providers.size - 1) 4.dp else 0.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(containerColor)
-                                .padding(horizontal = 12.dp, vertical = 10.dp),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = if (index < providers.size - 1) 4.dp else 0.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(containerColor)
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
@@ -718,9 +757,10 @@ private fun LyricsProviderOrderDialog(
                                 painter = painterResource(R.drawable.drag_handle),
                                 contentDescription = null,
                                 tint = contentColor.copy(alpha = 0.6f),
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .draggableHandle(),
+                                modifier =
+                                    Modifier
+                                        .size(20.dp)
+                                        .draggableHandle(),
                             )
                         }
                     }
@@ -729,11 +769,13 @@ private fun LyricsProviderOrderDialog(
         }
     }
 }
-private fun successRateToStatus(rate: Float): PaxsenixServerStatus = when {
-    rate >= 90f -> PaxsenixServerStatus.Operational
-    rate >= 70f -> PaxsenixServerStatus.Degraded
-    else -> PaxsenixServerStatus.Down
-}
+
+private fun successRateToStatus(rate: Float): PaxsenixServerStatus =
+    when {
+        rate >= 90f -> PaxsenixServerStatus.Operational
+        rate >= 70f -> PaxsenixServerStatus.Degraded
+        else -> PaxsenixServerStatus.Down
+    }
 
 private fun formatUptimeSeconds(seconds: Double): String {
     val total = seconds.toLong()
@@ -773,14 +815,15 @@ private fun PaxsenixStatsDialog(
             TextButton(onClick = onDismiss) {
                 Text(stringResource(android.R.string.ok))
             }
-        }
+        },
     ) {
         when (state) {
             PaxsenixStatsState.Loading -> {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 24.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 24.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     LoadingIndicator()
@@ -789,9 +832,10 @@ private fun PaxsenixStatsDialog(
 
             PaxsenixStatsState.Error -> {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
@@ -818,14 +862,16 @@ private fun PaxsenixStatsDialog(
 
 @Composable
 private fun PaxsenixStatsContent(stats: PaxsenixStats) {
-    val overallRate = remember(stats.overallSuccessRate) {
-        stats.overallSuccessRate.trimEnd('%').toFloatOrNull() ?: 0f
-    }
+    val overallRate =
+        remember(stats.overallSuccessRate) {
+            stats.overallSuccessRate.trimEnd('%').toFloatOrNull() ?: 0f
+        }
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState()),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         PaxsenixStatusBar(successRate = overallRate)
@@ -906,17 +952,21 @@ private fun PaxsenixStatsContent(stats: PaxsenixStats) {
                     key(entry.timestamp + entry.endpoint) {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (entry.success)
-                                    MaterialTheme.colorScheme.surfaceContainerHigh
-                                else
-                                    MaterialTheme.colorScheme.errorContainer,
-                            ),
+                            colors =
+                                CardDefaults.cardColors(
+                                    containerColor =
+                                        if (entry.success) {
+                                            MaterialTheme.colorScheme.surfaceContainerHigh
+                                        } else {
+                                            MaterialTheme.colorScheme.errorContainer
+                                        },
+                                ),
                         ) {
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 10.dp, vertical = 6.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
@@ -930,19 +980,23 @@ private fun PaxsenixStatsContent(stats: PaxsenixStats) {
                                     Text(
                                         text = entry.provider,
                                         style = MaterialTheme.typography.labelSmall,
-                                        color = if (entry.success)
-                                            MaterialTheme.colorScheme.onSurfaceVariant
-                                        else
-                                            MaterialTheme.colorScheme.onErrorContainer,
+                                        color =
+                                            if (entry.success) {
+                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                            } else {
+                                                MaterialTheme.colorScheme.onErrorContainer
+                                            },
                                     )
                                 }
                                 Text(
                                     text = "${entry.responseTimeMs.toInt()}ms",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = if (entry.success)
-                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                    else
-                                        MaterialTheme.colorScheme.onErrorContainer,
+                                    color =
+                                        if (entry.success) {
+                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                        } else {
+                                            MaterialTheme.colorScheme.onErrorContainer
+                                        },
                                 )
                             }
                         }
@@ -956,27 +1010,31 @@ private fun PaxsenixStatsContent(stats: PaxsenixStats) {
 @Composable
 private fun PaxsenixStatusBar(successRate: Float) {
     val status = remember(successRate) { successRateToStatus(successRate) }
-    val statusColor = when (status) {
-        PaxsenixServerStatus.Operational -> Color(0xFF4CAF50)
-        PaxsenixServerStatus.Degraded -> Color(0xFFFF9800)
-        PaxsenixServerStatus.Down -> MaterialTheme.colorScheme.error
-    }
-    val statusLabel = when (status) {
-        PaxsenixServerStatus.Operational -> stringResource(R.string.paxsenix_status_operational)
-        PaxsenixServerStatus.Degraded -> stringResource(R.string.paxsenix_status_degraded)
-        PaxsenixServerStatus.Down -> stringResource(R.string.paxsenix_status_down)
-    }
+    val statusColor =
+        when (status) {
+            PaxsenixServerStatus.Operational -> Color(0xFF4CAF50)
+            PaxsenixServerStatus.Degraded -> Color(0xFFFF9800)
+            PaxsenixServerStatus.Down -> MaterialTheme.colorScheme.error
+        }
+    val statusLabel =
+        when (status) {
+            PaxsenixServerStatus.Operational -> stringResource(R.string.paxsenix_status_operational)
+            PaxsenixServerStatus.Degraded -> stringResource(R.string.paxsenix_status_degraded)
+            PaxsenixServerStatus.Down -> stringResource(R.string.paxsenix_status_down)
+        }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            ),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 10.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -985,10 +1043,11 @@ private fun PaxsenixStatusBar(successRate: Float) {
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Box(
-                    modifier = Modifier
-                        .size(10.dp)
-                        .clip(CircleShape)
-                        .background(statusColor),
+                    modifier =
+                        Modifier
+                            .size(10.dp)
+                            .clip(CircleShape)
+                            .background(statusColor),
                 )
                 Text(
                     text = statusLabel,
@@ -1006,16 +1065,21 @@ private fun PaxsenixStatusBar(successRate: Float) {
 }
 
 @Composable
-private fun PaxsenixProviderRow(name: String, providerStats: ProviderStats) {
-    val rate = remember(providerStats.successRate) {
-        providerStats.successRate.trimEnd('%').toFloatOrNull() ?: 0f
-    }
+private fun PaxsenixProviderRow(
+    name: String,
+    providerStats: ProviderStats,
+) {
+    val rate =
+        remember(providerStats.successRate) {
+            providerStats.successRate.trimEnd('%').toFloatOrNull() ?: 0f
+        }
     val status = remember(rate) { successRateToStatus(rate) }
-    val dotColor = when (status) {
-        PaxsenixServerStatus.Operational -> Color(0xFF4CAF50)
-        PaxsenixServerStatus.Degraded -> Color(0xFFFF9800)
-        PaxsenixServerStatus.Down -> MaterialTheme.colorScheme.error
-    }
+    val dotColor =
+        when (status) {
+            PaxsenixServerStatus.Operational -> Color(0xFF4CAF50)
+            PaxsenixServerStatus.Degraded -> Color(0xFFFF9800)
+            PaxsenixServerStatus.Down -> MaterialTheme.colorScheme.error
+        }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -1028,10 +1092,11 @@ private fun PaxsenixProviderRow(name: String, providerStats: ProviderStats) {
             modifier = Modifier.weight(1f),
         ) {
             Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .clip(CircleShape)
-                    .background(dotColor),
+                modifier =
+                    Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(dotColor),
             )
             Text(
                 text = name,

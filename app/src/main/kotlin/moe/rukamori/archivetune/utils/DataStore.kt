@@ -20,11 +20,6 @@ import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
-import moe.rukamori.archivetune.constants.HISTORY_DURATION_LEGACY_FLOAT_KEY
-import moe.rukamori.archivetune.constants.HISTORY_DURATION_MIN
-import moe.rukamori.archivetune.constants.HISTORY_DURATION_MAX
-import moe.rukamori.archivetune.constants.HistoryDuration
-import moe.rukamori.archivetune.extensions.toEnum
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -35,6 +30,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
+import moe.rukamori.archivetune.constants.HISTORY_DURATION_LEGACY_FLOAT_KEY
+import moe.rukamori.archivetune.constants.HISTORY_DURATION_MAX
+import moe.rukamori.archivetune.constants.HISTORY_DURATION_MIN
+import moe.rukamori.archivetune.constants.HistoryDuration
+import moe.rukamori.archivetune.extensions.toEnum
 import kotlin.properties.ReadOnlyProperty
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
@@ -50,21 +50,24 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
                     currentData.toMutablePreferences().apply {
                         val oldFloat = currentData[HISTORY_DURATION_LEGACY_FLOAT_KEY]
                         if (oldFloat != null) {
-                            this[HistoryDuration] = oldFloat
-                                .toInt()
-                                .coerceIn(HISTORY_DURATION_MIN, HISTORY_DURATION_MAX)
+                            this[HistoryDuration] =
+                                oldFloat
+                                    .toInt()
+                                    .coerceIn(HISTORY_DURATION_MIN, HISTORY_DURATION_MAX)
                             this.remove(HISTORY_DURATION_LEGACY_FLOAT_KEY)
                         }
                     }
 
                 override suspend fun cleanUp() {}
-            }
+            },
         )
     },
 )
+
 object PreferenceStore {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val _prefs = MutableStateFlow<Preferences?>(null)
+
     @Volatile private var started = false
 
     fun start(context: Context) {
@@ -121,8 +124,7 @@ fun <T> DataStore<Preferences>.get(
             }
         }
 
-suspend fun <T> DataStore<Preferences>.getAsync(key: Preferences.Key<T>): T? =
-    data.first()[key]
+suspend fun <T> DataStore<Preferences>.getAsync(key: Preferences.Key<T>): T? = data.first()[key]
 
 suspend fun <T> DataStore<Preferences>.getAsync(
     key: Preferences.Key<T>,

@@ -30,10 +30,10 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun Material3SettingsGroup(
     title: String? = null,
-    items: List<Material3SettingsItem>
+    items: List<Material3SettingsItem>,
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         // Section title
         title?.let {
@@ -42,26 +42,28 @@ fun Material3SettingsGroup(
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(start = 16.dp, bottom = 8.dp, top = 8.dp)
+                modifier = Modifier.padding(start = 16.dp, bottom = 8.dp, top = 8.dp),
             )
         }
-        
+
         // Settings card
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .animateContentSize(),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .animateContentSize(),
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         ) {
             Column {
                 items.forEachIndexed { index, item ->
                     Material3SettingsItemRow(
                         item = item,
-                        showDivider = index < items.size - 1
+                        showDivider = index < items.size - 1,
                     )
                 }
             }
@@ -75,98 +77,104 @@ fun Material3SettingsGroup(
 @Composable
 private fun Material3SettingsItemRow(
     item: Material3SettingsItem,
-    showDivider: Boolean
+    showDivider: Boolean,
 ) {
     Column {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .then(if (item.onClick != null) Modifier.focusable() else Modifier)
-                .clickable(
-                    enabled = item.onClick != null,
-                    onClick = { item.onClick?.invoke() }
-                )
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .then(if (item.onClick != null) Modifier.focusable() else Modifier)
+                    .clickable(
+                        enabled = item.onClick != null,
+                        onClick = { item.onClick?.invoke() },
+                    ).padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             // Icon with background
             item.icon?.let { icon ->
                 Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(
-                            MaterialTheme.colorScheme.primary.copy(
-                                alpha = if (item.isHighlighted) 0.15f else 0.1f
-                            )
-                        ),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(
+                                MaterialTheme.colorScheme.primary.copy(
+                                    alpha = if (item.isHighlighted) 0.15f else 0.1f,
+                                ),
+                            ),
+                    contentAlignment = Alignment.Center,
                 ) {
                     if (item.showBadge) {
                         BadgedBox(
-                            badge = { 
+                            badge = {
                                 Badge(
-                                    containerColor = MaterialTheme.colorScheme.error
+                                    containerColor = MaterialTheme.colorScheme.error,
                                 )
-                            }
+                            },
                         ) {
                             Icon(
                                 painter = icon,
                                 contentDescription = null,
-                                tint = if (item.isHighlighted) 
-                                    MaterialTheme.colorScheme.primary 
-                                else 
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
-                                modifier = Modifier.size(24.dp)
+                                tint =
+                                    if (item.isHighlighted) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
+                                    },
+                                modifier = Modifier.size(24.dp),
                             )
                         }
                     } else {
                         Icon(
                             painter = icon,
                             contentDescription = null,
-                            tint = if (item.isHighlighted) 
-                                MaterialTheme.colorScheme.primary 
-                            else 
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
-                            modifier = Modifier.size(24.dp)
+                            tint =
+                                if (item.isHighlighted) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
+                                },
+                            modifier = Modifier.size(24.dp),
                         )
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.width(16.dp))
             }
-            
+
             // Title and description
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) {
                 // Title content (can be Text or custom composable)
                 item.title()
-                
+
                 // Description if provided
                 item.description?.let { desc ->
                     Spacer(modifier = Modifier.height(2.dp))
                     desc()
                 }
             }
-            
+
             // Trailing content
             item.trailingContent?.let { trailing ->
                 Spacer(modifier = Modifier.width(8.dp))
                 trailing()
             }
         }
-        
+
         // Divider
         if (showDivider) {
             HorizontalDivider(
-                modifier = Modifier.padding(
-                    start = if (item.icon != null) 76.dp else 20.dp,
-                    end = 20.dp
-                ),
+                modifier =
+                    Modifier.padding(
+                        start = if (item.icon != null) 76.dp else 20.dp,
+                        end = 20.dp,
+                    ),
                 thickness = 0.5.dp,
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
             )
         }
     }
@@ -182,5 +190,5 @@ data class Material3SettingsItem(
     val trailingContent: (@Composable () -> Unit)? = null,
     val showBadge: Boolean = false,
     val isHighlighted: Boolean = false,
-    val onClick: (() -> Unit)? = null
+    val onClick: (() -> Unit)? = null,
 )

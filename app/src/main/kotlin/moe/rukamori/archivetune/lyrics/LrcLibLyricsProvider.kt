@@ -8,8 +8,8 @@
 package moe.rukamori.archivetune.lyrics
 
 import android.content.Context
-import moe.rukamori.archivetune.lrclib.LrcLib
 import moe.rukamori.archivetune.constants.EnableLrcLibKey
+import moe.rukamori.archivetune.lrclib.LrcLib
 import moe.rukamori.archivetune.utils.dataStore
 import moe.rukamori.archivetune.utils.get
 

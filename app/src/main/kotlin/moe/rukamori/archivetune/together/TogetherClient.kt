@@ -19,8 +19,6 @@ import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
 import io.ktor.websocket.send
-import java.util.UUID
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -31,6 +29,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 sealed interface TogetherClientEvent {
     data class Welcome(
@@ -66,8 +66,15 @@ sealed interface TogetherClientEvent {
 @Immutable
 sealed class TogetherClientState {
     data object Idle : TogetherClientState()
-    data class Connecting(val joinInfo: TogetherJoinInfo) : TogetherClientState()
-    data class Connected(val session: TogetherJoinInfo) : TogetherClientState()
+
+    data class Connecting(
+        val joinInfo: TogetherJoinInfo,
+    ) : TogetherClientState()
+
+    data class Connected(
+        val session: TogetherJoinInfo,
+    ) : TogetherClientState()
+
     data class ConnectingRemote(
         val wsUrl: String,
         val sessionId: String,
@@ -114,7 +121,10 @@ class TogetherClient(
     private val clientId = clientId.trim().ifBlank { UUID.randomUUID().toString() }.take(64)
     private val normalizedBearerToken: String? = bearerToken?.trim()?.takeIf { it.isNotBlank() }
 
-    fun connect(joinInfo: TogetherJoinInfo, displayName: String) {
+    fun connect(
+        joinInfo: TogetherJoinInfo,
+        displayName: String,
+    ) {
         scope.launch {
             disconnect()
             _state.value = TogetherClientState.Connecting(joinInfo)
@@ -218,13 +228,35 @@ class TogetherClient(
         val raw = root?.message?.trim().orEmpty()
         val reason =
             when (root) {
-                is java.net.UnknownHostException -> "Server not found"
-                is java.net.ConnectException -> "Connection refused"
-                is java.net.SocketTimeoutException -> "Connection timed out"
-                is javax.net.ssl.SSLHandshakeException -> "Secure connection failed"
-                is IllegalArgumentException ->
-                    if (raw.contains("ws", ignoreCase = true) && raw.contains("scheme", ignoreCase = true)) "Invalid server websocket URL" else null
-                else -> null
+                is java.net.UnknownHostException -> {
+                    "Server not found"
+                }
+
+                is java.net.ConnectException -> {
+                    "Connection refused"
+                }
+
+                is java.net.SocketTimeoutException -> {
+                    "Connection timed out"
+                }
+
+                is javax.net.ssl.SSLHandshakeException -> {
+                    "Secure connection failed"
+                }
+
+                is IllegalArgumentException -> {
+                    if (raw.contains("ws", ignoreCase = true) &&
+                        raw.contains("scheme", ignoreCase = true)
+                    ) {
+                        "Invalid server websocket URL"
+                    } else {
+                        null
+                    }
+                }
+
+                else -> {
+                    null
+                }
             }
 
         val detail = reason ?: raw.takeIf { it.isNotBlank() }
@@ -241,7 +273,10 @@ class TogetherClient(
         _state.value = TogetherClientState.Idle
     }
 
-    fun requestControl(sessionId: String, action: ControlAction) {
+    fun requestControl(
+        sessionId: String,
+        action: ControlAction,
+    ) {
         val pid = selfParticipantId ?: return
         scope.launch {
             session?.send(
@@ -253,7 +288,11 @@ class TogetherClient(
         }
     }
 
-    fun requestAddTrack(sessionId: String, track: TogetherTrack, mode: AddTrackMode) {
+    fun requestAddTrack(
+        sessionId: String,
+        track: TogetherTrack,
+        mode: AddTrackMode,
+    ) {
         val pid = selfParticipantId ?: return
         scope.launch {
             session?.send(
@@ -265,7 +304,11 @@ class TogetherClient(
         }
     }
 
-    fun sendHeartbeat(sessionId: String, pingId: Long, clientElapsedRealtimeMs: Long) {
+    fun sendHeartbeat(
+        sessionId: String,
+        pingId: Long,
+        clientElapsedRealtimeMs: Long,
+    ) {
         scope.launch {
             session?.send(
                 TogetherJson.json.encodeToString(
@@ -280,7 +323,10 @@ class TogetherClient(
         }
     }
 
-    private suspend fun runLoop(session: WebSocketSession, sessionId: String) {
+    private suspend fun runLoop(
+        session: WebSocketSession,
+        sessionId: String,
+    ) {
         loopJob =
             scope.launch {
                 try {
@@ -322,7 +368,11 @@ class TogetherClient(
 
                             is KickParticipant -> {
                                 if (message.sessionId == sessionId && message.participantId == selfParticipantId) {
-                                    val detail = message.reason?.trim().orEmpty().ifBlank { "Kicked" }
+                                    val detail =
+                                        message.reason
+                                            ?.trim()
+                                            .orEmpty()
+                                            .ifBlank { "Kicked" }
                                     _events.tryEmit(TogetherClientEvent.Error(detail, null))
                                     break
                                 }
@@ -330,7 +380,11 @@ class TogetherClient(
 
                             is BanParticipant -> {
                                 if (message.sessionId == sessionId && message.participantId == selfParticipantId) {
-                                    val detail = message.reason?.trim().orEmpty().ifBlank { "Banned" }
+                                    val detail =
+                                        message.reason
+                                            ?.trim()
+                                            .orEmpty()
+                                            .ifBlank { "Banned" }
                                     _events.tryEmit(TogetherClientEvent.Error(detail, null))
                                     break
                                 }
@@ -351,7 +405,9 @@ class TogetherClient(
                                 _events.tryEmit(TogetherClientEvent.ServerIssue(message = message.message, code = message.code))
                             }
 
-                            else -> Unit
+                            else -> {
+                                Unit
+                            }
                         }
                     }
                 } catch (t: Throwable) {

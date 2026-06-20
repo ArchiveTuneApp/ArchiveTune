@@ -18,6 +18,13 @@ import androidx.media3.common.Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM
 import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.STATE_ENDED
 import androidx.media3.common.Timeline
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
 import moe.rukamori.archivetune.db.MusicDatabase
 import moe.rukamori.archivetune.extensions.currentMetadata
 import moe.rukamori.archivetune.extensions.getCurrentQueueIndex
@@ -26,13 +33,6 @@ import moe.rukamori.archivetune.extensions.metadata
 import moe.rukamori.archivetune.playback.MusicService.MusicBinder
 import moe.rukamori.archivetune.playback.queues.Queue
 import moe.rukamori.archivetune.utils.reportException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.stateIn
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlayerConnection(
@@ -53,16 +53,17 @@ class PlayerConnection(
         }.stateIn(
             scope,
             SharingStarted.Lazily,
-            player.playWhenReady && player.playbackState != STATE_ENDED
+            player.playWhenReady && player.playbackState != STATE_ENDED,
         )
     val mediaMetadata = service.currentMediaMetadata
     val currentSong =
         mediaMetadata.flatMapLatest {
             database.song(it?.id)
         }
-    val currentLyrics = mediaMetadata.flatMapLatest { mediaMetadata ->
-        database.lyrics(mediaMetadata?.id)
-    }
+    val currentLyrics =
+        mediaMetadata.flatMapLatest { mediaMetadata ->
+            database.lyrics(mediaMetadata?.id)
+        }
     val currentFormat =
         mediaMetadata.flatMapLatest { mediaMetadata ->
             database.format(mediaMetadata?.id)
@@ -140,10 +141,14 @@ class PlayerConnection(
         player.prepare()
         player.playWhenReady = true
         // Immediately restart the Discord presence updater so it picks up the new track without waiting
-        if (moe.rukamori.archivetune.ui.screens.settings.DiscordPresenceManager.isRunning()) {
+        if (moe.rukamori.archivetune.ui.screens.settings.DiscordPresenceManager
+                .isRunning()
+        ) {
             try {
-                moe.rukamori.archivetune.ui.screens.settings.DiscordPresenceManager.restart()
-            } catch (_: Exception) {}
+                moe.rukamori.archivetune.ui.screens.settings.DiscordPresenceManager
+                    .restart()
+            } catch (_: Exception) {
+            }
         }
     }
 
@@ -157,10 +162,14 @@ class PlayerConnection(
         player.prepare()
         player.playWhenReady = true
         // Immediately restart the Discord presence updater so it picks up the new track without waiting
-        if (moe.rukamori.archivetune.ui.screens.settings.DiscordPresenceManager.isRunning()) {
+        if (moe.rukamori.archivetune.ui.screens.settings.DiscordPresenceManager
+                .isRunning()
+        ) {
             try {
-                moe.rukamori.archivetune.ui.screens.settings.DiscordPresenceManager.restart()
-            } catch (_: Exception) {}
+                moe.rukamori.archivetune.ui.screens.settings.DiscordPresenceManager
+                    .restart()
+            } catch (_: Exception) {
+            }
         }
     }
 
@@ -224,11 +233,11 @@ class PlayerConnection(
             val window =
                 player.currentTimeline.getWindow(player.currentMediaItemIndex, Timeline.Window())
             canSkipPrevious.value = player.isCommandAvailable(COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM) ||
-                    !window.isLive ||
-                    player.isCommandAvailable(COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
+                !window.isLive ||
+                player.isCommandAvailable(COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
             canSkipNext.value = window.isLive &&
-                    window.isDynamic ||
-                    player.isCommandAvailable(COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
+                window.isDynamic ||
+                player.isCommandAvailable(COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
         } else {
             canSkipPrevious.value = false
             canSkipNext.value = false

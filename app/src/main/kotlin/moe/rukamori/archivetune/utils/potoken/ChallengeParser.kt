@@ -33,26 +33,29 @@ private val json = Json { ignoreUnknownKeys = true }
 fun parseCreateChallenge(rawResponse: String): String {
     val outer = json.parseToJsonElement(rawResponse).jsonArray
 
-    val challenge = if (outer.size > 1 && outer[1].jsonPrimitive.isString) {
-        // Scrambled: base64-decode then add 97 to each byte
-        val decoded = descramble(outer[1].jsonPrimitive.content)
-        json.parseToJsonElement(decoded).jsonArray
-    } else {
-        outer[0].jsonArray
-    }
+    val challenge =
+        if (outer.size > 1 && outer[1].jsonPrimitive.isString) {
+            // Scrambled: base64-decode then add 97 to each byte
+            val decoded = descramble(outer[1].jsonPrimitive.content)
+            json.parseToJsonElement(decoded).jsonArray
+        } else {
+            outer[0].jsonArray
+        }
 
     val program = challenge[4].jsonPrimitive.content
     val globalName = challenge[5].jsonPrimitive.content
 
-    val interpreterJs = challenge[1]
-        .takeIf { it !is JsonNull }
-        ?.jsonArray
-        ?.firstOrNull { it.jsonPrimitive.isString }
+    val interpreterJs =
+        challenge[1]
+            .takeIf { it !is JsonNull }
+            ?.jsonArray
+            ?.firstOrNull { it.jsonPrimitive.isString }
 
-    val interpreterUrl = challenge[2]
-        .takeIf { it !is JsonNull }
-        ?.jsonArray
-        ?.firstOrNull { it.jsonPrimitive.isString }
+    val interpreterUrl =
+        challenge[2]
+            .takeIf { it !is JsonNull }
+            ?.jsonArray
+            ?.firstOrNull { it.jsonPrimitive.isString }
 
     return json.encodeToString(
         JsonObject.serializer(),
@@ -60,14 +63,15 @@ fun parseCreateChallenge(rawResponse: String): String {
             mapOf(
                 "program" to JsonPrimitive(program),
                 "globalName" to JsonPrimitive(globalName),
-                "interpreterJavascript" to JsonObject(
-                    mapOf(
-                        "privateDoNotAccessOrElseSafeScriptWrappedValue" to (interpreterJs ?: JsonNull),
-                        "privateDoNotAccessOrElseTrustedResourceUrlWrappedValue" to (interpreterUrl ?: JsonNull),
-                    )
-                ),
-            )
-        )
+                "interpreterJavascript" to
+                    JsonObject(
+                        mapOf(
+                            "privateDoNotAccessOrElseSafeScriptWrappedValue" to (interpreterJs ?: JsonNull),
+                            "privateDoNotAccessOrElseTrustedResourceUrlWrappedValue" to (interpreterUrl ?: JsonNull),
+                        ),
+                    ),
+            ),
+        ),
     )
 }
 
@@ -97,24 +101,23 @@ fun stringToJsUint8Array(identifier: String): String {
  * Converts a comma-separated byte list (output of `Uint8Array.toString()` in JS)
  * to the YouTube-specific base64 encoding used for PoTokens.
  */
-fun commaSeparatedBytesToBase64(commaBytes: String): String {
-    return commaBytes.split(",")
+fun commaSeparatedBytesToBase64(commaBytes: String): String =
+    commaBytes
+        .split(",")
         .map { it.trim().toInt().toByte() }
         .toByteArray()
         .toByteString()
         .base64()
         .replace('+', '-')
         .replace('/', '_')
-}
 
 // --- internal helpers ---
 
-private fun descramble(base64Payload: String): String {
-    return base64ToByteArray(base64Payload)
+private fun descramble(base64Payload: String): String =
+    base64ToByteArray(base64Payload)
         .map { (it + 97).toByte() }
         .toByteArray()
         .decodeToString()
-}
 
 private fun base64ToJsUint8Array(base64: String): String {
     val bytes = base64ToByteArray(base64)
@@ -122,11 +125,13 @@ private fun base64ToJsUint8Array(base64: String): String {
 }
 
 private fun base64ToByteArray(base64: String): ByteArray {
-    val normalised = base64
-        .replace('-', '+')
-        .replace('_', '/')
-        .replace('.', '=')
-    return (normalised.decodeBase64()
-        ?: throw PoTokenException("Cannot decode base64: ${base64.take(40)}…"))
-        .toByteArray()
+    val normalised =
+        base64
+            .replace('-', '+')
+            .replace('_', '/')
+            .replace('.', '=')
+    return (
+        normalised.decodeBase64()
+            ?: throw PoTokenException("Cannot decode base64: ${base64.take(40)}…")
+    ).toByteArray()
 }

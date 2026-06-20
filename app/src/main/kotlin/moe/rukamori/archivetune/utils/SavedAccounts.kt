@@ -34,5 +34,4 @@ fun decodeSavedAccounts(raw: String): List<SavedAccount> {
     return runCatching { savedAccountJson.decodeFromString<List<SavedAccount>>(raw) }.getOrDefault(emptyList())
 }
 
-fun encodeSavedAccounts(accounts: List<SavedAccount>): String =
-    savedAccountJson.encodeToString(accounts)
+fun encodeSavedAccounts(accounts: List<SavedAccount>): String = savedAccountJson.encodeToString(accounts)

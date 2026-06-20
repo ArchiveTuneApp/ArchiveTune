@@ -81,8 +81,8 @@
     <string name="all_songs">Tất cả bài hát</string>
     <string name="newest_first">Mới nhất trước</string>
     <string name="oldest_first">Cũ nhất trước</string>
-    <string name="sort_a_to_z">A \u2192 Z</string>
-    <string name="sort_z_to_a">Z \u2192 A</string>
+    <string name="sort_a_to_z">A → Z</string>
+    <string name="sort_z_to_a">Z → A</string>
     <string name="sort_artist">Nghệ sĩ</string>
     <string name="most_played_sort">Phát nhiều nhất</string>
     <string name="recently_added">Mới thêm gần đây</string>
@@ -225,31 +225,24 @@
     <string name="duplicates_description_multiple">%d bài hát đã có trong danh sách phát của bạn</string>
     <!-- Noun -->
     <plurals name="n_song">
-        <item quantity="one">%d bài hát</item>
         <item quantity="other">%d bài hát</item>
     </plurals>
     <plurals name="n_artist">
-        <item quantity="one">%d nghệ sĩ</item>
         <item quantity="other">%d nghệ sĩ</item>
     </plurals>
     <plurals name="n_album">
-        <item quantity="one">%d album</item>
         <item quantity="other">%d album</item>
     </plurals>
     <plurals name="n_playlist">
-        <item quantity="one">%d danh sách phát</item>
         <item quantity="other">%d danh sách phát</item>
     </plurals>
     <plurals name="n_week">
-        <item quantity="one">%d tuần</item>
         <item quantity="other">%d tuần</item>
     </plurals>
     <plurals name="n_month">
-        <item quantity="one">%d tháng</item>
         <item quantity="other">%d tháng</item>
     </plurals>
     <plurals name="n_year">
-        <item quantity="one">%d năm</item>
         <item quantity="other">%d năm</item>
     </plurals>
     <!-- Snackbar -->
@@ -266,7 +259,6 @@
     <string name="sleep_timer">Hẹn giờ ngủ</string>
     <string name="end_of_song">Cuối bài hát</string>
     <plurals name="minute">
-        <item quantity="one">1 phút</item>
         <item quantity="other">%d phút</item>
     </plurals>
     <string name="error_no_stream">Không có luồng phát nào khả dụng</string>

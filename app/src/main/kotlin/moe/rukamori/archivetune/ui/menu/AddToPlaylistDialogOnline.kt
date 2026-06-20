@@ -21,12 +21,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,13 +46,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import moe.rukamori.archivetune.innertube.YouTube
-import moe.rukamori.archivetune.innertube.models.SongItem
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withContext
 import moe.rukamori.archivetune.LocalDatabase
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.constants.ListThumbnailSize
 import moe.rukamori.archivetune.db.entities.Playlist
 import moe.rukamori.archivetune.db.entities.Song
+import moe.rukamori.archivetune.innertube.YouTube
+import moe.rukamori.archivetune.innertube.models.SongItem
 import moe.rukamori.archivetune.models.toMediaMetadata
 import moe.rukamori.archivetune.ui.component.CreatePlaylistDialog
 import moe.rukamori.archivetune.ui.component.DefaultDialog
@@ -60,13 +67,6 @@ import moe.rukamori.archivetune.ui.component.ListDialog
 import moe.rukamori.archivetune.ui.component.ListItem
 import moe.rukamori.archivetune.ui.component.PlaylistListItem
 import moe.rukamori.archivetune.utils.reportException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 import timber.log.Timber
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -81,7 +81,7 @@ fun AddToPlaylistDialogOnline(
     onDismiss: () -> Unit,
     onProgressStart: (Boolean) -> Unit,
     onPercentageChange: (Int) -> Unit,
-    onStatusChange: (String) -> Unit = {}
+    onStatusChange: (String) -> Unit = {},
 ) {
     val database = LocalDatabase.current
     val coroutineScope = rememberCoroutineScope()
@@ -96,12 +96,11 @@ fun AddToPlaylistDialogOnline(
         mutableStateOf<Playlist?>(null)
     }
     val songIds by remember {
-        mutableStateOf<List<String>?>(null) 
+        mutableStateOf<List<String>?>(null)
     }
 
     var showResultDialog by remember { mutableStateOf(false) }
     var processingSummary by remember { mutableStateOf<ProcessingSummary?>(null) }
-
 
     LaunchedEffect(Unit) {
         database.playlistsByCreateDateAsc().collect {
@@ -111,7 +110,7 @@ fun AddToPlaylistDialogOnline(
 
     fun processSongs(
         targetPlaylist: Playlist?,
-        addToLiked: Boolean
+        addToLiked: Boolean,
     ) {
         coroutineScope.launch(Dispatchers.IO) {
             val snapshotSongs = songs.toList()
@@ -164,30 +163,31 @@ fun AddToPlaylistDialogOnline(
                                 var success = false
                                 try {
                                     val result = YouTube.search(query, YouTube.SearchFilter.FILTER_SONG)
-                                    result.onSuccess { search ->
-                                        val firstSong = search.items.distinctBy { it.id }.firstOrNull() as? SongItem
-                                        if (firstSong != null) {
-                                            val media = firstSong.toMediaMetadata()
-                                            val ids = listOf(firstSong.id)
-                                            try {
-                                                database.insert(media)
-                                                if (targetPlaylist != null) {
-                                                    database.addSongToPlaylist(targetPlaylist, ids)
-                                                }
-                                                if (addToLiked) {
-                                                    val entity = media.toSongEntity()
-                                                    database.query {
-                                                        update(entity.toggleLike())
+                                    result
+                                        .onSuccess { search ->
+                                            val firstSong = search.items.distinctBy { it.id }.firstOrNull() as? SongItem
+                                            if (firstSong != null) {
+                                                val media = firstSong.toMediaMetadata()
+                                                val ids = listOf(firstSong.id)
+                                                try {
+                                                    database.insert(media)
+                                                    if (targetPlaylist != null) {
+                                                        database.addSongToPlaylist(targetPlaylist, ids)
                                                     }
+                                                    if (addToLiked) {
+                                                        val entity = media.toSongEntity()
+                                                        database.query {
+                                                            update(entity.toggleLike())
+                                                        }
+                                                    }
+                                                    success = true
+                                                } catch (e: Exception) {
+                                                    Timber.e(e, "Error inserting/adding song")
                                                 }
-                                                success = true
-                                            } catch (e: Exception) {
-                                                Timber.e(e, "Error inserting/adding song")
                                             }
+                                        }.onFailure {
+                                            Timber.w(it, "Search failed for $query")
                                         }
-                                    }.onFailure {
-                                        Timber.w(it, "Search failed for $query")
-                                    }
                                 } catch (e: Exception) {
                                     Timber.e(e, "Error processing song $query")
                                 }
@@ -240,7 +240,7 @@ fun AddToPlaylistDialogOnline(
 
     if (isVisible) {
         ListDialog(
-            onDismiss = onDismiss
+            onDismiss = onDismiss,
         ) {
             item {
                 ListItem(
@@ -250,40 +250,43 @@ fun AddToPlaylistDialogOnline(
                             painter = painterResource(id = R.drawable.playlist_add),
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground),
-                            modifier = Modifier.size(ListThumbnailSize)
+                            modifier = Modifier.size(ListThumbnailSize),
                         )
                     },
-                    modifier = Modifier.clickable {
-                        showCreatePlaylistDialog = true
-                    }
+                    modifier =
+                        Modifier.clickable {
+                            showCreatePlaylistDialog = true
+                        },
                 )
             }
 
             items(playlists) { playlist ->
                 PlaylistListItem(
                     playlist = playlist,
-                    modifier = Modifier.clickable {
-                        selectedPlaylist = playlist
-                        processSongs(targetPlaylist = playlist, addToLiked = false)
-                    }
+                    modifier =
+                        Modifier.clickable {
+                            selectedPlaylist = playlist
+                            processSongs(targetPlaylist = playlist, addToLiked = false)
+                        },
                 )
             }
 
             item {
                 ListItem(
-                    modifier = Modifier.clickable {
-                        processSongs(targetPlaylist = null, addToLiked = true)
-                    },
+                    modifier =
+                        Modifier.clickable {
+                            processSongs(targetPlaylist = null, addToLiked = true)
+                        },
                     title = stringResource(R.string.liked_songs),
                     thumbnailContent = {
                         Image(
                             painter = painterResource(id = R.drawable.favorite), // The XML image
                             contentDescription = null,
                             modifier = Modifier.size(40.dp), // Adjust size as needed
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground) // Optional tinting
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground), // Optional tinting
                         )
                     },
-                    trailingContent = {}
+                    trailingContent = {},
                 )
             }
 
@@ -291,7 +294,7 @@ fun AddToPlaylistDialogOnline(
                 Text(
                     text = stringResource(R.string.playlist_add_local_to_synced_note),
                     fontSize = TextUnit(12F, TextUnitType.Sp),
-                    modifier = Modifier.padding(horizontal = 20.dp)
+                    modifier = Modifier.padding(horizontal = 20.dp),
                 )
             }
         }
@@ -301,7 +304,7 @@ fun AddToPlaylistDialogOnline(
         CreatePlaylistDialog(
             onDismiss = { showCreatePlaylistDialog = false },
             initialTextFieldValue = initialTextFieldValue,
-            allowSyncing = allowSyncing
+            allowSyncing = allowSyncing,
         )
     }
 
@@ -315,7 +318,7 @@ fun AddToPlaylistDialogOnline(
                 TextButton(onClick = { showResultDialog = false }, shapes = ButtonDefaults.shapes()) {
                     Text("OK")
                 }
-            }
+            },
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Total Processed: ${summary.total}")
@@ -325,15 +328,16 @@ fun AddToPlaylistDialogOnline(
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                     Text("Failed Items:", style = MaterialTheme.typography.labelLarge)
                     LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(150.dp)
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .height(150.dp),
                     ) {
                         items(summary.failedItems) { title ->
                             Text(
                                 text = "• $title",
                                 style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.padding(vertical = 2.dp)
+                                modifier = Modifier.padding(vertical = 2.dp),
                             )
                         }
                     }
@@ -347,5 +351,5 @@ data class ProcessingSummary(
     val total: Int,
     val success: Int,
     val failed: Int,
-    val failedItems: List<String>
+    val failedItems: List<String>,
 )

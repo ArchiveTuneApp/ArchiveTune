@@ -36,27 +36,30 @@ object ActivityTypes {
     private val reverse = forward.entries.associate { (k, v) -> v to k }
 
     fun fromString(name: String): Int? = forward[name]
+
     fun fromInt(value: Int): String? = reverse[value]
 }
 
 object IntentsFlags {
-    val FLAGS: Map<String, Int> = mapOf(
-        "DIRECT_MESSAGES" to (1 shl 12),
-        "PRIVATE_CHANNELS" to (1 shl 18),
-        "CALLS" to (1 shl 19),
-        "USER_RELATIONSHIPS" to (1 shl 22),
-        "USER_PRESENCE" to (1 shl 23),
-        "LOBBIES" to (1 shl 27),
-        "LOBBY_DELETE" to (1 shl 28),
-        "UNKNOWN_29" to (1 shl 29),
-    )
+    val FLAGS: Map<String, Int> =
+        mapOf(
+            "DIRECT_MESSAGES" to (1 shl 12),
+            "PRIVATE_CHANNELS" to (1 shl 18),
+            "CALLS" to (1 shl 19),
+            "USER_RELATIONSHIPS" to (1 shl 22),
+            "USER_PRESENCE" to (1 shl 23),
+            "LOBBIES" to (1 shl 27),
+            "LOBBY_DELETE" to (1 shl 28),
+            "UNKNOWN_29" to (1 shl 29),
+        )
 }
 
 object GatewayCapabilitiesFlags {
-    val FLAGS: Map<String, Int> = mapOf(
-        "DEDUPE_USER_OBJECTS" to (1 shl 4),
-        "PRIORITIZED_READY_PAYLOAD" to (1 shl 5),
-        "AUTO_CALL_CONNECT" to (1 shl 12),
-        "AUTO_LOBBY_CONNECT" to (1 shl 16),
-    )
+    val FLAGS: Map<String, Int> =
+        mapOf(
+            "DEDUPE_USER_OBJECTS" to (1 shl 4),
+            "PRIORITIZED_READY_PAYLOAD" to (1 shl 5),
+            "AUTO_CALL_CONNECT" to (1 shl 12),
+            "AUTO_LOBBY_CONNECT" to (1 shl 16),
+        )
 }

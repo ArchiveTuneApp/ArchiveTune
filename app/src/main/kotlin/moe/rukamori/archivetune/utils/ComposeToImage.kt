@@ -7,10 +7,10 @@
 
 package moe.rukamori.archivetune.utils
 
+import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
 import android.content.ContextWrapper
-import android.app.Activity
 import android.graphics.*
 import android.net.Uri
 import android.os.Build
@@ -21,39 +21,37 @@ import android.provider.MediaStore
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
+import android.view.PixelCopy
+import android.view.View
 import androidx.annotation.RequiresApi
 import androidx.core.content.FileProvider
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.withClip
 import androidx.core.graphics.withTranslation
+import androidx.core.view.drawToBitmap
 import coil3.ImageLoader
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.toBitmap
-import android.view.View
-import android.view.PixelCopy
-import androidx.core.view.drawToBitmap
-import moe.rukamori.archivetune.R
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import moe.rukamori.archivetune.R
+import moe.rukamori.archivetune.ui.component.LyricsShareImageOptions
 import java.io.File
 import java.io.FileOutputStream
+import kotlin.coroutines.resume
 import kotlin.math.max
 import kotlin.math.roundToInt
-import kotlin.coroutines.resume
-import moe.rukamori.archivetune.ui.component.LyricsShareImageOptions
 
 object ComposeToImage {
-
-    private tailrec fun Context.findActivity(): Activity? {
-        return when (this) {
+    private tailrec fun Context.findActivity(): Activity? =
+        when (this) {
             is Activity -> this
             is ContextWrapper -> baseContext.findActivity()
             else -> null
         }
-    }
 
     private fun ensureSoftwareBitmap(bitmap: Bitmap): Bitmap {
         val config = bitmap.config
@@ -69,12 +67,13 @@ object ComposeToImage {
 
         val location = IntArray(2)
         view.getLocationInWindow(location)
-        val rect = Rect(
-            location[0],
-            location[1],
-            location[0] + view.width,
-            location[1] + view.height
-        )
+        val rect =
+            Rect(
+                location[0],
+                location[1],
+                location[0] + view.width,
+                location[1] + view.height,
+            )
 
         val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
         val copyResult =
@@ -96,15 +95,16 @@ object ComposeToImage {
         targetHeight: Int? = null,
         backgroundColor: Int? = null,
     ): Bitmap {
-        val fallbackBitmap = runCatching {
-            view.drawToBitmap()
-        }.getOrElse {
-            val w = view.width.coerceAtLeast(1)
-            val h = view.height.coerceAtLeast(1)
-            Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).also { bmp ->
-                backgroundColor?.let { Canvas(bmp).drawColor(it) }
+        val fallbackBitmap =
+            runCatching {
+                view.drawToBitmap()
+            }.getOrElse {
+                val w = view.width.coerceAtLeast(1)
+                val h = view.height.coerceAtLeast(1)
+                Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).also { bmp ->
+                    backgroundColor?.let { Canvas(bmp).drawColor(it) }
+                }
             }
-        }
 
         val original =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -114,15 +114,16 @@ object ComposeToImage {
             }
         val needsScale =
             (targetWidth != null && targetWidth > 0 && targetWidth != original.width) ||
-            (targetHeight != null && targetHeight > 0 && targetHeight != original.height)
-        val base = if (needsScale) {
-            val safeOriginal = ensureSoftwareBitmap(original)
-            val tw = targetWidth ?: original.width
-            val th = targetHeight ?: (original.height * tw / original.width)
-            ensureSoftwareBitmap(Bitmap.createScaledBitmap(safeOriginal, tw, th, true))
-        } else {
-            ensureSoftwareBitmap(original)
-        }
+                (targetHeight != null && targetHeight > 0 && targetHeight != original.height)
+        val base =
+            if (needsScale) {
+                val safeOriginal = ensureSoftwareBitmap(original)
+                val tw = targetWidth ?: original.width
+                val th = targetHeight ?: (original.height * tw / original.width)
+                ensureSoftwareBitmap(Bitmap.createScaledBitmap(safeOriginal, tw, th, true))
+            } else {
+                ensureSoftwareBitmap(original)
+            }
         if (backgroundColor != null) {
             val out = Bitmap.createBitmap(base.width, base.height, Bitmap.Config.ARGB_8888)
             val c = Canvas(out)
@@ -133,7 +134,13 @@ object ComposeToImage {
         return base
     }
 
-    fun cropBitmap(source: Bitmap, left: Int, top: Int, width: Int, height: Int): Bitmap {
+    fun cropBitmap(
+        source: Bitmap,
+        left: Int,
+        top: Int,
+        width: Int,
+        height: Int,
+    ): Bitmap {
         val safeSource = ensureSoftwareBitmap(source)
         val safeLeft = left.coerceIn(0, safeSource.width.coerceAtLeast(1) - 1)
         val safeTop = top.coerceIn(0, safeSource.height.coerceAtLeast(1) - 1)
@@ -153,17 +160,19 @@ object ComposeToImage {
         val canvas = Canvas(out)
         canvas.drawColor(backgroundColor)
 
-        val scale = minOf(
-            targetWidth.toFloat() / safeSource.width.coerceAtLeast(1),
-            targetHeight.toFloat() / safeSource.height.coerceAtLeast(1),
-        )
+        val scale =
+            minOf(
+                targetWidth.toFloat() / safeSource.width.coerceAtLeast(1),
+                targetHeight.toFloat() / safeSource.height.coerceAtLeast(1),
+            )
         val scaledW = (safeSource.width * scale).toInt().coerceAtLeast(1)
         val scaledH = (safeSource.height * scale).toInt().coerceAtLeast(1)
-        val scaled = if (scaledW != safeSource.width || scaledH != safeSource.height) {
-            ensureSoftwareBitmap(Bitmap.createScaledBitmap(safeSource, scaledW, scaledH, true))
-        } else {
-            safeSource
-        }
+        val scaled =
+            if (scaledW != safeSource.width || scaledH != safeSource.height) {
+                ensureSoftwareBitmap(Bitmap.createScaledBitmap(safeSource, scaledW, scaledH, true))
+            } else {
+                safeSource
+            }
 
         val dx = ((targetWidth - scaled.width) / 2f)
         val dy = ((targetHeight - scaled.height) / 2f)
@@ -185,250 +194,283 @@ object ComposeToImage {
         secondaryTextColor: Int? = null,
         glassStyle: moe.rukamori.archivetune.ui.component.LyricsGlassStyle? = null,
         shareOptions: LyricsShareImageOptions = LyricsShareImageOptions(),
-    ): Bitmap = withContext(Dispatchers.Default) {
-        val style = glassStyle ?: moe.rukamori.archivetune.ui.component.LyricsGlassStyle.FrostedDark
-        val canvasWidth = width.coerceAtLeast(1)
-        val canvasHeight = height.coerceAtLeast(1)
-        val baseSize = minOf(canvasWidth, canvasHeight)
-        val bitmap = createBitmap(canvasWidth, canvasHeight)
-        val canvas = Canvas(bitmap)
+    ): Bitmap =
+        withContext(Dispatchers.Default) {
+            val style = glassStyle ?: moe.rukamori.archivetune.ui.component.LyricsGlassStyle.FrostedDark
+            val canvasWidth = width.coerceAtLeast(1)
+            val canvasHeight = height.coerceAtLeast(1)
+            val baseSize = minOf(canvasWidth, canvasHeight)
+            val bitmap = createBitmap(canvasWidth, canvasHeight)
+            val canvas = Canvas(bitmap)
 
-        val mainTextColor = textColor
-            ?: style.textColor.let {
-                ((it.alpha * 255).toInt() shl 24) or
-                ((it.red * 255).toInt() shl 16) or
-                ((it.green * 255).toInt() shl 8) or
-                (it.blue * 255).toInt()
-            }
-        val secondaryTxtColor = secondaryTextColor
-            ?: style.secondaryTextColor.let {
-                ((it.alpha * 255).toInt() shl 24) or
-                ((it.red * 255).toInt() shl 16) or
-                ((it.green * 255).toInt() shl 8) or
-                (it.blue * 255).toInt()
-            }
-        val bgColor = backgroundColor ?: 0xFF121212.toInt()
+            val mainTextColor =
+                textColor
+                    ?: style.textColor.let {
+                        ((it.alpha * 255).toInt() shl 24) or
+                            ((it.red * 255).toInt() shl 16) or
+                            ((it.green * 255).toInt() shl 8) or
+                            (it.blue * 255).toInt()
+                    }
+            val secondaryTxtColor =
+                secondaryTextColor
+                    ?: style.secondaryTextColor.let {
+                        ((it.alpha * 255).toInt() shl 24) or
+                            ((it.red * 255).toInt() shl 16) or
+                            ((it.green * 255).toInt() shl 8) or
+                            (it.blue * 255).toInt()
+                    }
+            val bgColor = backgroundColor ?: 0xFF121212.toInt()
 
-        var coverArtBitmap: Bitmap? = null
-        if (coverArtUrl != null) {
-            try {
-                val imageLoader = ImageLoader(context)
-                val request = ImageRequest.Builder(context)
-                    .data(coverArtUrl)
-                    .size(max(canvasWidth, canvasHeight))
-                    .allowHardware(false)
-                    .build()
-                val result = imageLoader.execute(request)
-                coverArtBitmap = result.image?.toBitmap()
-            } catch (e: Exception) {
-                reportException(e)
-            }
-        }
-
-        val fittedArt =
-            coverArtBitmap?.let {
-                fitBitmap(
-                    source = it,
-                    targetWidth = canvasWidth,
-                    targetHeight = canvasHeight,
-                    backgroundColor = bgColor,
-                )
+            var coverArtBitmap: Bitmap? = null
+            if (coverArtUrl != null) {
+                try {
+                    val imageLoader = ImageLoader(context)
+                    val request =
+                        ImageRequest
+                            .Builder(context)
+                            .data(coverArtUrl)
+                            .size(max(canvasWidth, canvasHeight))
+                            .allowHardware(false)
+                            .build()
+                    val result = imageLoader.execute(request)
+                    coverArtBitmap = result.image?.toBitmap()
+                } catch (e: Exception) {
+                    reportException(e)
+                }
             }
 
-        if (fittedArt != null) {
-            val blurredBackground = blurBitmap(fittedArt, shareOptions.sanitizedBlurRadius)
-            canvas.drawBitmap(blurredBackground, 0f, 0f, Paint(Paint.FILTER_BITMAP_FLAG))
-        } else {
-            canvas.drawColor(bgColor)
-        }
+            val fittedArt =
+                coverArtBitmap?.let {
+                    fitBitmap(
+                        source = it,
+                        targetWidth = canvasWidth,
+                        targetHeight = canvasHeight,
+                        backgroundColor = bgColor,
+                    )
+                }
 
-        val dimPaint = Paint().apply {
-            color = android.graphics.Color.argb(
-                ((style.backgroundDimAlpha * shareOptions.sanitizedDimAmount).coerceIn(0f, 0.95f) * 255).toInt(), 0, 0, 0
-            )
-            isAntiAlias = true
-        }
-        canvas.drawRect(RectF(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat()), dimPaint)
-
-        val glassMargin = baseSize * 0.045f
-        val glassLeft = glassMargin
-        val glassTop = glassMargin
-        val glassRight = canvasWidth - glassMargin
-        val glassBottom = canvasHeight - glassMargin
-        val glassWidth = glassRight - glassLeft
-        val glassHeight = glassBottom - glassTop
-        val glassCornerRadius = baseSize * 0.05f
-
-        val glassRect = RectF(glassLeft, glassTop, glassRight, glassBottom)
-        val glassPath = Path().apply {
-            addRoundRect(glassRect, glassCornerRadius, glassCornerRadius, Path.Direction.CW)
-        }
-
-        if (fittedArt != null) {
-            val frostedCrop = blurBitmap(fittedArt, (shareOptions.sanitizedBlurRadius + 10f).coerceIn(8f, 48f))
-            canvas.withClip(glassPath) {
-                drawBitmap(frostedCrop, 0f, 0f, Paint(Paint.FILTER_BITMAP_FLAG))
+            if (fittedArt != null) {
+                val blurredBackground = blurBitmap(fittedArt, shareOptions.sanitizedBlurRadius)
+                canvas.drawBitmap(blurredBackground, 0f, 0f, Paint(Paint.FILTER_BITMAP_FLAG))
+            } else {
+                canvas.drawColor(bgColor)
             }
-        }
 
-        val glassBgPaint = Paint().apply {
-            color = style.surfaceTint.let {
-                android.graphics.Color.argb(
-                    (style.surfaceAlpha * 255).toInt(),
-                    (it.red * 255).toInt(),
-                    (it.green * 255).toInt(),
-                    (it.blue * 255).toInt()
-                )
+            val dimPaint =
+                Paint().apply {
+                    color =
+                        android.graphics.Color.argb(
+                            ((style.backgroundDimAlpha * shareOptions.sanitizedDimAmount).coerceIn(0f, 0.95f) * 255).toInt(),
+                            0,
+                            0,
+                            0,
+                        )
+                    isAntiAlias = true
+                }
+            canvas.drawRect(RectF(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat()), dimPaint)
+
+            val glassMargin = baseSize * 0.045f
+            val glassLeft = glassMargin
+            val glassTop = glassMargin
+            val glassRight = canvasWidth - glassMargin
+            val glassBottom = canvasHeight - glassMargin
+            val glassWidth = glassRight - glassLeft
+            val glassHeight = glassBottom - glassTop
+            val glassCornerRadius = baseSize * 0.05f
+
+            val glassRect = RectF(glassLeft, glassTop, glassRight, glassBottom)
+            val glassPath =
+                Path().apply {
+                    addRoundRect(glassRect, glassCornerRadius, glassCornerRadius, Path.Direction.CW)
+                }
+
+            if (fittedArt != null) {
+                val frostedCrop = blurBitmap(fittedArt, (shareOptions.sanitizedBlurRadius + 10f).coerceIn(8f, 48f))
+                canvas.withClip(glassPath) {
+                    drawBitmap(frostedCrop, 0f, 0f, Paint(Paint.FILTER_BITMAP_FLAG))
+                }
             }
-            isAntiAlias = true
-        }
-        canvas.drawRoundRect(glassRect, glassCornerRadius, glassCornerRadius, glassBgPaint)
 
-        val overlayPaint = Paint().apply {
-            color = style.overlayColor.let {
-                android.graphics.Color.argb(
-                    (style.overlayAlpha * 255).toInt(),
-                    (it.red * 255).toInt(),
-                    (it.green * 255).toInt(),
-                    (it.blue * 255).toInt()
-                )
-            }
-            isAntiAlias = true
-        }
-        canvas.drawRoundRect(glassRect, glassCornerRadius, glassCornerRadius, overlayPaint)
+            val glassBgPaint =
+                Paint().apply {
+                    color =
+                        style.surfaceTint.let {
+                            android.graphics.Color.argb(
+                                (style.surfaceAlpha * 255).toInt(),
+                                (it.red * 255).toInt(),
+                                (it.green * 255).toInt(),
+                                (it.blue * 255).toInt(),
+                            )
+                        }
+                    isAntiAlias = true
+                }
+            canvas.drawRoundRect(glassRect, glassCornerRadius, glassCornerRadius, glassBgPaint)
 
-        val borderPaint = Paint().apply {
-            this.style = Paint.Style.STROKE
-            strokeWidth = 1.5f
-            color = android.graphics.Color.argb(25, 255, 255, 255)
-            isAntiAlias = true
-        }
-        canvas.drawRoundRect(glassRect, glassCornerRadius, glassCornerRadius, borderPaint)
+            val overlayPaint =
+                Paint().apply {
+                    color =
+                        style.overlayColor.let {
+                            android.graphics.Color.argb(
+                                (style.overlayAlpha * 255).toInt(),
+                                (it.red * 255).toInt(),
+                                (it.green * 255).toInt(),
+                                (it.blue * 255).toInt(),
+                            )
+                        }
+                    isAntiAlias = true
+                }
+            canvas.drawRoundRect(glassRect, glassCornerRadius, glassCornerRadius, overlayPaint)
 
-        val contentPadding = minOf(glassWidth, glassHeight) * 0.08f
-        val contentLeft = glassLeft + contentPadding
-        val contentTop = glassTop + contentPadding
-        val contentRight = glassRight - contentPadding
+            val borderPaint =
+                Paint().apply {
+                    this.style = Paint.Style.STROKE
+                    strokeWidth = 1.5f
+                    color = android.graphics.Color.argb(25, 255, 255, 255)
+                    isAntiAlias = true
+                }
+            canvas.drawRoundRect(glassRect, glassCornerRadius, glassCornerRadius, borderPaint)
 
-        val imageCornerRadius = baseSize * 0.035f
-        val coverSize = minOf(glassWidth * 0.18f, glassHeight * 0.15f)
-        val topRowGap = baseSize * 0.035f
+            val contentPadding = minOf(glassWidth, glassHeight) * 0.08f
+            val contentLeft = glassLeft + contentPadding
+            val contentTop = glassTop + contentPadding
+            val contentRight = glassRight - contentPadding
 
-        val titlePaint = TextPaint().apply {
-            color = mainTextColor
-            textSize = baseSize * 0.038f
-            typeface = Typeface.DEFAULT_BOLD
-            isAntiAlias = true
-            letterSpacing = -0.02f
-        }
-        val artistPaint = TextPaint().apply {
-            color = secondaryTxtColor
-            textSize = baseSize * 0.028f
-            typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-            isAntiAlias = true
-        }
+            val imageCornerRadius = baseSize * 0.035f
+            val coverSize = minOf(glassWidth * 0.18f, glassHeight * 0.15f)
+            val topRowGap = baseSize * 0.035f
 
-        val showingArtwork = shareOptions.showArtwork && coverArtBitmap != null
-        if (showingArtwork) {
-            val rect = RectF(contentLeft, contentTop, contentLeft + coverSize, contentTop + coverSize)
-            val path = Path().apply {
-                addRoundRect(rect, imageCornerRadius, imageCornerRadius, Path.Direction.CW)
-            }
-            canvas.withClip(path) {
-                drawBitmap(coverArtBitmap ?: return@withClip, null, rect, Paint(Paint.FILTER_BITMAP_FLAG))
-            }
-            val artBorderPaint = Paint().apply {
-                this.style = Paint.Style.STROKE
-                strokeWidth = 1f
-                color = android.graphics.Color.argb(38, 255, 255, 255)
-                isAntiAlias = true
-            }
-            canvas.drawRoundRect(rect, imageCornerRadius, imageCornerRadius, artBorderPaint)
-        }
+            val titlePaint =
+                TextPaint().apply {
+                    color = mainTextColor
+                    textSize = baseSize * 0.038f
+                    typeface = Typeface.DEFAULT_BOLD
+                    isAntiAlias = true
+                    letterSpacing = -0.02f
+                }
+            val artistPaint =
+                TextPaint().apply {
+                    color = secondaryTxtColor
+                    textSize = baseSize * 0.028f
+                    typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+                    isAntiAlias = true
+                }
 
-        val textMaxWidth =
+            val showingArtwork = shareOptions.showArtwork && coverArtBitmap != null
             if (showingArtwork) {
-                (contentRight - contentLeft - coverSize - topRowGap).toInt()
-            } else {
-                (contentRight - contentLeft).toInt()
+                val rect = RectF(contentLeft, contentTop, contentLeft + coverSize, contentTop + coverSize)
+                val path =
+                    Path().apply {
+                        addRoundRect(rect, imageCornerRadius, imageCornerRadius, Path.Direction.CW)
+                    }
+                canvas.withClip(path) {
+                    drawBitmap(coverArtBitmap ?: return@withClip, null, rect, Paint(Paint.FILTER_BITMAP_FLAG))
+                }
+                val artBorderPaint =
+                    Paint().apply {
+                        this.style = Paint.Style.STROKE
+                        strokeWidth = 1f
+                        color = android.graphics.Color.argb(38, 255, 255, 255)
+                        isAntiAlias = true
+                    }
+                canvas.drawRoundRect(rect, imageCornerRadius, imageCornerRadius, artBorderPaint)
             }
-        val textStartX = if (showingArtwork) contentLeft + coverSize + topRowGap else contentLeft
-        val headerAlignment = if (showingArtwork) Layout.Alignment.ALIGN_NORMAL else Layout.Alignment.ALIGN_CENTER
 
-        val titleLayout = StaticLayout.Builder.obtain(songTitle, 0, songTitle.length, titlePaint, textMaxWidth)
-            .setAlignment(headerAlignment)
-            .setMaxLines(1)
-            .build()
-        val artistLayout = StaticLayout.Builder.obtain(artistName, 0, artistName.length, artistPaint, textMaxWidth)
-            .setAlignment(headerAlignment)
-            .setMaxLines(1)
-            .build()
+            val textMaxWidth =
+                if (showingArtwork) {
+                    (contentRight - contentLeft - coverSize - topRowGap).toInt()
+                } else {
+                    (contentRight - contentLeft).toInt()
+                }
+            val textStartX = if (showingArtwork) contentLeft + coverSize + topRowGap else contentLeft
+            val headerAlignment = if (showingArtwork) Layout.Alignment.ALIGN_NORMAL else Layout.Alignment.ALIGN_CENTER
 
-        val topBlockHeight = if (showingArtwork) coverSize else (titleLayout.height + artistLayout.height + 6f)
-        val imageCenter = contentTop + topBlockHeight / 2f
-        val textBlockHeight = titleLayout.height + artistLayout.height + 6f
-        val textBlockY = imageCenter - textBlockHeight / 2f
+            val titleLayout =
+                StaticLayout.Builder
+                    .obtain(songTitle, 0, songTitle.length, titlePaint, textMaxWidth)
+                    .setAlignment(headerAlignment)
+                    .setMaxLines(1)
+                    .build()
+            val artistLayout =
+                StaticLayout.Builder
+                    .obtain(artistName, 0, artistName.length, artistPaint, textMaxWidth)
+                    .setAlignment(headerAlignment)
+                    .setMaxLines(1)
+                    .build()
 
-        canvas.withTranslation(textStartX, textBlockY) {
-            titleLayout.draw(this)
-            translate(0f, titleLayout.height.toFloat() + 6f)
-            artistLayout.draw(this)
-        }
+            val topBlockHeight = if (showingArtwork) coverSize else (titleLayout.height + artistLayout.height + 6f)
+            val imageCenter = contentTop + topBlockHeight / 2f
+            val textBlockHeight = titleLayout.height + artistLayout.height + 6f
+            val textBlockY = imageCenter - textBlockHeight / 2f
 
-        val lyricsPaint = TextPaint().apply {
-            color = mainTextColor
-            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            isAntiAlias = true
-            letterSpacing = -0.01f
-        }
+            canvas.withTranslation(textStartX, textBlockY) {
+                titleLayout.draw(this)
+                translate(0f, titleLayout.height.toFloat() + 6f)
+                artistLayout.draw(this)
+            }
 
-        val lyricsMaxWidth = (glassWidth * 0.85f).toInt()
-        val logoBlockHeight = (baseSize * 0.08f).toInt()
-        val headerBottom = if (showingArtwork) contentTop + coverSize else (textBlockY + textBlockHeight)
-        val lyricsTop = headerBottom + baseSize * 0.045f
-        val lyricsBottom = glassBottom - (logoBlockHeight + contentPadding)
-        val availableLyricsHeight = lyricsBottom - lyricsTop
+            val lyricsPaint =
+                TextPaint().apply {
+                    color = mainTextColor
+                    typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                    isAntiAlias = true
+                    letterSpacing = -0.01f
+                }
 
-        var lyricsTextSize = baseSize * 0.055f
-        var lyricsLayout: StaticLayout
-        do {
-            lyricsPaint.textSize = lyricsTextSize
-            lyricsLayout = StaticLayout.Builder.obtain(
-                lyrics, 0, lyrics.length, lyricsPaint, lyricsMaxWidth
+            val lyricsMaxWidth = (glassWidth * 0.85f).toInt()
+            val logoBlockHeight = (baseSize * 0.08f).toInt()
+            val headerBottom = if (showingArtwork) contentTop + coverSize else (textBlockY + textBlockHeight)
+            val lyricsTop = headerBottom + baseSize * 0.045f
+            val lyricsBottom = glassBottom - (logoBlockHeight + contentPadding)
+            val availableLyricsHeight = lyricsBottom - lyricsTop
+
+            var lyricsTextSize = baseSize * 0.055f
+            var lyricsLayout: StaticLayout
+            do {
+                lyricsPaint.textSize = lyricsTextSize
+                lyricsLayout =
+                    StaticLayout.Builder
+                        .obtain(
+                            lyrics,
+                            0,
+                            lyrics.length,
+                            lyricsPaint,
+                            lyricsMaxWidth,
+                        ).setAlignment(Layout.Alignment.ALIGN_CENTER)
+                        .setIncludePad(false)
+                        .setLineSpacing(8f, 1.35f)
+                        .setMaxLines(10)
+                        .build()
+                if (lyricsLayout.height > availableLyricsHeight) {
+                    lyricsTextSize -= 2f
+                } else {
+                    break
+                }
+            } while (lyricsTextSize > 22f)
+
+            val lyricsYOffset = lyricsTop + (availableLyricsHeight - lyricsLayout.height) / 2f
+            canvas.withTranslation(glassLeft + (glassWidth - lyricsMaxWidth) / 2f, lyricsYOffset) {
+                lyricsLayout.draw(this)
+            }
+
+            AppLogo(
+                context = context,
+                canvas = canvas,
+                canvasWidth = canvasWidth,
+                canvasHeight = canvasHeight,
+                padding = contentLeft,
+                bottomPadding = glassBottom - contentPadding,
+                circleColor = secondaryTxtColor,
+                logoTint = if (style.isDark) 0xDD000000.toInt() else 0xE6FFFFFF.toInt(),
+                textColor = secondaryTxtColor,
             )
-                .setAlignment(Layout.Alignment.ALIGN_CENTER)
-                .setIncludePad(false)
-                .setLineSpacing(8f, 1.35f)
-                .setMaxLines(10)
-                .build()
-            if (lyricsLayout.height > availableLyricsHeight) {
-                lyricsTextSize -= 2f
-            } else {
-                break
-            }
-        } while (lyricsTextSize > 22f)
 
-        val lyricsYOffset = lyricsTop + (availableLyricsHeight - lyricsLayout.height) / 2f
-        canvas.withTranslation(glassLeft + (glassWidth - lyricsMaxWidth) / 2f, lyricsYOffset) {
-            lyricsLayout.draw(this)
+            return@withContext bitmap
         }
 
-        AppLogo(
-            context = context,
-            canvas = canvas,
-            canvasWidth = canvasWidth,
-            canvasHeight = canvasHeight,
-            padding = contentLeft,
-            bottomPadding = glassBottom - contentPadding,
-            circleColor = secondaryTxtColor,
-            logoTint = if (style.isDark) 0xDD000000.toInt() else 0xE6FFFFFF.toInt(),
-            textColor = secondaryTxtColor,
-        )
-
-        return@withContext bitmap
-    }
-
-    private fun blurBitmap(source: Bitmap, radius: Float): Bitmap {
+    private fun blurBitmap(
+        source: Bitmap,
+        radius: Float,
+    ): Bitmap {
         val safe = ensureSoftwareBitmap(source)
         val safeRadius = radius.coerceIn(0f, 48f)
         if (safeRadius <= 0.5f) return safe
@@ -445,7 +487,10 @@ object ComposeToImage {
         return ensureSoftwareBitmap(Bitmap.createScaledBitmap(blurred, safe.width, safe.height, true))
     }
 
-    private fun stackBlur(source: Bitmap, radius: Int): Bitmap {
+    private fun stackBlur(
+        source: Bitmap,
+        radius: Int,
+    ): Bitmap {
         val bitmap = ensureSoftwareBitmap(source.copy(Bitmap.Config.ARGB_8888, true))
         val width = bitmap.width
         val height = bitmap.height
@@ -584,9 +629,9 @@ object ComposeToImage {
             for (y in 0 until height) {
                 pixels[yiIndex] =
                     pixels[yiIndex] and -0x1000000 or
-                        (divTable[rsum] shl 16) or
-                        (divTable[gsum] shl 8) or
-                        divTable[bsum]
+                    (divTable[rsum] shl 16) or
+                    (divTable[gsum] shl 8) or
+                    divTable[bsum]
 
                 rsum -= routsum
                 gsum -= goutsum
@@ -649,25 +694,28 @@ object ComposeToImage {
         val logoSize = (baseSize * 0.045f).toInt()
 
         val rawLogo = context.getDrawable(R.drawable.small_icon)?.toBitmap(logoSize, logoSize)
-        val logo = rawLogo?.let { source ->
-            val colored = Bitmap.createBitmap(source.width, source.height, Bitmap.Config.ARGB_8888)
-            val canvasLogo = Canvas(colored)
-            val paint = Paint().apply {
-                colorFilter = PorterDuffColorFilter(logoTint, PorterDuff.Mode.SRC_IN)
-                isAntiAlias = true
+        val logo =
+            rawLogo?.let { source ->
+                val colored = Bitmap.createBitmap(source.width, source.height, Bitmap.Config.ARGB_8888)
+                val canvasLogo = Canvas(colored)
+                val paint =
+                    Paint().apply {
+                        colorFilter = PorterDuffColorFilter(logoTint, PorterDuff.Mode.SRC_IN)
+                        isAntiAlias = true
+                    }
+                canvasLogo.drawBitmap(source, 0f, 0f, paint)
+                colored
             }
-            canvasLogo.drawBitmap(source, 0f, 0f, paint)
-            colored
-        }
 
         val appName = context.getString(R.string.app_name)
-        val appNamePaint = TextPaint().apply {
-            color = textColor
-            textSize = baseSize * 0.028f
-            typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
-            isAntiAlias = true
-            letterSpacing = 0.02f
-        }
+        val appNamePaint =
+            TextPaint().apply {
+                color = textColor
+                textSize = baseSize * 0.028f
+                typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+                isAntiAlias = true
+                letterSpacing = 0.02f
+            }
 
         val circleRadius = logoSize * 0.55f
         val circleX = padding + circleRadius
@@ -677,11 +725,12 @@ object ComposeToImage {
         val textX = padding + circleRadius * 2 + 10f
         val textY = circleY + appNamePaint.textSize * 0.3f
 
-        val circlePaint = Paint().apply {
-            color = circleColor
-            isAntiAlias = true
-            style = Paint.Style.FILL
-        }
+        val circlePaint =
+            Paint().apply {
+                color = circleColor
+                isAntiAlias = true
+                style = Paint.Style.FILL
+            }
         canvas.drawCircle(circleX, circleY, circleRadius, circlePaint)
 
         logo?.let {
@@ -691,18 +740,24 @@ object ComposeToImage {
         canvas.drawText(appName, textX, textY, appNamePaint)
     }
 
-    fun saveBitmapAsFile(context: Context, bitmap: Bitmap, fileName: String): Uri {
+    fun saveBitmapAsFile(
+        context: Context,
+        bitmap: Bitmap,
+        fileName: String,
+    ): Uri {
         val safeBitmap = ensureSoftwareBitmap(bitmap)
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val contentValues = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, "$fileName.png")
-                put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
-                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/ArchiveTune")
-            }
-            val uri = context.contentResolver.insert(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                contentValues
-            ) ?: throw IllegalStateException("Failed to create new MediaStore record")
+            val contentValues =
+                ContentValues().apply {
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, "$fileName.png")
+                    put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
+                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/ArchiveTune")
+                }
+            val uri =
+                context.contentResolver.insert(
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    contentValues,
+                ) ?: throw IllegalStateException("Failed to create new MediaStore record")
 
             context.contentResolver.openOutputStream(uri)?.use { outputStream ->
                 safeBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
@@ -718,7 +773,7 @@ object ComposeToImage {
             FileProvider.getUriForFile(
                 context,
                 "${context.packageName}.FileProvider",
-                imageFile
+                imageFile,
             )
         }
     }

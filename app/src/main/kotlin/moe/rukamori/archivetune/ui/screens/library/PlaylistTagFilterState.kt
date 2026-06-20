@@ -21,15 +21,18 @@ import moe.rukamori.archivetune.utils.rememberPreference
 internal fun rememberPlaylistTagFilterState(database: MusicDatabase): Pair<Set<String>, (Set<String>) -> Unit> {
     val allTags: List<TagEntity>? by database.allTags().collectAsState(initial = null)
     val (selectedTagsFilter, onSelectedTagsFilterChange) = rememberPreference(PlaylistTagsFilterKey, "")
-    val selectedTagIds = remember(selectedTagsFilter) {
-        selectedTagsFilter.toPlaylistTagIds()
-    }
-    val validTagIds = remember(allTags) {
-        allTags?.map(TagEntity::id)?.toSet()
-    }
-    val sanitizedTagIds = remember(selectedTagIds, validTagIds) {
-        validTagIds?.let { selectedTagIds.sanitize(validTagIds = it) } ?: selectedTagIds
-    }
+    val selectedTagIds =
+        remember(selectedTagsFilter) {
+            selectedTagsFilter.toPlaylistTagIds()
+        }
+    val validTagIds =
+        remember(allTags) {
+            allTags?.map(TagEntity::id)?.toSet()
+        }
+    val sanitizedTagIds =
+        remember(selectedTagIds, validTagIds) {
+            validTagIds?.let { selectedTagIds.sanitize(validTagIds = it) } ?: selectedTagIds
+        }
 
     LaunchedEffect(validTagIds, selectedTagIds, sanitizedTagIds, onSelectedTagsFilterChange) {
         if (validTagIds != null && selectedTagIds != sanitizedTagIds) {
@@ -37,9 +40,10 @@ internal fun rememberPlaylistTagFilterState(database: MusicDatabase): Pair<Set<S
         }
     }
 
-    val onSelectedTagIdsChange: (Set<String>) -> Unit = remember(onSelectedTagsFilterChange) {
-        { tagIds -> onSelectedTagsFilterChange(tagIds.toPreferenceValue()) }
-    }
+    val onSelectedTagIdsChange: (Set<String>) -> Unit =
+        remember(onSelectedTagsFilterChange) {
+            { tagIds -> onSelectedTagsFilterChange(tagIds.toPreferenceValue()) }
+        }
 
     return sanitizedTagIds to onSelectedTagIdsChange
 }
@@ -51,7 +55,6 @@ internal fun String.toPlaylistTagIds(): Set<String> =
         .filter(String::isNotEmpty)
         .toCollection(LinkedHashSet())
 
-internal fun Set<String>.sanitize(validTagIds: Set<String>): Set<String> =
-    filterTo(LinkedHashSet()) { it in validTagIds }
+internal fun Set<String>.sanitize(validTagIds: Set<String>): Set<String> = filterTo(LinkedHashSet()) { it in validTagIds }
 
 internal fun Set<String>.toPreferenceValue(): String = joinToString(",")

@@ -19,21 +19,23 @@ import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
 import io.ktor.websocket.send
-import java.util.UUID
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.launch
+import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 @Immutable
 sealed class TogetherOnlineHostState {
     data object Idle : TogetherOnlineHostState()
+
     data object Connecting : TogetherOnlineHostState()
+
     data class Connected(
         val wsUrl: String,
         val sessionId: String,
@@ -151,13 +153,35 @@ class TogetherOnlineHost(
         val raw = root?.message?.trim().orEmpty()
         val reason =
             when (root) {
-                is java.net.UnknownHostException -> "Server not found"
-                is java.net.ConnectException -> "Connection refused"
-                is java.net.SocketTimeoutException -> "Connection timed out"
-                is javax.net.ssl.SSLHandshakeException -> "Secure connection failed"
-                is IllegalArgumentException ->
-                    if (raw.contains("ws", ignoreCase = true) && raw.contains("scheme", ignoreCase = true)) "Invalid server websocket URL" else null
-                else -> null
+                is java.net.UnknownHostException -> {
+                    "Server not found"
+                }
+
+                is java.net.ConnectException -> {
+                    "Connection refused"
+                }
+
+                is java.net.SocketTimeoutException -> {
+                    "Connection timed out"
+                }
+
+                is javax.net.ssl.SSLHandshakeException -> {
+                    "Secure connection failed"
+                }
+
+                is IllegalArgumentException -> {
+                    if (raw.contains("ws", ignoreCase = true) &&
+                        raw.contains("scheme", ignoreCase = true)
+                    ) {
+                        "Invalid server websocket URL"
+                    } else {
+                        null
+                    }
+                }
+
+                else -> {
+                    null
+                }
             }
 
         val detail = reason ?: raw.takeIf { it.isNotBlank() }
@@ -185,7 +209,10 @@ class TogetherOnlineHost(
         }
     }
 
-    suspend fun approveParticipant(participantId: String, approved: Boolean) {
+    suspend fun approveParticipant(
+        participantId: String,
+        approved: Boolean,
+    ) {
         val guest = guests[participantId] ?: return
         if (!guest.pending) return
 
@@ -225,7 +252,10 @@ class TogetherOnlineHost(
         rebuildParticipantsSnapshot()
     }
 
-    suspend fun kickParticipant(participantId: String, reason: String?) {
+    suspend fun kickParticipant(
+        participantId: String,
+        reason: String?,
+    ) {
         if (!guests.containsKey(participantId)) return
         runCatching {
             session?.send(
@@ -237,7 +267,10 @@ class TogetherOnlineHost(
         }
     }
 
-    suspend fun banParticipant(participantId: String, reason: String?) {
+    suspend fun banParticipant(
+        participantId: String,
+        reason: String?,
+    ) {
         if (!guests.containsKey(participantId)) return
         runCatching {
             session?.send(
@@ -292,13 +325,17 @@ class TogetherOnlineHost(
                     )
                 }
 
-        lastParticipants = buildList {
-            add(host)
-            addAll(guestList)
-        }
+        lastParticipants =
+            buildList {
+                add(host)
+                addAll(guestList)
+            }
     }
 
-    private suspend fun runLoop(session: WebSocketSession, wsUrl: String) {
+    private suspend fun runLoop(
+        session: WebSocketSession,
+        wsUrl: String,
+    ) {
         loopJob =
             scope.launch {
                 try {
@@ -376,7 +413,9 @@ class TogetherOnlineHost(
                                 onEvent?.invoke(TogetherServerEvent.Error(message.message, null))
                             }
 
-                            else -> Unit
+                            else -> {
+                                Unit
+                            }
                         }
                     }
                 } catch (t: Throwable) {

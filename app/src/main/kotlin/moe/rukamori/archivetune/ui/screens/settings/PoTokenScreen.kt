@@ -43,9 +43,9 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -95,9 +95,15 @@ import moe.rukamori.archivetune.viewmodels.PoTokenViewModel
 
 private const val DEFAULT_EXTRACT_URL = "https://youtube.com/account"
 
-private val SUPPORTED_CLIENTS = listOf(
-    "web", "mweb", "web_safari", "web_embedded", "web_creator", "web_music"
-)
+private val SUPPORTED_CLIENTS =
+    listOf(
+        "web",
+        "mweb",
+        "web_safari",
+        "web_embedded",
+        "web_creator",
+        "web_music",
+    )
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -112,67 +118,76 @@ fun PoTokenScreen(
     var showRegenerateSheet by remember { mutableStateOf(false) }
     val regenerateSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    var (webClientPoTokenEnabled, onWebClientPoTokenEnabledChange) = rememberPreference(
-        WebClientPoTokenEnabledKey,
-        defaultValue = false
-    )
-    var (useVisitorData, onUseVisitorDataChange) = rememberPreference(
-        UseVisitorDataKey,
-        defaultValue = false
-    )
-    var (sourceUrl, onSourceUrlChange) = rememberPreference(
-        PoTokenSourceUrlKey,
-        defaultValue = ""
-    )
-    var (storedGvsToken, onStoredGvsTokenChange) = rememberPreference(
-        PoTokenGvsKey,
-        defaultValue = ""
-    )
-    var (storedPlayerToken, onStoredPlayerTokenChange) = rememberPreference(
-        PoTokenPlayerKey,
-        defaultValue = ""
-    )
-    var (storedVisitorData, onStoredVisitorDataChange) = rememberPreference(
-        VisitorDataKey,
-        defaultValue = ""
-    )
-    val (innerTubeCookie, _) = rememberPreference(
-        InnerTubeCookieKey,
-        defaultValue = ""
-    )
+    var (webClientPoTokenEnabled, onWebClientPoTokenEnabledChange) =
+        rememberPreference(
+            WebClientPoTokenEnabledKey,
+            defaultValue = false,
+        )
+    var (useVisitorData, onUseVisitorDataChange) =
+        rememberPreference(
+            UseVisitorDataKey,
+            defaultValue = false,
+        )
+    var (sourceUrl, onSourceUrlChange) =
+        rememberPreference(
+            PoTokenSourceUrlKey,
+            defaultValue = "",
+        )
+    var (storedGvsToken, onStoredGvsTokenChange) =
+        rememberPreference(
+            PoTokenGvsKey,
+            defaultValue = "",
+        )
+    var (storedPlayerToken, onStoredPlayerTokenChange) =
+        rememberPreference(
+            PoTokenPlayerKey,
+            defaultValue = "",
+        )
+    var (storedVisitorData, onStoredVisitorDataChange) =
+        rememberPreference(
+            VisitorDataKey,
+            defaultValue = "",
+        )
+    val (innerTubeCookie, _) =
+        rememberPreference(
+            InnerTubeCookieKey,
+            defaultValue = "",
+        )
 
-    val extractionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val data = result.data
-            val gvsToken = data?.getStringExtra(PoTokenExtractionActivity.EXTRA_GVS_TOKEN).orEmpty()
-            val playerToken = data?.getStringExtra(PoTokenExtractionActivity.EXTRA_PLAYER_TOKEN).orEmpty()
-            val visitorData = data?.getStringExtra(PoTokenExtractionActivity.EXTRA_VISITOR_DATA).orEmpty()
+    val extractionLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartActivityForResult(),
+        ) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data = result.data
+                val gvsToken = data?.getStringExtra(PoTokenExtractionActivity.EXTRA_GVS_TOKEN).orEmpty()
+                val playerToken = data?.getStringExtra(PoTokenExtractionActivity.EXTRA_PLAYER_TOKEN).orEmpty()
+                val visitorData = data?.getStringExtra(PoTokenExtractionActivity.EXTRA_VISITOR_DATA).orEmpty()
 
-            if (gvsToken.isNotBlank() && playerToken.isNotBlank() && visitorData.isNotBlank()) {
-                viewModel.onTokensExtracted(
-                    visitorData = visitorData,
-                    poToken = gvsToken,
-                    playerToken = playerToken,
-                )
+                if (gvsToken.isNotBlank() && playerToken.isNotBlank() && visitorData.isNotBlank()) {
+                    viewModel.onTokensExtracted(
+                        visitorData = visitorData,
+                        poToken = gvsToken,
+                        playerToken = playerToken,
+                    )
+                } else {
+                    viewModel.onExtractionError(context.getString(R.string.token_generation_failed))
+                }
             } else {
-                viewModel.onExtractionError(context.getString(R.string.token_generation_failed))
-            }
-        } else {
-            val error = result.data?.getStringExtra(PoTokenExtractionActivity.EXTRA_ERROR).orEmpty()
-            if (error.isNotBlank()) {
-                viewModel.onExtractionError(error)
+                val error = result.data?.getStringExtra(PoTokenExtractionActivity.EXTRA_ERROR).orEmpty()
+                if (error.isNotBlank()) {
+                    viewModel.onExtractionError(error)
+                }
             }
         }
-    }
 
     val launchExtraction: () -> Unit = {
         viewModel.resetState()
         val launchUrl = sourceUrl.takeIf { it.isNotBlank() } ?: DEFAULT_EXTRACT_URL
-        val intent = Intent(context, PoTokenExtractionActivity::class.java).apply {
-            putExtra(PoTokenExtractionActivity.EXTRA_SOURCE_URL, launchUrl)
-        }
+        val intent =
+            Intent(context, PoTokenExtractionActivity::class.java).apply {
+                putExtra(PoTokenExtractionActivity.EXTRA_SOURCE_URL, launchUrl)
+            }
         extractionLauncher.launch(intent)
     }
 
@@ -186,25 +201,30 @@ fun PoTokenScreen(
                 onStoredVisitorDataChange(state.visitorData)
                 Toast.makeText(context, R.string.tokens_generated, Toast.LENGTH_SHORT).show()
             }
+
             is PoTokenState.Error -> {
                 Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
             }
+
             else -> {}
         }
     }
 
-    val displayGvsToken = when (val s = tokenState) {
-        is PoTokenState.Success -> s.gvsToken
-        else -> storedGvsToken
-    }
-    val displayPlayerToken = when (val s = tokenState) {
-        is PoTokenState.Success -> s.playerToken
-        else -> storedPlayerToken
-    }
-    val displayVisitorData = when (val s = tokenState) {
-        is PoTokenState.Success -> s.visitorData
-        else -> storedVisitorData
-    }
+    val displayGvsToken =
+        when (val s = tokenState) {
+            is PoTokenState.Success -> s.gvsToken
+            else -> storedGvsToken
+        }
+    val displayPlayerToken =
+        when (val s = tokenState) {
+            is PoTokenState.Success -> s.playerToken
+            else -> storedPlayerToken
+        }
+    val displayVisitorData =
+        when (val s = tokenState) {
+            is PoTokenState.Success -> s.visitorData
+            else -> storedVisitorData
+        }
 
     if (showRegenerateSheet) {
         ModalBottomSheet(
@@ -212,9 +232,10 @@ fun PoTokenScreen(
             sheetState = regenerateSheetState,
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
             ) {
                 Text(
                     text = stringResource(R.string.source_url),
@@ -230,11 +251,12 @@ fun PoTokenScreen(
                     placeholder = { Text(stringResource(R.string.source_url_placeholder)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                        focusedLabelColor = MaterialTheme.colorScheme.primary,
-                    ),
+                    colors =
+                        OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        ),
                     shape = MaterialTheme.shapes.medium,
                 )
 
@@ -246,10 +268,11 @@ fun PoTokenScreen(
                         launchExtraction()
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                    ),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                        ),
                     shapes = ButtonDefaults.shapes(),
                 ) {
                     Text(stringResource(R.string.regenerate_token))
@@ -264,18 +287,18 @@ fun PoTokenScreen(
         Modifier
             .windowInsetsPadding(
                 LocalPlayerAwareWindowInsets.current.only(
-                    WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
-                )
-            )
-            .verticalScroll(rememberScrollState())
+                    WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                ),
+            ).verticalScroll(rememberScrollState())
+            .padding(bottom = SettingsDimensions.ScreenBottomPadding)
             .animateContentSize(
-                animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
-            )
+                animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+            ),
     ) {
         Spacer(
             Modifier.windowInsetsPadding(
-                LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)
-            )
+                LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top),
+            ),
         )
 
         PreferenceGroup {
@@ -292,16 +315,18 @@ fun PoTokenScreen(
 
         AnimatedVisibility(
             visible = webClientPoTokenEnabled,
-            enter = expandVertically(
-                animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
-            ) + fadeIn(),
-            exit = shrinkVertically(
-                animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
-            ) + fadeOut(),
+            enter =
+                expandVertically(
+                    animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                ) + fadeIn(),
+            exit =
+                shrinkVertically(
+                    animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                ) + fadeOut(),
         ) {
             Column {
                 PreferenceGroupTitle(
-                    title = stringResource(R.string.generated_tokens)
+                    title = stringResource(R.string.generated_tokens),
                 )
 
                 SelectableTokenCard(
@@ -335,13 +360,14 @@ fun PoTokenScreen(
                 )
 
                 PreferenceGroupTitle(
-                    title = stringResource(R.string.supported_clients)
+                    title = stringResource(R.string.supported_clients),
                 )
 
                 FlowRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
@@ -354,10 +380,11 @@ fun PoTokenScreen(
                                     style = MaterialTheme.typography.labelMedium,
                                 )
                             },
-                            colors = AssistChipDefaults.assistChipColors(
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                labelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            ),
+                            colors =
+                                AssistChipDefaults.assistChipColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    labelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                ),
                         )
                     }
                 }
@@ -371,11 +398,12 @@ fun PoTokenScreen(
                             checked = useVisitorData,
                             onCheckedChange = { enabled ->
                                 if (enabled && hasCookie) {
-                                    Toast.makeText(
-                                        context,
-                                        R.string.cookies_must_be_disabled,
-                                        Toast.LENGTH_LONG
-                                    ).show()
+                                    Toast
+                                        .makeText(
+                                            context,
+                                            R.string.cookies_must_be_disabled,
+                                            Toast.LENGTH_LONG,
+                                        ).show()
                                 } else {
                                     onUseVisitorDataChange(enabled)
                                 }
@@ -390,17 +418,18 @@ fun PoTokenScreen(
                     onClick = {
                         showRegenerateSheet = true
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     shape = MaterialTheme.shapes.medium,
                     icon = {
                         Icon(
-                        painter = painterResource(R.drawable.sync),
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
+                            painter = painterResource(R.drawable.sync),
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
                         )
                     },
                     text = {
@@ -421,14 +450,14 @@ fun PoTokenScreen(
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
+                onLongClick = navController::backToMain,
             ) {
                 Icon(
                     painterResource(R.drawable.arrow_back),
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
-        }
+        },
     )
 }
 
@@ -446,9 +475,10 @@ private fun SelectableTokenCard(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
             verticalAlignment = Alignment.Top,
         ) {
             Column(
@@ -463,14 +493,16 @@ private fun SelectableTokenCard(
                 SelectionContainer {
                     Text(
                         text = token.ifBlank { "—" },
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            fontFamily = FontFamily.Monospace,
-                        ),
-                        color = if (token.isBlank()) {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        },
+                        style =
+                            MaterialTheme.typography.bodySmall.copy(
+                                fontFamily = FontFamily.Monospace,
+                            ),
+                        color =
+                            if (token.isBlank()) {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
                         maxLines = 3,
                         overflow = TextOverflow.Ellipsis,
                     )

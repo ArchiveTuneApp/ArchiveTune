@@ -9,6 +9,8 @@
 
 package moe.rukamori.archivetune.ui.component
 
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -21,30 +23,24 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.ime
-import androidx.compose.animation.core.animateIntAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.runtime.getValue
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ButtonDefaults
@@ -62,16 +58,21 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
@@ -83,10 +84,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.Popup
 import androidx.navigation.NavController
+import kotlinx.coroutines.delay
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.ui.screens.settings.AccountSettings
-import kotlinx.coroutines.delay
-import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun DefaultDialog(
@@ -101,14 +101,15 @@ fun DefaultDialog(
 ) {
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp)
-                .imePadding()
-                .navigationBarsPadding(),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(24.dp)
+                    .imePadding()
+                    .navigationBarsPadding(),
             contentAlignment = Alignment.Center,
         ) {
             Surface(
@@ -136,7 +137,7 @@ fun DefaultDialog(
                         if (icon != null) {
                             CompositionLocalProvider(LocalContentColor provides AlertDialogDefaults.iconContentColor) {
                                 Box(
-                                    Modifier.align(Alignment.CenterHorizontally)
+                                    Modifier.align(Alignment.CenterHorizontally),
                                 ) {
                                     icon()
                                 }
@@ -148,7 +149,7 @@ fun DefaultDialog(
                             CompositionLocalProvider(LocalContentColor provides AlertDialogDefaults.titleContentColor) {
                                 ProvideTextStyle(MaterialTheme.typography.headlineSmall) {
                                     Box(
-                                        Modifier.align(if (icon == null) Alignment.Start else Alignment.CenterHorizontally)
+                                        Modifier.align(if (icon == null) Alignment.Start else Alignment.CenterHorizontally),
                                     ) {
                                         title()
                                     }
@@ -170,7 +171,7 @@ fun DefaultDialog(
                         ) flowRowScope@{
                             CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary) {
                                 ProvideTextStyle(
-                                    value = MaterialTheme.typography.labelLarge
+                                    value = MaterialTheme.typography.labelLarge,
                                 ) {
                                     this@flowRowScope.buttons()
                                 }
@@ -192,81 +193,82 @@ fun ActionPromptDialog(
     onConfirm: () -> Unit,
     onReset: (() -> Unit)? = null,
     onCancel: (() -> Unit)? = null,
-    content: @Composable ColumnScope.() -> Unit = {}
+    content: @Composable ColumnScope.() -> Unit = {},
 ) {
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp)
-                .imePadding()
-                .navigationBarsPadding(),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(24.dp)
+                    .imePadding()
+                    .navigationBarsPadding(),
             contentAlignment = Alignment.Center,
         ) {
-        Surface(
-            modifier = Modifier.heightIn(max = maxHeight),
-            shape = AlertDialogDefaults.shape,
-            color = AlertDialogDefaults.containerColor,
-            tonalElevation = AlertDialogDefaults.TonalElevation,
-        ) {
-            Column(
-                modifier = Modifier.padding(24.dp)
+            Surface(
+                modifier = Modifier.heightIn(max = maxHeight),
+                shape = AlertDialogDefaults.shape,
+                color = AlertDialogDefaults.containerColor,
+                tonalElevation = AlertDialogDefaults.TonalElevation,
             ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    // title
-                    if (titleBar != null) {
-                        Row {
-                            titleBar()
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        // title
+                        if (titleBar != null) {
+                            Row {
+                                titleBar()
+                            }
+                        } else if (title != null) {
+                            Text(
+                                text = title,
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines = 1,
+                                style = MaterialTheme.typography.headlineSmall,
+                            )
+                            Spacer(Modifier.height(16.dp))
                         }
-                    } else if (title != null) {
-                        Text(
-                            text = title,
-                            overflow = TextOverflow.Ellipsis,
-                            maxLines = 1,
-                            style = MaterialTheme.typography.headlineSmall,
-                        )
-                        Spacer(Modifier.height(16.dp))
+
+                        content() // body
                     }
 
-                    content() // body
-                }
-
-                Row(
-                    horizontalArrangement = Arrangement.End,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    if (onReset != null) {
-                        Row(modifier = Modifier.weight(1f)) {
-                            TextButton(
-                                onClick = { onReset() },
-                                shapes = ButtonDefaults.shapes(),
-                            ) {
-                                Text(stringResource(R.string.reset))
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        if (onReset != null) {
+                            Row(modifier = Modifier.weight(1f)) {
+                                TextButton(
+                                    onClick = { onReset() },
+                                    shapes = ButtonDefaults.shapes(),
+                                ) {
+                                    Text(stringResource(R.string.reset))
+                                }
                             }
                         }
-                    }
 
-                    if (onCancel != null) {
+                        if (onCancel != null) {
+                            TextButton(
+                                onClick = { onCancel() },
+                                shapes = ButtonDefaults.shapes(),
+                            ) {
+                                Text(stringResource(android.R.string.cancel))
+                            }
+                        }
+
                         TextButton(
-                            onClick = { onCancel() },
+                            onClick = { onConfirm() },
                             shapes = ButtonDefaults.shapes(),
                         ) {
-                            Text(stringResource(android.R.string.cancel))
+                            Text(stringResource(android.R.string.ok))
                         }
-                    }
-
-                    TextButton(
-                        onClick = { onConfirm() },
-                        shapes = ButtonDefaults.shapes(),
-                    ) {
-                        Text(stringResource(android.R.string.ok))
                     }
                 }
             }
-        }
         }
     }
 }
@@ -282,49 +284,49 @@ fun ListDialog(
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp)
-                .imePadding()
-                .navigationBarsPadding(),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(24.dp)
+                    .imePadding()
+                    .navigationBarsPadding(),
             contentAlignment = Alignment.Center,
         ) {
-        Surface(
-            modifier = Modifier.heightIn(max = maxHeight),
-            shape = AlertDialogDefaults.shape,
-            color = AlertDialogDefaults.containerColor,
-            tonalElevation = AlertDialogDefaults.TonalElevation,
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = modifier.padding(vertical = 24.dp),
+            Surface(
+                modifier = Modifier.heightIn(max = maxHeight),
+                shape = AlertDialogDefaults.shape,
+                color = AlertDialogDefaults.containerColor,
+                tonalElevation = AlertDialogDefaults.TonalElevation,
             ) {
-                LazyColumn(content = content)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = modifier.padding(vertical = 24.dp),
+                ) {
+                    LazyColumn(content = content)
+                }
             }
-        }
         }
     }
 }
 
 @Composable
-fun InfoLabel(
-    text: String
-) = Row(
-    verticalAlignment = Alignment.CenterVertically,
-    modifier = Modifier.padding(horizontal = 8.dp)
-) {
-    Icon(
-        painter = painterResource(id = R.drawable.info),
-        contentDescription = null,
-        tint = MaterialTheme.colorScheme.secondary,
-        modifier = Modifier.padding(4.dp)
-    )
-    Text(
-        text = text,
-        style = MaterialTheme.typography.bodySmall,
-        modifier = Modifier.padding(horizontal = 4.dp)
-    )
-}
+fun InfoLabel(text: String) =
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(horizontal = 8.dp),
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.info),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier.padding(4.dp),
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(horizontal = 4.dp),
+        )
+    }
 
 @Composable
 fun TextFieldDialog(
@@ -339,12 +341,10 @@ fun TextFieldDialog(
     keyboardOptions: KeyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
     isInputValid: (String) -> Boolean = { it.isNotEmpty() },
     onDone: (String) -> Unit = {},
-
     // new multi-field support
     textFields: List<Pair<String, TextFieldValue>>? = null,
     onTextFieldsChange: ((Int, TextFieldValue) -> Unit)? = null,
     onDoneMultiple: ((List<String>) -> Unit)? = null,
-
     onDismiss: () -> Unit,
     extraContent: (@Composable () -> Unit)? = null,
 ) {
@@ -370,8 +370,9 @@ fun TextFieldDialog(
                 Text(text = stringResource(android.R.string.cancel))
             }
 
-            val isValid = textFields?.all { isInputValid(it.second.text) }
-                ?: isInputValid(legacyFieldState.value.text)
+            val isValid =
+                textFields?.all { isInputValid(it.second.text) }
+                    ?: isInputValid(legacyFieldState.value.text)
 
             TextButton(
                 enabled = isValid,
@@ -400,18 +401,20 @@ fun TextFieldDialog(
                         maxLines = maxLines,
                         colors = OutlinedTextFieldDefaults.colors(),
                         keyboardOptions = keyboardOptions,
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                if (onDoneMultiple != null) {
-                                    onDoneMultiple(textFields.map { it.second.text })
-                                    onDismiss()
-                                }
-                            },
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 12.dp)
-                            .then(if (index == 0) Modifier.focusRequester(focusRequester) else Modifier)
+                        keyboardActions =
+                            KeyboardActions(
+                                onDone = {
+                                    if (onDoneMultiple != null) {
+                                        onDoneMultiple(textFields.map { it.second.text })
+                                        onDismiss()
+                                    }
+                                },
+                            ),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp)
+                                .then(if (index == 0) Modifier.focusRequester(focusRequester) else Modifier),
                     )
                 }
             } else {
@@ -423,15 +426,17 @@ fun TextFieldDialog(
                     maxLines = maxLines,
                     colors = OutlinedTextFieldDefaults.colors(),
                     keyboardOptions = keyboardOptions,
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            onDone(legacyFieldState.value.text)
-                            onDismiss()
-                        },
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(focusRequester)
+                    keyboardActions =
+                        KeyboardActions(
+                            onDone = {
+                                onDone(legacyFieldState.value.text)
+                                onDismiss()
+                            },
+                        ),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .focusRequester(focusRequester),
                 )
             }
 
@@ -485,14 +490,15 @@ fun EditPlaylistDialog(
             singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    if (!canSave) return@KeyboardActions
-                    keyboardController?.hide()
-                    onSave(nameField.text.trim())
-                    onDismiss()
-                },
-            ),
+            keyboardActions =
+                KeyboardActions(
+                    onDone = {
+                        if (!canSave) return@KeyboardActions
+                        keyboardController?.hide()
+                        onSave(nameField.text.trim())
+                        onDismiss()
+                    },
+                ),
             modifier = Modifier.fillMaxWidth(),
         )
     }

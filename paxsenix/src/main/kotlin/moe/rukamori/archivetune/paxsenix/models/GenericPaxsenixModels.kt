@@ -7,9 +7,8 @@
 
 package moe.rukamori.archivetune.paxsenix.models
 
-import kotlinx.serialization.Serializable
-
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
@@ -23,19 +22,20 @@ data class PaxsenixSearchItem(
     val name: String? = null, // Some providers use name instead of title
     val songName: String? = null,
     val artistName: String? = null,
-    val duration: JsonElement? = null
+    val duration: JsonElement? = null,
 ) {
     val realId: String
         get() = id ?: trackId ?: ""
 
     val durationMs: Long
         get() {
-            val primitive = try {
-                duration?.jsonPrimitive
-            } catch (e: Exception) {
-                null
-            } ?: return 0
-            
+            val primitive =
+                try {
+                    duration?.jsonPrimitive
+                } catch (e: Exception) {
+                    null
+                } ?: return 0
+
             return primitive.longOrNull ?: run {
                 // Handle "MM:SS" format
                 val parts = primitive.content.trim().split(":")
@@ -44,7 +44,9 @@ data class PaxsenixSearchItem(
                     val minutes = parts[parts.size - 2].toLongOrNull() ?: 0
                     val hours = if (parts.size >= 3) parts[parts.size - 3].toLongOrNull() ?: 0 else 0
                     (hours * 3600 + minutes * 60 + seconds) * 1000
-                } else 0
+                } else {
+                    0
+                }
             }
         }
 }
@@ -53,5 +55,5 @@ data class PaxsenixSearchItem(
 data class PaxsenixLyricsResponse(
     val lyrics: String? = null,
     val lrc: String? = null,
-    val content: String? = null
+    val content: String? = null,
 )

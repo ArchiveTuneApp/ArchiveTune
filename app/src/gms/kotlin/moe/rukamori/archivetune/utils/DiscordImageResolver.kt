@@ -25,11 +25,13 @@ object DiscordImageResolver {
     private var cachedImages: ResolvedDiscordImages? = null
 
     @Synchronized
-    fun getCachedImages(songId: String): ResolvedDiscordImages? =
-        if (cachedSongId == songId) cachedImages else null
+    fun getCachedImages(songId: String): ResolvedDiscordImages? = if (cachedSongId == songId) cachedImages else null
 
     @Synchronized
-    private fun setCachedImages(songId: String, images: ResolvedDiscordImages) {
+    private fun setCachedImages(
+        songId: String,
+        images: ResolvedDiscordImages,
+    ) {
         cachedSongId = songId
         cachedImages = images
     }
@@ -51,28 +53,34 @@ object DiscordImageResolver {
         }
 
         val thumbnailUrl = song.song.thumbnailUrl?.asHttpUrl()
-        val artistUrl = song.artists.firstOrNull()?.thumbnailUrl?.asHttpUrl()
+        val artistUrl =
+            song.artists
+                .firstOrNull()
+                ?.thumbnailUrl
+                ?.asHttpUrl()
         val savedArtwork = ArtworkStorage.findBySongId(context, songId)
 
         val thumbnail = savedArtwork?.thumbnail?.asHttpUrl() ?: thumbnailUrl
         val artist = savedArtwork?.artist?.asHttpUrl() ?: artistUrl ?: thumbnail
 
-        val images = ResolvedDiscordImages(
-            thumbnailOriginalUrl = thumbnailUrl,
-            thumbnailResolvedId = thumbnail,
-            artistOriginalUrl = artistUrl,
-            artistResolvedId = artist,
-        )
+        val images =
+            ResolvedDiscordImages(
+                thumbnailOriginalUrl = thumbnailUrl,
+                thumbnailResolvedId = thumbnail,
+                artistOriginalUrl = artistUrl,
+                artistResolvedId = artist,
+            )
 
         if (thumbnail != savedArtwork?.thumbnail || artist != savedArtwork?.artist) {
             runCatching {
                 ArtworkStorage.saveOrUpdate(
                     context = context,
-                    artwork = SavedArtwork(
-                        songId = songId,
-                        thumbnail = thumbnail,
-                        artist = artist,
-                    ),
+                    artwork =
+                        SavedArtwork(
+                            songId = songId,
+                            thumbnail = thumbnail,
+                            artist = artist,
+                        ),
                 )
             }.onFailure {
                 Timber.tag(TAG).v(it, "Failed to persist Discord artwork URLs")
@@ -90,25 +98,41 @@ object DiscordImageResolver {
         song: Song,
     ): String? =
         when (imageType.lowercase()) {
-            "thumbnail", "song", "album" ->
+            "thumbnail", "song", "album" -> {
                 resolvedImages.thumbnailResolvedId
                     ?: resolvedImages.thumbnailOriginalUrl
                     ?: song.song.thumbnailUrl?.asHttpUrl()
-            "artist" ->
+            }
+
+            "artist" -> {
                 resolvedImages.artistResolvedId
                     ?: resolvedImages.artistOriginalUrl
-                    ?: song.artists.firstOrNull()?.thumbnailUrl?.asHttpUrl()
+                    ?: song.artists
+                        .firstOrNull()
+                        ?.thumbnailUrl
+                        ?.asHttpUrl()
                     ?: resolvedImages.thumbnailResolvedId
                     ?: resolvedImages.thumbnailOriginalUrl
                     ?: song.song.thumbnailUrl?.asHttpUrl()
-            "appicon" ->
+            }
+
+            "appicon" -> {
                 "https://raw.githubusercontent.com/koiverse/ArchiveTune/main/fastlane/metadata/android/en-US/images/icon.png"
-            "custom" ->
+            }
+
+            "custom" -> {
                 customUrl?.asHttpUrl()
                     ?: resolvedImages.thumbnailResolvedId
                     ?: resolvedImages.thumbnailOriginalUrl
-            "dontshow", "none" -> null
-            else -> resolvedImages.thumbnailResolvedId ?: resolvedImages.thumbnailOriginalUrl
+            }
+
+            "dontshow", "none" -> {
+                null
+            }
+
+            else -> {
+                resolvedImages.thumbnailResolvedId ?: resolvedImages.thumbnailOriginalUrl
+            }
         }
 
     private fun String.asHttpUrl(): String? {

@@ -168,14 +168,16 @@ fun LyricsImageCard(
                 fallbackBackground = glassStyle.surfaceTint.copy(alpha = (glassStyle.surfaceAlpha + 0.18f).coerceIn(0f, 1f)),
             )
         }
-    val dimAlpha = remember(glassStyle.backgroundDimAlpha, shareOptions.sanitizedDimAmount) {
-        (glassStyle.backgroundDimAlpha * shareOptions.sanitizedDimAmount).coerceIn(0f, 0.95f)
-    }
+    val dimAlpha =
+        remember(glassStyle.backgroundDimAlpha, shareOptions.sanitizedDimAmount) {
+            (glassStyle.backgroundDimAlpha * shareOptions.sanitizedDimAmount).coerceIn(0f, 0.95f)
+        }
     val backgroundBlur = rememberNativeBlurEffect(shareOptions.sanitizedBlurRadius)
     val panelBlur = rememberNativeBlurEffect((shareOptions.sanitizedBlurRadius + 10f).coerceIn(8f, 48f))
     val artworkPainter =
         rememberAsyncImagePainter(
-            ImageRequest.Builder(context)
+            ImageRequest
+                .Builder(context)
                 .data(coverArtUrl)
                 .crossfade(true)
                 .build(),
@@ -213,7 +215,9 @@ fun LyricsImageCard(
                 modifier =
                     Modifier
                         .fillMaxSize()
-                        .background(if (glassStyle.isDark) Color.Black.copy(alpha = dimAlpha) else Color.White.copy(alpha = dimAlpha * 0.42f)),
+                        .background(
+                            if (glassStyle.isDark) Color.Black.copy(alpha = dimAlpha) else Color.White.copy(alpha = dimAlpha * 0.42f),
+                        ),
             )
 
             Box(

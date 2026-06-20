@@ -21,7 +21,8 @@ internal fun rememberOfflineArtworkImageRequest(imageUrl: String?): ImageRequest
             ?.trim()
             ?.takeIf(String::isNotBlank)
             ?.let { url ->
-                ImageRequest.Builder(context)
+                ImageRequest
+                    .Builder(context)
                     .data(url)
                     .memoryCacheKey(url)
                     .diskCacheKey(url)

@@ -7,6 +7,10 @@
 
 package moe.rukamori.archivetune.ai
 
+import moe.rukamori.archivetune.lyrics.LyricsUtils
+import org.w3c.dom.Document
+import org.w3c.dom.Element
+import org.xml.sax.InputSource
 import java.io.StringReader
 import java.io.StringWriter
 import javax.xml.XMLConstants
@@ -15,10 +19,6 @@ import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
-import moe.rukamori.archivetune.lyrics.LyricsUtils
-import org.w3c.dom.Document
-import org.w3c.dom.Element
-import org.xml.sax.InputSource
 
 data class AiLyricsSegment(
     val id: Int,
@@ -28,6 +28,7 @@ data class AiLyricsSegment(
 sealed interface AiLyricsDocument {
     val formatName: String
     val segments: List<AiLyricsSegment>
+
     fun rebuild(translations: Map<Int, String>): String
 }
 
@@ -53,11 +54,12 @@ object AiLyricsDocumentParser {
             val syncedMatch = SyncedLineRegex.matchEntire(line)
             if (syncedMatch != null) {
                 val content = syncedMatch.groupValues[3]
-                val segmentId = if (content.isBlank()) {
-                    null
-                } else {
-                    segments.size.also { segments.add(AiLyricsSegment(it, content.trim())) }
-                }
+                val segmentId =
+                    if (content.isBlank()) {
+                        null
+                    } else {
+                        segments.size.also { segments.add(AiLyricsSegment(it, content.trim())) }
+                    }
                 templates.add(
                     LineTemplate(
                         prefix = syncedMatch.groupValues[1],
@@ -70,11 +72,12 @@ object AiLyricsDocumentParser {
             } else {
                 val plainMatch = PlainLineRegex.matchEntire(line)
                 val content = plainMatch?.groupValues?.get(2).orEmpty()
-                val segmentId = if (content.isBlank()) {
-                    null
-                } else {
-                    segments.size.also { segments.add(AiLyricsSegment(it, content.trim())) }
-                }
+                val segmentId =
+                    if (content.isBlank()) {
+                        null
+                    } else {
+                        segments.size.also { segments.add(AiLyricsSegment(it, content.trim())) }
+                    }
                 templates.add(
                     LineTemplate(
                         prefix = plainMatch?.groupValues?.get(1).orEmpty(),
@@ -89,35 +92,37 @@ object AiLyricsDocumentParser {
         return LineBasedLyricsDocument(formatName = formatName, templates = templates, segments = segments)
     }
 
-    private fun parseTtml(rawLyrics: String): Result<AiLyricsDocument> = runCatching {
-        val factory = DocumentBuilderFactory.newInstance().apply {
-            isNamespaceAware = true
-            runCatching { setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true) }
-            runCatching { setFeature("http://apache.org/xml/features/disallow-doctype-decl", true) }
-            runCatching { setFeature("http://xml.org/sax/features/external-general-entities", false) }
-            runCatching { setFeature("http://xml.org/sax/features/external-parameter-entities", false) }
+    private fun parseTtml(rawLyrics: String): Result<AiLyricsDocument> =
+        runCatching {
+            val factory =
+                DocumentBuilderFactory.newInstance().apply {
+                    isNamespaceAware = true
+                    runCatching { setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true) }
+                    runCatching { setFeature("http://apache.org/xml/features/disallow-doctype-decl", true) }
+                    runCatching { setFeature("http://xml.org/sax/features/external-general-entities", false) }
+                    runCatching { setFeature("http://xml.org/sax/features/external-parameter-entities", false) }
+                }
+            val document = factory.newDocumentBuilder().parse(InputSource(StringReader(rawLyrics)))
+            val paragraphs = ArrayList<TtmlParagraph>()
+            val segments = ArrayList<AiLyricsSegment>()
+            val elements = document.getElementsByTagName("*")
+            for (index in 0 until elements.length) {
+                val element = elements.item(index) as? Element ?: continue
+                if (!element.tagName.endsWith("p", ignoreCase = true)) continue
+                val text = element.textContent?.trim().orEmpty()
+                if (text.isBlank()) continue
+                val segmentId = segments.size
+                segments.add(AiLyricsSegment(segmentId, text))
+                paragraphs.add(TtmlParagraph(element = element, segmentId = segmentId))
+            }
+            require(segments.isNotEmpty()) { "TTML has no translatable text" }
+            TtmlLyricsDocument(
+                document = document,
+                originalHadDeclaration = rawLyrics.trimStart().startsWith("<?xml", ignoreCase = true),
+                paragraphs = paragraphs,
+                segments = segments,
+            )
         }
-        val document = factory.newDocumentBuilder().parse(InputSource(StringReader(rawLyrics)))
-        val paragraphs = ArrayList<TtmlParagraph>()
-        val segments = ArrayList<AiLyricsSegment>()
-        val elements = document.getElementsByTagName("*")
-        for (index in 0 until elements.length) {
-            val element = elements.item(index) as? Element ?: continue
-            if (!element.tagName.endsWith("p", ignoreCase = true)) continue
-            val text = element.textContent?.trim().orEmpty()
-            if (text.isBlank()) continue
-            val segmentId = segments.size
-            segments.add(AiLyricsSegment(segmentId, text))
-            paragraphs.add(TtmlParagraph(element = element, segmentId = segmentId))
-        }
-        require(segments.isNotEmpty()) { "TTML has no translatable text" }
-        TtmlLyricsDocument(
-            document = document,
-            originalHadDeclaration = rawLyrics.trimStart().startsWith("<?xml", ignoreCase = true),
-            paragraphs = paragraphs,
-            segments = segments,
-        )
-    }
 
     private val SyncedLineRegex = Regex("""^(\s*(?:\[[^\]]+])+)(\s*)(.*?)(\s*)$""")
     private val PlainLineRegex = Regex("""^(\s*)(.*?)(\s*)$""")
@@ -178,10 +183,11 @@ private data class TtmlLyricsDocument(
         document: Document,
         includeDeclaration: Boolean,
     ): String {
-        val transformer = TransformerFactory.newInstance().newTransformer().apply {
-            setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, if (includeDeclaration) "no" else "yes")
-            setOutputProperty(OutputKeys.ENCODING, "UTF-8")
-        }
+        val transformer =
+            TransformerFactory.newInstance().newTransformer().apply {
+                setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, if (includeDeclaration) "no" else "yes")
+                setOutputProperty(OutputKeys.ENCODING, "UTF-8")
+            }
         val writer = StringWriter()
         transformer.transform(DOMSource(document), StreamResult(writer))
         return writer.toString()

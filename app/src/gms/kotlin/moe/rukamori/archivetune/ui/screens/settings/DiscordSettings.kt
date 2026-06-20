@@ -17,7 +17,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -27,21 +27,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.toBitmap
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collectLatest
 import moe.rukamori.archivetune.LocalPlayerAwareWindowInsets
 import moe.rukamori.archivetune.LocalPlayerConnection
 import moe.rukamori.archivetune.R
@@ -53,20 +56,17 @@ import moe.rukamori.archivetune.ui.component.EditTextPreference
 import moe.rukamori.archivetune.ui.component.EnumListPreference
 import moe.rukamori.archivetune.ui.component.IconButton
 import moe.rukamori.archivetune.ui.component.ListPreference
-import moe.rukamori.archivetune.ui.component.PreferenceGroup
 import moe.rukamori.archivetune.ui.component.PreferenceEntry
+import moe.rukamori.archivetune.ui.component.PreferenceGroup
 import moe.rukamori.archivetune.ui.component.SwitchPreference
 import moe.rukamori.archivetune.ui.theme.PlayerColorExtractor
 import moe.rukamori.archivetune.ui.theme.extractThemeColor
 import moe.rukamori.archivetune.ui.utils.backToMain
+import moe.rukamori.archivetune.utils.ArtworkStorage
 import moe.rukamori.archivetune.utils.makeTimeString
 import moe.rukamori.archivetune.utils.rememberEnumPreference
 import moe.rukamori.archivetune.utils.rememberPreference
-import androidx.compose.foundation.lazy.LazyColumn
 import timber.log.Timber
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collectLatest
-import moe.rukamori.archivetune.utils.ArtworkStorage
 
 enum class ActivitySource { ARTIST, ALBUM, SONG, APP }
 
@@ -107,9 +107,21 @@ fun DiscordSettings(
         mutableStateOf(DiscordAuthorizationUiMode.Idle.name)
     }
     var authorizationMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    var currentTimeMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
-    val authorizationUiMode = remember(authorizationUiModeName) {
-        DiscordAuthorizationUiMode.valueOf(authorizationUiModeName)
+    val authorizationUiMode =
+        remember(authorizationUiModeName) {
+            DiscordAuthorizationUiMode.valueOf(authorizationUiModeName)
+        }
+
+    val discordTokenExpiresAt by rememberPreference(DiscordTokenExpiresAtKey, 0L)
+
+    LaunchedEffect(discordTokenExpiresAt) {
+        currentTimeMillis = System.currentTimeMillis()
+        if (discordTokenExpiresAt > currentTimeMillis) {
+            delay((discordTokenExpiresAt - currentTimeMillis).coerceAtLeast(1_000L))
+            currentTimeMillis = System.currentTimeMillis()
+        }
     }
 
     LaunchedEffect(discordToken) {
@@ -139,10 +151,11 @@ fun DiscordSettings(
         }
     }
 
-    val (discordRPC, onDiscordRPCChange) = rememberPreference(
-        key = EnableDiscordRPCKey,
-        defaultValue = true
-    )
+    val (discordRPC, onDiscordRPCChange) =
+        rememberPreference(
+            key = EnableDiscordRPCKey,
+            defaultValue = true,
+        )
 
     LaunchedEffect(discordToken, discordRPC) {
         if (discordRPC && discordToken.isNotBlank()) {
@@ -158,14 +171,19 @@ fun DiscordSettings(
     val activeDiscordName = authorizedName.ifBlank { discordName }
     val activeDiscordAvatarUrl = authorizedAvatarUrl.ifBlank { discordAvatarUrl }
     val isLoggedIn = remember(activeDiscordToken) { activeDiscordToken.isNotBlank() }
-    val accountDisplayName = remember(isLoggedIn, activeDiscordName, activeDiscordUsername, context) {
-        when {
-            activeDiscordName.isNotBlank() -> activeDiscordName
-            activeDiscordUsername.isNotBlank() -> activeDiscordUsername
-            isLoggedIn -> context.getString(R.string.account)
-            else -> context.getString(R.string.not_logged_in)
+    val isAccessTokenExpired =
+        remember(isLoggedIn, discordTokenExpiresAt, currentTimeMillis) {
+            isLoggedIn && discordTokenExpiresAt > 0L && currentTimeMillis >= discordTokenExpiresAt
         }
-    }
+    val accountDisplayName =
+        remember(isLoggedIn, activeDiscordName, activeDiscordUsername, context) {
+            when {
+                activeDiscordName.isNotBlank() -> activeDiscordName
+                activeDiscordUsername.isNotBlank() -> activeDiscordUsername
+                isLoggedIn -> context.getString(R.string.account)
+                else -> context.getString(R.string.not_logged_in)
+            }
+        }
 
     val launchAuthorization: () -> Unit = {
         val session = DiscordOAuthRepository.createAuthorizationSession()
@@ -195,29 +213,31 @@ fun DiscordSettings(
                 return@collectLatest
             }
 
-            DiscordOAuthRepository.completeAuthorization(
-                context = context,
-                session = authorizationSession,
-                redirect = redirect,
-            ).onSuccess { session ->
-                val account = session.account
-                    ?: runCatching { DiscordOAuthRepository.fetchAccount(session.accessToken) }.getOrNull()
+            DiscordOAuthRepository
+                .completeAuthorization(
+                    context = context,
+                    session = authorizationSession,
+                    redirect = redirect,
+                ).onSuccess { session ->
+                    val account =
+                        session.account
+                            ?: runCatching { DiscordOAuthRepository.fetchAccount(session.accessToken) }.getOrNull()
 
-                authorizedToken = session.accessToken
-                authorizedUsername = account?.username.orEmpty()
-                authorizedName = account?.displayName.orEmpty()
-                authorizedAvatarUrl = account?.avatarUrl.orEmpty()
-                discordUsername = authorizedUsername
-                discordName = authorizedName
-                discordAvatarUrl = authorizedAvatarUrl
-                authorizationMessage = context.getString(R.string.discord_authorization_success)
-                authorizationUiModeName = DiscordAuthorizationUiMode.Success.name
-                authorizationSession = DiscordOAuthRepository.createAuthorizationSession()
-            }.onFailure {
-                authorizationMessage = it.message ?: context.getString(R.string.discord_authorization_failed)
-                authorizationUiModeName = DiscordAuthorizationUiMode.Failure.name
-                authorizationSession = DiscordOAuthRepository.createAuthorizationSession()
-            }
+                    authorizedToken = session.accessToken
+                    authorizedUsername = account?.username.orEmpty()
+                    authorizedName = account?.displayName.orEmpty()
+                    authorizedAvatarUrl = account?.avatarUrl.orEmpty()
+                    discordUsername = authorizedUsername
+                    discordName = authorizedName
+                    discordAvatarUrl = authorizedAvatarUrl
+                    authorizationMessage = context.getString(R.string.discord_authorization_success)
+                    authorizationUiModeName = DiscordAuthorizationUiMode.Success.name
+                    authorizationSession = DiscordOAuthRepository.createAuthorizationSession()
+                }.onFailure {
+                    authorizationMessage = it.message ?: context.getString(R.string.discord_authorization_failed)
+                    authorizationUiModeName = DiscordAuthorizationUiMode.Failure.name
+                    authorizationSession = DiscordOAuthRepository.createAuthorizationSession()
+                }
         }
     }
 
@@ -239,106 +259,127 @@ fun DiscordSettings(
         authorizationSession = DiscordOAuthRepository.createAuthorizationSession()
     }
 
-    val (largeImageType, onLargeImageTypeChange) = rememberPreference(
-        key = DiscordLargeImageTypeKey,
-        defaultValue = "thumbnail"
-    )
-    val (largeImageCustomUrl, onLargeImageCustomUrlChange) = rememberPreference(
-        key = DiscordLargeImageCustomUrlKey,
-        defaultValue = ""
-    )
-    val (smallImageType, onSmallImageTypeChange) = rememberPreference(
-        key = DiscordSmallImageTypeKey,
-        defaultValue = "artist"
-    )
-    val (smallImageCustomUrl, onSmallImageCustomUrlChange) = rememberPreference(
-        key = DiscordSmallImageCustomUrlKey,
-        defaultValue = ""
-    )
+    val (largeImageType, onLargeImageTypeChange) =
+        rememberPreference(
+            key = DiscordLargeImageTypeKey,
+            defaultValue = "thumbnail",
+        )
+    val (largeImageCustomUrl, onLargeImageCustomUrlChange) =
+        rememberPreference(
+            key = DiscordLargeImageCustomUrlKey,
+            defaultValue = "",
+        )
+    val (smallImageType, onSmallImageTypeChange) =
+        rememberPreference(
+            key = DiscordSmallImageTypeKey,
+            defaultValue = "artist",
+        )
+    val (smallImageCustomUrl, onSmallImageCustomUrlChange) =
+        rememberPreference(
+            key = DiscordSmallImageCustomUrlKey,
+            defaultValue = "",
+        )
     var isRefreshing by remember { mutableStateOf(false) }
 
-    val (activityStatusSelection, onActivityStatusSelectionChange) = rememberPreference(
-        key = DiscordPresenceStatusKey,
-        defaultValue = "online"
-    )
+    val (activityStatusSelection, onActivityStatusSelectionChange) =
+        rememberPreference(
+            key = DiscordPresenceStatusKey,
+            defaultValue = "online",
+        )
 
-    val (platformSelection, onPlatformSelectionChange) = rememberPreference(
-        key = DiscordActivityPlatformKey,
-        defaultValue = "android"
-    )
+    val (platformSelection, onPlatformSelectionChange) =
+        rememberPreference(
+            key = DiscordActivityPlatformKey,
+            defaultValue = "android",
+        )
 
-    val (nameSource, onNameSourceChange) = rememberEnumPreference(
-        key = DiscordActivityNameKey,
-        defaultValue = ActivitySource.APP
-    )
-    val (detailsSource, onDetailsSourceChange) = rememberEnumPreference(
-        key = DiscordActivityDetailsKey,
-        defaultValue = ActivitySource.SONG
-    )
-    val (stateSource, onStateSourceChange) = rememberEnumPreference(
-        key = DiscordActivityStateKey,
-        defaultValue = ActivitySource.ARTIST
-    )
+    val (nameSource, onNameSourceChange) =
+        rememberEnumPreference(
+            key = DiscordActivityNameKey,
+            defaultValue = ActivitySource.APP,
+        )
+    val (detailsSource, onDetailsSourceChange) =
+        rememberEnumPreference(
+            key = DiscordActivityDetailsKey,
+            defaultValue = ActivitySource.SONG,
+        )
+    val (stateSource, onStateSourceChange) =
+        rememberEnumPreference(
+            key = DiscordActivityStateKey,
+            defaultValue = ActivitySource.ARTIST,
+        )
 
-    val (button1Label) = rememberPreference(
-        key = DiscordActivityButton1LabelKey,
-        defaultValue = "Listen on YouTube Music"
-    )
-    val (button1Enabled) = rememberPreference(
-        key = DiscordActivityButton1EnabledKey,
-        defaultValue = true
-    )
-    val (button2Label) = rememberPreference(
-        key = DiscordActivityButton2LabelKey,
-        defaultValue = "Go to ArchiveTune"
-    )
-    val (button2Enabled) = rememberPreference(
-        key = DiscordActivityButton2EnabledKey,
-        defaultValue = true
-    )
-    val (button1UrlSource) = rememberPreference(
-        key = DiscordActivityButton1UrlSourceKey,
-        defaultValue = "songurl"
-    )
-    val (button1CustomUrl) = rememberPreference(
-        key = DiscordActivityButton1CustomUrlKey,
-        defaultValue = ""
-    )
-    val (button2UrlSource) = rememberPreference(
-        key = DiscordActivityButton2UrlSourceKey,
-        defaultValue = "custom"
-    )
-    val (button2CustomUrl) = rememberPreference(
-        key = DiscordActivityButton2CustomUrlKey,
-        defaultValue = "https://github.com/ArchiveTuneApp/ArchiveTune"
-    )
+    val (button1Label) =
+        rememberPreference(
+            key = DiscordActivityButton1LabelKey,
+            defaultValue = "Listen on YouTube Music",
+        )
+    val (button1Enabled) =
+        rememberPreference(
+            key = DiscordActivityButton1EnabledKey,
+            defaultValue = true,
+        )
+    val (button2Label) =
+        rememberPreference(
+            key = DiscordActivityButton2LabelKey,
+            defaultValue = "Go to ArchiveTune",
+        )
+    val (button2Enabled) =
+        rememberPreference(
+            key = DiscordActivityButton2EnabledKey,
+            defaultValue = true,
+        )
+    val (button1UrlSource) =
+        rememberPreference(
+            key = DiscordActivityButton1UrlSourceKey,
+            defaultValue = "songurl",
+        )
+    val (button1CustomUrl) =
+        rememberPreference(
+            key = DiscordActivityButton1CustomUrlKey,
+            defaultValue = "",
+        )
+    val (button2UrlSource) =
+        rememberPreference(
+            key = DiscordActivityButton2UrlSourceKey,
+            defaultValue = "custom",
+        )
+    val (button2CustomUrl) =
+        rememberPreference(
+            key = DiscordActivityButton2CustomUrlKey,
+            defaultValue = "https://github.com/ArchiveTuneApp/ArchiveTune",
+        )
 
-    val (activityType, onActivityTypeChange) = rememberPreference(
-        key = DiscordActivityTypeKey,
-        defaultValue = "LISTENING"
-    )
+    val (activityType, onActivityTypeChange) =
+        rememberPreference(
+            key = DiscordActivityTypeKey,
+            defaultValue = "LISTENING",
+        )
     var showWhenPaused by rememberPreference(
         key = DiscordShowWhenPausedKey,
-        defaultValue = false
+        defaultValue = false,
     )
 
-    val (largeTextSource, onLargeTextSourceChange) = rememberPreference(
-        key = DiscordLargeTextSourceKey,
-        defaultValue = "album"
-    )
-    val (largeTextCustom, onLargeTextCustomChange) = rememberPreference(
-        key = DiscordLargeTextCustomKey,
-        defaultValue = ""
-    )
+    val (largeTextSource, onLargeTextSourceChange) =
+        rememberPreference(
+            key = DiscordLargeTextSourceKey,
+            defaultValue = "album",
+        )
+    val (largeTextCustom, onLargeTextCustomChange) =
+        rememberPreference(
+            key = DiscordLargeTextCustomKey,
+            defaultValue = "",
+        )
 
     LaunchedEffect(largeImageType, smallImageType) {
         ArtworkStorage.removeBySongId(context, song?.song?.id ?: return@LaunchedEffect)
     }
 
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.surface,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -390,26 +431,29 @@ fun DiscordSettings(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.largeTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                ),
+                colors =
+                    TopAppBarDefaults.largeTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    ),
                 scrollBehavior = scrollBehavior,
             )
         },
     ) { innerPadding ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .windowInsetsPadding(
-                    LocalPlayerAwareWindowInsets.current.only(
-                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(
+                        LocalPlayerAwareWindowInsets.current.only(
+                            WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                        ),
                     ),
+            contentPadding =
+                PaddingValues(
+                    top = innerPadding.calculateTopPadding() + 16.dp,
+                    bottom = 32.dp,
                 ),
-            contentPadding = PaddingValues(
-                top = innerPadding.calculateTopPadding() + 16.dp,
-                bottom = 32.dp,
-            ),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
@@ -422,8 +466,10 @@ fun DiscordSettings(
                             isLoggedIn = isLoggedIn,
                             authorizationUiMode = authorizationUiMode,
                             authorizationMessage = authorizationMessage,
+                            isAccessTokenExpired = isAccessTokenExpired,
                             discordRpcEnabled = discordRPC,
                             onDiscordRpcEnabledChange = onDiscordRPCChange,
+                            onReauthorize = launchAuthorization,
                             onPrimaryAction = {
                                 if (isLoggedIn) {
                                     showLogoutConfirm = true
@@ -456,20 +502,22 @@ fun DiscordSettings(
                                         onClick = {
                                             coroutineScope.launch {
                                                 isRefreshing = true
-                                                val success = DiscordPresenceManager.updatePresence(
-                                                    context = context,
-                                                    token = discordToken,
-                                                    song = song,
-                                                    positionMs = playerConnection.player.currentPosition,
-                                                    isPaused = !playerConnection.player.isPlaying,
-                                                )
+                                                val success =
+                                                    DiscordPresenceManager.updatePresence(
+                                                        context = context,
+                                                        token = discordToken,
+                                                        song = song,
+                                                        positionMs = playerConnection.player.currentPosition,
+                                                        isPaused = !playerConnection.player.isPlaying,
+                                                    )
                                                 isRefreshing = false
                                                 snackbarHostState.showSnackbar(
-                                                    message = if (success) {
-                                                        context.getString(R.string.discord_refresh_success)
-                                                    } else {
-                                                        context.getString(R.string.discord_refresh_failed)
-                                                    },
+                                                    message =
+                                                        if (success) {
+                                                            context.getString(R.string.discord_refresh_success)
+                                                        } else {
+                                                            context.getString(R.string.discord_refresh_failed)
+                                                        },
                                                 )
                                             }
                                         },
@@ -704,8 +752,10 @@ private fun DiscordAccountGroupCard(
     isLoggedIn: Boolean,
     authorizationUiMode: DiscordAuthorizationUiMode,
     authorizationMessage: String?,
+    isAccessTokenExpired: Boolean,
     discordRpcEnabled: Boolean,
     onDiscordRpcEnabledChange: (Boolean) -> Unit,
+    onReauthorize: () -> Unit,
     onPrimaryAction: () -> Unit,
     primaryActionEnabled: Boolean,
 ) {
@@ -716,14 +766,16 @@ private fun DiscordAccountGroupCard(
         animationSpec = tween(durationMillis = 420),
         label = "discordAvatarGlow",
     )
-    val avatarImageRequest = remember(context, avatarUrl) {
-        avatarUrl?.takeIf { it.isNotBlank() }?.let {
-            ImageRequest.Builder(context)
-                .data(it)
-                .size(256, 256)
-                .build()
+    val avatarImageRequest =
+        remember(context, avatarUrl) {
+            avatarUrl?.takeIf { it.isNotBlank() }?.let {
+                ImageRequest
+                    .Builder(context)
+                    .data(it)
+                    .size(256, 256)
+                    .build()
+            }
         }
-    }
 
     LaunchedEffect(avatarUrl, isLoggedIn) {
         if (!isLoggedIn || avatarUrl.isNullOrBlank()) {
@@ -731,56 +783,74 @@ private fun DiscordAccountGroupCard(
             return@LaunchedEffect
         }
 
-        val bitmap = runCatching {
-            context.imageLoader.execute(
-                ImageRequest.Builder(context)
-                    .data(avatarUrl)
-                    .size(PlayerColorExtractor.Config.IMAGE_SIZE, PlayerColorExtractor.Config.IMAGE_SIZE)
-                    .allowHardware(false)
-                    .build(),
-            ).image?.toBitmap()
-        }.getOrNull()
+        val bitmap =
+            runCatching {
+                context.imageLoader
+                    .execute(
+                        ImageRequest
+                            .Builder(context)
+                            .data(avatarUrl)
+                            .size(PlayerColorExtractor.Config.IMAGE_SIZE, PlayerColorExtractor.Config.IMAGE_SIZE)
+                            .allowHardware(false)
+                            .build(),
+                    ).image
+                    ?.toBitmap()
+            }.getOrNull()
 
-        extractedGlowColor = if (bitmap != null) {
-            withContext(Dispatchers.Default) { bitmap.extractThemeColor() }
-        } else {
-            Color.Transparent
-        }
+        extractedGlowColor =
+            if (bitmap != null) {
+                withContext(Dispatchers.Default) { bitmap.extractThemeColor() }
+            } else {
+                Color.Transparent
+            }
     }
 
-    val sessionSummary = when (authorizationUiMode) {
-        DiscordAuthorizationUiMode.Waiting -> stringResource(R.string.discord_waiting_for_authorization)
-        DiscordAuthorizationUiMode.Success -> authorizationMessage ?: stringResource(R.string.discord_authorization_success)
-        DiscordAuthorizationUiMode.Failure -> authorizationMessage ?: stringResource(R.string.discord_authorization_failed)
-        DiscordAuthorizationUiMode.Idle -> {
-            if (isLoggedIn) {
-                stringResource(R.string.discord_account_ready)
-            } else {
-                stringResource(R.string.discord_login_description)
+    val sessionSummary =
+        when (authorizationUiMode) {
+            DiscordAuthorizationUiMode.Waiting -> {
+                stringResource(R.string.discord_waiting_for_authorization)
+            }
+
+            DiscordAuthorizationUiMode.Success -> {
+                authorizationMessage ?: stringResource(R.string.discord_authorization_success)
+            }
+
+            DiscordAuthorizationUiMode.Failure -> {
+                authorizationMessage ?: stringResource(R.string.discord_authorization_failed)
+            }
+
+            DiscordAuthorizationUiMode.Idle -> {
+                if (isLoggedIn) {
+                    stringResource(R.string.discord_account_ready)
+                } else {
+                    stringResource(R.string.discord_login_description)
+                }
             }
         }
-    }
 
-    val sessionContainerColor = when (authorizationUiMode) {
-        DiscordAuthorizationUiMode.Waiting -> MaterialTheme.colorScheme.secondaryContainer
-        DiscordAuthorizationUiMode.Success -> MaterialTheme.colorScheme.primaryContainer
-        DiscordAuthorizationUiMode.Failure -> MaterialTheme.colorScheme.errorContainer
-        DiscordAuthorizationUiMode.Idle -> MaterialTheme.colorScheme.surfaceContainerHighest
-    }
+    val sessionContainerColor =
+        when (authorizationUiMode) {
+            DiscordAuthorizationUiMode.Waiting -> MaterialTheme.colorScheme.secondaryContainer
+            DiscordAuthorizationUiMode.Success -> MaterialTheme.colorScheme.primaryContainer
+            DiscordAuthorizationUiMode.Failure -> MaterialTheme.colorScheme.errorContainer
+            DiscordAuthorizationUiMode.Idle -> MaterialTheme.colorScheme.surfaceContainerHighest
+        }
 
-    val sessionContentColor = when (authorizationUiMode) {
-        DiscordAuthorizationUiMode.Waiting -> MaterialTheme.colorScheme.onSecondaryContainer
-        DiscordAuthorizationUiMode.Success -> MaterialTheme.colorScheme.onPrimaryContainer
-        DiscordAuthorizationUiMode.Failure -> MaterialTheme.colorScheme.onErrorContainer
-        DiscordAuthorizationUiMode.Idle -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
+    val sessionContentColor =
+        when (authorizationUiMode) {
+            DiscordAuthorizationUiMode.Waiting -> MaterialTheme.colorScheme.onSecondaryContainer
+            DiscordAuthorizationUiMode.Success -> MaterialTheme.colorScheme.onPrimaryContainer
+            DiscordAuthorizationUiMode.Failure -> MaterialTheme.colorScheme.onErrorContainer
+            DiscordAuthorizationUiMode.Idle -> MaterialTheme.colorScheme.onSurfaceVariant
+        }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(
@@ -792,15 +862,16 @@ private fun DiscordAccountGroupCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(
-                    modifier = Modifier
-                        .size(88.dp)
-                        .shadow(
-                            elevation = 30.dp,
-                            shape = CircleShape,
-                            clip = false,
-                            ambientColor = avatarGlowColor.copy(alpha = 0.56f),
-                            spotColor = avatarGlowColor.copy(alpha = 0.74f),
-                        ),
+                    modifier =
+                        Modifier
+                            .size(88.dp)
+                            .shadow(
+                                elevation = 30.dp,
+                                shape = CircleShape,
+                                clip = false,
+                                ambientColor = avatarGlowColor.copy(alpha = 0.56f),
+                                spotColor = avatarGlowColor.copy(alpha = 0.74f),
+                            ),
                 ) {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
@@ -819,9 +890,10 @@ private fun DiscordAccountGroupCard(
                                 AsyncImage(
                                     model = it,
                                     contentDescription = displayName,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clip(CircleShape),
+                                    modifier =
+                                        Modifier
+                                            .fillMaxSize()
+                                            .clip(CircleShape),
                                 )
                             }
                         }
@@ -850,7 +922,9 @@ private fun DiscordAccountGroupCard(
             }
 
             AnimatedVisibility(
-                visible = authorizationUiMode != DiscordAuthorizationUiMode.Idle || isLoggedIn,
+                visible =
+                    authorizationUiMode != DiscordAuthorizationUiMode.Idle ||
+                        (isLoggedIn && !isAccessTokenExpired),
             ) {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
@@ -869,14 +943,15 @@ private fun DiscordAccountGroupCard(
                             )
                         } else {
                             Icon(
-                                painter = painterResource(
-                                    when (authorizationUiMode) {
-                                        DiscordAuthorizationUiMode.Success -> R.drawable.check
-                                        DiscordAuthorizationUiMode.Failure -> R.drawable.close
-                                        DiscordAuthorizationUiMode.Idle -> R.drawable.discord
-                                        DiscordAuthorizationUiMode.Waiting -> R.drawable.discord
-                                    },
-                                ),
+                                painter =
+                                    painterResource(
+                                        when (authorizationUiMode) {
+                                            DiscordAuthorizationUiMode.Success -> R.drawable.check
+                                            DiscordAuthorizationUiMode.Failure -> R.drawable.close
+                                            DiscordAuthorizationUiMode.Idle -> R.drawable.discord
+                                            DiscordAuthorizationUiMode.Waiting -> R.drawable.discord
+                                        },
+                                    ),
                                 contentDescription = null,
                                 tint = sessionContentColor,
                             )
@@ -894,16 +969,18 @@ private fun DiscordAccountGroupCard(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.large,
-                color = if (discordRpcEnabled && isLoggedIn) {
-                    MaterialTheme.colorScheme.primaryContainer
-                } else {
-                    MaterialTheme.colorScheme.surfaceContainerHighest
-                },
+                color =
+                    if (discordRpcEnabled && isLoggedIn) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.surfaceContainerHighest
+                    },
             ) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -943,9 +1020,10 @@ private fun DiscordAccountGroupCard(
                 OutlinedButton(
                     onClick = onPrimaryAction,
                     enabled = primaryActionEnabled,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 56.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 56.dp),
                     shapes = ButtonDefaults.shapes(),
                 ) {
                     Text(stringResource(R.string.action_logout))
@@ -954,42 +1032,102 @@ private fun DiscordAccountGroupCard(
                 Button(
                     onClick = onPrimaryAction,
                     enabled = primaryActionEnabled,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 56.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 56.dp),
                     shapes = ButtonDefaults.shapes(),
                 ) {
                     Text(stringResource(R.string.discord_open_authorization))
                 }
+            }
+
+            AnimatedVisibility(
+                visible = isAccessTokenExpired && authorizationUiMode == DiscordAuthorizationUiMode.Idle,
+            ) {
+                DiscordReauthorizeWarningRow(
+                    onReauthorize = onReauthorize,
+                    enabled = primaryActionEnabled,
+                )
             }
         }
     }
 }
 
 @Composable
-private fun activitySourceLabel(source: ActivitySource): String {
-    return when (source) {
+private fun DiscordReauthorizeWarningRow(
+    onReauthorize: () -> Unit,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.errorContainer,
+    ) {
+        ListItem(
+            headlineContent = {
+                Text(
+                    text = stringResource(R.string.discord_reauthorize_required_title),
+                    fontWeight = FontWeight.SemiBold,
+                )
+            },
+            supportingContent = {
+                Text(stringResource(R.string.discord_reauthorize_required_description))
+            },
+            leadingContent = {
+                Icon(
+                    painter = painterResource(R.drawable.error),
+                    contentDescription = null,
+                )
+            },
+            trailingContent = {
+                TextButton(
+                    onClick = onReauthorize,
+                    enabled = enabled,
+                    colors =
+                        ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                        ),
+                    shapes = ButtonDefaults.shapes(),
+                ) {
+                    Text(stringResource(R.string.discord_reauthorize_action))
+                }
+            },
+            colors =
+                ListItemDefaults.colors(
+                    containerColor = Color.Transparent,
+                    headlineColor = MaterialTheme.colorScheme.onErrorContainer,
+                    supportingColor = MaterialTheme.colorScheme.onErrorContainer,
+                    leadingIconColor = MaterialTheme.colorScheme.onErrorContainer,
+                    trailingIconColor = MaterialTheme.colorScheme.onErrorContainer,
+                ),
+        )
+    }
+}
+
+@Composable
+private fun activitySourceLabel(source: ActivitySource): String =
+    when (source) {
         ActivitySource.ARTIST -> stringResource(R.string.artist_name)
         ActivitySource.ALBUM -> stringResource(R.string.album_name)
         ActivitySource.SONG -> stringResource(R.string.song_title)
         ActivitySource.APP -> stringResource(R.string.app_name)
     }
-}
 
 @Composable
-private fun discordPresenceStatusLabel(value: String): String {
-    return when (value) {
+private fun discordPresenceStatusLabel(value: String): String =
+    when (value) {
         "online" -> stringResource(R.string.discord_presence_online)
         "dnd" -> stringResource(R.string.discord_presence_do_not_disturb)
         "idle" -> stringResource(R.string.discord_presence_idle)
         "streaming" -> stringResource(R.string.discord_presence_streaming)
         else -> stringResource(R.string.discord_presence_online)
     }
-}
 
 @Composable
-private fun discordPlatformLabel(value: String): String {
-    return when (value) {
+private fun discordPlatformLabel(value: String): String =
+    when (value) {
         "desktop" -> stringResource(R.string.discord_platform_desktop)
         "xbox" -> stringResource(R.string.discord_platform_xbox)
         "samsung" -> stringResource(R.string.discord_platform_samsung)
@@ -1000,11 +1138,10 @@ private fun discordPlatformLabel(value: String): String {
         "ps5" -> stringResource(R.string.discord_platform_ps5)
         else -> stringResource(R.string.discord_platform_android)
     }
-}
 
 @Composable
-private fun discordActivityTypeLabel(value: String): String {
-    return when (value) {
+private fun discordActivityTypeLabel(value: String): String =
+    when (value) {
         "PLAYING" -> stringResource(R.string.discord_activity_type_playing_label)
         "STREAMING" -> stringResource(R.string.discord_activity_type_streaming_label)
         "LISTENING" -> stringResource(R.string.discord_activity_type_listening_label)
@@ -1012,11 +1149,10 @@ private fun discordActivityTypeLabel(value: String): String {
         "COMPETING" -> stringResource(R.string.discord_activity_type_competing_label)
         else -> value
     }
-}
 
 @Composable
-private fun discordImageTypeLabel(value: String): String {
-    return when (value.lowercase()) {
+private fun discordImageTypeLabel(value: String): String =
+    when (value.lowercase()) {
         "thumbnail" -> stringResource(R.string.discord_image_album_artwork)
         "artist" -> stringResource(R.string.discord_image_artist_artwork)
         "appicon" -> stringResource(R.string.app_icon)
@@ -1024,11 +1160,10 @@ private fun discordImageTypeLabel(value: String): String {
         "dontshow" -> stringResource(R.string.dont_show)
         else -> value
     }
-}
 
 @Composable
-private fun discordLargeTextSourceLabel(value: String): String {
-    return when (value.lowercase()) {
+private fun discordLargeTextSourceLabel(value: String): String =
+    when (value.lowercase()) {
         "song" -> stringResource(R.string.song_title)
         "artist" -> stringResource(R.string.artist_name)
         "album" -> stringResource(R.string.album_name)
@@ -1037,8 +1172,6 @@ private fun discordLargeTextSourceLabel(value: String): String {
         "dontshow" -> stringResource(R.string.dont_show)
         else -> value
     }
-}
-
 
 @Composable
 fun EditablePreference(
@@ -1056,7 +1189,7 @@ fun EditablePreference(
         icon = { Icon(painterResource(iconRes), null) },
         trailingContent = {
             TextButton(onClick = { showDialog = true }, shapes = ButtonDefaults.shapes()) { Text("Edit") }
-        }
+        },
     )
     if (showDialog) {
         var text by remember { mutableStateOf(value) }
@@ -1078,9 +1211,9 @@ fun EditablePreference(
                     onValueChange = { text = it },
                     placeholder = { Text(defaultValue) },
                     singleLine = true,
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp),
                 )
-            }
+            },
         )
     }
 }
@@ -1116,55 +1249,77 @@ fun RichPresence(
     val songTitleFallback = stringResource(R.string.song_title)
     val customLargeTextFallback = stringResource(R.string.custom_large_text)
 
-    fun resolveUrl(source: String, song: Song?, custom: String): String? {
-        return when (source.lowercase()) {
-            "songurl" -> song?.song?.id?.let { "https://music.youtube.com/watch?v=$it" }
-            "artisturl" -> song?.artists?.firstOrNull()?.id?.let { "https://music.youtube.com/channel/$it" }
-            "albumurl" -> song?.album?.playlistId?.let { "https://music.youtube.com/playlist?list=$it" }
-            "custom" -> custom.takeIf { it.isNotBlank() }
-            else -> null
-        }
-    }
+    fun resolveUrl(
+        source: String,
+        song: Song?,
+        custom: String,
+    ): String? =
+        when (source.lowercase()) {
+            "songurl" -> {
+                song?.song?.id?.let { "https://music.youtube.com/watch?v=$it" }
+            }
 
-    fun previewSourceValue(source: ActivitySource): String {
-        return when (source) {
+            "artisturl" -> {
+                song
+                    ?.artists
+                    ?.firstOrNull()
+                    ?.id
+                    ?.let { "https://music.youtube.com/channel/$it" }
+            }
+
+            "albumurl" -> {
+                song?.album?.playlistId?.let { "https://music.youtube.com/playlist?list=$it" }
+            }
+
+            "custom" -> {
+                custom.takeIf { it.isNotBlank() }
+            }
+
+            else -> {
+                null
+            }
+        }
+
+    fun previewSourceValue(source: ActivitySource): String =
+        when (source) {
             ActivitySource.ARTIST -> song?.artists?.firstOrNull()?.name ?: artistNameFallback
             ActivitySource.ALBUM -> song?.song?.albumName ?: song?.album?.title ?: albumNameFallback
             ActivitySource.SONG -> song?.song?.title?.ifBlank { songTitleFallback } ?: songTitleFallback
             ActivitySource.APP -> appName
         }
-    }
 
     val previewName = previewSourceValue(nameSource)
     val previewDetails = previewSourceValue(detailsSource)
     val previewState = previewSourceValue(stateSource)
-    val previewLargeText = when (largeTextSource.lowercase()) {
-        "song" -> previewSourceValue(ActivitySource.SONG)
-        "artist" -> previewSourceValue(ActivitySource.ARTIST)
-        "album" -> previewSourceValue(ActivitySource.ALBUM)
-        "app" -> appName
-        "custom" -> largeTextCustom.ifBlank { customLargeTextFallback }
-        "dontshow" -> null
-        else -> previewSourceValue(ActivitySource.ALBUM)
-    }
+    val previewLargeText =
+        when (largeTextSource.lowercase()) {
+            "song" -> previewSourceValue(ActivitySource.SONG)
+            "artist" -> previewSourceValue(ActivitySource.ARTIST)
+            "album" -> previewSourceValue(ActivitySource.ALBUM)
+            "app" -> appName
+            "custom" -> largeTextCustom.ifBlank { customLargeTextFallback }
+            "dontshow" -> null
+            else -> previewSourceValue(ActivitySource.ALBUM)
+        }
     val visiblePreviewDetails = previewDetails.takeUnless { it == previewName }
-    val visiblePreviewState = previewState.takeUnless {
-        it == previewName || it == visiblePreviewDetails
-    }
-    val visiblePreviewLargeText = previewLargeText?.takeUnless {
-        it == previewName || it == visiblePreviewDetails || it == visiblePreviewState
-    }
+    val visiblePreviewState =
+        previewState.takeUnless {
+            it == previewName || it == visiblePreviewDetails
+        }
+    val visiblePreviewLargeText =
+        previewLargeText?.takeUnless {
+            it == previewName || it == visiblePreviewDetails || it == visiblePreviewState
+        }
     val resolvedButton1Url = resolveUrl(button1UrlSource, song, button1CustomUrl)
     val resolvedButton2Url = resolveUrl(button2UrlSource, song, button2CustomUrl)
     val activityTypeLabel = discordActivityTypeLabel(activityType)
-
 
     PreferenceEntry(
         title = {
             Text(
                 text = stringResource(R.string.preview),
                 style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 16.dp),
             )
         },
         content = {
@@ -1191,44 +1346,52 @@ fun RichPresence(
 
                     Row(verticalAlignment = Alignment.Top) {
                         Box(Modifier.size(108.dp)) {
-                            val largeImageModel = when (largeImageType.lowercase()) {
-                                "thumbnail" -> song?.song?.thumbnailUrl
-                                "artist" -> song?.artists?.firstOrNull()?.thumbnailUrl
-                                "appicon" -> "https://raw.githubusercontent.com/koiverse/ArchiveTune/main/fastlane/metadata/android/en-US/images/icon.png"
-                                "custom" -> largeImageCustomUrl.ifBlank { song?.song?.thumbnailUrl }
-                                else -> song?.song?.thumbnailUrl
-                            }
+                            val largeImageModel =
+                                when (largeImageType.lowercase()) {
+                                    "thumbnail" -> song?.song?.thumbnailUrl
+                                    "artist" -> song?.artists?.firstOrNull()?.thumbnailUrl
+                                    "appicon" -> "https://raw.githubusercontent.com/koiverse/ArchiveTune/main/fastlane/metadata/android/en-US/images/icon.png"
+                                    "custom" -> largeImageCustomUrl.ifBlank { song?.song?.thumbnailUrl }
+                                    else -> song?.song?.thumbnailUrl
+                                }
                             AsyncImage(
                                 model = largeImageModel,
                                 contentDescription = null,
-                                modifier = Modifier
-                                    .size(96.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .align(Alignment.TopStart)
-                                    .run {
-                                        if (song == null) border(
-                                            2.dp,
-                                            MaterialTheme.colorScheme.onSurface,
-                                            RoundedCornerShape(12.dp)
-                                        ) else this
-                                    },
+                                modifier =
+                                    Modifier
+                                        .size(96.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .align(Alignment.TopStart)
+                                        .run {
+                                            if (song == null) {
+                                                border(
+                                                    2.dp,
+                                                    MaterialTheme.colorScheme.onSurface,
+                                                    RoundedCornerShape(12.dp),
+                                                )
+                                            } else {
+                                                this
+                                            }
+                                        },
                             )
                             val songThumb = song?.song?.thumbnailUrl
                             val artistThumb = song?.artists?.firstOrNull()?.thumbnailUrl
-                            val smallModel = when (smallImageType.lowercase()) {
-                                "thumbnail" -> songThumb
-                                "artist" -> artistThumb
-                                "appicon" -> "https://raw.githubusercontent.com/koiverse/ArchiveTune/main/fastlane/metadata/android/en-US/images/icon.png"
-                                "custom" -> smallImageCustomUrl.takeIf { it.isNotBlank() } ?: songThumb
-                                "dontshow", "none" -> null
-                                else -> artistThumb
-                            }
+                            val smallModel =
+                                when (smallImageType.lowercase()) {
+                                    "thumbnail" -> songThumb
+                                    "artist" -> artistThumb
+                                    "appicon" -> "https://raw.githubusercontent.com/koiverse/ArchiveTune/main/fastlane/metadata/android/en-US/images/icon.png"
+                                    "custom" -> smallImageCustomUrl.takeIf { it.isNotBlank() } ?: songThumb
+                                    "dontshow", "none" -> null
+                                    else -> artistThumb
+                                }
                             smallModel?.let {
                                 Box(
-                                    modifier = Modifier
-                                        .border(2.dp, MaterialTheme.colorScheme.surfaceContainer, CircleShape)
-                                        .padding(2.dp)
-                                        .align(Alignment.BottomEnd),
+                                    modifier =
+                                        Modifier
+                                            .border(2.dp, MaterialTheme.colorScheme.surfaceContainer, CircleShape)
+                                            .padding(2.dp)
+                                            .align(Alignment.BottomEnd),
                                 ) {
                                     AsyncImage(
                                         model = it,
@@ -1324,7 +1487,7 @@ fun RichPresence(
                     }
                 }
             }
-        }
+        },
     )
 }
 
@@ -1332,7 +1495,7 @@ fun RichPresence(
 fun SongProgressBar(
     currentTimeMillis: Long,
     durationMillis: Long,
-    isPlaying: Boolean = false
+    isPlaying: Boolean = false,
 ) {
     var displayedTime by remember { mutableStateOf(currentTimeMillis) }
 
@@ -1349,18 +1512,22 @@ fun SongProgressBar(
         }
     }
 
-    val progress = if (durationMillis > 0) {
-        displayedTime.toFloat() / durationMillis
-    } else 0f
+    val progress =
+        if (durationMillis > 0) {
+            displayedTime.toFloat() / durationMillis
+        } else {
+            0f
+        }
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Spacer(modifier = Modifier.height(8.dp))
         LinearWavyProgressIndicator(
             progress = { progress.coerceIn(0f, 1f) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(6.dp)
-                .clip(RoundedCornerShape(3.dp))
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(3.dp)),
         )
         Row(modifier = Modifier.fillMaxWidth()) {
             Text(

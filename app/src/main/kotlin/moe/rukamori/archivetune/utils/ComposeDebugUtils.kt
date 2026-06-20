@@ -72,9 +72,15 @@ private val recomposeModifier =
                     when (numCompositionsSinceTimeout) {
                         // We need at least one composition to draw, so draw the smallest border
                         // color in blue.
-                        1L -> Color.Blue to 1f
+                        1L -> {
+                            Color.Blue to 1f
+                        }
+
                         // 2 compositions is _probably_ okay.
-                        2L -> Color.Green to 2.dp.toPx()
+                        2L -> {
+                            Color.Green to 2.dp.toPx()
+                        }
+
                         // 3 or more compositions before timeout may indicate an issue. lerp the
                         // color from yellow to red, and continually increase the border size.
                         else -> {

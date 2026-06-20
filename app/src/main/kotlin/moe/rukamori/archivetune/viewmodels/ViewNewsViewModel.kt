@@ -21,36 +21,43 @@ import javax.inject.Inject
 
 sealed interface ViewNewsUiState {
     data object Loading : ViewNewsUiState
-    data class Success(val content: String) : ViewNewsUiState
-    data class Error(val message: String) : ViewNewsUiState
+
+    data class Success(
+        val content: String,
+    ) : ViewNewsUiState
+
+    data class Error(
+        val message: String,
+    ) : ViewNewsUiState
 }
 
 @HiltViewModel
-class ViewNewsViewModel @Inject constructor(
-    private val repository: NewsRepository,
-    savedStateHandle: SavedStateHandle,
-) : ViewModel() {
+class ViewNewsViewModel
+    @Inject
+    constructor(
+        private val repository: NewsRepository,
+        savedStateHandle: SavedStateHandle,
+    ) : ViewModel() {
+        val newsId: String = savedStateHandle.get<String>("newsId") ?: ""
+        val newsItem: NewsItem? = repository.getCachedItem(newsId)
 
-    val newsId: String = savedStateHandle.get<String>("newsId") ?: ""
-    val newsItem: NewsItem? = repository.getCachedItem(newsId)
+        private val _contentState = MutableStateFlow<ViewNewsUiState>(ViewNewsUiState.Loading)
+        val contentState: StateFlow<ViewNewsUiState> = _contentState.asStateFlow()
 
-    private val _contentState = MutableStateFlow<ViewNewsUiState>(ViewNewsUiState.Loading)
-    val contentState: StateFlow<ViewNewsUiState> = _contentState.asStateFlow()
+        init {
+            loadContent()
+        }
 
-    init {
-        loadContent()
-    }
-
-    fun loadContent() {
-        viewModelScope.launch {
-            _contentState.value = ViewNewsUiState.Loading
-            runCatching {
-                repository.fetchNewsContent(newsId)
-            }.onSuccess { content ->
-                _contentState.value = ViewNewsUiState.Success(content)
-            }.onFailure { error ->
-                _contentState.value = ViewNewsUiState.Error(error.message ?: "Unknown error")
+        fun loadContent() {
+            viewModelScope.launch {
+                _contentState.value = ViewNewsUiState.Loading
+                runCatching {
+                    repository.fetchNewsContent(newsId)
+                }.onSuccess { content ->
+                    _contentState.value = ViewNewsUiState.Success(content)
+                }.onFailure { error ->
+                    _contentState.value = ViewNewsUiState.Error(error.message ?: "Unknown error")
+                }
             }
         }
     }
-}

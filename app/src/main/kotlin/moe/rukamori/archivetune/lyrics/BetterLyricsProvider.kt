@@ -8,13 +8,12 @@
 package moe.rukamori.archivetune.lyrics
 
 import android.content.Context
+import android.util.Log
 import moe.rukamori.archivetune.betterlyrics.BetterLyrics
 import moe.rukamori.archivetune.constants.EnableBetterLyricsKey
+import moe.rukamori.archivetune.utils.GlobalLog
 import moe.rukamori.archivetune.utils.dataStore
 import moe.rukamori.archivetune.utils.get
-
-import moe.rukamori.archivetune.utils.GlobalLog
-import android.util.Log
 
 object BetterLyricsProvider : LyricsProvider {
     init {

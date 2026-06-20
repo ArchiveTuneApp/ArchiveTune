@@ -27,73 +27,79 @@ data class LyricsGlassStyle(
     val backgroundDimAlpha: Float = 0.3f,
 ) {
     companion object {
-        val FrostedDark = LyricsGlassStyle(
-            labelRes = R.string.lyrics_share_style_frosted_dark,
-            surfaceTint = Color.Black,
-            surfaceAlpha = 0.35f,
-            textColor = Color.White,
-            secondaryTextColor = Color.White.copy(alpha = 0.7f),
-            overlayColor = Color.Black,
-            overlayAlpha = 0.25f,
-            isDark = true,
-            backgroundDimAlpha = 0.35f,
-        )
+        val FrostedDark =
+            LyricsGlassStyle(
+                labelRes = R.string.lyrics_share_style_frosted_dark,
+                surfaceTint = Color.Black,
+                surfaceAlpha = 0.35f,
+                textColor = Color.White,
+                secondaryTextColor = Color.White.copy(alpha = 0.7f),
+                overlayColor = Color.Black,
+                overlayAlpha = 0.25f,
+                isDark = true,
+                backgroundDimAlpha = 0.35f,
+            )
 
-        val FrostedLight = LyricsGlassStyle(
-            labelRes = R.string.lyrics_share_style_frosted_light,
-            surfaceTint = Color.White,
-            surfaceAlpha = 0.45f,
-            textColor = Color(0xFF1A1A1A),
-            secondaryTextColor = Color(0xFF1A1A1A).copy(alpha = 0.65f),
-            overlayColor = Color.White,
-            overlayAlpha = 0.35f,
-            isDark = false,
-            backgroundDimAlpha = 0.15f,
-        )
+        val FrostedLight =
+            LyricsGlassStyle(
+                labelRes = R.string.lyrics_share_style_frosted_light,
+                surfaceTint = Color.White,
+                surfaceAlpha = 0.45f,
+                textColor = Color(0xFF1A1A1A),
+                secondaryTextColor = Color(0xFF1A1A1A).copy(alpha = 0.65f),
+                overlayColor = Color.White,
+                overlayAlpha = 0.35f,
+                isDark = false,
+                backgroundDimAlpha = 0.15f,
+            )
 
-        val ClearGlass = LyricsGlassStyle(
-            labelRes = R.string.lyrics_share_style_clear_glass,
-            surfaceTint = Color.White,
-            surfaceAlpha = 0.15f,
-            textColor = Color.White,
-            secondaryTextColor = Color.White.copy(alpha = 0.75f),
-            overlayColor = Color.White,
-            overlayAlpha = 0.08f,
-            isDark = true,
-            backgroundDimAlpha = 0.2f,
-        )
+        val ClearGlass =
+            LyricsGlassStyle(
+                labelRes = R.string.lyrics_share_style_clear_glass,
+                surfaceTint = Color.White,
+                surfaceAlpha = 0.15f,
+                textColor = Color.White,
+                secondaryTextColor = Color.White.copy(alpha = 0.75f),
+                overlayColor = Color.White,
+                overlayAlpha = 0.08f,
+                isDark = true,
+                backgroundDimAlpha = 0.2f,
+            )
 
-        val DeepBlur = LyricsGlassStyle(
-            labelRes = R.string.lyrics_share_style_deep_blur,
-            surfaceTint = Color(0xFF0A0A14),
-            surfaceAlpha = 0.55f,
-            textColor = Color.White,
-            secondaryTextColor = Color.White.copy(alpha = 0.6f),
-            overlayColor = Color(0xFF0A0A14),
-            overlayAlpha = 0.4f,
-            isDark = true,
-            backgroundDimAlpha = 0.5f,
-        )
+        val DeepBlur =
+            LyricsGlassStyle(
+                labelRes = R.string.lyrics_share_style_deep_blur,
+                surfaceTint = Color(0xFF0A0A14),
+                surfaceAlpha = 0.55f,
+                textColor = Color.White,
+                secondaryTextColor = Color.White.copy(alpha = 0.6f),
+                overlayColor = Color(0xFF0A0A14),
+                overlayAlpha = 0.4f,
+                isDark = true,
+                backgroundDimAlpha = 0.5f,
+            )
 
-        val VividGlow = LyricsGlassStyle(
-            labelRes = R.string.lyrics_share_style_vivid_glow,
-            surfaceTint = Color(0xFFFF6B9D),
-            surfaceAlpha = 0.2f,
-            textColor = Color.White,
-            secondaryTextColor = Color.White.copy(alpha = 0.8f),
-            overlayColor = Color(0xFFFF6B9D),
-            overlayAlpha = 0.12f,
-            isDark = true,
-            backgroundDimAlpha = 0.25f,
-        )
+        val VividGlow =
+            LyricsGlassStyle(
+                labelRes = R.string.lyrics_share_style_vivid_glow,
+                surfaceTint = Color(0xFFFF6B9D),
+                surfaceAlpha = 0.2f,
+                textColor = Color.White,
+                secondaryTextColor = Color.White.copy(alpha = 0.8f),
+                overlayColor = Color(0xFFFF6B9D),
+                overlayAlpha = 0.12f,
+                isDark = true,
+                backgroundDimAlpha = 0.25f,
+            )
 
         val allPresets = listOf(FrostedDark, FrostedLight, ClearGlass, DeepBlur, VividGlow)
 
         fun fromPalette(palette: Palette): LyricsGlassStyle {
-            val vibrantSwatch = palette.vibrantSwatch
-                ?: palette.lightVibrantSwatch
-                ?: palette.darkVibrantSwatch
-                ?: palette.mutedSwatch
+            val vibrantSwatch =
+                palette.vibrantSwatch
+                    ?: palette.lightVibrantSwatch
+                    ?: palette.darkVibrantSwatch
+                    ?: palette.mutedSwatch
 
             val dominantSwatch = palette.dominantSwatch
 

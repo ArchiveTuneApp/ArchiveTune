@@ -29,11 +29,12 @@ internal fun resolveStreamChunkLength(
 }
 
 private fun String?.isMp4ContainerMimeType(): Boolean {
-    val normalizedMimeType = this
-        ?.substringBefore(";")
-        ?.trim()
-        ?.lowercase()
-        .orEmpty()
+    val normalizedMimeType =
+        this
+            ?.substringBefore(";")
+            ?.trim()
+            ?.lowercase()
+            .orEmpty()
     return normalizedMimeType == "audio/mp4" ||
         normalizedMimeType == "video/mp4" ||
         normalizedMimeType == "application/mp4" ||

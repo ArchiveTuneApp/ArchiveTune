@@ -24,11 +24,12 @@ data class GatewayReadyEvent(
         fun fromJson(obj: JSONObject): GatewayReadyEvent {
             val userObj = obj.getJSONObject("user")
             return GatewayReadyEvent(
-                user = GatewayReadyUser(
-                    id = userObj.getString("id"),
-                    username = userObj.getString("username"),
-                    globalName = userObj.optString("global_name", null),
-                ),
+                user =
+                    GatewayReadyUser(
+                        id = userObj.getString("id"),
+                        username = userObj.getString("username"),
+                        globalName = userObj.optString("global_name", null),
+                    ),
                 sessionId = obj.getString("session_id"),
                 resumeGatewayUrl = obj.getString("resume_gateway_url"),
             )

@@ -19,14 +19,18 @@ import java.io.File
 import android.graphics.Typeface as AndroidTypeface
 
 object CustomFontLoader {
-    val supportedMimeTypes = arrayOf(
-        "font/ttf",
-        "application/x-font-ttf",
-        "application/x-font-truetype",
-        "application/octet-stream",
-    )
+    val supportedMimeTypes =
+        arrayOf(
+            "font/ttf",
+            "application/x-font-ttf",
+            "application/x-font-truetype",
+            "application/octet-stream",
+        )
 
-    fun displayName(context: Context, uri: Uri): String {
+    fun displayName(
+        context: Context,
+        uri: Uri,
+    ): String {
         val resolvedName =
             runCatching {
                 context.contentResolver
@@ -48,8 +52,10 @@ object CustomFontLoader {
             ?: uri.toString()
     }
 
-    fun isSupportedTtf(context: Context, uri: Uri): Boolean =
-        displayName(context, uri).endsWith(".ttf", ignoreCase = true)
+    fun isSupportedTtf(
+        context: Context,
+        uri: Uri,
+    ): Boolean = displayName(context, uri).endsWith(".ttf", ignoreCase = true)
 
     suspend fun loadFontFamily(
         context: Context,

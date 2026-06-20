@@ -10,6 +10,17 @@
 package moe.rukamori.archivetune.ui.screens.settings
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,12 +49,12 @@ import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalIconButton
-import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -61,28 +72,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.togetherWith
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -135,9 +135,10 @@ fun AiIntegrationSettings(
     var showApiKeyDialog by rememberSaveable { mutableStateOf(false) }
 
     val languages by produceState(initialValue = emptyList<TranslatorLang>()) {
-        value = withContext(Dispatchers.IO) {
-            TranslatorLanguages.load(context)
-        }
+        value =
+            withContext(Dispatchers.IO) {
+                TranslatorLanguages.load(context)
+            }
     }
 
     LaunchedEffect(Unit) {
@@ -148,14 +149,16 @@ fun AiIntegrationSettings(
 
     val hasCustomEndpoint = provider != AiProvider.CUSTOM || customEndpoint.isNotBlank()
     val hasApiConfiguration = provider != AiProvider.NONE && apiKey.isNotBlank() && hasCustomEndpoint
-    val hasModelConfiguration = when (provider) {
-        AiProvider.CUSTOM -> customModel.isNotBlank()
-        AiProvider.NONE -> false
-        else -> selectedModel.isNotBlank()
-    }
-    val canUseModelPicker = provider != AiProvider.NONE &&
-        provider != AiProvider.CUSTOM &&
-        apiKey.isNotBlank()
+    val hasModelConfiguration =
+        when (provider) {
+            AiProvider.CUSTOM -> customModel.isNotBlank()
+            AiProvider.NONE -> false
+            else -> selectedModel.isNotBlank()
+        }
+    val canUseModelPicker =
+        provider != AiProvider.NONE &&
+            provider != AiProvider.CUSTOM &&
+            apiKey.isNotBlank()
     val canTestApi = hasApiConfiguration && hasModelConfiguration && !actionState.isTesting
 
     if (showApiKeyDialog) {
@@ -173,7 +176,8 @@ fun AiIntegrationSettings(
     Column(
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .padding(bottom = SettingsDimensions.ScreenBottomPadding),
     ) {
         Spacer(
             Modifier.windowInsetsPadding(
@@ -188,14 +192,15 @@ fun AiIntegrationSettings(
                     description = stringResource(R.string.ai_provider_desc),
                     icon = { Icon(painterResource(R.drawable.auto_awesome), null) },
                     selectedValue = provider,
-                    values = listOf(
-                        AiProvider.CHATGPT,
-                        AiProvider.GEMINI,
-                        AiProvider.CLAUDE,
-                        AiProvider.OPENROUTER,
-                        AiProvider.CUSTOM,
-                        AiProvider.NONE,
-                    ),
+                    values =
+                        listOf(
+                            AiProvider.CHATGPT,
+                            AiProvider.GEMINI,
+                            AiProvider.CLAUDE,
+                            AiProvider.OPENROUTER,
+                            AiProvider.CUSTOM,
+                            AiProvider.NONE,
+                        ),
                     valueText = { it.label() },
                     onValueSelected = { selectedProvider ->
                         if (provider != selectedProvider) {
@@ -225,11 +230,12 @@ fun AiIntegrationSettings(
             item {
                 PreferenceEntry(
                     title = { Text(stringResource(R.string.ai_api_key)) },
-                    description = if (apiKey.isBlank()) {
-                        stringResource(R.string.ai_api_key_missing)
-                    } else {
-                        stringResource(R.string.ai_api_key_configured)
-                    },
+                    description =
+                        if (apiKey.isBlank()) {
+                            stringResource(R.string.ai_api_key_missing)
+                        } else {
+                            stringResource(R.string.ai_api_key_configured)
+                        },
                     icon = { Icon(painterResource(R.drawable.token), null) },
                     onClick = { showApiKeyDialog = true },
                     isEnabled = provider != AiProvider.NONE,
@@ -266,30 +272,39 @@ fun AiIntegrationSettings(
             }
 
             item {
-                val testVisualState = when {
-                    actionState.isTesting -> TestApiVisualState.Testing
-                    validationStatus == AiApiValidationStatus.SUCCESS -> TestApiVisualState.Success
-                    validationStatus == AiApiValidationStatus.FAILED -> TestApiVisualState.Failed
-                    else -> TestApiVisualState.Idle
-                }
+                val testVisualState =
+                    when {
+                        actionState.isTesting -> TestApiVisualState.Testing
+                        validationStatus == AiApiValidationStatus.SUCCESS -> TestApiVisualState.Success
+                        validationStatus == AiApiValidationStatus.FAILED -> TestApiVisualState.Failed
+                        else -> TestApiVisualState.Idle
+                    }
                 PreferenceEntry(
                     title = { Text(stringResource(R.string.ai_test_api)) },
                     icon = {
                         AnimatedContent(
                             targetState = testVisualState,
                             transitionSpec = {
-                                (scaleIn(spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium)) + fadeIn(tween(200))) togetherWith
+                                (
+                                    scaleIn(spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium)) +
+                                        fadeIn(tween(200))
+                                ) togetherWith
                                     (scaleOut(tween(100)) + fadeOut(tween(100)))
                             },
                             label = "testApiIcon",
                         ) { state ->
                             when (state) {
-                                TestApiVisualState.Success ->
+                                TestApiVisualState.Success -> {
                                     Icon(painterResource(R.drawable.done), null)
-                                TestApiVisualState.Failed ->
+                                }
+
+                                TestApiVisualState.Failed -> {
                                     Icon(painterResource(R.drawable.error), null, tint = MaterialTheme.colorScheme.error)
-                                else ->
+                                }
+
+                                else -> {
                                     Icon(painterResource(R.drawable.sync), null)
+                                }
                             }
                         }
                     },
@@ -304,16 +319,18 @@ fun AiIntegrationSettings(
                             label = "testApiDesc",
                         ) { state ->
                             Text(
-                                text = when (state) {
-                                    TestApiVisualState.Testing -> stringResource(R.string.ai_api_testing)
-                                    else -> validationStatus.label()
-                                },
+                                text =
+                                    when (state) {
+                                        TestApiVisualState.Testing -> stringResource(R.string.ai_api_testing)
+                                        else -> validationStatus.label()
+                                    },
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = when (state) {
-                                    TestApiVisualState.Success -> MaterialTheme.colorScheme.primary
-                                    TestApiVisualState.Failed -> MaterialTheme.colorScheme.error
-                                    else -> MaterialTheme.colorScheme.onSurfaceVariant
-                                },
+                                color =
+                                    when (state) {
+                                        TestApiVisualState.Success -> MaterialTheme.colorScheme.primary
+                                        TestApiVisualState.Failed -> MaterialTheme.colorScheme.error
+                                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                    },
                             )
                         }
                         actionState.errorMessage?.let { message ->
@@ -445,11 +462,12 @@ private fun AiApiValidationStatus.label(): String =
 @Composable
 private fun AiErrorHintRow(message: String) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(MaterialTheme.shapes.large)
-            .background(MaterialTheme.colorScheme.errorContainer)
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.large)
+                .background(MaterialTheme.colorScheme.errorContainer)
+                .padding(horizontal = 12.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.Top,
     ) {
@@ -498,13 +516,14 @@ private fun ModelPickerPreference(
         }
     }
 
-    val description = when {
-        isFetching && availableModels.isEmpty() -> stringResource(R.string.ai_model_loading)
-        availableModels.isEmpty() && !canFetch -> stringResource(R.string.ai_model_api_key_required)
-        availableModels.isEmpty() -> stringResource(R.string.ai_model_fetch_hint)
-        selectedModel.isBlank() -> stringResource(R.string.ai_model_not_selected)
-        else -> availableModels.firstOrNull { it.id == selectedModel }?.displayName ?: selectedModel
-    }
+    val description =
+        when {
+            isFetching && availableModels.isEmpty() -> stringResource(R.string.ai_model_loading)
+            availableModels.isEmpty() && !canFetch -> stringResource(R.string.ai_model_api_key_required)
+            availableModels.isEmpty() -> stringResource(R.string.ai_model_fetch_hint)
+            selectedModel.isBlank() -> stringResource(R.string.ai_model_not_selected)
+            else -> availableModels.firstOrNull { it.id == selectedModel }?.displayName ?: selectedModel
+        }
 
     LaunchedEffect(showSheet) {
         if (!showSheet) {
@@ -529,9 +548,10 @@ private fun ModelPickerPreference(
                 text = stringResource(R.string.ai_model),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .padding(horizontal = 26.dp)
-                    .padding(top = 18.dp, bottom = 22.dp),
+                modifier =
+                    Modifier
+                        .padding(horizontal = 26.dp)
+                        .padding(top = 18.dp, bottom = 22.dp),
             )
             SearchBar(
                 inputField = {
@@ -548,36 +568,39 @@ private fun ModelPickerPreference(
                                 contentDescription = null,
                             )
                         },
-                        trailingIcon = if (searchQuery.isNotBlank()) {
-                            {
-                                androidx.compose.material3.IconButton(
-                                    onClick = { searchQuery = "" },
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.close),
-                                        contentDescription = stringResource(R.string.clear),
-                                    )
+                        trailingIcon =
+                            if (searchQuery.isNotBlank()) {
+                                {
+                                    androidx.compose.material3.IconButton(
+                                        onClick = { searchQuery = "" },
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.close),
+                                            contentDescription = stringResource(R.string.clear),
+                                        )
+                                    }
                                 }
-                            }
-                        } else {
-                            null
-                        },
+                            } else {
+                                null
+                            },
                     )
                 },
                 expanded = false,
                 onExpandedChange = {},
                 windowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 26.dp)
-                    .padding(bottom = 18.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 26.dp)
+                        .padding(bottom = 18.dp),
             ) {}
             LazyColumn(
                 contentPadding = PaddingValues(start = 26.dp, end = 26.dp, bottom = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 520.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 520.dp),
             ) {
                 if (filteredModels.isEmpty()) {
                     item(key = "empty", contentType = "empty") {
@@ -586,9 +609,10 @@ private fun ModelPickerPreference(
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 28.dp),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 28.dp),
                         )
                     }
                 }
@@ -601,26 +625,29 @@ private fun ModelPickerPreference(
                     val displayName = model.displayName
                     val selected = id == selectedModel
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(MaterialTheme.shapes.extraLarge)
-                            .background(
-                                if (selected) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.surfaceContainerHigh,
-                            )
-                            .selectable(
-                                selected = selected,
-                                role = Role.RadioButton,
-                                onClick = {
-                                    onModelSelected(id)
-                                    coroutineScope.launch {
-                                        sheetState.hide()
-                                    }.invokeOnCompletion {
-                                        showSheet = false
-                                    }
-                                },
-                            )
-                            .padding(horizontal = 24.dp, vertical = 20.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(MaterialTheme.shapes.extraLarge)
+                                .background(
+                                    if (selected) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.surfaceContainerHigh
+                                    },
+                                ).selectable(
+                                    selected = selected,
+                                    role = Role.RadioButton,
+                                    onClick = {
+                                        onModelSelected(id)
+                                        coroutineScope
+                                            .launch {
+                                                sheetState.hide()
+                                            }.invokeOnCompletion {
+                                                showSheet = false
+                                            }
+                                    },
+                                ).padding(horizontal = 24.dp, vertical = 20.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Column(
@@ -630,8 +657,12 @@ private fun ModelPickerPreference(
                                 text = displayName,
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                                color = if (selected) MaterialTheme.colorScheme.onPrimary
-                                        else MaterialTheme.colorScheme.onSurface,
+                                color =
+                                    if (selected) {
+                                        MaterialTheme.colorScheme.onPrimary
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurface
+                                    },
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
@@ -639,8 +670,12 @@ private fun ModelPickerPreference(
                                 Text(
                                     text = id,
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = if (selected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.78f)
-                                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    color =
+                                        if (selected) {
+                                            MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.78f)
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                        },
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                 )

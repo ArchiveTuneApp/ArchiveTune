@@ -44,11 +44,13 @@ import androidx.glance.text.TextStyle
 import moe.rukamori.archivetune.R
 
 class MusicWidget : GlanceAppWidget() {
-
     override val sizeMode = SizeMode.Exact
     override val stateDefinition = PreferencesGlanceStateDefinition
 
-    override suspend fun provideGlance(context: Context, id: GlanceId) {
+    override suspend fun provideGlance(
+        context: Context,
+        id: GlanceId,
+    ) {
         provideContent {
             MusicWidgetContent(context)
         }
@@ -61,36 +63,43 @@ private fun MusicWidgetContent(context: Context) {
     val state = prefs.toWidgetPlaybackState(context)
 
     GlanceTheme(
-        colors = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            GlanceTheme.colors
-        } else {
-            ArchiveTuneWidgetColors.providers
-        },
+        colors =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                GlanceTheme.colors
+            } else {
+                ArchiveTuneWidgetColors.providers
+            },
     ) {
         val palette = rememberWidgetPalette(state.dominantColor)
         val size = LocalSize.current
         when (size.toMusicWidgetLayout()) {
-            MusicWidgetLayout.Compact -> MusicWidgetBar(
-                state = state,
-                palette = palette,
-                context = context,
-                showFullControls = false,
-                showProgress = false,
-            )
+            MusicWidgetLayout.Compact -> {
+                MusicWidgetBar(
+                    state = state,
+                    palette = palette,
+                    context = context,
+                    showFullControls = false,
+                    showProgress = false,
+                )
+            }
 
-            MusicWidgetLayout.Bar -> MusicWidgetBar(
-                state = state,
-                palette = palette,
-                context = context,
-                showFullControls = true,
-                showProgress = state.isAvailable && state.playbackPosition > 0f && size.height >= 78.dp,
-            )
+            MusicWidgetLayout.Bar -> {
+                MusicWidgetBar(
+                    state = state,
+                    palette = palette,
+                    context = context,
+                    showFullControls = true,
+                    showProgress = state.isAvailable && state.playbackPosition > 0f && size.height >= 78.dp,
+                )
+            }
 
-            MusicWidgetLayout.Panel -> MusicWidgetPanel(
-                state = state,
-                palette = palette,
-                context = context,
-            )
+            MusicWidgetLayout.Panel -> {
+                MusicWidgetPanel(
+                    state = state,
+                    palette = palette,
+                    context = context,
+                )
+            }
         }
     }
 }
@@ -104,18 +113,20 @@ private fun MusicWidgetBar(
     showProgress: Boolean,
 ) {
     Box(
-        modifier = GlanceModifier
-            .fillMaxSize()
-            .background(palette.surface)
-            .cornerRadius(28.dp)
-            .padding(6.dp)
-            .clickable(openArchiveTuneAction(context)),
+        modifier =
+            GlanceModifier
+                .fillMaxSize()
+                .background(palette.surface)
+                .cornerRadius(28.dp)
+                .padding(6.dp)
+                .clickable(openArchiveTuneAction(context)),
     ) {
         Column(modifier = GlanceModifier.fillMaxSize()) {
             Row(
-                modifier = GlanceModifier
-                    .fillMaxWidth()
-                    .height(48.dp),
+                modifier =
+                    GlanceModifier
+                        .fillMaxWidth()
+                        .height(48.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 WidgetArtwork(
@@ -169,12 +180,13 @@ private fun MusicWidgetPanel(
     context: Context,
 ) {
     Box(
-        modifier = GlanceModifier
-            .fillMaxSize()
-            .background(palette.surface)
-            .cornerRadius(28.dp)
-            .padding(16.dp)
-            .clickable(openArchiveTuneAction(context)),
+        modifier =
+            GlanceModifier
+                .fillMaxSize()
+                .background(palette.surface)
+                .cornerRadius(28.dp)
+                .padding(16.dp)
+                .clickable(openArchiveTuneAction(context)),
     ) {
         Column(modifier = GlanceModifier.fillMaxSize()) {
             Row(
@@ -212,20 +224,22 @@ private fun MusicWidgetPanel(
                 )
             } else {
                 Box(
-                    modifier = GlanceModifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .background(palette.secondaryContainer)
-                        .cornerRadius(25.dp),
+                    modifier =
+                        GlanceModifier
+                            .fillMaxWidth()
+                            .height(50.dp)
+                            .background(palette.secondaryContainer)
+                            .cornerRadius(25.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = context.getString(R.string.widget_tap_to_open),
-                        style = TextStyle(
-                            color = palette.onSecondaryContainer,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium,
-                        ),
+                        style =
+                            TextStyle(
+                                color = palette.onSecondaryContainer,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium,
+                            ),
                         maxLines = 1,
                     )
                 }
@@ -256,20 +270,22 @@ private fun MusicWidgetTrackText(
     ) {
         Text(
             text = state.title,
-            style = TextStyle(
-                color = palette.onSurface,
-                fontSize = titleSize.sp,
-                fontWeight = FontWeight.Bold,
-            ),
+            style =
+                TextStyle(
+                    color = palette.onSurface,
+                    fontSize = titleSize.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
             maxLines = 1,
         )
         Spacer(GlanceModifier.height(2.dp))
         Text(
             text = state.artist,
-            style = TextStyle(
-                color = palette.onSurfaceVariant,
-                fontSize = artistSize.sp,
-            ),
+            style =
+                TextStyle(
+                    color = palette.onSurfaceVariant,
+                    fontSize = artistSize.sp,
+                ),
             maxLines = 1,
         )
     }
@@ -305,9 +321,10 @@ private fun MusicWidgetControls(
             modifier = buttonModifier,
             action = playPauseAction(),
             icon = if (state.isPlaying) R.drawable.pause else R.drawable.play,
-            contentDescription = context.getString(
-                if (state.isPlaying) R.string.widget_pause else R.string.play,
-            ),
+            contentDescription =
+                context.getString(
+                    if (state.isPlaying) R.string.widget_pause else R.string.play,
+                ),
             backgroundColor = palette.primaryContainer,
             contentColor = palette.onPrimaryContainer,
             cornerRadius = if (state.isPlaying) 13.dp else 24.dp,
@@ -338,10 +355,11 @@ private fun MusicWidgetProgress(
         progress = progress,
         color = palette.progress,
         backgroundColor = palette.progressTrack,
-        modifier = GlanceModifier
-            .fillMaxWidth()
-            .height(6.dp)
-            .cornerRadius(3.dp),
+        modifier =
+            GlanceModifier
+                .fillMaxWidth()
+                .height(6.dp)
+                .cornerRadius(3.dp),
     )
 }
 

@@ -26,36 +26,36 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.shape.RoundedCornerShape
 import moe.rukamori.archivetune.ui.theme.ArchiveTuneTheme
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -71,9 +71,10 @@ class DebugActivity : ComponentActivity() {
 
         val stack = intent.getStringExtra(EXTRA_STACK_TRACE) ?: "No stack trace available"
         val previewText = stack.lineSequence().firstOrNull()?.take(100) ?: "Unknown error"
-        val timestampText = runCatching {
-            SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
-        }.getOrDefault("")
+        val timestampText =
+            runCatching {
+                SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+            }.getOrDefault("")
         val reportText = buildCrashReport(this, timestampText, stack)
         val deviceInfo = buildDeviceInfo(this)
 
@@ -87,9 +88,10 @@ class DebugActivity : ComponentActivity() {
                     reportText = reportText,
                     onRestart = {
                         runCatching {
-                            val intent = Intent(this, MainActivity::class.java).apply {
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                            }
+                            val intent =
+                                Intent(this, MainActivity::class.java).apply {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                }
                             startActivity(intent)
                         }
                     },
@@ -115,7 +117,7 @@ private fun CrashReportScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.background,
     ) {
         CrashReportScaffold(
             previewText = previewText,
@@ -124,10 +126,11 @@ private fun CrashReportScreen(
             stack = stack,
             onCopyAll = { clipboard.setText(AnnotatedString(reportText)) },
             onShareAll = {
-                val share = Intent(Intent.ACTION_SEND).apply {
-                    type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, reportText)
-                }
+                val share =
+                    Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, reportText)
+                    }
                 context.startActivity(Intent.createChooser(share, "Share crash log"))
             },
             onRestart = onRestart,
@@ -187,19 +190,21 @@ private fun CrashReportScaffold(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surface,
-                ),
+                colors =
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        scrolledContainerColor = MaterialTheme.colorScheme.surface,
+                    ),
             )
         },
     ) { padding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(scrollState)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .verticalScroll(scrollState)
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Card(
@@ -209,9 +214,10 @@ private fun CrashReportScaffold(
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     Row(
@@ -254,9 +260,10 @@ private fun CrashReportScaffold(
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     Text(
@@ -282,9 +289,10 @@ private fun CrashReportScaffold(
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     Text(
@@ -296,9 +304,10 @@ private fun CrashReportScaffold(
                             text = stack,
                             style = MaterialTheme.typography.bodySmall.copy(lineHeight = 16.sp),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(min = 220.dp),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 220.dp),
                         )
                     }
                 }
@@ -363,41 +372,54 @@ private fun buildCrashReport(
 ): String {
     val deviceInfo = buildDeviceInfo(context)
     val packageName = context.packageName
-    val versionName = runCatching {
-        val info = context.packageManager.getPackageInfo(packageName, 0)
-        info.versionName ?: ""
-    }.getOrDefault("")
+    val versionName =
+        runCatching {
+            val info = context.packageManager.getPackageInfo(packageName, 0)
+            info.versionName ?: ""
+        }.getOrDefault("")
 
-    val versionCode = runCatching {
-        val info = context.packageManager.getPackageInfo(packageName, 0)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) info.longVersionCode.toString() else ""
-    }.getOrDefault("")
+    val versionCode =
+        runCatching {
+            val info = context.packageManager.getPackageInfo(packageName, 0)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) info.longVersionCode.toString() else ""
+        }.getOrDefault("")
 
-    val header = buildString {
-        appendLine("ArchiveTune crash report")
-        if (timestampText.isNotBlank()) appendLine("Time: $timestampText")
-        val appVersionLabel = when {
-            versionName.isNotBlank() && versionCode.isNotBlank() -> {
-                "${formatVersionName(versionName)} ($versionCode)"
+    val header =
+        buildString {
+            appendLine("ArchiveTune crash report")
+            if (timestampText.isNotBlank()) appendLine("Time: $timestampText")
+            val appVersionLabel =
+                when {
+                    versionName.isNotBlank() && versionCode.isNotBlank() -> {
+                        "${formatVersionName(versionName)} ($versionCode)"
+                    }
+
+                    versionName.isNotBlank() -> {
+                        formatVersionName(versionName)
+                    }
+
+                    versionCode.isNotBlank() -> {
+                        versionCode
+                    }
+
+                    else -> {
+                        null
+                    }
+                }
+            if (appVersionLabel != null) {
+                appendLine("App: $appVersionLabel")
             }
+            appendLine("Package: $packageName")
+        }
 
-            versionName.isNotBlank() -> formatVersionName(versionName)
-            versionCode.isNotBlank() -> versionCode
-            else -> null
+    val deviceBlock =
+        buildString {
+            appendLine()
+            appendLine("Device")
+            deviceInfo.forEach { (k, v) ->
+                appendLine("$k: $v")
+            }
         }
-        if (appVersionLabel != null) {
-            appendLine("App: $appVersionLabel")
-        }
-        appendLine("Package: $packageName")
-    }
-
-    val deviceBlock = buildString {
-        appendLine()
-        appendLine("Device")
-        deviceInfo.forEach { (k, v) ->
-            appendLine("$k: $v")
-        }
-    }
 
     return buildString {
         append(header)
@@ -409,9 +431,7 @@ private fun buildCrashReport(
     }
 }
 
-private fun buildDeviceInfo(
-    context: android.content.Context,
-): List<Pair<String, String>> {
+private fun buildDeviceInfo(context: android.content.Context): List<Pair<String, String>> {
     val deviceName =
         runCatching { Settings.Global.getString(context.contentResolver, "device_name") }
             .getOrNull()

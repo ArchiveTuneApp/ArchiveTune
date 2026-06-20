@@ -32,13 +32,14 @@ object UnisonLyricsProvider : LyricsProvider {
         artist: String,
         album: String?,
         duration: Int,
-    ): Result<String> = Unison.getLyrics(
-        videoId = id,
-        title = title,
-        artist = artist,
-        album = album,
-        durationSeconds = duration,
-    )
+    ): Result<String> =
+        Unison.getLyrics(
+            videoId = id,
+            title = title,
+            artist = artist,
+            album = album,
+            durationSeconds = duration,
+        )
 
     override suspend fun getAllLyrics(
         id: String,

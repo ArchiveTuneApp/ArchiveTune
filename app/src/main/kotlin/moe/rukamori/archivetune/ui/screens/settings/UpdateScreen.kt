@@ -85,8 +85,8 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -97,8 +97,8 @@ import moe.rukamori.archivetune.LocalPlayerAwareWindowInsets
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.constants.EnableUpdateNotificationKey
 import moe.rukamori.archivetune.constants.UpdateChannel
-import moe.rukamori.archivetune.defaultUpdateChannel
 import moe.rukamori.archivetune.constants.UpdateChannelKey
+import moe.rukamori.archivetune.defaultUpdateChannel
 import moe.rukamori.archivetune.ui.component.BottomSheetPage
 import moe.rukamori.archivetune.ui.component.BottomSheetPageState
 import moe.rukamori.archivetune.ui.component.IconButton
@@ -126,14 +126,16 @@ fun UpdateScreen(
     val coroutineScope = rememberCoroutineScope()
     val nightlyInstallUrl = remember { Updater.getLatestNightlyDownloadUrl() }
 
-    val (enableUpdateNotification, onEnableUpdateNotificationChange) = rememberPreference(
-        EnableUpdateNotificationKey,
-        defaultValue = false
-    )
-    val (updateChannel, onUpdateChannelChange) = rememberEnumPreference(
-        UpdateChannelKey,
-        defaultValue = defaultUpdateChannel
-    )
+    val (enableUpdateNotification, onEnableUpdateNotificationChange) =
+        rememberPreference(
+            EnableUpdateNotificationKey,
+            defaultValue = false,
+        )
+    val (updateChannel, onUpdateChannelChange) =
+        rememberEnumPreference(
+            UpdateChannelKey,
+            defaultValue = defaultUpdateChannel,
+        )
 
     var commits by remember { mutableStateOf<List<GitCommit>>(emptyList()) }
     var isLoadingCommits by remember { mutableStateOf(true) }
@@ -147,11 +149,11 @@ fun UpdateScreen(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 ContextCompat.checkSelfPermission(
                     context,
-                    Manifest.permission.POST_NOTIFICATIONS
+                    Manifest.permission.POST_NOTIFICATIONS,
                 ) == PackageManager.PERMISSION_GRANTED
             } else {
                 true
-            }
+            },
         )
     }
     val isNightlyChannel = updateChannel == UpdateChannel.NIGHTLY
@@ -178,7 +180,7 @@ fun UpdateScreen(
         Text(
             text = stringResource(R.string.new_update_available),
             style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier.padding(top = 16.dp)
+            modifier = Modifier.padding(top = 16.dp),
         )
 
         Spacer(Modifier.height(8.dp))
@@ -190,27 +192,29 @@ fun UpdateScreen(
         ) {
             Text(
                 text = updateSheetVersion ?: "",
-                style = MaterialTheme.typography.labelLarge
+                style = MaterialTheme.typography.labelLarge,
             )
         }
 
         Spacer(Modifier.height(12.dp))
 
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f, fill = false)
-                .verticalScroll(rememberScrollState())
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .weight(1f, fill = false)
+                    .verticalScroll(rememberScrollState()),
         ) {
             val notes = updateSheetNotes
             if (notes != null && notes.isNotBlank()) {
                 MarkdownText(
                     markdown = notes,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(end = 8.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(end = 8.dp),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             } else {
                 Text(
@@ -222,23 +226,27 @@ fun UpdateScreen(
 
         Spacer(Modifier.height(12.dp))
 
-        val downloadUrl = when (updateChannel) {
-            UpdateChannel.DAILY_NIGHTLY -> Updater.getLatestDailyNightlyDownloadUrl()
-            UpdateChannel.NIGHTLY -> Updater.getLatestNightlyDownloadUrl()
-            else -> Updater.getLatestDownloadUrl()
-        }
+        val downloadUrl =
+            when (updateChannel) {
+                UpdateChannel.DAILY_NIGHTLY -> Updater.getLatestDailyNightlyDownloadUrl()
+                UpdateChannel.NIGHTLY -> Updater.getLatestNightlyDownloadUrl()
+                else -> Updater.getLatestDownloadUrl()
+            }
 
         Button(
             onClick = {
                 try {
                     uriHandler.openUri(downloadUrl)
-                } catch (_: Exception) {}
+                } catch (_: Exception) {
+                }
             },
             modifier = Modifier.fillMaxWidth(),
             shapes = ButtonDefaults.shapes(),
         ) {
             Text(text = stringResource(R.string.update_text))
         }
+
+        Spacer(Modifier.height(12.dp))
     }
 
     val onCheckForUpdate: () -> Unit = {
@@ -251,49 +259,53 @@ fun UpdateScreen(
         showUpdateErrorDialog = false
 
         coroutineScope.launch {
-            val versionResult = when (updateChannel) {
-                UpdateChannel.DAILY_NIGHTLY -> {
-                    Updater.getLatestDailyNightlyReleaseNotes().onSuccess { notes ->
-                        updateSheetNotes = notes
+            val versionResult =
+                when (updateChannel) {
+                    UpdateChannel.DAILY_NIGHTLY -> {
+                        Updater.getLatestDailyNightlyReleaseNotes().onSuccess { notes ->
+                            updateSheetNotes = notes
+                        }
+                        Updater.getLatestDailyNightlyVersionName()
                     }
-                    Updater.getLatestDailyNightlyVersionName()
-                }
-                else -> {
-                    Updater.getLatestReleaseNotes().onSuccess { notes ->
-                        updateSheetNotes = notes
+
+                    else -> {
+                        Updater.getLatestReleaseNotes().onSuccess { notes ->
+                            updateSheetNotes = notes
+                        }
+                        Updater.getLatestVersionName()
                     }
-                    Updater.getLatestVersionName()
                 }
-            }
 
             updateSheetLoading = false
 
-            versionResult.onSuccess { version ->
-                updateSheetIsSameVersion = !Updater.isUpdateAvailable(version, BuildConfig.VERSION_NAME)
-                updateSheetVersion = version
+            versionResult
+                .onSuccess { version ->
+                    updateSheetIsSameVersion = !Updater.isUpdateAvailable(version, BuildConfig.VERSION_NAME)
+                    updateSheetVersion = version
 
-                if (updateSheetIsSameVersion) {
-                    showUpdateUpToDateDialog = true
-                    onUpToDate()
-                } else {
-                    updateSheetState.show(updateSheetContent)
+                    if (updateSheetIsSameVersion) {
+                        showUpdateUpToDateDialog = true
+                        onUpToDate()
+                    } else {
+                        updateSheetState.show(updateSheetContent)
+                    }
+                }.onFailure { e ->
+                    updateSheetError = e.message ?: "Failed to check for updates"
+                    showUpdateErrorDialog = true
                 }
-            }.onFailure { e ->
-                updateSheetError = e.message ?: "Failed to check for updates"
-                showUpdateErrorDialog = true
+        }
+    }
+
+    val permissionLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission(),
+        ) { isGranted ->
+            hasNotificationPermission = isGranted
+            if (isGranted) {
+                onEnableUpdateNotificationChange(true)
+                UpdateNotificationManager.schedulePeriodicUpdateCheck(context)
             }
         }
-    }
-
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        hasNotificationPermission = isGranted
-        if (isGranted) {
-            onEnableUpdateNotificationChange(true)
-            UpdateNotificationManager.schedulePeriodicUpdateCheck(context)
-        }
-    }
 
     if (showEnableUpdateNotificationConfirmDialog) {
         AlertDialog(
@@ -302,26 +314,26 @@ fun UpdateScreen(
             text = {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
                         text = "ArchiveTune provides two download channels for builds:",
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
                     )
 
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Text(
                             text = "• Stable builds",
                             style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
                         )
                         Text(
                             text = "Distributed via official GitHub Releases.",
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
                         )
                         Text(
                             text = "These versions are tested and recommended for most users.",
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
                         )
                     }
 
@@ -329,25 +341,25 @@ fun UpdateScreen(
                         Text(
                             text = "• Nightly builds",
                             style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
                         )
                         Text(
                             text = stringResource(R.string.updates_nightly_hosting_description),
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
                         )
                         Text(
                             text = "Nightly builds may include experimental features, unfinished changes, or temporary regressions.",
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
                         )
                     }
 
                     Text(
                         text = "Nightly builds are provided for testing and early access only.\nStability, compatibility, and functionality are not guaranteed.",
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodySmall,
                     )
                     Text(
                         text = "By continuing, you acknowledge that nightly builds may be unstable and use them at your own risk.",
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
             },
@@ -361,7 +373,7 @@ fun UpdateScreen(
                             onEnableUpdateNotificationChange(true)
                             UpdateNotificationManager.schedulePeriodicUpdateCheck(context)
                         }
-                    }
+                    },
                 ) {
                     Text(stringResource(android.R.string.ok))
                 }
@@ -370,7 +382,7 @@ fun UpdateScreen(
                 TextButton(onClick = { showEnableUpdateNotificationConfirmDialog = false }) {
                     Text(stringResource(android.R.string.cancel))
                 }
-            }
+            },
         )
     }
 
@@ -381,26 +393,26 @@ fun UpdateScreen(
             text = {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
                         text = "ArchiveTune provides two download channels for builds:",
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
                     )
 
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Text(
                             text = "• Stable builds",
                             style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
                         )
                         Text(
                             text = "Distributed via official GitHub Releases.",
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
                         )
                         Text(
                             text = "These versions are tested and recommended for most users.",
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
                         )
                     }
 
@@ -408,25 +420,25 @@ fun UpdateScreen(
                         Text(
                             text = "• Nightly builds",
                             style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
                         )
                         Text(
                             text = stringResource(R.string.updates_nightly_hosting_description),
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
                         )
                         Text(
                             text = "Nightly builds may include experimental features, unfinished changes, or temporary regressions.",
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
                         )
                     }
 
                     Text(
                         text = "Nightly builds are provided for testing and early access only.\nStability, compatibility, and functionality are not guaranteed.",
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodySmall,
                     )
                     Text(
                         text = "By continuing, you acknowledge that nightly builds may be unstable and use them at your own risk.",
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
             },
@@ -435,7 +447,7 @@ fun UpdateScreen(
                     onClick = {
                         showNightlyChannelConfirmDialog = false
                         onUpdateChannelChange(UpdateChannel.NIGHTLY)
-                    }
+                    },
                 ) {
                     Text(stringResource(android.R.string.ok))
                 }
@@ -444,7 +456,7 @@ fun UpdateScreen(
                 TextButton(onClick = { showNightlyChannelConfirmDialog = false }) {
                     Text(stringResource(android.R.string.cancel))
                 }
-            }
+            },
         )
     }
 
@@ -455,7 +467,7 @@ fun UpdateScreen(
             text = {
                 Text(
                     text = "Switch to the Daily channel to receive updates from the daily-nightly repository.\n\nDaily builds are published automatically every day from the latest development branch.",
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
                 )
             },
             confirmButton = {
@@ -463,7 +475,7 @@ fun UpdateScreen(
                     onClick = {
                         showDailyNightlyChannelConfirmDialog = false
                         onUpdateChannelChange(UpdateChannel.DAILY_NIGHTLY)
-                    }
+                    },
                 ) {
                     Text(stringResource(android.R.string.ok))
                 }
@@ -472,7 +484,7 @@ fun UpdateScreen(
                 TextButton(onClick = { showDailyNightlyChannelConfirmDialog = false }) {
                     Text(stringResource(android.R.string.cancel))
                 }
-            }
+            },
         )
     }
 
@@ -482,10 +494,11 @@ fun UpdateScreen(
             return@LaunchedEffect
         }
 
-        val versionResult = when (updateChannel) {
-            UpdateChannel.DAILY_NIGHTLY -> Updater.getLatestDailyNightlyVersionName()
-            else -> Updater.getLatestVersionName()
-        }
+        val versionResult =
+            when (updateChannel) {
+                UpdateChannel.DAILY_NIGHTLY -> Updater.getLatestDailyNightlyVersionName()
+                else -> Updater.getLatestVersionName()
+            }
         versionResult.onSuccess {
             latestVersion = it
             if (!Updater.isUpdateAvailable(it, BuildConfig.VERSION_NAME)) {
@@ -493,27 +506,31 @@ fun UpdateScreen(
             }
         }
 
-        Updater.getCommitHistory(30).onSuccess {
-            commits = it
-        }.onFailure {
-            commits = emptyList()
-        }
+        Updater
+            .getCommitHistory(30)
+            .onSuccess {
+                commits = it
+            }.onFailure {
+                commits = emptyList()
+            }
         isLoadingCommits = false
     }
 
     val rotationAngle by animateFloatAsState(
         targetValue = if (isExpanded) 180f else 0f,
-        label = "rotation"
+        label = "rotation",
     )
-    val topBarSubtitle = when (updateChannel) {
-        UpdateChannel.NIGHTLY -> stringResource(R.string.updates_subtitle_nightly)
-        else -> stringResource(R.string.updates_subtitle_stable)
-    }
+    val topBarSubtitle =
+        when (updateChannel) {
+            UpdateChannel.NIGHTLY -> stringResource(R.string.updates_subtitle_nightly)
+            else -> stringResource(R.string.updates_subtitle_stable)
+        }
 
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.surface,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
@@ -534,34 +551,35 @@ fun UpdateScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = navController::navigateUp,
-                        onLongClick = navController::backToMain
+                        onLongClick = navController::backToMain,
                     ) {
                         Icon(
                             painterResource(R.drawable.arrow_back),
-                            contentDescription = null
+                            contentDescription = null,
                         )
                     }
                 },
                 actions = {},
                 scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.largeTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                ),
+                colors =
+                    TopAppBarDefaults.largeTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    ),
             )
-        }
+        },
     ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .windowInsetsPadding(
-                    LocalPlayerAwareWindowInsets.current.only(
-                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
-                    )
-                )
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .windowInsetsPadding(
+                        LocalPlayerAwareWindowInsets.current.only(
+                            WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                        ),
+                    ).padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -585,9 +603,10 @@ fun UpdateScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.extraLarge,
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-                    )
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        ),
                 ) {
                     ListItem(
                         headlineContent = {
@@ -613,10 +632,10 @@ fun UpdateScreen(
                                         onEnableUpdateNotificationChange(false)
                                         UpdateNotificationManager.cancelPeriodicUpdateCheck(context)
                                     }
-                                }
+                                },
                             )
                         },
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     )
                 }
             }
@@ -629,9 +648,10 @@ fun UpdateScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.extraLarge,
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-                    )
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        ),
                 ) {
                     Column {
                         ListItem(
@@ -650,16 +670,17 @@ fun UpdateScreen(
                             },
                             trailingContent = {
                                 Text(
-                                    text = when (updateChannel) {
-                                        UpdateChannel.STABLE -> stringResource(R.string.channel_stable)
-                                        UpdateChannel.NIGHTLY -> stringResource(R.string.channel_nightly)
-                                        UpdateChannel.DAILY_NIGHTLY -> stringResource(R.string.channel_daily_nightly)
-                                    },
+                                    text =
+                                        when (updateChannel) {
+                                            UpdateChannel.STABLE -> stringResource(R.string.channel_stable)
+                                            UpdateChannel.NIGHTLY -> stringResource(R.string.channel_nightly)
+                                            UpdateChannel.DAILY_NIGHTLY -> stringResource(R.string.channel_daily_nightly)
+                                        },
                                     style = MaterialTheme.typography.labelLarge,
                                     color = MaterialTheme.colorScheme.primary,
                                 )
                             },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         )
 
                         HorizontalDivider(
@@ -668,9 +689,10 @@ fun UpdateScreen(
                         )
 
                         SingleChoiceSegmentedButtonRow(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 16.dp)
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 16.dp),
                         ) {
                             SegmentedButton(
                                 selected = updateChannel == UpdateChannel.STABLE,
@@ -714,9 +736,10 @@ fun UpdateScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = MaterialTheme.shapes.extraLarge,
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                        )
+                        colors =
+                            CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            ),
                     ) {
                         Column(
                             modifier = Modifier.padding(20.dp),
@@ -736,10 +759,11 @@ fun UpdateScreen(
                                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                         Text(text = stringResource(R.string.updates_nightly_description))
                                         Text(
-                                            text = stringResource(
-                                                R.string.updates_latest_commit,
-                                                latestCommit?.sha ?: "-"
-                                            ),
+                                            text =
+                                                stringResource(
+                                                    R.string.updates_latest_commit,
+                                                    latestCommit?.sha ?: "-",
+                                                ),
                                             style = MaterialTheme.typography.labelMedium,
                                             fontFamily = FontFamily.Monospace,
                                             color = MaterialTheme.colorScheme.primary,
@@ -753,7 +777,7 @@ fun UpdateScreen(
                                         contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                                     )
                                 },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                             )
 
                             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
@@ -777,14 +801,16 @@ fun UpdateScreen(
 
             item {
                 Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .animateContentSize(),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .animateContentSize(),
                     shape = MaterialTheme.shapes.extraLarge,
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-                    ),
-                    onClick = { isExpanded = !isExpanded }
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        ),
+                    onClick = { isExpanded = !isExpanded },
                 ) {
                     Column {
                         ListItem(
@@ -797,14 +823,23 @@ fun UpdateScreen(
                             },
                             supportingContent = {
                                 Text(
-                                    text = when {
-                                        isLoadingCommits -> stringResource(R.string.updates_loading_commits)
-                                        commits.isEmpty() -> stringResource(R.string.updates_no_commits)
-                                        else -> stringResource(
-                                            R.string.updates_recent_commits_count,
-                                            commits.size,
-                                        )
-                                    }
+                                    text =
+                                        when {
+                                            isLoadingCommits -> {
+                                                stringResource(R.string.updates_loading_commits)
+                                            }
+
+                                            commits.isEmpty() -> {
+                                                stringResource(R.string.updates_no_commits)
+                                            }
+
+                                            else -> {
+                                                stringResource(
+                                                    R.string.updates_recent_commits_count,
+                                                    commits.size,
+                                                )
+                                            }
+                                        },
                                 )
                             },
                             leadingContent = {
@@ -821,7 +856,7 @@ fun UpdateScreen(
                                     modifier = Modifier.rotate(rotationAngle),
                                 )
                             },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         )
 
                         AnimatedVisibility(visible = isExpanded) {
@@ -834,9 +869,10 @@ fun UpdateScreen(
                                 when {
                                     isLoadingCommits -> {
                                         Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(vertical = 24.dp),
+                                            modifier =
+                                                Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(vertical = 24.dp),
                                             contentAlignment = Alignment.Center,
                                         ) {
                                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -862,10 +898,11 @@ fun UpdateScreen(
 
                                     else -> {
                                         Text(
-                                            text = stringResource(
-                                                R.string.updates_recent_commits_count,
-                                                commits.size,
-                                            ),
+                                            text =
+                                                stringResource(
+                                                    R.string.updates_recent_commits_count,
+                                                    commits.size,
+                                                ),
                                             style = MaterialTheme.typography.labelLarge,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             modifier = Modifier.padding(16.dp),
@@ -886,18 +923,24 @@ fun UpdateScreen(
                 ) { commit ->
                     CommitItem(
                         commit = commit,
-                        onClick = { uriHandler.openUri(commit.url) }
+                        onClick = { uriHandler.openUri(commit.url) },
                     )
                 }
             }
 
             item {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(SettingsDimensions.ScreenBottomPadding))
             }
         }
     }
 
-    BottomSheetPage(state = updateSheetState)
+    Box(modifier = Modifier.fillMaxSize()) {
+        BottomSheetPage(
+            state = updateSheetState,
+            modifier = Modifier.align(Alignment.BottomCenter),
+            contentWindowInsets = LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom),
+        )
+    }
 
     if (updateSheetLoading) {
         AlertDialog(
@@ -962,7 +1005,7 @@ fun UpdateScreen(
                         Text(stringResource(android.R.string.ok))
                     }
                 }
-            }
+            },
         )
     }
 
@@ -994,7 +1037,7 @@ fun UpdateScreen(
                 TextButton(onClick = { showUpdateErrorDialog = false }) {
                     Text(stringResource(android.R.string.ok))
                 }
-            }
+            },
         )
     }
 }
@@ -1008,33 +1051,38 @@ private fun UpdateSummaryCard(
     onOpenChangelog: () -> Unit,
     onCheckForUpdate: () -> Unit,
 ) {
-    val channelLabel = when (updateChannel) {
-        UpdateChannel.STABLE -> stringResource(R.string.channel_stable)
-        UpdateChannel.NIGHTLY -> stringResource(R.string.channel_nightly)
-        UpdateChannel.DAILY_NIGHTLY -> stringResource(R.string.channel_daily_nightly)
-    }
-    val supportingText = when {
-        latestVersion == null -> stringResource(R.string.updates_status_checking)
-        isUpdateAvailable -> stringResource(R.string.latest_version_format, latestVersion)
-        else -> stringResource(R.string.updates_status_current)
-    }
-    val channelContainerColor = if (updateChannel == UpdateChannel.NIGHTLY) {
-        MaterialTheme.colorScheme.tertiaryContainer
-    } else {
-        MaterialTheme.colorScheme.secondaryContainer
-    }
-    val channelContentColor = if (updateChannel == UpdateChannel.NIGHTLY) {
-        MaterialTheme.colorScheme.onTertiaryContainer
-    } else {
-        MaterialTheme.colorScheme.onSecondaryContainer
-    }
+    val channelLabel =
+        when (updateChannel) {
+            UpdateChannel.STABLE -> stringResource(R.string.channel_stable)
+            UpdateChannel.NIGHTLY -> stringResource(R.string.channel_nightly)
+            UpdateChannel.DAILY_NIGHTLY -> stringResource(R.string.channel_daily_nightly)
+        }
+    val supportingText =
+        when {
+            latestVersion == null -> stringResource(R.string.updates_status_checking)
+            isUpdateAvailable -> stringResource(R.string.latest_version_format, latestVersion)
+            else -> stringResource(R.string.updates_status_current)
+        }
+    val channelContainerColor =
+        if (updateChannel == UpdateChannel.NIGHTLY) {
+            MaterialTheme.colorScheme.tertiaryContainer
+        } else {
+            MaterialTheme.colorScheme.secondaryContainer
+        }
+    val channelContentColor =
+        if (updateChannel == UpdateChannel.NIGHTLY) {
+            MaterialTheme.colorScheme.onTertiaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSecondaryContainer
+        }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        )
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            ),
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
@@ -1074,7 +1122,7 @@ private fun UpdateSummaryCard(
                         )
                     }
                 },
-                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
             )
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
@@ -1122,9 +1170,10 @@ private fun FeatureIcon(
             painter = painterResource(iconRes),
             contentDescription = null,
             tint = contentColor,
-            modifier = Modifier
-                .padding(12.dp)
-                .size(22.dp),
+            modifier =
+                Modifier
+                    .padding(12.dp)
+                    .size(22.dp),
         )
     }
 }
@@ -1132,16 +1181,18 @@ private fun FeatureIcon(
 @Composable
 private fun CommitItem(
     commit: GitCommit,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier =
+            Modifier
+                .fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
-        ),
-        onClick = onClick
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
+        onClick = onClick,
     ) {
         ListItem(
             headlineContent = {
@@ -1161,11 +1212,12 @@ private fun CommitItem(
                         color = MaterialTheme.colorScheme.primary,
                     )
                     Text(
-                        text = if (commit.date.isNotEmpty()) {
-                            commit.author + " - " + formatCommitDate(commit.date)
-                        } else {
-                            commit.author
-                        },
+                        text =
+                            if (commit.date.isNotEmpty()) {
+                                commit.author + " - " + formatCommitDate(commit.date)
+                            } else {
+                                commit.author
+                            },
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -1173,9 +1225,10 @@ private fun CommitItem(
             },
             leadingContent = {
                 Surface(
-                    modifier = Modifier
-                        .padding(top = 4.dp)
-                        .size(10.dp),
+                    modifier =
+                        Modifier
+                            .padding(top = 4.dp)
+                            .size(10.dp),
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.primary,
                 ) {}
@@ -1187,13 +1240,13 @@ private fun CommitItem(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             },
-            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         )
     }
 }
 
-private fun formatCommitDate(isoDate: String): String {
-    return try {
+private fun formatCommitDate(isoDate: String): String =
+    try {
         val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
         inputFormat.timeZone = TimeZone.getTimeZone("UTC")
         val date = inputFormat.parse(isoDate)
@@ -1202,4 +1255,3 @@ private fun formatCommitDate(isoDate: String): String {
     } catch (e: Exception) {
         isoDate.take(10)
     }
-}

@@ -54,4 +54,3 @@ internal object EqualizerJson {
             encodeDefaults = true
         }
 }
-

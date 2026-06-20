@@ -21,7 +21,10 @@ object DiscordPresenceManager {
     val lastRpcEndTimeFlow = lastRpcEndTimeState.asStateFlow()
     val lastRpcEndTime: Long? get() = lastRpcEndTimeState.value
 
-    fun setLastRpcTimestamps(start: Long?, end: Long?) {
+    fun setLastRpcTimestamps(
+        start: Long?,
+        end: Long?,
+    ) {
         lastRpcStartTimeState.value = start
         lastRpcEndTimeState.value = end
     }

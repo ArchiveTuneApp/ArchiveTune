@@ -42,9 +42,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
+import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.innertube.models.SongItem
 import moe.rukamori.archivetune.innertube.models.YTItem
-import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.ui.utils.resize
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -61,8 +61,11 @@ fun SpeedDialGridItem(
     val motionScheme = MaterialTheme.motionScheme
     val containerColor by animateColorAsState(
         targetValue =
-            if (isActive) MaterialTheme.colorScheme.inverseOnSurface
-            else MaterialTheme.colorScheme.surfaceContainerHigh,
+            if (isActive) {
+                MaterialTheme.colorScheme.inverseOnSurface
+            } else {
+                MaterialTheme.colorScheme.surfaceContainerHigh
+            },
         animationSpec = motionScheme.defaultEffectsSpec(),
         label = "speedDialContainerColor",
     )
@@ -79,13 +82,15 @@ fun SpeedDialGridItem(
     val shape = if (isActive) MaterialTheme.shapes.extraLarge else MaterialTheme.shapes.large
     val foregroundColor = Color.White
     val pinnedIconColor = Color.Black.copy(alpha = 0.86f)
-    val labelGradient = Brush.verticalGradient(
-        colors = listOf(
-            Color.Transparent,
-            Color.Black.copy(alpha = 0.34f),
-            Color.Black.copy(alpha = 0.78f),
-        ),
-    )
+    val labelGradient =
+        Brush.verticalGradient(
+            colors =
+                listOf(
+                    Color.Transparent,
+                    Color.Black.copy(alpha = 0.34f),
+                    Color.Black.copy(alpha = 0.78f),
+                ),
+        )
 
     Surface(
         color = containerColor,
@@ -93,20 +98,23 @@ fun SpeedDialGridItem(
         shape = shape,
         tonalElevation = if (isActive) 8.dp else 2.dp,
         border = BorderStroke(borderWidth, MaterialTheme.colorScheme.inverseOnSurface),
-        modifier = modifier
-            .fillMaxWidth()
-            .aspectRatio(1f)
-            .scale(playingScale),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .scale(playingScale),
     ) {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val widthPx = with(density) { maxWidth.roundToPx().coerceAtLeast(1) }
             val heightPx = with(density) { maxHeight.roundToPx().coerceAtLeast(1) }
-            val request = remember(item.thumbnail, widthPx, heightPx) {
-                ImageRequest.Builder(context)
-                    .data(item.thumbnail?.resize(widthPx, heightPx))
-                    .size(widthPx, heightPx)
-                    .build()
-            }
+            val request =
+                remember(item.thumbnail, widthPx, heightPx) {
+                    ImageRequest
+                        .Builder(context)
+                        .data(item.thumbnail?.resize(widthPx, heightPx))
+                        .size(widthPx, heightPx)
+                        .build()
+                }
 
             AsyncImage(
                 model = request,
@@ -116,19 +124,21 @@ fun SpeedDialGridItem(
             )
 
             Box(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .height(86.dp)
-                    .background(labelGradient),
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .height(86.dp)
+                        .background(labelGradient),
             )
 
             Row(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .padding(start = 10.dp, end = 6.dp, bottom = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .padding(start = 10.dp, end = 6.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = item.title,
@@ -136,7 +146,7 @@ fun SpeedDialGridItem(
                     color = foregroundColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
 
                 if (item !is SongItem) {
@@ -144,7 +154,7 @@ fun SpeedDialGridItem(
                         painter = painterResource(R.drawable.navigate_next),
                         contentDescription = null,
                         tint = foregroundColor,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(24.dp),
                     )
                 }
             }
@@ -154,10 +164,11 @@ fun SpeedDialGridItem(
                     painter = painterResource(R.drawable.bookmark_filled),
                     contentDescription = null,
                     tint = pinnedIconColor,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(7.dp)
-                        .size(24.dp)
+                    modifier =
+                        Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(7.dp)
+                            .size(24.dp),
                 )
             }
         }

@@ -20,57 +20,62 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class NewsRepository @Inject constructor() {
-
-    private val client = HttpClient(OkHttp) {
-        engine {
-            config {
-                connectTimeout(15, TimeUnit.SECONDS)
-                readTimeout(15, TimeUnit.SECONDS)
-                writeTimeout(15, TimeUnit.SECONDS)
-                retryOnConnectionFailure(false)
+class NewsRepository
+    @Inject
+    constructor() {
+        private val client =
+            HttpClient(OkHttp) {
+                engine {
+                    config {
+                        connectTimeout(15, TimeUnit.SECONDS)
+                        readTimeout(15, TimeUnit.SECONDS)
+                        writeTimeout(15, TimeUnit.SECONDS)
+                        retryOnConnectionFailure(false)
+                    }
+                }
             }
+
+        private val json =
+            Json {
+                ignoreUnknownKeys = true
+                coerceInputValues = true
+            }
+
+        @Volatile private var metadataCache: List<NewsItem>? = null
+
+        suspend fun fetchNews(): List<NewsItem> {
+            val response =
+                client.get(METADATA_URL) {
+                    headers {
+                        append(HttpHeaders.CacheControl, "no-cache, no-store, must-revalidate")
+                        append(HttpHeaders.Pragma, "no-cache")
+                        append(HttpHeaders.Expires, "0")
+                    }
+                }
+            val text = response.bodyAsText()
+            val items = json.decodeFromString<List<NewsItem>>(text)
+            metadataCache = items
+            return items
+        }
+
+        suspend fun fetchNewsContent(id: String): String {
+            val response =
+                client.get("$CONTENT_BASE_URL$id") {
+                    headers {
+                        append(HttpHeaders.CacheControl, "no-cache, no-store, must-revalidate")
+                        append(HttpHeaders.Pragma, "no-cache")
+                        append(HttpHeaders.Expires, "0")
+                    }
+                }
+            return response.bodyAsText()
+        }
+
+        fun getCachedItem(id: String): NewsItem? = metadataCache?.find { it.id == id }
+
+        private companion object {
+            const val METADATA_URL =
+                "https://raw.githubusercontent.com/koiverse/ArchiveTuneNewsRepository/main/metadata.json"
+            const val CONTENT_BASE_URL =
+                "https://raw.githubusercontent.com/koiverse/ArchiveTuneNewsRepository/main/content/"
         }
     }
-
-    private val json = Json {
-        ignoreUnknownKeys = true
-        coerceInputValues = true
-    }
-
-    @Volatile private var metadataCache: List<NewsItem>? = null
-
-    suspend fun fetchNews(): List<NewsItem> {
-        val response = client.get(METADATA_URL) {
-            headers {
-                append(HttpHeaders.CacheControl, "no-cache, no-store, must-revalidate")
-                append(HttpHeaders.Pragma, "no-cache")
-                append(HttpHeaders.Expires, "0")
-            }
-        }
-        val text = response.bodyAsText()
-        val items = json.decodeFromString<List<NewsItem>>(text)
-        metadataCache = items
-        return items
-    }
-
-    suspend fun fetchNewsContent(id: String): String {
-        val response = client.get("$CONTENT_BASE_URL$id") {
-            headers {
-                append(HttpHeaders.CacheControl, "no-cache, no-store, must-revalidate")
-                append(HttpHeaders.Pragma, "no-cache")
-                append(HttpHeaders.Expires, "0")
-            }
-        }
-        return response.bodyAsText()
-    }
-
-    fun getCachedItem(id: String): NewsItem? = metadataCache?.find { it.id == id }
-
-    private companion object {
-        const val METADATA_URL =
-            "https://raw.githubusercontent.com/koiverse/ArchiveTuneNewsRepository/main/metadata.json"
-        const val CONTENT_BASE_URL =
-            "https://raw.githubusercontent.com/koiverse/ArchiveTuneNewsRepository/main/content/"
-    }
-}

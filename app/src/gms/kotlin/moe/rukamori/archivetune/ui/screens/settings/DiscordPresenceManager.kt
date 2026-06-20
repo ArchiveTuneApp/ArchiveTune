@@ -17,13 +17,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import moe.rukamori.archivetune.db.entities.Song
 import moe.rukamori.archivetune.discord.DiscordOAuthRepository
 import moe.rukamori.archivetune.utils.DiscordImageResolver
@@ -66,12 +66,18 @@ object DiscordPresenceManager {
     val lastRpcEndTimeFlow = lastRpcEndTimeState.asStateFlow()
     val lastRpcEndTime: Long? get() = lastRpcEndTimeState.value
 
-    fun setLastRpcTimestamps(start: Long?, end: Long?) {
+    fun setLastRpcTimestamps(
+        start: Long?,
+        end: Long?,
+    ) {
         lastRpcStartTimeState.value = start
         lastRpcEndTimeState.value = end
     }
 
-    private suspend fun getOrCreateRpc(context: Context, token: String): DiscordRPC {
+    private suspend fun getOrCreateRpc(
+        context: Context,
+        token: String,
+    ): DiscordRPC {
         val activeToken = DiscordOAuthRepository.getValidAccessToken(context) ?: token
         if (rpcInstance == null || rpcToken != activeToken) {
             runCatching { rpcInstance?.stopActivity() }
@@ -91,14 +97,15 @@ object DiscordPresenceManager {
         song: Song?,
         positionMs: Long,
         isPaused: Boolean,
-    ): Boolean = updatePresence(
-        context = context,
-        token = token,
-        song = song,
-        positionMs = positionMs,
-        isPaused = isPaused,
-        generation = updateGeneration.incrementAndGet(),
-    )
+    ): Boolean =
+        updatePresence(
+            context = context,
+            token = token,
+            song = song,
+            positionMs = positionMs,
+            isPaused = isPaused,
+            generation = updateGeneration.incrementAndGet(),
+        )
 
     private suspend fun updatePresence(
         context: Context,
@@ -107,71 +114,73 @@ object DiscordPresenceManager {
         positionMs: Long,
         isPaused: Boolean,
         generation: Long,
-    ): Boolean = withContext(Dispatchers.IO) {
-        val appContext = context.applicationContext
-        rpcMutex.withLock {
-            if (generation != updateGeneration.get()) {
-                Timber.tag(LOG_TAG).d("skipped stale presence update")
-                return@withLock true
-            }
-
-            try {
-                val activeToken = DiscordOAuthRepository.getValidAccessToken(appContext) ?: token
-                if (activeToken.isBlank()) {
-                    Timber.tag(LOG_TAG).w("updatePresence skipped because token is missing")
-                    return@withLock false
-                }
-
-                if (song == null) {
-                    val rpc = getOrCreateRpc(appContext, activeToken)
-                    rpc.stopActivity()
-                    setLastRpcTimestamps(null, null)
-                    consecutiveFailures = 0
-                    Timber.tag(LOG_TAG).d("cleared presence because no song is active")
-                    return@withLock true
-                }
-
-                runCatching {
-                    withTimeout(IMAGE_RESOLUTION_TIMEOUT_MS) {
-                        DiscordImageResolver.resolveImagesForSong(appContext, song)
-                    }
-                }.onFailure {
-                    Timber.tag(LOG_TAG).v(it, "image resolution for presence failed or timed out")
-                }
-
+    ): Boolean =
+        withContext(Dispatchers.IO) {
+            val appContext = context.applicationContext
+            rpcMutex.withLock {
                 if (generation != updateGeneration.get()) {
-                    Timber.tag(LOG_TAG).d("skipped stale presence update after image resolution")
+                    Timber.tag(LOG_TAG).d("skipped stale presence update")
                     return@withLock true
                 }
 
-                val rpc = getOrCreateRpc(appContext, activeToken)
-                val result = rpc.updateSong(
-                    song = song,
-                    currentPlaybackTimeMillis = positionMs,
-                    isPaused = isPaused,
-                )
-                if (result.isSuccess) {
-                    consecutiveFailures = 0
-                    updateLastTimestamps(song = song, positionMs = positionMs, isPaused = isPaused)
-                    Timber.tag(LOG_TAG).d("updated presence song=%s paused=%s", song.song.title, isPaused)
-                    true
-                } else {
+                try {
+                    val activeToken = DiscordOAuthRepository.getValidAccessToken(appContext) ?: token
+                    if (activeToken.isBlank()) {
+                        Timber.tag(LOG_TAG).w("updatePresence skipped because token is missing")
+                        return@withLock false
+                    }
+
+                    if (song == null) {
+                        val rpc = getOrCreateRpc(appContext, activeToken)
+                        rpc.stopActivity()
+                        setLastRpcTimestamps(null, null)
+                        consecutiveFailures = 0
+                        Timber.tag(LOG_TAG).d("cleared presence because no song is active")
+                        return@withLock true
+                    }
+
+                    runCatching {
+                        withTimeout(IMAGE_RESOLUTION_TIMEOUT_MS) {
+                            DiscordImageResolver.resolveImagesForSong(appContext, song)
+                        }
+                    }.onFailure {
+                        Timber.tag(LOG_TAG).v(it, "image resolution for presence failed or timed out")
+                    }
+
+                    if (generation != updateGeneration.get()) {
+                        Timber.tag(LOG_TAG).d("skipped stale presence update after image resolution")
+                        return@withLock true
+                    }
+
+                    val rpc = getOrCreateRpc(appContext, activeToken)
+                    val result =
+                        rpc.updateSong(
+                            song = song,
+                            currentPlaybackTimeMillis = positionMs,
+                            isPaused = isPaused,
+                        )
+                    if (result.isSuccess) {
+                        consecutiveFailures = 0
+                        updateLastTimestamps(song = song, positionMs = positionMs, isPaused = isPaused)
+                        Timber.tag(LOG_TAG).d("updated presence song=%s paused=%s", song.song.title, isPaused)
+                        true
+                    } else {
+                        consecutiveFailures++
+                        Timber.tag(LOG_TAG).w(
+                            "updatePresence returned failure consecutive=%d",
+                            consecutiveFailures,
+                        )
+                        false
+                    }
+                } catch (error: CancellationException) {
+                    throw error
+                } catch (error: Exception) {
                     consecutiveFailures++
-                    Timber.tag(LOG_TAG).w(
-                        "updatePresence returned failure consecutive=%d",
-                        consecutiveFailures,
-                    )
+                    Timber.tag(LOG_TAG).e(error, "updatePresence failed consecutive=%d", consecutiveFailures)
                     false
                 }
-            } catch (error: CancellationException) {
-                throw error
-            } catch (error: Exception) {
-                consecutiveFailures++
-                Timber.tag(LOG_TAG).e(error, "updatePresence failed consecutive=%d", consecutiveFailures)
-                false
             }
         }
-    }
 
     fun start(
         context: Context,
@@ -189,11 +198,12 @@ object DiscordPresenceManager {
         if (!started.getAndSet(true)) {
             consecutiveFailures = 0
             scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-            lifecycleObserver = LifecycleEventObserver { _, event ->
-                if (event == Lifecycle.Event.ON_DESTROY) {
-                    stop()
+            lifecycleObserver =
+                LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_DESTROY) {
+                        stop()
+                    }
                 }
-            }
             ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleObserver!!)
         }
 
@@ -218,13 +228,14 @@ object DiscordPresenceManager {
         song: Song?,
         positionMs: Long,
         isPaused: Boolean,
-    ): Boolean = updatePresence(
-        context = context,
-        token = token,
-        song = song,
-        positionMs = positionMs,
-        isPaused = isPaused,
-    )
+    ): Boolean =
+        updatePresence(
+            context = context,
+            token = token,
+            song = song,
+            positionMs = positionMs,
+            isPaused = isPaused,
+        )
 
     fun stop() {
         if (!started.getAndSet(false)) return
@@ -286,31 +297,41 @@ object DiscordPresenceManager {
         val activeScope = scope ?: return false
         val generation = updateGeneration.incrementAndGet()
         refreshJob?.cancel()
-        refreshJob = activeScope.launch {
-            try {
-                val (song, positionMs, isPaused) = withContext(Dispatchers.Main.immediate) {
-                    Triple(songProvider(), positionProvider(), isPausedProvider())
+        refreshJob =
+            activeScope.launch {
+                try {
+                    val (song, positionMs, isPaused) =
+                        withContext(Dispatchers.Main.immediate) {
+                            Triple(songProvider(), positionProvider(), isPausedProvider())
+                        }
+                    updatePresence(
+                        context = context,
+                        token = token,
+                        song = song,
+                        positionMs = positionMs,
+                        isPaused = isPaused,
+                        generation = generation,
+                    )
+                } catch (error: CancellationException) {
+                    throw error
+                } catch (error: Exception) {
+                    consecutiveFailures++
+                    Timber.tag(LOG_TAG).e(error, "provider presence refresh failed")
                 }
-                updatePresence(
-                    context = context,
-                    token = token,
-                    song = song,
-                    positionMs = positionMs,
-                    isPaused = isPaused,
-                    generation = generation,
-                )
-            } catch (error: CancellationException) {
-                throw error
-            } catch (error: Exception) {
-                consecutiveFailures++
-                Timber.tag(LOG_TAG).e(error, "provider presence refresh failed")
             }
-        }
         return true
     }
 
-    private fun updateLastTimestamps(song: Song, positionMs: Long, isPaused: Boolean) {
-        val durationMs = song.song.duration.takeIf { it > 0 }?.toLong()?.times(1000L)
+    private fun updateLastTimestamps(
+        song: Song,
+        positionMs: Long,
+        isPaused: Boolean,
+    ) {
+        val durationMs =
+            song.song.duration
+                .takeIf { it > 0 }
+                ?.toLong()
+                ?.times(1000L)
         if (isPaused || durationMs == null) {
             setLastRpcTimestamps(null, null)
             return

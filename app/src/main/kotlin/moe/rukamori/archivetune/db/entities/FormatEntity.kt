@@ -22,11 +22,10 @@ data class FormatEntity(
     val contentLength: Long,
     val loudnessDb: Double?,
     val perceptualLoudnessDb: Double? = null,
-    val playbackUrl: String?
+    val playbackUrl: String?,
 )
 
-fun FormatEntity.containerLabel(): String =
-    mimeType.substringAfter("/").substringBefore(";").uppercase()
+fun FormatEntity.containerLabel(): String = mimeType.substringAfter("/").substringBefore(";").uppercase()
 
 fun FormatEntity.codecLabel(): String {
     val rawCodec = codecs.ifBlank { mimeType.substringAfter("/") }.uppercase()
@@ -45,13 +44,11 @@ fun FormatEntity.codecLabel(): String {
     }
 }
 
-fun FormatEntity.formattedBitrate(): String =
-    if (bitrate > 0) "${bitrate / 1000} kbps" else "Unknown"
+fun FormatEntity.formattedBitrate(): String = if (bitrate > 0) "${bitrate / 1000} kbps" else "Unknown"
 
 fun FormatEntity.formattedSampleRate(): String? =
     sampleRate?.takeIf { it > 0 }?.let {
         "${(it / 100.0).roundToInt() / 10.0} kHz"
     }
 
-fun FormatEntity.formattedFileSize(): String =
-    if (contentLength > 0) "${(contentLength / 1024.0 / 1024.0).roundToInt()} MB" else ""
+fun FormatEntity.formattedFileSize(): String = if (contentLength > 0) "${(contentLength / 1024.0 / 1024.0).roundToInt()} MB" else ""

@@ -20,8 +20,12 @@ import java.util.Locale
 class EmbeddedLyricsExtractor(
     private val contentResolver: ContentResolver,
 ) {
-    fun extract(contentUri: Uri, displayName: String?, mimeType: String?): String? {
-        return try {
+    fun extract(
+        contentUri: Uri,
+        displayName: String?,
+        mimeType: String?,
+    ): String? =
+        try {
             extractId3Lyrics(contentUri)
                 ?: when {
                     isMp4(displayName, mimeType) -> extractMp4Lyrics(contentUri)
@@ -34,7 +38,6 @@ class EmbeddedLyricsExtractor(
             Timber.tag(LogTag).w(error, "Failed to extract embedded lyrics for %s", contentUri)
             null
         }
-    }
 
     private fun extractId3Lyrics(contentUri: Uri): String? {
         return contentResolver.openInputStream(contentUri)?.buffered()?.use { input ->
@@ -48,17 +51,21 @@ class EmbeddedLyricsExtractor(
             if (tagSize <= 0 || tagSize > MaxMetadataBytes) return null
 
             val tagBytes = input.readByteArray(tagSize) ?: return null
-            val frameBytes = if ((header[5].toInt() and 0x80) != 0) {
-                removeId3Unsynchronization(tagBytes)
-            } else {
-                tagBytes
-            }
+            val frameBytes =
+                if ((header[5].toInt() and 0x80) != 0) {
+                    removeId3Unsynchronization(tagBytes)
+                } else {
+                    tagBytes
+                }
 
             parseId3Lyrics(frameBytes, majorVersion)
         }
     }
 
-    private fun parseId3Lyrics(bytes: ByteArray, majorVersion: Int): String? {
+    private fun parseId3Lyrics(
+        bytes: ByteArray,
+        majorVersion: Int,
+    ): String? {
         var offset = 0
         var syncedLyrics: String? = null
         var unsyncedLyrics: String? = null
@@ -81,7 +88,11 @@ class EmbeddedLyricsExtractor(
         return unsyncedLyrics
     }
 
-    private fun readId3Frame(bytes: ByteArray, offset: Int, majorVersion: Int): Id3Frame? {
+    private fun readId3Frame(
+        bytes: ByteArray,
+        offset: Int,
+        majorVersion: Int,
+    ): Id3Frame? {
         return if (majorVersion == 2) {
             if (offset + 6 > bytes.size) return null
             val id = bytes.decodeAscii(offset, 3)
@@ -126,9 +137,10 @@ class EmbeddedLyricsExtractor(
             val textEnd = findId3Terminator(bytes, start = offset, encoding = encoding) ?: break
             if (textEnd + terminatorLength(encoding) + 4 > bytes.size) break
 
-            val text = decodeId3Text(bytes, offset, textEnd - offset, encoding)
-                ?.replace(WhitespaceRegex, " ")
-                ?.trim()
+            val text =
+                decodeId3Text(bytes, offset, textEnd - offset, encoding)
+                    ?.replace(WhitespaceRegex, " ")
+                    ?.trim()
             offset = textEnd + terminatorLength(encoding)
             val timestampMs = readInt(bytes, offset).toLong() and 0xFFFFFFFFL
             offset += 4
@@ -144,13 +156,15 @@ class EmbeddedLyricsExtractor(
             .joinToString("\n") { (timeMs, text) -> "${formatLrcTimestamp(timeMs)}$text" }
     }
 
-    private fun extractMp4Lyrics(contentUri: Uri): String? {
-        return contentResolver.openInputStream(contentUri)?.buffered()?.use { input ->
+    private fun extractMp4Lyrics(contentUri: Uri): String? =
+        contentResolver.openInputStream(contentUri)?.buffered()?.use { input ->
             parseMp4Boxes(input, Long.MAX_VALUE)
         }
-    }
 
-    private fun parseMp4Boxes(input: InputStream, remainingBytes: Long): String? {
+    private fun parseMp4Boxes(
+        input: InputStream,
+        remainingBytes: Long,
+    ): String? {
         var remaining = remainingBytes
         while (remaining > Mp4HeaderSize) {
             val header = readMp4BoxHeader(input) ?: return null
@@ -168,6 +182,7 @@ class EmbeddedLyricsExtractor(
                         parseMp4Boxes(input, payloadSize - 4L)?.let { return it }
                     }
                 }
+
                 header.isLyricsBox -> {
                     if (payloadSize in 1..MaxMetadataBytes.toLong()) {
                         val payload = input.readByteArray(payloadSize.toInt()) ?: return null
@@ -176,10 +191,14 @@ class EmbeddedLyricsExtractor(
                         input.skipFully(payloadSize)
                     }
                 }
+
                 header.type in Mp4ContainerBoxes -> {
                     parseMp4Boxes(input, payloadSize)?.let { return it }
                 }
-                else -> input.skipFully(payloadSize)
+
+                else -> {
+                    input.skipFully(payloadSize)
+                }
             }
         }
         return null
@@ -192,7 +211,7 @@ class EmbeddedLyricsExtractor(
             val type = bytes.decodeAscii(offset + 4, 4)
             if (size < Mp4HeaderSize || offset + size > bytes.size) return null
             if (type == "data") {
-            val payloadOffset = offset + Mp4HeaderSize + Mp4DataHeaderSize
+                val payloadOffset = offset + Mp4HeaderSize + Mp4DataHeaderSize
                 if (payloadOffset >= offset + size) return null
                 val payload = bytes.copyOfRange(payloadOffset, offset + size)
                 return decodeMp4LyricsPayload(payload)
@@ -214,14 +233,21 @@ class EmbeddedLyricsExtractor(
         val header = input.readByteArray(Mp4HeaderSize) ?: return null
         val smallSize = readInt(header, 0).toLong() and 0xFFFFFFFFL
         val type = header.decodeAscii(4, 4)
-        val size = when (smallSize) {
-            0L -> return null
-            1L -> {
-                val extendedSize = input.readByteArray(8) ?: return null
-                readLong(extendedSize, 0)
+        val size =
+            when (smallSize) {
+                0L -> {
+                    return null
+                }
+
+                1L -> {
+                    val extendedSize = input.readByteArray(8) ?: return null
+                    readLong(extendedSize, 0)
+                }
+
+                else -> {
+                    smallSize
+                }
             }
-            else -> smallSize
-        }
         val headerSize = if (smallSize == 1L) 16 else Mp4HeaderSize
         if (size < headerSize) return null
 
@@ -275,7 +301,10 @@ class EmbeddedLyricsExtractor(
         }
     }
 
-    private fun parseVorbisComments(bytes: ByteArray, offset: Int): String? {
+    private fun parseVorbisComments(
+        bytes: ByteArray,
+        offset: Int,
+    ): String? {
         var cursor = offset
         val vendorLength = bytes.readLittleEndianInt(cursor) ?: return null
         if (vendorLength < 0) return null
@@ -308,7 +337,11 @@ class EmbeddedLyricsExtractor(
         return syncedLyrics ?: unsyncedLyrics
     }
 
-    private fun findId3Terminator(bytes: ByteArray, start: Int, encoding: Int): Int? {
+    private fun findId3Terminator(
+        bytes: ByteArray,
+        start: Int,
+        encoding: Int,
+    ): Int? {
         if (encoding == Id3EncodingUtf16 || encoding == Id3EncodingUtf16Be) {
             var index = start
             while (index + 1 < bytes.size) {
@@ -324,24 +357,30 @@ class EmbeddedLyricsExtractor(
         return null
     }
 
-    private fun decodeId3Text(bytes: ByteArray, offset: Int, length: Int, encoding: Int): String? {
+    private fun decodeId3Text(
+        bytes: ByteArray,
+        offset: Int,
+        length: Int,
+        encoding: Int,
+    ): String? {
         if (length <= 0 || offset < 0 || offset + length > bytes.size) return null
-        val charset = when (encoding) {
-            Id3EncodingIso88591 -> StandardCharsets.ISO_8859_1
-            Id3EncodingUtf16 -> StandardCharsets.UTF_16
-            Id3EncodingUtf16Be -> StandardCharsets.UTF_16BE
-            Id3EncodingUtf8 -> StandardCharsets.UTF_8
-            else -> StandardCharsets.UTF_8
-        }
-        return bytes.decodeString(offset, length, charset)
+        val charset =
+            when (encoding) {
+                Id3EncodingIso88591 -> StandardCharsets.ISO_8859_1
+                Id3EncodingUtf16 -> StandardCharsets.UTF_16
+                Id3EncodingUtf16Be -> StandardCharsets.UTF_16BE
+                Id3EncodingUtf8 -> StandardCharsets.UTF_8
+                else -> StandardCharsets.UTF_8
+            }
+        return bytes
+            .decodeString(offset, length, charset)
             .removePrefix("\uFEFF")
             .replace("\u0000", "")
             .trim()
             .takeIf(String::isNotBlank)
     }
 
-    private fun terminatorLength(encoding: Int): Int =
-        if (encoding == Id3EncodingUtf16 || encoding == Id3EncodingUtf16Be) 2 else 1
+    private fun terminatorLength(encoding: Int): Int = if (encoding == Id3EncodingUtf16 || encoding == Id3EncodingUtf16Be) 2 else 1
 
     private fun removeId3Unsynchronization(bytes: ByteArray): ByteArray {
         val result = ByteArray(bytes.size)
@@ -365,31 +404,42 @@ class EmbeddedLyricsExtractor(
         return "[%02d:%02d.%02d]".format(Locale.US, minutes, seconds, centiseconds)
     }
 
-    private fun isMp4(displayName: String?, mimeType: String?): Boolean {
+    private fun isMp4(
+        displayName: String?,
+        mimeType: String?,
+    ): Boolean {
         val extension = displayName.extension()
         val normalizedMimeType = mimeType.normalizedMimeType()
         return extension in Mp4Extensions || normalizedMimeType in Mp4MimeTypes
     }
 
-    private fun isFlac(displayName: String?, mimeType: String?): Boolean {
+    private fun isFlac(
+        displayName: String?,
+        mimeType: String?,
+    ): Boolean {
         val extension = displayName.extension()
         val normalizedMimeType = mimeType.normalizedMimeType()
         return extension == "flac" || normalizedMimeType in FlacMimeTypes
     }
 
-    private fun isOgg(displayName: String?, mimeType: String?): Boolean {
+    private fun isOgg(
+        displayName: String?,
+        mimeType: String?,
+    ): Boolean {
         val extension = displayName.extension()
         val normalizedMimeType = mimeType.normalizedMimeType()
         return extension in OggExtensions || normalizedMimeType in OggMimeTypes
     }
 
     private fun String?.extension(): String =
-        this?.substringAfterLast('.', missingDelimiterValue = "")
+        this
+            ?.substringAfterLast('.', missingDelimiterValue = "")
             ?.lowercase(Locale.ROOT)
             .orEmpty()
 
     private fun String?.normalizedMimeType(): String =
-        this?.substringBefore(';')
+        this
+            ?.substringBefore(';')
             ?.trim()
             ?.lowercase(Locale.ROOT)
             .orEmpty()
@@ -414,16 +464,21 @@ class EmbeddedLyricsExtractor(
         return -1
     }
 
-    private fun ByteArray.decodeAscii(offset: Int, length: Int): String =
-        decodeString(offset, length, StandardCharsets.ISO_8859_1)
+    private fun ByteArray.decodeAscii(
+        offset: Int,
+        length: Int,
+    ): String = decodeString(offset, length, StandardCharsets.ISO_8859_1)
 
     private fun ByteArray.decodeClean(charset: Charset): String =
         toString(charset)
             .replace("\uFEFF", "")
             .trim { it.isWhitespace() || it == '\u0000' }
 
-    private fun ByteArray.decodeString(offset: Int, length: Int, charset: Charset): String =
-        String(this, offset, length, charset)
+    private fun ByteArray.decodeString(
+        offset: Int,
+        length: Int,
+        charset: Charset,
+    ): String = String(this, offset, length, charset)
 
     private fun ByteArray.readLittleEndianInt(offset: Int): Int? {
         if (offset < 0 || offset + 4 > size) return null
@@ -472,14 +527,19 @@ class EmbeddedLyricsExtractor(
         }
     }
 
-    private fun readInt(bytes: ByteArray, offset: Int): Int {
-        return ((bytes[offset].toInt() and 0xFF) shl 24) or
+    private fun readInt(
+        bytes: ByteArray,
+        offset: Int,
+    ): Int =
+        ((bytes[offset].toInt() and 0xFF) shl 24) or
             ((bytes[offset + 1].toInt() and 0xFF) shl 16) or
             ((bytes[offset + 2].toInt() and 0xFF) shl 8) or
             (bytes[offset + 3].toInt() and 0xFF)
-    }
 
-    private fun readLong(bytes: ByteArray, offset: Int): Long {
+    private fun readLong(
+        bytes: ByteArray,
+        offset: Int,
+    ): Long {
         var value = 0L
         for (index in offset until offset + 8) {
             value = (value shl 8) or (bytes[index].toLong() and 0xFFL)
@@ -487,18 +547,22 @@ class EmbeddedLyricsExtractor(
         return value
     }
 
-    private fun readUInt24(bytes: ByteArray, offset: Int): Int {
-        return ((bytes[offset].toInt() and 0xFF) shl 16) or
+    private fun readUInt24(
+        bytes: ByteArray,
+        offset: Int,
+    ): Int =
+        ((bytes[offset].toInt() and 0xFF) shl 16) or
             ((bytes[offset + 1].toInt() and 0xFF) shl 8) or
             (bytes[offset + 2].toInt() and 0xFF)
-    }
 
-    private fun readSynchsafeInt(bytes: ByteArray, offset: Int): Int {
-        return ((bytes[offset].toInt() and 0x7F) shl 21) or
+    private fun readSynchsafeInt(
+        bytes: ByteArray,
+        offset: Int,
+    ): Int =
+        ((bytes[offset].toInt() and 0x7F) shl 21) or
             ((bytes[offset + 1].toInt() and 0x7F) shl 14) or
             ((bytes[offset + 2].toInt() and 0x7F) shl 7) or
             (bytes[offset + 3].toInt() and 0x7F)
-    }
 
     private data class Id3Frame(
         val id: String,
@@ -520,15 +584,16 @@ class EmbeddedLyricsExtractor(
         val Id3Header = byteArrayOf('I'.code.toByte(), 'D'.code.toByte(), '3'.code.toByte())
         val FlacMarker = byteArrayOf('f'.code.toByte(), 'L'.code.toByte(), 'a'.code.toByte(), 'C'.code.toByte())
         val OpusTagsMarker = "OpusTags".toByteArray(StandardCharsets.US_ASCII)
-        val VorbisCommentMarker = byteArrayOf(
-            0x03,
-            'v'.code.toByte(),
-            'o'.code.toByte(),
-            'r'.code.toByte(),
-            'b'.code.toByte(),
-            'i'.code.toByte(),
-            's'.code.toByte(),
-        )
+        val VorbisCommentMarker =
+            byteArrayOf(
+                0x03,
+                'v'.code.toByte(),
+                'o'.code.toByte(),
+                'r'.code.toByte(),
+                'b'.code.toByte(),
+                'i'.code.toByte(),
+                's'.code.toByte(),
+            )
         val Mp4LyricsBoxBytes = byteArrayOf(0xA9.toByte(), 'l'.code.toByte(), 'y'.code.toByte(), 'r'.code.toByte())
         val Mp4ContainerBoxes = setOf("moov", "udta", "ilst")
         val Mp4Extensions = setOf("m4a", "m4b", "m4p", "mp4", "3ga", "3gp")

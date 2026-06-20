@@ -19,8 +19,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.Json
 import moe.rukamori.archivetune.canvas.models.CanvasArtwork
 import moe.rukamori.archivetune.innertube.YouTube
 import moe.rukamori.archivetune.storage.StorageFolderKind
@@ -48,18 +48,22 @@ object CanvasArtworkPlaybackCache {
     private const val CACHE_SIZE_BYTES_PER_MEGABYTE = 1024L * 1024L
 
     private val map = LinkedHashMap<String, CanvasCacheEntry>(DEFAULT_MAX_SIZE_MEGABYTES, 0.75f, true)
+
     @Volatile private var maxSizeBytes = DEFAULT_MAX_SIZE_MEGABYTES.toLong() * CACHE_SIZE_BYTES_PER_MEGABYTE
+
     @Volatile private var cacheDirectory: File? = null
+
     @Volatile private var cacheFile: File? = null
 
     private val persistScope = CoroutineScope(Dispatchers.IO)
     private var persistJob: Job? = null
 
-    private val json = Json {
-        ignoreUnknownKeys = true
-        isLenient = true
-        explicitNulls = false
-    }
+    private val json =
+        Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+            explicitNulls = false
+        }
 
     private val directClient: OkHttpClient by lazy {
         canvasClient(proxy = null)
@@ -74,28 +78,28 @@ object CanvasArtworkPlaybackCache {
             .Builder()
             .apply {
                 if (proxy != null) this.proxy(proxy)
-            }
-            .connectTimeout(12, TimeUnit.SECONDS)
+            }.connectTimeout(12, TimeUnit.SECONDS)
             .readTimeout(45, TimeUnit.SECONDS)
             .callTimeout(3, TimeUnit.MINUTES)
             .addInterceptor { chain ->
                 val request = chain.request()
                 if (!request.url.isYouTubeMediaHost()) {
                     return@addInterceptor chain.proceed(
-                        request.newBuilder()
+                        request
+                            .newBuilder()
                             .header("User-Agent", CanvasDownloadUserAgent)
                             .build(),
                     )
                 }
                 val requestProfile = StreamClientUtils.resolveRequestProfile(request.url)
                 chain.proceed(
-                    StreamClientUtils.applyRequestProfile(
-                        request.newBuilder(),
-                        requestProfile,
-                    ).build(),
+                    StreamClientUtils
+                        .applyRequestProfile(
+                            request.newBuilder(),
+                            requestProfile,
+                        ).build(),
                 )
-            }
-            .build()
+            }.build()
     }
 
     fun init(context: Context) {
@@ -120,48 +124,55 @@ object CanvasArtworkPlaybackCache {
         return playable
     }
 
-    suspend fun put(mediaId: String, artwork: CanvasArtwork): CanvasArtwork =
+    suspend fun put(
+        mediaId: String,
+        artwork: CanvasArtwork,
+    ): CanvasArtwork =
         withContext(Dispatchers.IO) {
             if (maxSizeBytes == 0L || mediaId.isBlank()) return@withContext artwork
             val directory = cacheDirectory ?: return@withContext artwork
             directory.mkdirs()
 
             val current = synchronized(this@CanvasArtworkPlaybackCache) { map[mediaId] }
-            val regularFileName = cacheCanvasVideo(
-                directory = directory,
-                mediaId = mediaId,
-                variant = CanvasVideoVariant.Regular,
-                url = artwork.downloadableRegularUrl(),
-                currentFileName = current?.regularFileName,
-            )
+            val regularFileName =
+                cacheCanvasVideo(
+                    directory = directory,
+                    mediaId = mediaId,
+                    variant = CanvasVideoVariant.Regular,
+                    url = artwork.downloadableRegularUrl(),
+                    currentFileName = current?.regularFileName,
+                )
             persistEntry(
                 directory = directory,
-                entry = CanvasCacheEntry(
+                entry =
+                    CanvasCacheEntry(
+                        mediaId = mediaId,
+                        artwork = artwork,
+                        regularFileName = regularFileName,
+                        verticalFileName = current?.verticalFileName,
+                        createdAtMs = current?.createdAtMs ?: System.currentTimeMillis(),
+                        lastAccessedAtMs = System.currentTimeMillis(),
+                    ),
+            )
+            val verticalFileName =
+                cacheCanvasVideo(
+                    directory = directory,
+                    mediaId = mediaId,
+                    variant = CanvasVideoVariant.Vertical,
+                    url = artwork.downloadableVerticalUrl(),
+                    currentFileName = current?.verticalFileName,
+                )
+
+            val now = System.currentTimeMillis()
+            val entry =
+                CanvasCacheEntry(
                     mediaId = mediaId,
                     artwork = artwork,
                     regularFileName = regularFileName,
-                    verticalFileName = current?.verticalFileName,
-                    createdAtMs = current?.createdAtMs ?: System.currentTimeMillis(),
-                    lastAccessedAtMs = System.currentTimeMillis(),
-                ),
-            )
-            val verticalFileName = cacheCanvasVideo(
-                directory = directory,
-                mediaId = mediaId,
-                variant = CanvasVideoVariant.Vertical,
-                url = artwork.downloadableVerticalUrl(),
-                currentFileName = current?.verticalFileName,
-            )
-
-            val now = System.currentTimeMillis()
-            val entry = CanvasCacheEntry(
-                mediaId = mediaId,
-                artwork = artwork,
-                regularFileName = regularFileName,
-                verticalFileName = verticalFileName,
-                createdAtMs = current?.createdAtMs ?: now,
-                lastAccessedAtMs = now,
-            )
+                    verticalFileName = verticalFileName,
+                    createdAtMs = current?.createdAtMs ?: now,
+                    lastAccessedAtMs = now,
+                )
 
             persistEntry(directory = directory, entry = entry)
 
@@ -230,13 +241,14 @@ object CanvasArtworkPlaybackCache {
         runCatching {
             json.decodeFromString(ListSerializer(CanvasCacheEntry.serializer()), raw)
         }.getOrElse {
-            val legacy = json.decodeFromString(
-                kotlinx.serialization.builtins.MapSerializer(
-                    String.serializer(),
-                    CanvasArtwork.serializer(),
-                ),
-                raw,
-            )
+            val legacy =
+                json.decodeFromString(
+                    kotlinx.serialization.builtins.MapSerializer(
+                        String.serializer(),
+                        CanvasArtwork.serializer(),
+                    ),
+                    raw,
+                )
             val now = System.currentTimeMillis()
             legacy.map { (mediaId, artwork) ->
                 CanvasCacheEntry(
@@ -252,10 +264,11 @@ object CanvasArtworkPlaybackCache {
 
     private fun schedulePersist() {
         persistJob?.cancel()
-        persistJob = persistScope.launch {
-            delay(PERSIST_DEBOUNCE_MS)
-            writeToDisk()
-        }
+        persistJob =
+            persistScope.launch {
+                delay(PERSIST_DEBOUNCE_MS)
+                writeToDisk()
+            }
     }
 
     private fun persistEntry(
@@ -316,7 +329,10 @@ object CanvasArtworkPlaybackCache {
         }
     }
 
-    private suspend fun downloadToFile(url: String, target: File) {
+    private suspend fun downloadToFile(
+        url: String,
+        target: File,
+    ) {
         kotlinx.coroutines.currentCoroutineContext().ensureActive()
         target.parentFile?.mkdirs()
         var attempt = 0
@@ -347,9 +363,11 @@ object CanvasArtworkPlaybackCache {
         target: File,
         existingBytes: Long,
     ) {
-        val requestBuilder = Request.Builder()
-            .url(url)
-            .header("Accept", "video/mp4,video/*;q=0.9,*/*;q=0.8")
+        val requestBuilder =
+            Request
+                .Builder()
+                .url(url)
+                .header("Accept", "video/mp4,video/*;q=0.9,*/*;q=0.8")
         if (existingBytes > 0L) {
             requestBuilder.header("Range", "bytes=$existingBytes-")
         }
@@ -363,7 +381,12 @@ object CanvasArtworkPlaybackCache {
                 if (target.exists() && !target.delete()) throw IOException("Failed to restart canvas video download")
             }
             val body = response.body ?: throw IOException("Canvas response body is empty")
-            val contentType = body.contentType()?.toString()?.lowercase(Locale.ROOT).orEmpty()
+            val contentType =
+                body
+                    .contentType()
+                    ?.toString()
+                    ?.lowercase(Locale.ROOT)
+                    .orEmpty()
             if (
                 contentType.contains("mpegurl") ||
                 contentType.contains("m3u8") ||
@@ -388,10 +411,13 @@ object CanvasArtworkPlaybackCache {
     }
 
     private fun trimLocked(directory: File) {
-        val activeFiles = map.values.flatMap { entry ->
-            listOfNotNull(entry.regularFileName, entry.verticalFileName)
-        }.toSet()
-        directory.listFiles()
+        val activeFiles =
+            map.values
+                .flatMap { entry ->
+                    listOfNotNull(entry.regularFileName, entry.verticalFileName)
+                }.toSet()
+        directory
+            .listFiles()
             ?.filter { file -> file.isFile && file.name.endsWith(".mp4") && file.name !in activeFiles }
             ?.forEach { file -> runCatching { file.delete() } }
         trimToByteLimitLocked(directory)
@@ -418,7 +444,8 @@ object CanvasArtworkPlaybackCache {
             runCatching { entry.regularFileName?.let { directory.resolve(it).delete() } }
             runCatching { entry.verticalFileName?.let { directory.resolve(it).delete() } }
         }
-        directory.listFiles()
+        directory
+            .listFiles()
             ?.filter { file -> file.isFile && (file.name.endsWith(".mp4") || file.name.endsWith(".part")) }
             ?.forEach { file -> runCatching { file.delete() } }
     }
@@ -428,14 +455,15 @@ object CanvasArtworkPlaybackCache {
         variant: CanvasVideoVariant,
         url: String,
     ): String {
-        val digest = MessageDigest.getInstance("SHA-256")
-            .digest("$mediaId|${variant.cacheKey}|$url".toByteArray())
-            .joinToString("") { byte -> "%02x".format(byte) }
+        val digest =
+            MessageDigest
+                .getInstance("SHA-256")
+                .digest("$mediaId|${variant.cacheKey}|$url".toByteArray())
+                .joinToString("") { byte -> "%02x".format(byte) }
         return "${variant.cacheKey}-$digest.mp4"
     }
 
-    private fun CanvasArtwork.downloadableRegularUrl(): String? =
-        videoUrl.takeIfDownloadableVideo() ?: animated.takeIfDownloadableVideo()
+    private fun CanvasArtwork.downloadableRegularUrl(): String? = videoUrl.takeIfDownloadableVideo() ?: animated.takeIfDownloadableVideo()
 
     private fun CanvasArtwork.downloadableVerticalUrl(): String? =
         videoUrlVertical.takeIfDownloadableVideo() ?: animatedVertical.takeIfDownloadableVideo()
@@ -463,21 +491,24 @@ object CanvasArtworkPlaybackCache {
         fun byteSize(directory: File): Long =
             listOfNotNull(regularFileName, verticalFileName)
                 .sumOf { fileName ->
-                    directory.resolve(fileName)
+                    directory
+                        .resolve(fileName)
                         .takeIf { file -> file.isUsableFile() }
                         ?.length()
                         ?: 0L
                 }
 
         fun toPlayableArtwork(directory: File): CanvasArtwork? {
-            val regularUri = regularFileName
-                ?.let(directory::resolve)
-                ?.takeIf { file -> file.isUsableFile() }
-                ?.let { file -> Uri.fromFile(file).toString() }
-            val verticalUri = verticalFileName
-                ?.let(directory::resolve)
-                ?.takeIf { file -> file.isUsableFile() }
-                ?.let { file -> Uri.fromFile(file).toString() }
+            val regularUri =
+                regularFileName
+                    ?.let(directory::resolve)
+                    ?.takeIf { file -> file.isUsableFile() }
+                    ?.let { file -> Uri.fromFile(file).toString() }
+            val verticalUri =
+                verticalFileName
+                    ?.let(directory::resolve)
+                    ?.takeIf { file -> file.isUsableFile() }
+                    ?.let { file -> Uri.fromFile(file).toString() }
             if (regularUri == null && verticalUri == null) return null
             return artwork.copy(
                 animated = regularUri,
@@ -509,11 +540,19 @@ private fun File.isUsableFile(): Boolean = isFile && length() > 0L
 
 private fun Int.toCanvasCacheLimitBytes(): Long =
     when {
-        this < 0 -> Long.MAX_VALUE
-        this == 0 -> 0L
-        else -> toLong()
-            .coerceAtMost(Long.MAX_VALUE / 1_024L / 1_024L)
-            .coerceAtLeast(0L) * 1_024L * 1_024L
+        this < 0 -> {
+            Long.MAX_VALUE
+        }
+
+        this == 0 -> {
+            0L
+        }
+
+        else -> {
+            toLong()
+                .coerceAtMost(Long.MAX_VALUE / 1_024L / 1_024L)
+                .coerceAtLeast(0L) * 1_024L * 1_024L
+        }
     }
 
 private const val CanvasDownloadUserAgent =

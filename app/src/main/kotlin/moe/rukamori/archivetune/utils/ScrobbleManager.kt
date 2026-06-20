@@ -7,7 +7,6 @@
 
 package moe.rukamori.archivetune.utils
 
-import kotlin.math.min
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -16,6 +15,7 @@ import kotlinx.coroutines.launch
 import moe.rukamori.archivetune.lastfm.LastFM
 import moe.rukamori.archivetune.models.MediaMetadata
 import timber.log.Timber
+import kotlin.math.min
 
 class ScrobbleManager(
     private val scope: CoroutineScope,
@@ -38,7 +38,10 @@ class ScrobbleManager(
         songStarted = false
     }
 
-    fun onSongStart(metadata: MediaMetadata?, duration: Long? = null) {
+    fun onSongStart(
+        metadata: MediaMetadata?,
+        duration: Long? = null,
+    ) {
         if (metadata == null) return
         songStartedAt = System.currentTimeMillis() / 1000
         songStarted = true
@@ -61,7 +64,10 @@ class ScrobbleManager(
         songStarted = false
     }
 
-    private fun startScrobbleTimer(metadata: MediaMetadata, duration: Long? = null) {
+    private fun startScrobbleTimer(
+        metadata: MediaMetadata,
+        duration: Long? = null,
+    ) {
         scrobbleJob?.cancel()
         val resolvedDuration = duration?.toInt()?.div(1000) ?: metadata.duration
 
@@ -75,11 +81,12 @@ class ScrobbleManager(
             return
         }
         scrobbleTimerStartedAt = System.currentTimeMillis()
-        scrobbleJob = scope.launch {
-            delay(scrobbleRemainingMillis)
-            scrobbleSong(metadata)
-            scrobbleJob = null
-        }
+        scrobbleJob =
+            scope.launch {
+                delay(scrobbleRemainingMillis)
+                scrobbleSong(metadata)
+                scrobbleJob = null
+            }
     }
 
     private fun pauseScrobbleTimer() {
@@ -96,11 +103,12 @@ class ScrobbleManager(
         if (scrobbleRemainingMillis <= 0) return
         scrobbleJob?.cancel()
         scrobbleTimerStartedAt = System.currentTimeMillis()
-        scrobbleJob = scope.launch {
-            delay(scrobbleRemainingMillis)
-            scrobbleSong(metadata)
-            scrobbleJob = null
-        }
+        scrobbleJob =
+            scope.launch {
+                delay(scrobbleRemainingMillis)
+                scrobbleSong(metadata)
+                scrobbleJob = null
+            }
     }
 
     private fun stopScrobbleTimer() {
@@ -111,17 +119,19 @@ class ScrobbleManager(
 
     private fun scrobbleSong(metadata: MediaMetadata) {
         scope.launch {
-            LastFM.scrobble(
-                artist = metadata.artists.joinToString(", ") { artist -> artist.name },
-                track = metadata.title,
-                duration = metadata.duration,
-                timestamp = songStartedAt,
-                album = metadata.album?.title,
-            )
-                .onSuccess {
-                    Timber.tag("ScrobbleManager").d("Scrobbled: ${metadata.title} by ${metadata.artists.joinToString(", ") { artist -> artist.name }}")
-                }
-                .onFailure { throwable ->
+            LastFM
+                .scrobble(
+                    artist = metadata.artists.joinToString(", ") { artist -> artist.name },
+                    track = metadata.title,
+                    duration = metadata.duration,
+                    timestamp = songStartedAt,
+                    album = metadata.album?.title,
+                ).onSuccess {
+                    Timber
+                        .tag(
+                            "ScrobbleManager",
+                        ).d("Scrobbled: ${metadata.title} by ${metadata.artists.joinToString(", ") { artist -> artist.name }}")
+                }.onFailure { throwable ->
                     if (throwable is CancellationException) throw throwable
                     Timber.tag("ScrobbleManager").e(throwable, "Failed to scrobble: ${metadata.title}")
                 }
@@ -130,23 +140,26 @@ class ScrobbleManager(
 
     private fun updateNowPlaying(metadata: MediaMetadata) {
         scope.launch {
-            LastFM.updateNowPlaying(
-                artist = metadata.artists.joinToString(", ") { artist -> artist.name },
-                track = metadata.title,
-                album = metadata.album?.title,
-                duration = metadata.duration,
-            )
-                .onSuccess {
+            LastFM
+                .updateNowPlaying(
+                    artist = metadata.artists.joinToString(", ") { artist -> artist.name },
+                    track = metadata.title,
+                    album = metadata.album?.title,
+                    duration = metadata.duration,
+                ).onSuccess {
                     Timber.tag("ScrobbleManager").d("Updated now playing: ${metadata.title}")
-                }
-                .onFailure { throwable ->
+                }.onFailure { throwable ->
                     if (throwable is CancellationException) throw throwable
                     Timber.tag("ScrobbleManager").e(throwable, "Failed to update now playing: ${metadata.title}")
                 }
         }
     }
 
-    fun onPlayerStateChanged(isPlaying: Boolean, metadata: MediaMetadata?, duration: Long? = null) {
+    fun onPlayerStateChanged(
+        isPlaying: Boolean,
+        metadata: MediaMetadata?,
+        duration: Long? = null,
+    ) {
         if (metadata == null) return
         if (isPlaying) {
             if (!songStarted) {

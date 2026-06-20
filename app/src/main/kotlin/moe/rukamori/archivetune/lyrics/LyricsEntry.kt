@@ -13,7 +13,7 @@ data class WordTimestamp(
     val text: String,
     val startTime: Double,
     val endTime: Double,
-    val isBackground: Boolean = false
+    val isBackground: Boolean = false,
 )
 
 data class LyricsEntry(
@@ -26,7 +26,7 @@ data class LyricsEntry(
     val providerRomanizedText: String? = null,
     val providerRomanizedWords: List<String>? = null,
     val providerRomanizedLanguage: String? = null,
-    val romanizedTextFlow: MutableStateFlow<String?> = MutableStateFlow(null)
+    val romanizedTextFlow: MutableStateFlow<String?> = MutableStateFlow(null),
 ) : Comparable<LyricsEntry> {
     override fun compareTo(other: LyricsEntry): Int = (time - other.time).toInt()
 

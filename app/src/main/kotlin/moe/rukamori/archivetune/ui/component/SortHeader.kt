@@ -34,8 +34,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import moe.rukamori.archivetune.R
-import moe.rukamori.archivetune.constants.PlaylistSortType
 import moe.rukamori.archivetune.constants.PlaylistSongSortType
+import moe.rukamori.archivetune.constants.PlaylistSortType
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -80,22 +80,25 @@ inline fun <reified T : Enum<T>> SortHeader(
                     SplitButtonDefaults.TonalTrailingButton(
                         checked = sortDescending,
                         onCheckedChange = onSortDescendingChange,
-                        modifier = Modifier
-                            .heightIn(min = SplitButtonDefaults.MediumContainerHeight)
-                            .widthIn(min = SplitButtonDefaults.MediumContainerHeight),
+                        modifier =
+                            Modifier
+                                .heightIn(min = SplitButtonDefaults.MediumContainerHeight)
+                                .widthIn(min = SplitButtonDefaults.MediumContainerHeight),
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.arrow_downward),
-                            contentDescription = stringResource(
-                                if (sortDescending) {
-                                    R.string.sort_order_descending
-                                } else {
-                                    R.string.sort_order_ascending
-                                }
-                            ),
-                            modifier = Modifier
-                                .size(SplitButtonDefaults.TrailingIconSize)
-                                .rotate(sortDirectionRotation),
+                            contentDescription =
+                                stringResource(
+                                    if (sortDescending) {
+                                        R.string.sort_order_descending
+                                    } else {
+                                        R.string.sort_order_ascending
+                                    },
+                                ),
+                            modifier =
+                                Modifier
+                                    .size(SplitButtonDefaults.TrailingIconSize)
+                                    .rotate(sortDirectionRotation),
                         )
                     }
                 },
@@ -128,13 +131,14 @@ inline fun <reified T : Enum<T>> SortHeader(
                     },
                     trailingIcon = {
                         Icon(
-                            painter = painterResource(
-                                if (sortType == type) {
-                                    R.drawable.radio_button_checked
-                                } else {
-                                    R.drawable.radio_button_unchecked
-                                }
-                            ),
+                            painter =
+                                painterResource(
+                                    if (sortType == type) {
+                                        R.drawable.radio_button_checked
+                                    } else {
+                                        R.drawable.radio_button_unchecked
+                                    },
+                                ),
                             contentDescription = null,
                         )
                     },

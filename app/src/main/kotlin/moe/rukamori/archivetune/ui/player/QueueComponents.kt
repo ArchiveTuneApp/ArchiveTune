@@ -40,6 +40,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
@@ -48,8 +49,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -60,6 +61,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -68,14 +70,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.platform.LocalView
-import moe.rukamori.archivetune.constants.EnableHapticFeedbackKey
-import moe.rukamori.archivetune.utils.rememberPreference
 import androidx.media3.common.Player
 import coil3.compose.AsyncImage
 import moe.rukamori.archivetune.R
+import moe.rukamori.archivetune.constants.EnableHapticFeedbackKey
 import moe.rukamori.archivetune.db.entities.FormatEntity
 import moe.rukamori.archivetune.db.entities.containerLabel
 import moe.rukamori.archivetune.db.entities.formattedBitrate
@@ -90,6 +89,7 @@ import moe.rukamori.archivetune.ui.component.bottomSheetDraggable
 import moe.rukamori.archivetune.ui.menu.PlayerMenu
 import moe.rukamori.archivetune.ui.utils.ShowMediaInfo
 import moe.rukamori.archivetune.utils.makeTimeString
+import moe.rukamori.archivetune.utils.rememberPreference
 import kotlin.math.roundToInt
 
 /**
@@ -118,53 +118,57 @@ fun CurrentSongHeader(
     onShuffleClick: () -> Unit,
     onLockClick: () -> Unit,
     onInfiniteQueueClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val view = LocalView.current
     val (enableHapticFeedback) = rememberPreference(EnableHapticFeedbackKey, true)
 
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(backgroundColor)
-            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
-            .bottomSheetDraggable(sheetState)
-            .padding(horizontal = 16.dp)
-            .padding(top = 20.dp, bottom = 8.dp)
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .background(backgroundColor)
+                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
+                .bottomSheetDraggable(sheetState)
+                .padding(horizontal = 16.dp)
+                .padding(top = 20.dp, bottom = 8.dp),
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            contentAlignment = Alignment.Center
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+            contentAlignment = Alignment.Center,
         ) {
             Box(
-                modifier = Modifier
-                    .width(48.dp)
-                    .height(5.dp)
-                    .clip(RoundedCornerShape(2.5.dp))
-                    .background(onBackgroundColor.copy(alpha = 0.4f))
+                modifier =
+                    Modifier
+                        .width(48.dp)
+                        .height(5.dp)
+                        .clip(RoundedCornerShape(2.5.dp))
+                        .background(onBackgroundColor.copy(alpha = 0.4f)),
             )
         }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(14.dp)
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             AsyncImage(
                 model = mediaMetadata?.thumbnailUrl,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(onBackgroundColor.copy(alpha = 0.06f))
+                modifier =
+                    Modifier
+                        .size(64.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(onBackgroundColor.copy(alpha = 0.06f)),
             )
 
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp)
+                verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 Text(
                     text = mediaMetadata?.title ?: "",
@@ -172,33 +176,41 @@ fun CurrentSongHeader(
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    color = onBackgroundColor
+                    color = onBackgroundColor,
                 )
                 Text(
                     text = mediaMetadata?.artists?.joinToString(", ") { it.name } ?: "",
                     style = MaterialTheme.typography.bodyMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    color = onBackgroundColor.copy(alpha = 0.6f)
+                    color = onBackgroundColor.copy(alpha = 0.6f),
                 )
             }
 
             IconButton(
                 onClick = onToggleLike,
                 modifier = Modifier.size(44.dp),
-                colors = IconButtonDefaults.iconButtonColors(
-                    contentColor = if (liked)
-                        MaterialTheme.colorScheme.primary
-                    else onBackgroundColor
-                )
+                colors =
+                    IconButtonDefaults.iconButtonColors(
+                        contentColor =
+                            if (liked) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                onBackgroundColor
+                            },
+                    ),
             ) {
                 Icon(
-                    painter = painterResource(
-                        if (liked) R.drawable.favorite
-                        else R.drawable.favorite_border
-                    ),
+                    painter =
+                        painterResource(
+                            if (liked) {
+                                R.drawable.favorite
+                            } else {
+                                R.drawable.favorite_border
+                            },
+                        ),
                     contentDescription = stringResource(R.string.action_like),
-                    modifier = Modifier.size(26.dp)
+                    modifier = Modifier.size(26.dp),
                 )
             }
         }
@@ -206,65 +218,70 @@ fun CurrentSongHeader(
         Spacer(modifier = Modifier.height(14.dp))
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(24.dp))
-                .background(onBackgroundColor.copy(alpha = 0.06f))
-                .padding(horizontal = 6.dp, vertical = 4.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(onBackgroundColor.copy(alpha = 0.06f))
+                    .padding(horizontal = 6.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(0.dp)
+                horizontalArrangement = Arrangement.spacedBy(0.dp),
             ) {
                 IconButton(
                     onClick = onLockClick,
                     modifier = Modifier.size(40.dp),
-                    colors = IconButtonDefaults.iconButtonColors(
-                        contentColor = onBackgroundColor.copy(alpha = 0.7f)
-                    )
+                    colors =
+                        IconButtonDefaults.iconButtonColors(
+                            contentColor = onBackgroundColor.copy(alpha = 0.7f),
+                        ),
                 ) {
                     Icon(
                         painter = painterResource(if (locked) R.drawable.lock else R.drawable.lock_open),
                         contentDescription = null,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(20.dp),
                     )
                 }
                 IconButton(
                     onClick = onMenuClick,
                     modifier = Modifier.size(40.dp),
-                    colors = IconButtonDefaults.iconButtonColors(
-                        contentColor = onBackgroundColor.copy(alpha = 0.7f)
-                    )
+                    colors =
+                        IconButtonDefaults.iconButtonColors(
+                            contentColor = onBackgroundColor.copy(alpha = 0.7f),
+                        ),
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.more_vert),
                         contentDescription = null,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(20.dp),
                     )
                 }
                 IconButton(
                     onClick = onClearQueueClick,
                     modifier = Modifier.size(40.dp),
-                    colors = IconButtonDefaults.iconButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
-                    )
+                    colors =
+                        IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error,
+                        ),
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.delete),
                         contentDescription = stringResource(R.string.clear),
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(20.dp),
                     )
                 }
             }
 
             Text(
-                text = pluralStringResource(R.plurals.n_song, songCount, songCount)
-                        + "  •  " + makeTimeString(queueDuration * 1000L),
+                text =
+                    pluralStringResource(R.plurals.n_song, songCount, songCount) +
+                        "  •  " + makeTimeString(queueDuration * 1000L),
                 style = MaterialTheme.typography.labelMedium,
                 color = onBackgroundColor.copy(alpha = 0.55f),
-                modifier = Modifier.padding(end = 14.dp)
+                modifier = Modifier.padding(end = 14.dp),
             )
         }
 
@@ -273,27 +290,35 @@ fun CurrentSongHeader(
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            val uncheckedColors = ToggleButtonDefaults.toggleButtonColors(
-                containerColor = onBackgroundColor.copy(alpha = 0.12f),
-                contentColor = onBackgroundColor,
-            )
-            val checkedColors = ToggleButtonDefaults.toggleButtonColors(
-                checkedContainerColor = onBackgroundColor.copy(alpha = 0.22f),
-                checkedContentColor = onBackgroundColor,
-            )
-            val infiniteCheckedColors = ToggleButtonDefaults.toggleButtonColors(
-                checkedContainerColor = MaterialTheme.colorScheme.primary,
-                checkedContentColor = MaterialTheme.colorScheme.onPrimary,
-                containerColor = onBackgroundColor.copy(alpha = 0.12f),
-                contentColor = onBackgroundColor.copy(alpha = 0.5f),
-            )
+            val uncheckedColors =
+                ToggleButtonDefaults.toggleButtonColors(
+                    containerColor = onBackgroundColor.copy(alpha = 0.12f),
+                    contentColor = onBackgroundColor,
+                )
+            val checkedColors =
+                ToggleButtonDefaults.toggleButtonColors(
+                    checkedContainerColor = onBackgroundColor.copy(alpha = 0.22f),
+                    checkedContentColor = onBackgroundColor,
+                )
+            val infiniteCheckedColors =
+                ToggleButtonDefaults.toggleButtonColors(
+                    checkedContainerColor = MaterialTheme.colorScheme.primary,
+                    checkedContentColor = MaterialTheme.colorScheme.onPrimary,
+                    containerColor = onBackgroundColor.copy(alpha = 0.12f),
+                    contentColor = onBackgroundColor.copy(alpha = 0.5f),
+                )
 
             ToggleButton(
                 checked = shuffleModeEnabled,
                 onCheckedChange = {
-                    if (enableHapticFeedback) view.performHapticFeedback(android.view.HapticFeedbackConstants.CONTEXT_CLICK, android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING)
+                    if (enableHapticFeedback) {
+                        view.performHapticFeedback(
+                            android.view.HapticFeedbackConstants.CONTEXT_CLICK,
+                            android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING,
+                        )
+                    }
                     onShuffleClick()
                 },
                 modifier = Modifier.weight(1f).size(48.dp),
@@ -303,14 +328,19 @@ fun CurrentSongHeader(
                 Icon(
                     painter = painterResource(R.drawable.shuffle),
                     contentDescription = stringResource(R.string.action_shuffle_on),
-                    modifier = Modifier.size(22.dp)
+                    modifier = Modifier.size(22.dp),
                 )
             }
 
             ToggleButton(
                 checked = repeatMode != Player.REPEAT_MODE_OFF,
                 onCheckedChange = {
-                    if (enableHapticFeedback) view.performHapticFeedback(android.view.HapticFeedbackConstants.CONTEXT_CLICK, android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING)
+                    if (enableHapticFeedback) {
+                        view.performHapticFeedback(
+                            android.view.HapticFeedbackConstants.CONTEXT_CLICK,
+                            android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING,
+                        )
+                    }
                     onRepeatClick()
                 },
                 modifier = Modifier.weight(1f).size(48.dp),
@@ -318,15 +348,16 @@ fun CurrentSongHeader(
                 colors = if (repeatMode != Player.REPEAT_MODE_OFF) checkedColors else uncheckedColors,
             ) {
                 Icon(
-                    painter = painterResource(
-                        when (repeatMode) {
-                            Player.REPEAT_MODE_ONE -> R.drawable.repeat_one_on
-                            Player.REPEAT_MODE_ALL -> R.drawable.repeat_on
-                            else -> R.drawable.repeat
-                        }
-                    ),
+                    painter =
+                        painterResource(
+                            when (repeatMode) {
+                                Player.REPEAT_MODE_ONE -> R.drawable.repeat_one_on
+                                Player.REPEAT_MODE_ALL -> R.drawable.repeat_on
+                                else -> R.drawable.repeat
+                            },
+                        ),
                     contentDescription = null,
-                    modifier = Modifier.size(22.dp)
+                    modifier = Modifier.size(22.dp),
                 )
             }
 
@@ -351,7 +382,7 @@ fun CurrentSongHeader(
                         Icon(
                             painter = painterResource(R.drawable.all_inclusive),
                             contentDescription = stringResource(R.string.similar_content),
-                            modifier = Modifier.size(22.dp)
+                            modifier = Modifier.size(22.dp),
                         )
                     }
                 }
@@ -364,7 +395,7 @@ fun CurrentSongHeader(
             text = stringResource(R.string.queue_continue_playing),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
-            color = onBackgroundColor
+            color = onBackgroundColor,
         )
 
         Spacer(modifier = Modifier.height(2.dp))
@@ -372,14 +403,14 @@ fun CurrentSongHeader(
         Text(
             text = stringResource(R.string.queue_autoplaying_similar),
             style = MaterialTheme.typography.bodySmall,
-            color = onBackgroundColor.copy(alpha = 0.5f)
+            color = onBackgroundColor.copy(alpha = 0.5f),
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
         HorizontalDivider(
             color = onBackgroundColor.copy(alpha = 0.08f),
-            thickness = 1.dp
+            thickness = 1.dp,
         )
     }
 }
@@ -392,15 +423,15 @@ fun SleepTimerDialog(
     onDismiss: () -> Unit,
     onConfirm: (Int) -> Unit,
     onEndOfSong: () -> Unit,
-    initialValue: Float = 30f
+    initialValue: Float = 30f,
 ) {
     var sleepTimerValue by remember { mutableFloatStateOf(initialValue) }
-    
+
     ActionPromptDialog(
         titleBar = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Center,
             ) {
                 Text(
                     text = stringResource(R.string.sleep_timer),
@@ -421,11 +452,12 @@ fun SleepTimerDialog(
         content = {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = pluralStringResource(
-                        R.plurals.minute,
-                        sleepTimerValue.roundToInt(),
-                        sleepTimerValue.roundToInt()
-                    ),
+                    text =
+                        pluralStringResource(
+                            R.plurals.minute,
+                            sleepTimerValue.roundToInt(),
+                            sleepTimerValue.roundToInt(),
+                        ),
                     style = MaterialTheme.typography.bodyLarge,
                 )
 
@@ -436,7 +468,7 @@ fun SleepTimerDialog(
                     onValueChange = { sleepTimerValue = it },
                     valueRange = 5f..120f,
                     steps = (120 - 5) / 5 - 1,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
 
                 Spacer(Modifier.height(8.dp))
@@ -445,7 +477,7 @@ fun SleepTimerDialog(
                     Text(stringResource(R.string.end_of_song))
                 }
             }
-        }
+        },
     )
 }
 
@@ -458,32 +490,34 @@ fun CodecInfoRow(
     bitrate: String,
     fileSize: String,
     textColor: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(start = 30.dp, end = 30.dp, top = 6.dp, bottom = 2.dp)
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(start = 30.dp, end = 30.dp, top = 6.dp, bottom = 2.dp),
     ) {
         Text(
-            text = buildString {
-                append(codec)
-                if (bitrate != "Unknown") {
-                    append(" • ")
-                    append(bitrate)
-                }
-                if (fileSize.isNotEmpty()) {
-                    append(" • ")
-                    append(fileSize)
-                }
-            },
+            text =
+                buildString {
+                    append(codec)
+                    if (bitrate != "Unknown") {
+                        append(" • ")
+                        append(bitrate)
+                    }
+                    if (fileSize.isNotEmpty()) {
+                        append(" • ")
+                        append(fileSize)
+                    }
+                },
             style = MaterialTheme.typography.labelSmall,
             fontFamily = FontFamily.Monospace,
             color = textColor,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -507,20 +541,21 @@ fun QueueCollapsedContentV2(
     onShowLyrics: () -> Unit,
     onRepeatModeClick: () -> Unit,
     onMenuClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val view = LocalView.current
     val (enableHapticFeedback) = rememberPreference(EnableHapticFeedbackKey, true)
-    
+
     LaunchedEffect(enableHapticFeedback) {
         view.isHapticFeedbackEnabled = enableHapticFeedback
     }
 
     Column(modifier = modifier.fillMaxWidth()) {
         if (showCodecOnPlayer && currentFormat != null) {
-            val codec = currentFormat.codecs
-                .takeIf { it.isNotBlank() }
-                ?: currentFormat.containerLabel()
+            val codec =
+                currentFormat.codecs
+                    .takeIf { it.isNotBlank() }
+                    ?: currentFormat.containerLabel()
 
             val container = currentFormat.containerLabel()
 
@@ -533,11 +568,12 @@ fun QueueCollapsedContentV2(
 
             val bitrate = currentFormat.formattedBitrate()
 
-            val extraText = listOfNotNull(
-                currentFormat.formattedSampleRate(),
-                currentFormat.formattedFileSize().takeIf { it.isNotBlank() }
-            ).joinToString(separator = " • ")
-            
+            val extraText =
+                listOfNotNull(
+                    currentFormat.formattedSampleRate(),
+                    currentFormat.formattedFileSize().takeIf { it.isNotBlank() },
+                ).joinToString(separator = " • ")
+
             CodecInfoRow(
                 codec = codecLabel,
                 bitrate = bitrate,
@@ -545,18 +581,19 @@ fun QueueCollapsedContentV2(
                 textColor = textBackgroundColor.copy(alpha = 0.7f),
             )
         }
-        
+
         Row(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 30.dp, vertical = 10.dp)
-                .windowInsetsPadding(
-                    WindowInsets.systemBars.only(
-                        WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 30.dp, vertical = 10.dp)
+                    .windowInsetsPadding(
+                        WindowInsets.systemBars.only(
+                            WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal,
+                        ),
                     ),
-                ),
         ) {
             val buttonSize = 42.dp
             val iconSize = 24.dp
@@ -564,45 +601,45 @@ fun QueueCollapsedContentV2(
 
             // Queue button
             Box(
-                modifier = Modifier
-                    .size(buttonSize)
-                    .clip(
-                        RoundedCornerShape(
-                            topStart = 50.dp,
-                            bottomStart = 50.dp,
-                            topEnd = 10.dp,
-                            bottomEnd = 10.dp
-                        )
-                    )
-                    .border(
-                        1.dp,
-                        borderColor,
-                        RoundedCornerShape(
-                            topStart = 50.dp,
-                            bottomStart = 50.dp,
-                            topEnd = 10.dp,
-                            bottomEnd = 10.dp
-                        )
-                    )
-                    .clickable { onExpandQueue() },
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .size(buttonSize)
+                        .clip(
+                            RoundedCornerShape(
+                                topStart = 50.dp,
+                                bottomStart = 50.dp,
+                                topEnd = 10.dp,
+                                bottomEnd = 10.dp,
+                            ),
+                        ).border(
+                            1.dp,
+                            borderColor,
+                            RoundedCornerShape(
+                                topStart = 50.dp,
+                                bottomStart = 50.dp,
+                                topEnd = 10.dp,
+                                bottomEnd = 10.dp,
+                            ),
+                        ).clickable { onExpandQueue() },
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.queue_music),
                     contentDescription = null,
                     modifier = Modifier.size(iconSize),
-                    tint = textBackgroundColor
+                    tint = textBackgroundColor,
                 )
             }
 
             // Sleep timer button
             Box(
-                modifier = Modifier
-                    .size(buttonSize)
-                    .clip(RoundedCornerShape(10.dp))
-                    .border(1.dp, borderColor, RoundedCornerShape(10.dp))
-                    .clickable { onSleepTimerClick() },
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .size(buttonSize)
+                        .clip(RoundedCornerShape(10.dp))
+                        .border(1.dp, borderColor, RoundedCornerShape(10.dp))
+                        .clickable { onSleepTimerClick() },
+                contentAlignment = Alignment.Center,
             ) {
                 AnimatedContent(
                     label = "sleepTimer",
@@ -616,16 +653,17 @@ fun QueueCollapsedContentV2(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .basicMarquee()
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .basicMarquee(),
                         )
                     } else {
                         Icon(
                             painter = painterResource(id = R.drawable.bedtime),
                             contentDescription = null,
                             modifier = Modifier.size(iconSize),
-                            tint = textBackgroundColor
+                            tint = textBackgroundColor,
                         )
                     }
                 }
@@ -633,62 +671,70 @@ fun QueueCollapsedContentV2(
 
             // Lyrics button
             Box(
-                modifier = Modifier
-                    .size(buttonSize)
-                    .clip(RoundedCornerShape(10.dp))
-                    .border(1.dp, borderColor, RoundedCornerShape(10.dp))
-                    .clickable { onShowLyrics() },
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .size(buttonSize)
+                        .clip(RoundedCornerShape(10.dp))
+                        .border(1.dp, borderColor, RoundedCornerShape(10.dp))
+                        .clickable { onShowLyrics() },
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.lyrics),
                     contentDescription = null,
                     modifier = Modifier.size(iconSize),
-                    tint = textBackgroundColor
+                    tint = textBackgroundColor,
                 )
             }
 
             // Repeat mode button
             Box(
-                modifier = Modifier
-                    .size(buttonSize)
-                    .clip(
-                        RoundedCornerShape(
-                            topStart = 10.dp,
-                            bottomStart = 10.dp,
-                            topEnd = 50.dp,
-                            bottomEnd = 50.dp
-                        )
-                    )
-                    .border(
-                        1.dp,
-                        borderColor,
-                        RoundedCornerShape(
-                            topStart = 10.dp,
-                            bottomStart = 10.dp,
-                            topEnd = 50.dp,
-                            bottomEnd = 50.dp
-                        )
-                    )
-                    .clickable {
-                        if (enableHapticFeedback) view.performHapticFeedback(android.view.HapticFeedbackConstants.CONTEXT_CLICK, android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING)
-                        onRepeatModeClick()
-                    },
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .size(buttonSize)
+                        .clip(
+                            RoundedCornerShape(
+                                topStart = 10.dp,
+                                bottomStart = 10.dp,
+                                topEnd = 50.dp,
+                                bottomEnd = 50.dp,
+                            ),
+                        ).border(
+                            1.dp,
+                            borderColor,
+                            RoundedCornerShape(
+                                topStart = 10.dp,
+                                bottomStart = 10.dp,
+                                topEnd = 50.dp,
+                                bottomEnd = 50.dp,
+                            ),
+                        ).clickable {
+                            if (enableHapticFeedback) {
+                                view.performHapticFeedback(
+                                    android.view.HapticFeedbackConstants.CONTEXT_CLICK,
+                                    android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING,
+                                )
+                            }
+                            onRepeatModeClick()
+                        },
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    painter = painterResource(
-                        id = when (repeatMode) {
-                            Player.REPEAT_MODE_OFF, Player.REPEAT_MODE_ALL -> R.drawable.repeat
-                            Player.REPEAT_MODE_ONE -> R.drawable.repeat_one
-                            else -> R.drawable.repeat
-                        }
-                    ),
+                    painter =
+                        painterResource(
+                            id =
+                                when (repeatMode) {
+                                    Player.REPEAT_MODE_OFF, Player.REPEAT_MODE_ALL -> R.drawable.repeat
+                                    Player.REPEAT_MODE_ONE -> R.drawable.repeat_one
+                                    else -> R.drawable.repeat
+                                },
+                        ),
                     contentDescription = null,
-                    modifier = Modifier
-                        .size(iconSize)
-                        .alpha(if (repeatMode == Player.REPEAT_MODE_OFF) 0.5f else 1f),
-                    tint = textBackgroundColor
+                    modifier =
+                        Modifier
+                            .size(iconSize)
+                            .alpha(if (repeatMode == Player.REPEAT_MODE_OFF) 0.5f else 1f),
+                    tint = textBackgroundColor,
                 )
             }
 
@@ -696,18 +742,19 @@ fun QueueCollapsedContentV2(
 
             // Menu button
             Box(
-                modifier = Modifier
-                    .size(buttonSize)
-                    .clip(CircleShape)
-                    .background(textButtonColor)
-                    .clickable { onMenuClick() },
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .size(buttonSize)
+                        .clip(CircleShape)
+                        .background(textButtonColor)
+                        .clickable { onMenuClick() },
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.more_vert),
                     contentDescription = null,
                     modifier = Modifier.size(iconSize),
-                    tint = iconButtonColor
+                    tint = iconButtonColor,
                 )
             }
         }
@@ -728,7 +775,7 @@ fun QueueCollapsedContentV3(
     onSleepTimerClick: () -> Unit,
     onShowLyrics: () -> Unit,
     onMenuClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val view = LocalView.current
     val (enableHapticFeedback) = rememberPreference(EnableHapticFeedbackKey, true)
@@ -737,61 +784,64 @@ fun QueueCollapsedContentV3(
         if (showCodecOnPlayer && currentFormat != null) {
             val container = currentFormat.containerLabel()
             val bitrate = currentFormat.formattedBitrate()
-            
+
             CodecInfoRow(
                 codec = container,
                 bitrate = bitrate,
                 fileSize = "",
-                textColor = textBackgroundColor.copy(alpha = 0.5f)
+                textColor = textBackgroundColor.copy(alpha = 0.5f),
             )
         }
-        
+
         Row(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 10.dp)
-                .windowInsetsPadding(
-                    WindowInsets.systemBars.only(
-                        WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 10.dp)
+                    .windowInsetsPadding(
+                        WindowInsets.systemBars.only(
+                            WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal,
+                        ),
                     ),
-                ),
         ) {
             // Queue button
             Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable { onExpandQueue() }
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onExpandQueue() }
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                contentAlignment = Alignment.Center,
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.queue_music),
                         contentDescription = null,
                         modifier = Modifier.size(18.dp),
-                        tint = textBackgroundColor.copy(alpha = 0.7f)
+                        tint = textBackgroundColor.copy(alpha = 0.7f),
                     )
                     Text(
                         text = stringResource(id = R.string.queue),
                         color = textBackgroundColor.copy(alpha = 0.7f),
                         style = MaterialTheme.typography.labelMedium,
-                        maxLines = 1
+                        maxLines = 1,
                     )
                 }
             }
 
             // Sleep timer button
             Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable { onSleepTimerClick() }
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onSleepTimerClick() }
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                contentAlignment = Alignment.Center,
             ) {
                 AnimatedContent(
                     label = "sleepTimer",
@@ -802,14 +852,14 @@ fun QueueCollapsedContentV3(
                             text = makeTimeString(sleepTimerTimeLeft),
                             color = textBackgroundColor.copy(alpha = 0.85f),
                             style = MaterialTheme.typography.labelMedium,
-                            maxLines = 1
+                            maxLines = 1,
                         )
                     } else {
                         Icon(
                             painter = painterResource(id = R.drawable.bedtime),
                             contentDescription = null,
                             modifier = Modifier.size(18.dp),
-                            tint = textBackgroundColor.copy(alpha = 0.7f)
+                            tint = textBackgroundColor.copy(alpha = 0.7f),
                         )
                     }
                 }
@@ -817,44 +867,46 @@ fun QueueCollapsedContentV3(
 
             // Lyrics button
             Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable { onShowLyrics() }
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onShowLyrics() }
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                contentAlignment = Alignment.Center,
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.lyrics),
                         contentDescription = null,
                         modifier = Modifier.size(18.dp),
-                        tint = textBackgroundColor.copy(alpha = 0.7f)
+                        tint = textBackgroundColor.copy(alpha = 0.7f),
                     )
                     Text(
                         text = stringResource(id = R.string.lyrics),
                         color = textBackgroundColor.copy(alpha = 0.7f),
                         style = MaterialTheme.typography.labelMedium,
-                        maxLines = 1
+                        maxLines = 1,
                     )
                 }
             }
 
             // Menu button
             Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable { onMenuClick() },
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onMenuClick() },
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.more_vert),
                     contentDescription = null,
                     modifier = Modifier.size(18.dp),
-                    tint = textBackgroundColor.copy(alpha = 0.7f)
+                    tint = textBackgroundColor.copy(alpha = 0.7f),
                 )
             }
         }
@@ -874,32 +926,33 @@ fun QueueCollapsedContentV1(
     onExpandQueue: () -> Unit,
     onSleepTimerClick: () -> Unit,
     onShowLyrics: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         if (showCodecOnPlayer && currentFormat != null) {
             val container = currentFormat.containerLabel()
             val bitrate = currentFormat.formattedBitrate()
             val fileSize = currentFormat.formattedFileSize()
-            
+
             CodecInfoRow(
                 codec = container,
                 bitrate = bitrate,
                 fileSize = fileSize,
-                textColor = textBackgroundColor.copy(alpha = 0.7f)
+                textColor = textBackgroundColor.copy(alpha = 0.7f),
             )
         }
-        
+
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 30.dp, vertical = 12.dp)
-                .windowInsetsPadding(
-                    WindowInsets.systemBars
-                        .only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal),
-                ),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 30.dp, vertical = 12.dp)
+                    .windowInsetsPadding(
+                        WindowInsets.systemBars
+                            .only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal),
+                    ),
         ) {
             TextButton(
                 onClick = onExpandQueue,
@@ -909,13 +962,13 @@ fun QueueCollapsedContentV1(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.queue_music),
                         contentDescription = null,
                         modifier = Modifier.size(20.dp),
-                        tint = textBackgroundColor
+                        tint = textBackgroundColor,
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
@@ -924,7 +977,7 @@ fun QueueCollapsedContentV1(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.basicMarquee()
+                        modifier = Modifier.basicMarquee(),
                     )
                 }
             }
@@ -937,13 +990,13 @@ fun QueueCollapsedContentV1(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.bedtime),
                         contentDescription = null,
                         modifier = Modifier.size(20.dp),
-                        tint = textBackgroundColor
+                        tint = textBackgroundColor,
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     AnimatedContent(
@@ -957,7 +1010,7 @@ fun QueueCollapsedContentV1(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 textAlign = TextAlign.Center,
-                                modifier = Modifier.basicMarquee()
+                                modifier = Modifier.basicMarquee(),
                             )
                         } else {
                             Text(
@@ -966,7 +1019,7 @@ fun QueueCollapsedContentV1(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 textAlign = TextAlign.Center,
-                                modifier = Modifier.basicMarquee()
+                                modifier = Modifier.basicMarquee(),
                             )
                         }
                     }
@@ -981,13 +1034,13 @@ fun QueueCollapsedContentV1(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.lyrics),
                         contentDescription = null,
                         modifier = Modifier.size(20.dp),
-                        tint = textBackgroundColor
+                        tint = textBackgroundColor,
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
@@ -996,7 +1049,7 @@ fun QueueCollapsedContentV1(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.basicMarquee()
+                        modifier = Modifier.basicMarquee(),
                     )
                 }
             }
@@ -1020,64 +1073,66 @@ fun QueueCollapsedContentV4(
     onExpandQueue: () -> Unit,
     onSleepTimerClick: () -> Unit,
     onShowLyrics: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         if (showCodecOnPlayer && currentFormat != null) {
             val container = currentFormat.containerLabel()
             val bitrate = currentFormat.formattedBitrate()
             val fileSize = currentFormat.formattedFileSize()
-            
+
             CodecInfoRow(
                 codec = container,
                 bitrate = bitrate,
                 fileSize = fileSize,
-                textColor = textBackgroundColor.copy(alpha = 0.6f)
+                textColor = textBackgroundColor.copy(alpha = 0.6f),
             )
         }
-        
+
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 8.dp)
-                .windowInsetsPadding(
-                    WindowInsets.systemBars.only(
-                        WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 8.dp)
+                    .windowInsetsPadding(
+                        WindowInsets.systemBars.only(
+                            WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal,
+                        ),
                     ),
-                ),
         ) {
             val buttonSize = 48.dp
             val iconSize = 22.dp
 
             // Queue button (pill)
             Box(
-                modifier = Modifier
-                    .height(buttonSize)
-                    .weight(1f)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(textBackgroundColor.copy(alpha = 0.1f))
-                    .clickable { onExpandQueue() },
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .height(buttonSize)
+                        .weight(1f)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(textBackgroundColor.copy(alpha = 0.1f))
+                        .clickable { onExpandQueue() },
+                contentAlignment = Alignment.Center,
             ) {
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.queue_music),
                         contentDescription = null,
                         modifier = Modifier.size(iconSize),
-                        tint = textBackgroundColor
+                        tint = textBackgroundColor,
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = stringResource(id = R.string.queue),
                         color = textBackgroundColor,
                         style = MaterialTheme.typography.labelLarge,
-                        maxLines = 1
+                        maxLines = 1,
                     )
                 }
             }
@@ -1086,15 +1141,18 @@ fun QueueCollapsedContentV4(
 
             // Sleep timer button (circle)
             Box(
-                modifier = Modifier
-                    .size(buttonSize)
-                    .clip(CircleShape)
-                    .background(
-                        if (sleepTimerEnabled) textBackgroundColor.copy(alpha = 0.2f)
-                        else textBackgroundColor.copy(alpha = 0.1f)
-                    )
-                    .clickable { onSleepTimerClick() },
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .size(buttonSize)
+                        .clip(CircleShape)
+                        .background(
+                            if (sleepTimerEnabled) {
+                                textBackgroundColor.copy(alpha = 0.2f)
+                            } else {
+                                textBackgroundColor.copy(alpha = 0.1f)
+                            },
+                        ).clickable { onSleepTimerClick() },
+                contentAlignment = Alignment.Center,
             ) {
                 AnimatedContent(
                     label = "sleepTimer",
@@ -1108,16 +1166,17 @@ fun QueueCollapsedContentV4(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .basicMarquee()
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .basicMarquee(),
                         )
                     } else {
                         Icon(
                             painter = painterResource(id = R.drawable.bedtime),
                             contentDescription = null,
                             modifier = Modifier.size(iconSize),
-                            tint = textBackgroundColor
+                            tint = textBackgroundColor,
                         )
                     }
                 }
@@ -1127,31 +1186,32 @@ fun QueueCollapsedContentV4(
 
             // Lyrics button (pill)
             Box(
-                modifier = Modifier
-                    .height(buttonSize)
-                    .weight(1f)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(textBackgroundColor.copy(alpha = 0.1f))
-                    .clickable { onShowLyrics() },
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .height(buttonSize)
+                        .weight(1f)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(textBackgroundColor.copy(alpha = 0.1f))
+                        .clickable { onShowLyrics() },
+                contentAlignment = Alignment.Center,
             ) {
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.lyrics),
                         contentDescription = null,
                         modifier = Modifier.size(iconSize),
-                        tint = textBackgroundColor
+                        tint = textBackgroundColor,
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = stringResource(id = R.string.lyrics),
                         color = textBackgroundColor,
                         style = MaterialTheme.typography.labelLarge,
-                        maxLines = 1
+                        maxLines = 1,
                     )
                 }
             }
@@ -1171,7 +1231,7 @@ fun QueueCollapsedContentV7(
     onSleepTimerClick: () -> Unit,
     onDeviceClick: () -> Unit,
     deviceName: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         if (showCodecOnPlayer && currentFormat != null) {
@@ -1183,21 +1243,22 @@ fun QueueCollapsedContentV7(
                 codec = container,
                 bitrate = bitrate,
                 fileSize = fileSize,
-                textColor = textBackgroundColor.copy(alpha = 0.6f)
+                textColor = textBackgroundColor.copy(alpha = 0.6f),
             )
         }
 
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 8.dp)
-                .windowInsetsPadding(
-                    WindowInsets.systemBars.only(
-                        WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 8.dp)
+                    .windowInsetsPadding(
+                        WindowInsets.systemBars.only(
+                            WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal,
+                        ),
                     ),
-                ),
         ) {
             val iconSize = 22.dp
 
@@ -1209,17 +1270,17 @@ fun QueueCollapsedContentV7(
                     onClick = onExpandQueue,
                     shape = CircleShape,
                     color = textBackgroundColor.copy(alpha = 0.08f),
-                    modifier = Modifier.size(42.dp)
+                    modifier = Modifier.size(42.dp),
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.queue_music),
                             contentDescription = null,
                             modifier = Modifier.size(iconSize),
-                            tint = textBackgroundColor
+                            tint = textBackgroundColor,
                         )
                     }
                 }
@@ -1228,17 +1289,17 @@ fun QueueCollapsedContentV7(
                     onClick = onShowLyrics,
                     shape = CircleShape,
                     color = textBackgroundColor.copy(alpha = 0.08f),
-                    modifier = Modifier.size(42.dp)
+                    modifier = Modifier.size(42.dp),
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.lyrics),
                             contentDescription = null,
                             modifier = Modifier.size(iconSize),
-                            tint = textBackgroundColor
+                            tint = textBackgroundColor,
                         )
                     }
                 }
@@ -1247,7 +1308,7 @@ fun QueueCollapsedContentV7(
                     onClick = onSleepTimerClick,
                     shape = if (sleepTimerEnabled) RoundedCornerShape(20.dp) else CircleShape,
                     color = textBackgroundColor.copy(alpha = if (sleepTimerEnabled) 0.16f else 0.08f),
-                    modifier = Modifier.height(42.dp)
+                    modifier = Modifier.height(42.dp),
                 ) {
                     AnimatedContent(
                         label = "v7SleepTimer",
@@ -1262,7 +1323,7 @@ fun QueueCollapsedContentV7(
                                 painter = painterResource(id = R.drawable.bedtime),
                                 contentDescription = stringResource(id = R.string.sleep_timer),
                                 modifier = Modifier.size(iconSize),
-                                tint = textBackgroundColor
+                                tint = textBackgroundColor,
                             )
                             if (enabled) {
                                 Spacer(modifier = Modifier.width(6.dp))
@@ -1283,17 +1344,17 @@ fun QueueCollapsedContentV7(
                 onClick = onDeviceClick,
                 shape = RoundedCornerShape(20.dp),
                 color = textBackgroundColor.copy(alpha = 0.08f),
-                modifier = Modifier.height(36.dp)
+                modifier = Modifier.height(36.dp),
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.bluetooth),
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
-                        tint = textBackgroundColor
+                        tint = textBackgroundColor,
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
@@ -1329,26 +1390,28 @@ fun QueueCollapsedContentV9(
     val railContainerColor = textBackgroundColor.copy(alpha = 0.14f)
     val buttonContainerColor = textBackgroundColor.copy(alpha = 0.08f)
     val selectedButtonContainerColor = textBackgroundColor.copy(alpha = 0.18f)
-    val uncheckedColors = ToggleButtonDefaults.toggleButtonColors(
-        containerColor = buttonContainerColor,
-        contentColor = textBackgroundColor.copy(alpha = 0.76f),
-    )
-    val checkedColors = ToggleButtonDefaults.toggleButtonColors(
-        checkedContainerColor = selectedButtonContainerColor,
-        checkedContentColor = textBackgroundColor,
-        containerColor = buttonContainerColor,
-        contentColor = textBackgroundColor.copy(alpha = 0.76f),
-    )
+    val uncheckedColors =
+        ToggleButtonDefaults.toggleButtonColors(
+            containerColor = buttonContainerColor,
+            contentColor = textBackgroundColor.copy(alpha = 0.76f),
+        )
+    val checkedColors =
+        ToggleButtonDefaults.toggleButtonColors(
+            checkedContainerColor = selectedButtonContainerColor,
+            checkedContentColor = textBackgroundColor,
+            containerColor = buttonContainerColor,
+            contentColor = textBackgroundColor.copy(alpha = 0.76f),
+        )
 
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .windowInsetsPadding(
-                WindowInsets.systemBars.only(
-                    WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal
-                )
-            )
-            .padding(bottom = 8.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(
+                    WindowInsets.systemBars.only(
+                        WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal,
+                    ),
+                ).padding(bottom = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (showCodecOnPlayer && currentFormat != null) {
@@ -1369,9 +1432,10 @@ fun QueueCollapsedContentV9(
                 onClick = onSleepTimerClick,
                 shape = RoundedCornerShape(18.dp),
                 color = textBackgroundColor.copy(alpha = 0.08f),
-                modifier = Modifier
-                    .padding(bottom = 8.dp)
-                    .height(34.dp),
+                modifier =
+                    Modifier
+                        .padding(bottom = 8.dp)
+                        .height(34.dp),
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 12.dp),
@@ -1399,15 +1463,17 @@ fun QueueCollapsedContentV9(
         Surface(
             shape = RoundedCornerShape(42.dp),
             color = railContainerColor,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 52.dp)
-                .height(72.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 52.dp)
+                    .height(72.dp),
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(8.dp),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
             ) {
@@ -1422,17 +1488,19 @@ fun QueueCollapsedContentV9(
                         }
                         onShuffleClick()
                     },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .height(56.dp),
                     shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
                     colors = if (shuffleModeEnabled) checkedColors else uncheckedColors,
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.shuffle),
-                        contentDescription = stringResource(
-                            if (shuffleModeEnabled) R.string.action_shuffle_on else R.string.action_shuffle_off
-                        ),
+                        contentDescription =
+                            stringResource(
+                                if (shuffleModeEnabled) R.string.action_shuffle_on else R.string.action_shuffle_off,
+                            ),
                         modifier = Modifier.size(26.dp),
                     )
                 }
@@ -1448,26 +1516,29 @@ fun QueueCollapsedContentV9(
                         }
                         onRepeatModeClick()
                     },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .height(56.dp),
                     shapes = ButtonGroupDefaults.connectedMiddleButtonShapes(),
                     colors = if (repeatMode != Player.REPEAT_MODE_OFF) checkedColors else uncheckedColors,
                 ) {
                     Icon(
-                        painter = painterResource(
-                            when (repeatMode) {
-                                Player.REPEAT_MODE_ONE -> R.drawable.repeat_one
-                                else -> R.drawable.repeat
-                            }
-                        ),
-                        contentDescription = stringResource(
-                            when (repeatMode) {
-                                Player.REPEAT_MODE_ONE -> R.string.repeat_mode_one
-                                Player.REPEAT_MODE_ALL -> R.string.repeat_mode_all
-                                else -> R.string.repeat_mode_off
-                            }
-                        ),
+                        painter =
+                            painterResource(
+                                when (repeatMode) {
+                                    Player.REPEAT_MODE_ONE -> R.drawable.repeat_one
+                                    else -> R.drawable.repeat
+                                },
+                            ),
+                        contentDescription =
+                            stringResource(
+                                when (repeatMode) {
+                                    Player.REPEAT_MODE_ONE -> R.string.repeat_mode_one
+                                    Player.REPEAT_MODE_ALL -> R.string.repeat_mode_all
+                                    else -> R.string.repeat_mode_off
+                                },
+                            ),
                         modifier = Modifier.size(26.dp),
                     )
                 }
@@ -1482,16 +1553,18 @@ fun QueueCollapsedContentV9(
                         }
                         onMenuClick()
                     },
-                    shape = RoundedCornerShape(
-                        topStart = 12.dp,
-                        bottomStart = 12.dp,
-                        topEnd = 34.dp,
-                        bottomEnd = 34.dp,
-                    ),
+                    shape =
+                        RoundedCornerShape(
+                            topStart = 12.dp,
+                            bottomStart = 12.dp,
+                            topEnd = 34.dp,
+                            bottomEnd = 34.dp,
+                        ),
                     color = buttonContainerColor,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .height(56.dp),
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),

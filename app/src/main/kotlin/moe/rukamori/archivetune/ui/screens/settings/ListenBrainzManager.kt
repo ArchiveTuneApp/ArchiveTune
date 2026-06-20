@@ -12,12 +12,12 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import moe.rukamori.archivetune.db.entities.Song
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.util.concurrent.atomic.AtomicBoolean
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicBoolean
 
 object ListenBrainzManager {
     private val logTag = "ListenBrainzManager"
@@ -74,7 +74,12 @@ object ListenBrainzManager {
         }
     }
 
-    suspend fun submitPlayingNow(context: Context, token: String, song: Song?, positionMs: Long): Boolean {
+    suspend fun submitPlayingNow(
+        context: Context,
+        token: String,
+        song: Song?,
+        positionMs: Long,
+    ): Boolean {
         if (token.isBlank()) return false
         if (song == null) return false
         return withContext(Dispatchers.IO) {
@@ -82,23 +87,30 @@ object ListenBrainzManager {
                 val listenedAt = System.currentTimeMillis() / 1000L
                 val duration = song.song.duration
                 val durationMs = (duration * 1000).toLong()
-                val artistNames = song.artists
-                    .map { artist -> extractArtistName(artist) }
-                    .joinToString(" & ")
+                val artistNames =
+                    song.artists
+                        .map { artist -> extractArtistName(artist) }
+                        .joinToString(" & ")
                 val releaseName = song.album?.title ?: ""
                 val releasePart = if (releaseName.isBlank()) "" else "\"release_name\":\"${escapeJson(releaseName)}\","
-                val trackMetadata = "{\"track_metadata\":{\"artist_name\":\"${escapeJson(artistNames)}\",\"track_name\":\"${escapeJson(song.title)}\",${releasePart}\"additional_info\":{\"duration_ms\":$durationMs,\"position_ms\":$positionMs,\"submission_client\":\"ArchiveTune\"}}}"
+                val trackMetadata = "{\"track_metadata\":{\"artist_name\":\"${escapeJson(
+                    artistNames,
+                )}\",\"track_name\":\"${escapeJson(
+                    song.title,
+                )}\",${releasePart}\"additional_info\":{\"duration_ms\":$durationMs,\"position_ms\":$positionMs,\"submission_client\":\"ArchiveTune\"}}}"
                 val listensJson = "[$trackMetadata]"
                 val bodyJson = "{\"listen_type\":\"playing_now\",\"payload\":$listensJson}"
                 Timber.tag(logTag).d("submitPlayingNow JSON: %s", bodyJson)
                 val mediaType = "application/json".toMediaType()
                 val body = bodyJson.toRequestBody(mediaType)
-                val request = Request.Builder()
-                    .url("https://api.listenbrainz.org/1/submit-listens")
-                    .post(body)
-                    .addHeader("Content-Type", "application/json")
-                    .addHeader("Authorization", "Token $token")
-                    .build()
+                val request =
+                    Request
+                        .Builder()
+                        .url("https://api.listenbrainz.org/1/submit-listens")
+                        .post(body)
+                        .addHeader("Content-Type", "application/json")
+                        .addHeader("Authorization", "Token $token")
+                        .build()
 
                 httpClient.newCall(request).execute().use { resp ->
                     val success = resp.isSuccessful
@@ -106,7 +118,12 @@ object ListenBrainzManager {
                         _lastSubmitTime.value = System.currentTimeMillis()
                         Timber.tag(logTag).d("playing_now submitted for %s", song.title)
                     } else {
-                        val respBody = try { resp.body?.string() ?: "" } catch (e: Exception) { "<unable to read>" }
+                        val respBody =
+                            try {
+                                resp.body?.string() ?: ""
+                            } catch (e: Exception) {
+                                "<unable to read>"
+                            }
                         Timber.tag(logTag).w("playing_now submit failed: %s - %s", resp.code, respBody)
                     }
                     success
@@ -118,7 +135,13 @@ object ListenBrainzManager {
         }
     }
 
-    suspend fun submitFinished(context: Context, token: String, song: Song?, startMs: Long, endMs: Long): Boolean {
+    suspend fun submitFinished(
+        context: Context,
+        token: String,
+        song: Song?,
+        startMs: Long,
+        endMs: Long,
+    ): Boolean {
         if (token.isBlank()) return false
         if (song == null) return false
         return withContext(Dispatchers.IO) {
@@ -126,9 +149,10 @@ object ListenBrainzManager {
                 val listenedAt = endMs / 1000L
                 val duration = song.song.duration
                 val durationMs = (duration * 1000).toLong()
-                val artistNames = song.artists
-                    .map { artist -> extractArtistName(artist) }
-                    .joinToString(" & ")
+                val artistNames =
+                    song.artists
+                        .map { artist -> extractArtistName(artist) }
+                        .joinToString(" & ")
                 val releaseName = song.album?.title ?: ""
                 val releasePart = if (releaseName.isBlank()) "" else "\"release_name\":\"${escapeJson(releaseName)}\","
                 var listenedAtStart = (startMs / 1000L)
@@ -137,18 +161,24 @@ object ListenBrainzManager {
                     Timber.tag(logTag).w("listened_at %s looks too small, replacing with current epoch seconds", listenedAtStart)
                     listenedAtStart = System.currentTimeMillis() / 1000L
                 }
-                val trackMetadataSingle = "{\"listened_at\":$listenedAtStart,\"track_metadata\":{\"artist_name\":\"${escapeJson(artistNames)}\",\"track_name\":\"${escapeJson(song.title)}\",${releasePart}\"additional_info\":{\"duration_ms\":$durationMs,\"start_ms\":$startMs,\"end_ms\":$endMs,\"submission_client\":\"ArchiveTune\"}}}"
+                val trackMetadataSingle = "{\"listened_at\":$listenedAtStart,\"track_metadata\":{\"artist_name\":\"${escapeJson(
+                    artistNames,
+                )}\",\"track_name\":\"${escapeJson(
+                    song.title,
+                )}\",${releasePart}\"additional_info\":{\"duration_ms\":$durationMs,\"start_ms\":$startMs,\"end_ms\":$endMs,\"submission_client\":\"ArchiveTune\"}}}"
                 val listensJson = "[$trackMetadataSingle]"
                 val bodyJson = "{\"listen_type\":\"single\",\"payload\":$listensJson}"
                 Timber.tag(logTag).d("submitFinished JSON: %s", bodyJson)
                 val mediaType = "application/json".toMediaType()
                 val body = bodyJson.toRequestBody(mediaType)
-                val request = Request.Builder()
-                    .url("https://api.listenbrainz.org/1/submit-listens")
-                    .post(body)
-                    .addHeader("Content-Type", "application/json")
-                    .addHeader("Authorization", "Token $token")
-                    .build()
+                val request =
+                    Request
+                        .Builder()
+                        .url("https://api.listenbrainz.org/1/submit-listens")
+                        .post(body)
+                        .addHeader("Content-Type", "application/json")
+                        .addHeader("Authorization", "Token $token")
+                        .build()
 
                 httpClient.newCall(request).execute().use { resp ->
                     val success = resp.isSuccessful
@@ -156,7 +186,12 @@ object ListenBrainzManager {
                         _lastSubmitTime.value = System.currentTimeMillis()
                         Timber.tag(logTag).d("finished listen submitted for %s", song.title)
                     } else {
-                        val respBody = try { resp.body?.string() ?: "" } catch (e: Exception) { "<unable to read>" }
+                        val respBody =
+                            try {
+                                resp.body?.string() ?: ""
+                            } catch (e: Exception) {
+                                "<unable to read>"
+                            }
                         Timber.tag(logTag).w("finished listen submit failed: %s - %s", resp.code, respBody)
                     }
                     success
@@ -168,9 +203,7 @@ object ListenBrainzManager {
         }
     }
 
-    private fun escapeJson(s: String): String {
-        return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n")
-    }
+    private fun escapeJson(s: String): String = s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n")
 
     fun isRunning(): Boolean = started.get()
 }

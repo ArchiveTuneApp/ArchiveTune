@@ -20,12 +20,12 @@ import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
 import io.ktor.websocket.send
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 sealed interface TogetherServerEvent {
     data class JoinRequested(
@@ -65,6 +65,7 @@ class TogetherServer(
     private val mutex = Mutex()
     private var settings: TogetherRoomSettings = initialSettings
     private var engine: EmbeddedServer<*, *>? = null
+
     @Volatile
     private var lastParticipants: List<TogetherParticipant> = emptyList()
 
@@ -121,7 +122,10 @@ class TogetherServer(
         }
     }
 
-    suspend fun approveParticipant(participantId: String, approved: Boolean) {
+    suspend fun approveParticipant(
+        participantId: String,
+        approved: Boolean,
+    ) {
         val client = clients[participantId] ?: return
         if (!client.pending) return
 
@@ -344,7 +348,9 @@ class TogetherServer(
                         }
                     }
 
-                    else -> Unit
+                    else -> {
+                        Unit
+                    }
                 }
             }
         } catch (t: Throwable) {

@@ -7,13 +7,12 @@
 
 package moe.rukamori.archivetune.ui.theme
 
-import android.graphics.Color as AndroidColor
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
+import android.graphics.Color as AndroidColor
 
 object PlayerBackgroundColorUtils {
-
     private const val DEFAULT_MIN_BRIGHTNESS = 0.15f
     private const val DEFAULT_MAX_BRIGHTNESS = 0.58f
     private const val DEFAULT_MIN_SATURATION = 0.32f
@@ -22,7 +21,7 @@ object PlayerBackgroundColorUtils {
         color: Color,
         minBrightness: Float = DEFAULT_MIN_BRIGHTNESS,
         maxBrightness: Float = DEFAULT_MAX_BRIGHTNESS,
-        minSaturation: Float = DEFAULT_MIN_SATURATION
+        minSaturation: Float = DEFAULT_MIN_SATURATION,
     ): Color {
         val hsv = color.toHsv()
         hsv[1] = hsv[1].coerceAtLeast(minSaturation)
@@ -30,7 +29,10 @@ object PlayerBackgroundColorUtils {
         return hsv.toColor()
     }
 
-    fun darkenColor(color: Color, factor: Float): Color {
+    fun darkenColor(
+        color: Color,
+        factor: Float,
+    ): Color {
         val hsv = color.toHsv()
         hsv[2] = (hsv[2] * factor).coerceAtLeast(0f)
         return hsv.toColor()
@@ -44,7 +46,7 @@ object PlayerBackgroundColorUtils {
             0f to comfortable.copy(alpha = 0.97f),
             0.4f to mid.copy(alpha = 0.94f),
             0.75f to deep.copy(alpha = 0.92f),
-            1f to Color.Black.copy(alpha = 0.88f)
+            1f to Color.Black.copy(alpha = 0.88f),
         )
     }
 
@@ -60,7 +62,7 @@ object PlayerBackgroundColorUtils {
             0f to first.copy(alpha = 0.45f),
             0.4f to lerp(first, second, 0.5f).copy(alpha = 0.38f),
             0.75f to lerp(second, third, 0.55f).copy(alpha = 0.35f),
-            1f to third.copy(alpha = 0.50f)
+            1f to third.copy(alpha = 0.50f),
         )
     }
 
@@ -68,7 +70,7 @@ object PlayerBackgroundColorUtils {
         if (colors.isEmpty()) {
             return arrayOf(
                 0f to Color.Transparent,
-                1f to Color.Transparent
+                1f to Color.Transparent,
             )
         }
         val comfortable = colors.map(::ensureComfortableColor)
@@ -80,14 +82,15 @@ object PlayerBackgroundColorUtils {
             0.2f to lerp(first, second, 0.3f).copy(alpha = 0.48f),
             0.5f to second.copy(alpha = 0.42f),
             0.8f to lerp(second, third, 0.6f).copy(alpha = 0.38f),
-            1f to third.copy(alpha = 0.35f)
+            1f to third.copy(alpha = 0.35f),
         )
     }
 
-    private fun defaultBlurOverlayStops(): Array<Pair<Float, Color>> = arrayOf(
-        0f to Color.Black.copy(alpha = 0.35f),
-        1f to Color.Black.copy(alpha = 0.45f)
-    )
+    private fun defaultBlurOverlayStops(): Array<Pair<Float, Color>> =
+        arrayOf(
+            0f to Color.Black.copy(alpha = 0.35f),
+            1f to Color.Black.copy(alpha = 0.45f),
+        )
 
     private fun Color.toHsv(): FloatArray {
         val hsv = FloatArray(3)

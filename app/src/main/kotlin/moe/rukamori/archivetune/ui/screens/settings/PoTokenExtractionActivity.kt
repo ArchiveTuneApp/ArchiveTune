@@ -25,18 +25,18 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.height
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularWavyProgressIndicator
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -56,15 +56,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import moe.rukamori.archivetune.R
-import moe.rukamori.archivetune.utils.potoken.BotGuardTokenGenerator
-import moe.rukamori.archivetune.ui.component.IconButton
-import moe.rukamori.archivetune.utils.resetAuthWebViewSession
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import moe.rukamori.archivetune.R
+import moe.rukamori.archivetune.ui.component.IconButton
+import moe.rukamori.archivetune.utils.potoken.BotGuardTokenGenerator
+import moe.rukamori.archivetune.utils.resetAuthWebViewSession
 
 class PoTokenExtractionActivity : ComponentActivity() {
-
     companion object {
         const val EXTRA_SOURCE_URL = "source_url"
         const val EXTRA_GVS_TOKEN = "gvs_token"
@@ -83,7 +82,8 @@ class PoTokenExtractionActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val targetUrl =
-            intent.getStringExtra(EXTRA_SOURCE_URL)
+            intent
+                .getStringExtra(EXTRA_SOURCE_URL)
                 ?.takeIf { it.isNotBlank() }
                 ?: DEFAULT_EXTRACT_URL
 
@@ -112,16 +112,27 @@ class PoTokenExtractionActivity : ComponentActivity() {
         var hasStartedSession by rememberSaveable { mutableStateOf(false) }
         var initialPageLoaded by rememberSaveable { mutableStateOf(false) }
 
-        fun normalizeHost(url: String): String {
-            return Uri.parse(url).host.orEmpty().removePrefix("www.")
-        }
+        fun normalizeHost(url: String): String =
+            Uri
+                .parse(url)
+                .host
+                .orEmpty()
+                .removePrefix("www.")
 
         fun normalizePath(url: String): String {
-            val path = Uri.parse(url).path.orEmpty().trimEnd('/')
+            val path =
+                Uri
+                    .parse(url)
+                    .path
+                    .orEmpty()
+                    .trimEnd('/')
             return if (path.isBlank()) "/" else path
         }
 
-        fun isAtDestination(current: String, destination: String): Boolean {
+        fun isAtDestination(
+            current: String,
+            destination: String,
+        ): Boolean {
             if (current.isBlank() || destination.isBlank()) return false
             val currentHost = normalizeHost(current)
             val destinationHost = normalizeHost(destination)
@@ -165,11 +176,12 @@ class PoTokenExtractionActivity : ComponentActivity() {
 
         fun closeCanceled(error: String? = null) {
             isExtracting = false
-            val data = Intent().apply {
-                if (!error.isNullOrBlank()) {
-                    putExtra(EXTRA_ERROR, error)
+            val data =
+                Intent().apply {
+                    if (!error.isNullOrBlank()) {
+                        putExtra(EXTRA_ERROR, error)
+                    }
                 }
-            }
             setResult(Activity.RESULT_CANCELED, data)
             finish()
         }
@@ -180,11 +192,12 @@ class PoTokenExtractionActivity : ComponentActivity() {
             isExtracting = false
 
             this@PoTokenExtractionActivity.lifecycleScope.launch {
-                val playerToken = try {
-                    BotGuardTokenGenerator.mintToken("player", visitorData)?.playerToken ?: ""
-                } catch (e: Exception) {
-                    ""
-                }
+                val playerToken =
+                    try {
+                        BotGuardTokenGenerator.mintToken("player", visitorData)?.playerToken ?: ""
+                    } catch (e: Exception) {
+                        ""
+                    }
 
                 setResult(
                     Activity.RESULT_OK,
@@ -192,7 +205,7 @@ class PoTokenExtractionActivity : ComponentActivity() {
                         putExtra(EXTRA_VISITOR_DATA, visitorData)
                         putExtra(EXTRA_GVS_TOKEN, gvsToken)
                         putExtra(EXTRA_PLAYER_TOKEN, playerToken)
-                    }
+                    },
                 )
                 finish()
             }
@@ -211,7 +224,7 @@ class PoTokenExtractionActivity : ComponentActivity() {
             extractedGvsToken = null
 
             webView?.evaluateJavascript(
-                "(function(){try{return window.yt?.config_?.VISITOR_DATA || window.ytcfg?.get?.('VISITOR_DATA') || '';}catch(e){return '';}})();"
+                "(function(){try{return window.yt?.config_?.VISITOR_DATA || window.ytcfg?.get?.('VISITOR_DATA') || '';}catch(e){return '';}})();",
             ) { result ->
                 val visitor = parseJsResult(result)
                 if (visitor.isNotBlank()) {
@@ -221,7 +234,7 @@ class PoTokenExtractionActivity : ComponentActivity() {
             }
 
             webView?.evaluateJavascript(
-                "(function(){try{var c=window.ytcfg;if(c&&c.get){var t=c.get('PO_TOKEN');if(t)return t;}var s=document.querySelectorAll('script');for(var i=0;i<s.length;i++){var m=s[i].textContent.match(/\"PO_TOKEN\":\"([^\"]+)\"/);if(m)return m[1];}return '';}catch(e){return '';}})();"
+                "(function(){try{var c=window.ytcfg;if(c&&c.get){var t=c.get('PO_TOKEN');if(t)return t;}var s=document.querySelectorAll('script');for(var i=0;i<s.length;i++){var m=s[i].textContent.match(/\"PO_TOKEN\":\"([^\"]+)\"/);if(m)return m[1];}return '';}catch(e){return '';}})();",
             ) { result ->
                 val gvs = parseJsResult(result)
                 if (gvs.isNotBlank()) {
@@ -235,11 +248,12 @@ class PoTokenExtractionActivity : ComponentActivity() {
                 val visitor = extractedVisitorData
                 if (!visitor.isNullOrBlank() && extractedGvsToken.isNullOrBlank()) {
                     this@PoTokenExtractionActivity.lifecycleScope.launch {
-                        val sessionToken = try {
-                            BotGuardTokenGenerator.mintToken("player", visitor)?.sessionToken ?: ""
-                        } catch (e: Exception) {
-                            ""
-                        }
+                        val sessionToken =
+                            try {
+                                BotGuardTokenGenerator.mintToken("player", visitor)?.sessionToken ?: ""
+                            } catch (e: Exception) {
+                                ""
+                            }
                         if (sessionToken.isNotBlank()) {
                             extractedGvsToken = sessionToken
                             completeIfReady()
@@ -268,9 +282,10 @@ class PoTokenExtractionActivity : ComponentActivity() {
 
         Box(modifier = Modifier.fillMaxSize()) {
             AndroidView(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .windowInsetsPadding(WindowInsets.systemBars),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .windowInsetsPadding(WindowInsets.systemBars),
                 factory = { ctx ->
                     WebView(ctx).apply {
                         settings.javaScriptEnabled = true
@@ -279,29 +294,36 @@ class PoTokenExtractionActivity : ComponentActivity() {
                         settings.builtInZoomControls = true
                         settings.displayZoomControls = false
 
-                        addJavascriptInterface(object {
-                            @JavascriptInterface
-                            fun onRetrieveVisitorData(newVisitorData: String?) {
-                                if (!newVisitorData.isNullOrBlank()) {
-                                    extractedVisitorData = newVisitorData
-                                    runOnUiThread { completeIfReady() }
+                        addJavascriptInterface(
+                            object {
+                                @JavascriptInterface
+                                fun onRetrieveVisitorData(newVisitorData: String?) {
+                                    if (!newVisitorData.isNullOrBlank()) {
+                                        extractedVisitorData = newVisitorData
+                                        runOnUiThread { completeIfReady() }
+                                    }
+                                }
+
+                                @JavascriptInterface
+                                fun onRetrievePoToken(newPoToken: String?) {
+                                    if (!newPoToken.isNullOrBlank()) {
+                                        extractedGvsToken = newPoToken
+                                        runOnUiThread { completeIfReady() }
+                                    }
+                                }
+                            },
+                            "Android",
+                        )
+
+                        webViewClient =
+                            object : WebViewClient() {
+                                override fun onPageFinished(
+                                    view: WebView,
+                                    url: String?,
+                                ) {
+                                    currentUrl = url.orEmpty()
                                 }
                             }
-
-                            @JavascriptInterface
-                            fun onRetrievePoToken(newPoToken: String?) {
-                                if (!newPoToken.isNullOrBlank()) {
-                                    extractedGvsToken = newPoToken
-                                    runOnUiThread { completeIfReady() }
-                                }
-                            }
-                        }, "Android")
-
-                        webViewClient = object : WebViewClient() {
-                            override fun onPageFinished(view: WebView, url: String?) {
-                                currentUrl = url.orEmpty()
-                            }
-                        }
 
                         webView = this
                         activeWebView = this
@@ -310,7 +332,7 @@ class PoTokenExtractionActivity : ComponentActivity() {
                 update = { view ->
                     webView = view
                     activeWebView = view
-                }
+                },
             )
 
             if (showAccountDialog) {
@@ -345,7 +367,7 @@ class PoTokenExtractionActivity : ComponentActivity() {
                             onClick = {
                                 showAccountDialog = false
                                 hasStartedSession = true
-                            }
+                            },
                         ) {
                             Text(stringResource(R.string.got_it))
                         }
@@ -363,14 +385,14 @@ class PoTokenExtractionActivity : ComponentActivity() {
                 navigationIcon = {
                     IconButton(
                         onClick = { closeCanceled() },
-                        onLongClick = { closeCanceled() }
+                        onLongClick = { closeCanceled() },
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.arrow_back),
                             contentDescription = null,
                         )
                     }
-                }
+                },
             )
 
             ExtendedFloatingActionButton(
@@ -380,7 +402,7 @@ class PoTokenExtractionActivity : ComponentActivity() {
                             stringResource(R.string.generating_tokens)
                         } else {
                             stringResource(R.string.regenerate_token)
-                        }
+                        },
                     )
                 },
                 icon = {
@@ -400,21 +422,24 @@ class PoTokenExtractionActivity : ComponentActivity() {
                         triggerExtraction()
                     }
                 },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .windowInsetsPadding(WindowInsets.systemBars)
-                    .padding(16.dp),
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomEnd)
+                        .windowInsetsPadding(WindowInsets.systemBars)
+                        .padding(16.dp),
                 expanded = true,
-                containerColor = if (canExtract) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.surfaceVariant
-                },
-                contentColor = if (canExtract) {
-                    MaterialTheme.colorScheme.onPrimary
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
+                containerColor =
+                    if (canExtract) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    },
+                contentColor =
+                    if (canExtract) {
+                        MaterialTheme.colorScheme.onPrimary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
             )
         }
     }

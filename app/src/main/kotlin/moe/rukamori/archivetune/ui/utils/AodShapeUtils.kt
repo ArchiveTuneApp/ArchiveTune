@@ -26,7 +26,9 @@ fun AodThumbnailShape.supportsArtworkGlowShadow(): Boolean =
         AodThumbnailShape.COOKIE_6,
         AodThumbnailShape.COOKIE_9,
         AodThumbnailShape.SUNNY,
-        AodThumbnailShape.SOFT_BURST -> false
+        AodThumbnailShape.SOFT_BURST,
+        -> false
+
         else -> true
     }
 
@@ -36,24 +38,77 @@ fun AodThumbnailShape.toComposeShape(
     startAngle: Int,
 ): Shape =
     when (this) {
-        AodThumbnailShape.ROUNDED -> remember(cornerRadius) {
-            RoundedCornerShape(cornerRadius.coerceIn(0f, 128f).dp)
+        AodThumbnailShape.ROUNDED -> {
+            remember(cornerRadius) {
+                RoundedCornerShape(cornerRadius.coerceIn(0f, 128f).dp)
+            }
         }
-        AodThumbnailShape.SQUARE -> MaterialShapes.Square.toShape(startAngle)
-        AodThumbnailShape.CIRCLE -> MaterialShapes.Circle.toShape(startAngle)
-        AodThumbnailShape.PILL -> MaterialShapes.Pill.toShape(startAngle)
-        AodThumbnailShape.ARCH -> MaterialShapes.Arch.toShape(startAngle)
-        AodThumbnailShape.SLANTED -> MaterialShapes.Slanted.toShape(startAngle)
-        AodThumbnailShape.DIAMOND -> MaterialShapes.Diamond.toShape(startAngle)
-        AodThumbnailShape.PENTAGON -> MaterialShapes.Pentagon.toShape(startAngle)
-        AodThumbnailShape.TRIANGLE -> MaterialShapes.Triangle.toShape(startAngle)
-        AodThumbnailShape.HEART -> MaterialShapes.Heart.toShape(startAngle)
-        AodThumbnailShape.FLOWER -> MaterialShapes.Flower.toShape(startAngle)
-        AodThumbnailShape.CLOVER_4 -> MaterialShapes.Clover4Leaf.toShape(startAngle)
-        AodThumbnailShape.COOKIE_6 -> MaterialShapes.Cookie6Sided.toShape(startAngle)
-        AodThumbnailShape.COOKIE_9 -> MaterialShapes.Cookie9Sided.toShape(startAngle)
-        AodThumbnailShape.SUNNY -> MaterialShapes.Sunny.toShape(startAngle)
-        AodThumbnailShape.SOFT_BURST -> MaterialShapes.SoftBurst.toShape(startAngle)
-        AodThumbnailShape.GHOSTISH -> MaterialShapes.Ghostish.toShape(startAngle)
-        AodThumbnailShape.PIXEL_CIRCLE -> MaterialShapes.PixelCircle.toShape(startAngle)
+
+        AodThumbnailShape.SQUARE -> {
+            MaterialShapes.Square.toShape(startAngle)
+        }
+
+        AodThumbnailShape.CIRCLE -> {
+            MaterialShapes.Circle.toShape(startAngle)
+        }
+
+        AodThumbnailShape.PILL -> {
+            MaterialShapes.Pill.toShape(startAngle)
+        }
+
+        AodThumbnailShape.ARCH -> {
+            MaterialShapes.Arch.toShape(startAngle)
+        }
+
+        AodThumbnailShape.SLANTED -> {
+            MaterialShapes.Slanted.toShape(startAngle)
+        }
+
+        AodThumbnailShape.DIAMOND -> {
+            MaterialShapes.Diamond.toShape(startAngle)
+        }
+
+        AodThumbnailShape.PENTAGON -> {
+            MaterialShapes.Pentagon.toShape(startAngle)
+        }
+
+        AodThumbnailShape.TRIANGLE -> {
+            MaterialShapes.Triangle.toShape(startAngle)
+        }
+
+        AodThumbnailShape.HEART -> {
+            MaterialShapes.Heart.toShape(startAngle)
+        }
+
+        AodThumbnailShape.FLOWER -> {
+            MaterialShapes.Flower.toShape(startAngle)
+        }
+
+        AodThumbnailShape.CLOVER_4 -> {
+            MaterialShapes.Clover4Leaf.toShape(startAngle)
+        }
+
+        AodThumbnailShape.COOKIE_6 -> {
+            MaterialShapes.Cookie6Sided.toShape(startAngle)
+        }
+
+        AodThumbnailShape.COOKIE_9 -> {
+            MaterialShapes.Cookie9Sided.toShape(startAngle)
+        }
+
+        AodThumbnailShape.SUNNY -> {
+            MaterialShapes.Sunny.toShape(startAngle)
+        }
+
+        AodThumbnailShape.SOFT_BURST -> {
+            MaterialShapes.SoftBurst.toShape(startAngle)
+        }
+
+        AodThumbnailShape.GHOSTISH -> {
+            MaterialShapes.Ghostish.toShape(startAngle)
+        }
+
+        AodThumbnailShape.PIXEL_CIRCLE -> {
+            MaterialShapes.PixelCircle.toShape(startAngle)
+        }
     }

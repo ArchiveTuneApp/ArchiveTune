@@ -18,8 +18,7 @@ data class TogetherJoinInfo(
     val sessionId: String,
     val sessionKey: String,
 ) {
-    fun toWebSocketUrl(): String =
-        "ws://$host:$port/together"
+    fun toWebSocketUrl(): String = "ws://$host:$port/together"
 
     fun toDeepLink(): String {
         val charset = StandardCharsets.UTF_8.name()
@@ -75,11 +74,12 @@ object TogetherLink {
         if (scheme != "ws" && scheme != "wss" && scheme != "http" && scheme != "https") return null
 
         val host = uri.host?.trim().orEmpty()
-        val port = when {
-            uri.port != -1 -> uri.port
-            scheme == "wss" || scheme == "https" -> 443
-            else -> 80
-        }
+        val port =
+            when {
+                uri.port != -1 -> uri.port
+                scheme == "wss" || scheme == "https" -> 443
+                else -> 80
+            }
 
         val params = parseQuery(uri.rawQuery)
         val sid = params["sid"]?.trim().orEmpty()
@@ -107,7 +107,8 @@ object TogetherLink {
     private fun parseQuery(rawQuery: String?): Map<String, String> {
         if (rawQuery.isNullOrBlank()) return emptyMap()
         val charset = StandardCharsets.UTF_8.name()
-        return rawQuery.split("&")
+        return rawQuery
+            .split("&")
             .asSequence()
             .mapNotNull { pair ->
                 val idx = pair.indexOf('=')
@@ -115,7 +116,6 @@ object TogetherLink {
                 val k = URLDecoder.decode(pair.substring(0, idx), charset)
                 val v = URLDecoder.decode(pair.substring(idx + 1), charset)
                 k to v
-            }
-            .toMap()
+            }.toMap()
     }
 }

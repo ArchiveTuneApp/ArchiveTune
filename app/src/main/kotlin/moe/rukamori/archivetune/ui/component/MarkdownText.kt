@@ -42,27 +42,32 @@ fun MarkdownText(
     val colorArgb = color.toArgb()
     val fontSize = style.fontSize
 
-    val typeface = remember(context) {
-        ResourcesCompat.getFont(context, R.font.poppins)
-    }
+    val typeface =
+        remember(context) {
+            ResourcesCompat.getFont(context, R.font.poppins)
+        }
 
-    val markwon = remember(context) {
-        Markwon.builder(context)
-            .usePlugin(ImagesPlugin.create { plugin ->
-                plugin.addSchemeHandler(OkHttpNetworkSchemeHandler.create())
-            })
-            .usePlugin(StrikethroughPlugin.create())
-            .usePlugin(TablePlugin.create(context))
-            .usePlugin(TaskListPlugin.create(context))
-            .usePlugin(HtmlPlugin.create())
-            .usePlugin(LinkifyPlugin.create())
-            .usePlugin(SimpleExtPlugin.create())
-            .build()
-    }
+    val markwon =
+        remember(context) {
+            Markwon
+                .builder(context)
+                .usePlugin(
+                    ImagesPlugin.create { plugin ->
+                        plugin.addSchemeHandler(OkHttpNetworkSchemeHandler.create())
+                    },
+                ).usePlugin(StrikethroughPlugin.create())
+                .usePlugin(TablePlugin.create(context))
+                .usePlugin(TaskListPlugin.create(context))
+                .usePlugin(HtmlPlugin.create())
+                .usePlugin(LinkifyPlugin.create())
+                .usePlugin(SimpleExtPlugin.create())
+                .build()
+        }
 
-    val spanned = remember(markdown, markwon) {
-        markwon.toMarkdown(markdown)
-    }
+    val spanned =
+        remember(markdown, markwon) {
+            markwon.toMarkdown(markdown)
+        }
 
     AndroidView(
         factory = { ctx ->

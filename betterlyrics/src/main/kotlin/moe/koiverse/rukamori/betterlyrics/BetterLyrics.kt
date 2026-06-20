@@ -7,12 +7,11 @@
 
 package moe.rukamori.archivetune.betterlyrics
 
-import moe.rukamori.archivetune.betterlyrics.models.TTMLResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
-import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.statement.HttpResponse
@@ -20,6 +19,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import moe.rukamori.archivetune.betterlyrics.models.TTMLResponse
 
 object BetterLyrics {
     private const val API_BASE_URL = "https://lyrics-api.boidu.dev/"
@@ -32,7 +32,7 @@ object BetterLyrics {
             coerceInputValues = true
         }
     }
-    
+
     private val client by lazy {
         HttpClient(OkHttp) {
             install(ContentNegotiation) {
@@ -48,7 +48,7 @@ object BetterLyrics {
             defaultRequest {
                 url("https://lyrics-api.boidu.dev/")
             }
-            
+
             // Don't throw on non-2xx responses, handle them gracefully
             expectSuccess = false
         }
@@ -95,27 +95,29 @@ object BetterLyrics {
         logger?.invoke(buildRequestLog(endpoint, title, artist, album, durationSeconds))
 
         return try {
-            val response: HttpResponse = client.get(endpoint) {
-                parameter("s", title)
-                parameter("a", artist)
-                if (album.isNotBlank()) parameter("al", album)
-                if (durationSeconds > 0) parameter("d", durationSeconds)
-            }
-            
+            val response: HttpResponse =
+                client.get(endpoint) {
+                    parameter("s", title)
+                    parameter("a", artist)
+                    if (album.isNotBlank()) parameter("al", album)
+                    if (durationSeconds > 0) parameter("d", durationSeconds)
+                }
+
             logger?.invoke("$endpoint response status: ${response.status}")
-    
+
             val responseText = response.bodyAsText()
             if (!response.status.isSuccess()) {
                 logger?.invoke("$endpoint request failed with status: ${response.status}")
                 return null
             }
 
-            val lyrics = try {
-                decodeLyrics(responseText)
-            } catch (e: Exception) {
-                logger?.invoke("$endpoint parse error: ${e.message}")
-                ""
-            }
+            val lyrics =
+                try {
+                    decodeLyrics(responseText)
+                } catch (e: Exception) {
+                    logger?.invoke("$endpoint parse error: ${e.message}")
+                    ""
+                }
 
             logger?.invoke("$endpoint lyrics length: ${lyrics.length}")
             lyrics.takeIf { it.isNotBlank() }
@@ -137,24 +139,25 @@ object BetterLyrics {
         artist: String,
         album: String,
         durationSeconds: Int,
-    ): String = buildString {
-        append("Sending request to ")
-        append(API_BASE_URL)
-        append(endpoint)
-        append(" (s=")
-        append(title)
-        append(", a=")
-        append(artist)
-        if (album.isNotBlank()) {
-            append(", al=")
-            append(album)
+    ): String =
+        buildString {
+            append("Sending request to ")
+            append(API_BASE_URL)
+            append(endpoint)
+            append(" (s=")
+            append(title)
+            append(", a=")
+            append(artist)
+            if (album.isNotBlank()) {
+                append(", al=")
+                append(album)
+            }
+            if (durationSeconds > 0) {
+                append(", d=")
+                append(durationSeconds)
+            }
+            append(")")
         }
-        if (durationSeconds > 0) {
-            append(", d=")
-            append(durationSeconds)
-        }
-        append(")")
-    }
 
     suspend fun getLyrics(
         title: String,
@@ -163,16 +166,16 @@ object BetterLyrics {
         durationSeconds: Int = -1,
     ) = runCatching {
         require(title.isNotBlank() && artist.isNotBlank()) { "Song title and artist are required" }
-        val ttml = fetchLyrics(
-            artist = artist,
-            title = title,
-            album = album,
-            durationSeconds = durationSeconds,
-        )
-            ?: throw IllegalStateException("Lyrics unavailable")
+        val ttml =
+            fetchLyrics(
+                artist = artist,
+                title = title,
+                album = album,
+                durationSeconds = durationSeconds,
+            )
+                ?: throw IllegalStateException("Lyrics unavailable")
         ttml
     }
-
 
     suspend fun getAllLyrics(
         title: String,
@@ -181,12 +184,13 @@ object BetterLyrics {
         durationSeconds: Int = -1,
         callback: (String) -> Unit,
     ) {
-        val result = getLyrics(
-            title = title,
-            artist = artist,
-            album = album,
-            durationSeconds = durationSeconds,
-        )
+        val result =
+            getLyrics(
+                title = title,
+                artist = artist,
+                album = album,
+                durationSeconds = durationSeconds,
+            )
         result.onSuccess { ttml ->
             callback(ttml)
         }

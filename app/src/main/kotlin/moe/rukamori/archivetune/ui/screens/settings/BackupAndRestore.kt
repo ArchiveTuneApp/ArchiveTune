@@ -94,9 +94,9 @@ import moe.rukamori.archivetune.LocalPlayerAwareWindowInsets
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.constants.ShowSpotifyPlaylistsKey
 import moe.rukamori.archivetune.db.entities.Song
-import moe.rukamori.archivetune.spotify.SpotifyAuth
 import moe.rukamori.archivetune.spotify.SpotifyAccountUiState
 import moe.rukamori.archivetune.spotify.SpotifyAccountViewModel
+import moe.rukamori.archivetune.spotify.SpotifyAuth
 import moe.rukamori.archivetune.ui.component.DefaultDialog
 import moe.rukamori.archivetune.ui.component.IconButton
 import moe.rukamori.archivetune.ui.component.PreferenceEntry
@@ -106,8 +106,8 @@ import moe.rukamori.archivetune.ui.component.SwitchPreference
 import moe.rukamori.archivetune.ui.menu.AddToPlaylistDialogOnline
 import moe.rukamori.archivetune.ui.menu.LoadingScreen
 import moe.rukamori.archivetune.ui.utils.backToMain
-import moe.rukamori.archivetune.utils.resetAuthWebViewSession
 import moe.rukamori.archivetune.utils.rememberPreference
+import moe.rukamori.archivetune.utils.resetAuthWebViewSession
 import moe.rukamori.archivetune.viewmodels.BackupCategory
 import moe.rukamori.archivetune.viewmodels.BackupRestoreViewModel
 import java.time.LocalDateTime
@@ -203,7 +203,8 @@ fun BackupAndRestore(
     Column(
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .padding(bottom = SettingsDimensions.ScreenBottomPadding),
     ) {
         PreferenceGroup(title = stringResource(R.string.internal_service)) {
             item {
@@ -386,20 +387,22 @@ private fun PreferenceGroupScope.spotifyAccountPreferences(
         PreferenceEntry(
             title = {
                 Text(
-                    text = if (state.accountName.isNotBlank()) {
-                        stringResource(R.string.spotify_connected_as, state.accountName)
-                    } else {
-                        stringResource(R.string.spotify_account)
-                    },
+                    text =
+                        if (state.accountName.isNotBlank()) {
+                            stringResource(R.string.spotify_connected_as, state.accountName)
+                        } else {
+                            stringResource(R.string.spotify_account)
+                        },
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             },
-            description = when {
-                state.isLoading -> stringResource(R.string.spotify_loading_library)
-                state.playlistCount > 0 -> stringResource(R.string.spotify_available_count, state.playlistCount)
-                else -> stringResource(R.string.spotify_no_sources)
-            },
+            description =
+                when {
+                    state.isLoading -> stringResource(R.string.spotify_loading_library)
+                    state.playlistCount > 0 -> stringResource(R.string.spotify_available_count, state.playlistCount)
+                    else -> stringResource(R.string.spotify_no_sources)
+                },
             icon = { SpotifyAccountIcon(avatarUrl = state.accountAvatarUrl) },
             trailingContent = {
                 AnimatedVisibility(visible = state.isLoading) {
@@ -449,22 +452,25 @@ private fun SpotifyAccountIcon(avatarUrl: String?) {
     val context = LocalContext.current
     val requestSize = with(LocalDensity.current) { SpotifyAccountIconSize.roundToPx() }
     val accountIcon = painterResource(R.drawable.spotify_icon)
-    val imageRequest = remember(context, avatarUrl, requestSize) {
-        avatarUrl
-            ?.takeIf(String::isNotBlank)
-            ?.let {
-                ImageRequest.Builder(context)
-                    .data(it)
-                    .size(requestSize)
-                    .build()
-            }
-    }
+    val imageRequest =
+        remember(context, avatarUrl, requestSize) {
+            avatarUrl
+                ?.takeIf(String::isNotBlank)
+                ?.let {
+                    ImageRequest
+                        .Builder(context)
+                        .data(it)
+                        .size(requestSize)
+                        .build()
+                }
+        }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primaryContainer),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primaryContainer),
         contentAlignment = Alignment.Center,
     ) {
         if (imageRequest != null) {
@@ -511,12 +517,18 @@ private fun SpotifyLoginSheet(
         val activeWebView = webView
         val rootWebView = mainWebView
         when {
-            activeWebView?.canGoBack() == true -> activeWebView.goBack()
+            activeWebView?.canGoBack() == true -> {
+                activeWebView.goBack()
+            }
+
             activeWebView != null && rootWebView != null && activeWebView !== rootWebView -> {
                 activeWebView.destroySpotifyLoginWebView()
                 webView = rootWebView
             }
-            else -> onDismiss()
+
+            else -> {
+                onDismiss()
+            }
         }
     }
 
@@ -528,11 +540,12 @@ private fun SpotifyLoginSheet(
         containerColor = MaterialTheme.colorScheme.surface,
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .padding(horizontal = 20.dp)
-                .padding(bottom = 20.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
@@ -546,72 +559,82 @@ private fun SpotifyLoginSheet(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             AndroidView(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .clip(MaterialTheme.shapes.large),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .clip(MaterialTheme.shapes.large),
                 factory = { context ->
                     val container = FrameLayout(context)
-                    val spotifyWebView = WebView(context).apply {
-                        val cookieManager = CookieManager.getInstance()
-                        cookieManager.setAcceptCookie(true)
-                        cookieManager.setAcceptThirdPartyCookies(this, true)
-                        configureSpotifyLoginWebView()
+                    val spotifyWebView =
+                        WebView(context).apply {
+                            val cookieManager = CookieManager.getInstance()
+                            cookieManager.setAcceptCookie(true)
+                            cookieManager.setAcceptThirdPartyCookies(this, true)
+                            configureSpotifyLoginWebView()
 
-                        fun captureCookies(url: String?): Boolean {
-                            if (captured) return true
-                            val cookies = readSpotifyCookies(cookieManager, url)
-                            val spDc = cookies["sp_dc"].orEmpty()
-                            if (spDc.isBlank()) return false
-                            captured = true
-                            cookieManager.flush()
-                            onCookiesCaptured(spDc, cookies["sp_key"].orEmpty())
-                            return true
-                        }
+                            fun captureCookies(url: String?): Boolean {
+                                if (captured) return true
+                                val cookies = readSpotifyCookies(cookieManager, url)
+                                val spDc = cookies["sp_dc"].orEmpty()
+                                if (spDc.isBlank()) return false
+                                captured = true
+                                cookieManager.flush()
+                                onCookiesCaptured(spDc, cookies["sp_key"].orEmpty())
+                                return true
+                            }
 
-                        webViewClient = object : WebViewClient() {
-                            override fun shouldOverrideUrlLoading(
-                                view: WebView,
-                                request: WebResourceRequest,
-                            ): Boolean =
-                                shouldOverrideSpotifyLoginUrl(
-                                    view = view,
-                                    url = request.url?.toString(),
+                            webViewClient =
+                                object : WebViewClient() {
+                                    override fun shouldOverrideUrlLoading(
+                                        view: WebView,
+                                        request: WebResourceRequest,
+                                    ): Boolean =
+                                        shouldOverrideSpotifyLoginUrl(
+                                            view = view,
+                                            url = request.url?.toString(),
+                                            captureCookies = { url -> captureCookies(url) },
+                                        )
+
+                                    @Deprecated("Deprecated in Java")
+                                    override fun shouldOverrideUrlLoading(
+                                        view: WebView,
+                                        url: String?,
+                                    ): Boolean =
+                                        shouldOverrideSpotifyLoginUrl(
+                                            view = view,
+                                            url = url,
+                                            captureCookies = { targetUrl -> captureCookies(targetUrl) },
+                                        )
+
+                                    override fun onPageStarted(
+                                        view: WebView,
+                                        url: String?,
+                                        favicon: android.graphics.Bitmap?,
+                                    ) {
+                                        captureCookies(url)
+                                    }
+
+                                    override fun onPageFinished(
+                                        view: WebView,
+                                        url: String?,
+                                    ) {
+                                        captureCookies(url)
+                                    }
+                                }
+                            webChromeClient =
+                                SpotifyLoginWebChromeClient(
+                                    container = container,
+                                    parentWebView = this,
                                     captureCookies = { url -> captureCookies(url) },
+                                    onActiveWebViewChanged = { activeWebView -> webView = activeWebView },
                                 )
-
-                            @Deprecated("Deprecated in Java")
-                            override fun shouldOverrideUrlLoading(view: WebView, url: String?): Boolean =
-                                shouldOverrideSpotifyLoginUrl(
-                                    view = view,
-                                    url = url,
-                                    captureCookies = { targetUrl -> captureCookies(targetUrl) },
-                                )
-
-                            override fun onPageStarted(
-                                view: WebView,
-                                url: String?,
-                                favicon: android.graphics.Bitmap?,
-                            ) {
-                                captureCookies(url)
-                            }
-
-                            override fun onPageFinished(view: WebView, url: String?) {
-                                captureCookies(url)
+                            webView = this
+                            mainWebView = this
+                            resetAuthWebViewSession(context, this) {
+                                loadUrl(SpotifyAuth.LOGIN_URL)
                             }
                         }
-                        webChromeClient = SpotifyLoginWebChromeClient(
-                            container = container,
-                            parentWebView = this,
-                            captureCookies = { url -> captureCookies(url) },
-                            onActiveWebViewChanged = { activeWebView -> webView = activeWebView },
-                        )
-                        webView = this
-                        mainWebView = this
-                        resetAuthWebViewSession(context, this) {
-                            loadUrl(SpotifyAuth.LOGIN_URL)
-                        }
-                    }
                     container.addView(
                         spotifyWebView,
                         FrameLayout.LayoutParams(
@@ -665,43 +688,51 @@ private class SpotifyLoginWebChromeClient(
     ): Boolean {
         closePopupWebViews()
 
-        val popupWebView = WebView(view.context).apply {
-            val cookieManager = CookieManager.getInstance()
-            cookieManager.setAcceptCookie(true)
-            cookieManager.setAcceptThirdPartyCookies(this, true)
-            configureSpotifyLoginWebView()
-            webViewClient = object : WebViewClient() {
-                override fun shouldOverrideUrlLoading(
-                    view: WebView,
-                    request: WebResourceRequest,
-                ): Boolean =
-                    shouldOverrideSpotifyLoginUrl(
-                        view = view,
-                        url = request.url?.toString(),
-                        captureCookies = captureCookies,
-                    )
+        val popupWebView =
+            WebView(view.context).apply {
+                val cookieManager = CookieManager.getInstance()
+                cookieManager.setAcceptCookie(true)
+                cookieManager.setAcceptThirdPartyCookies(this, true)
+                configureSpotifyLoginWebView()
+                webViewClient =
+                    object : WebViewClient() {
+                        override fun shouldOverrideUrlLoading(
+                            view: WebView,
+                            request: WebResourceRequest,
+                        ): Boolean =
+                            shouldOverrideSpotifyLoginUrl(
+                                view = view,
+                                url = request.url?.toString(),
+                                captureCookies = captureCookies,
+                            )
 
-                @Deprecated("Deprecated in Java")
-                override fun shouldOverrideUrlLoading(view: WebView, url: String?): Boolean =
-                    shouldOverrideSpotifyLoginUrl(
-                        view = view,
-                        url = url,
-                        captureCookies = captureCookies,
-                    )
+                        @Deprecated("Deprecated in Java")
+                        override fun shouldOverrideUrlLoading(
+                            view: WebView,
+                            url: String?,
+                        ): Boolean =
+                            shouldOverrideSpotifyLoginUrl(
+                                view = view,
+                                url = url,
+                                captureCookies = captureCookies,
+                            )
 
-                override fun onPageStarted(
-                    view: WebView,
-                    url: String?,
-                    favicon: android.graphics.Bitmap?,
-                ) {
-                    captureCookies(url)
-                }
+                        override fun onPageStarted(
+                            view: WebView,
+                            url: String?,
+                            favicon: android.graphics.Bitmap?,
+                        ) {
+                            captureCookies(url)
+                        }
 
-                override fun onPageFinished(view: WebView, url: String?) {
-                    captureCookies(url)
-                }
+                        override fun onPageFinished(
+                            view: WebView,
+                            url: String?,
+                        ) {
+                            captureCookies(url)
+                        }
+                    }
             }
-        }
 
         val transport = resultMsg.obj as? WebView.WebViewTransport ?: return false
         container.addView(
@@ -768,16 +799,18 @@ private fun readSpotifyCookies(
     cookieManager: CookieManager,
     currentUrl: String?,
 ): Map<String, String> {
-    val urls = linkedSetOf(
-        "https://open.spotify.com",
-        "https://accounts.spotify.com",
-        "https://spotify.com",
-    )
+    val urls =
+        linkedSetOf(
+            "https://open.spotify.com",
+            "https://accounts.spotify.com",
+            "https://spotify.com",
+        )
     currentUrl?.toSpotifyCookieOrigin()?.let(urls::add)
     val cookies = linkedMapOf<String, String>()
     cookieManager.flush()
     urls.forEach { url ->
-        cookieManager.getCookie(url)
+        cookieManager
+            .getCookie(url)
             ?.split(";")
             ?.map(String::trim)
             ?.filter(String::isNotBlank)
@@ -798,9 +831,10 @@ private fun String.toSpotifyCookieOrigin(): String? {
     val uri = runCatching { Uri.parse(this) }.getOrNull() ?: return null
     val host = uri.host?.lowercase() ?: return null
     if (host != "spotify.com" && !host.endsWith(".spotify.com")) return null
-    val scheme = uri.scheme
-        ?.takeIf { it.equals("https", ignoreCase = true) || it.equals("http", ignoreCase = true) }
-        ?: "https"
+    val scheme =
+        uri.scheme
+            ?.takeIf { it.equals("https", ignoreCase = true) || it.equals("http", ignoreCase = true) }
+            ?: "https"
     return "$scheme://$host"
 }
 
@@ -834,10 +868,11 @@ private fun IconBubble(
     size: androidx.compose.ui.unit.Dp,
 ) {
     Box(
-        modifier = Modifier
-            .size(size)
-            .clip(MaterialTheme.shapes.large)
-            .background(containerColor),
+        modifier =
+            Modifier
+                .size(size)
+                .clip(MaterialTheme.shapes.large)
+                .background(containerColor),
         contentAlignment = Alignment.Center,
     ) {
         Icon(
@@ -881,21 +916,24 @@ private fun BackupOptionsDialog(
         Spacer(Modifier.height(8.dp))
         BackupCategory.entries.forEach { category ->
             val isChecked = category in selected
-            val labelRes = when (category) {
-                BackupCategory.LIBRARY -> R.string.backup_category_library
-                BackupCategory.ACCOUNT -> R.string.backup_category_account
-                BackupCategory.SETTINGS -> R.string.backup_category_settings
-            }
-            val descRes = when (category) {
-                BackupCategory.LIBRARY -> R.string.backup_category_library_desc
-                BackupCategory.ACCOUNT -> R.string.backup_category_account_desc
-                BackupCategory.SETTINGS -> R.string.backup_category_settings_desc
-            }
-            val iconRes = when (category) {
-                BackupCategory.LIBRARY -> R.drawable.library_music
-                BackupCategory.ACCOUNT -> R.drawable.account
-                BackupCategory.SETTINGS -> R.drawable.settings
-            }
+            val labelRes =
+                when (category) {
+                    BackupCategory.LIBRARY -> R.string.backup_category_library
+                    BackupCategory.ACCOUNT -> R.string.backup_category_account
+                    BackupCategory.SETTINGS -> R.string.backup_category_settings
+                }
+            val descRes =
+                when (category) {
+                    BackupCategory.LIBRARY -> R.string.backup_category_library_desc
+                    BackupCategory.ACCOUNT -> R.string.backup_category_account_desc
+                    BackupCategory.SETTINGS -> R.string.backup_category_settings_desc
+                }
+            val iconRes =
+                when (category) {
+                    BackupCategory.LIBRARY -> R.drawable.library_music
+                    BackupCategory.ACCOUNT -> R.drawable.account
+                    BackupCategory.SETTINGS -> R.drawable.settings
+                }
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.medium,
@@ -905,10 +943,11 @@ private fun BackupOptionsDialog(
                 },
             ) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 72.dp)
-                        .padding(horizontal = 4.dp, vertical = 10.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 72.dp)
+                            .padding(horizontal = 4.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {

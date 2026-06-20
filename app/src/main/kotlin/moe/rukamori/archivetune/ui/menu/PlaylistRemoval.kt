@@ -13,14 +13,15 @@ import moe.rukamori.archivetune.innertube.YouTube
 suspend fun removeSongFromRemotePlaylist(
     playlistBrowseId: String,
     playlistSongMap: PlaylistSongMap,
-): Result<Unit> = runCatching {
-    val setVideoIds =
-        playlistSongMap.setVideoId?.let(::listOf)
-            ?: YouTube.playlistEntrySetVideoIds(playlistBrowseId, playlistSongMap.songId).getOrThrow()
+): Result<Unit> =
+    runCatching {
+        val setVideoIds =
+            playlistSongMap.setVideoId?.let(::listOf)
+                ?: YouTube.playlistEntrySetVideoIds(playlistBrowseId, playlistSongMap.songId).getOrThrow()
 
-    setVideoIds
-        .distinct()
-        .forEach { setVideoId ->
-            YouTube.removeFromPlaylist(playlistBrowseId, playlistSongMap.songId, setVideoId).getOrThrow()
-        }
-}
+        setVideoIds
+            .distinct()
+            .forEach { setVideoId ->
+                YouTube.removeFromPlaylist(playlistBrowseId, playlistSongMap.songId, setVideoId).getOrThrow()
+            }
+    }

@@ -32,10 +32,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import moe.rukamori.archivetune.R
-import moe.rukamori.archivetune.constants.ThumbnailCornerRadius
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import moe.rukamori.archivetune.R
+import moe.rukamori.archivetune.constants.ThumbnailCornerRadius
 import kotlin.random.Random
 
 @Composable
@@ -73,9 +73,9 @@ fun PlayingIndicator(
         animatables.forEach { animatable ->
             Canvas(
                 modifier =
-                Modifier
-                    .fillMaxHeight()
-                    .width(barWidth),
+                    Modifier
+                        .fillMaxHeight()
+                        .width(barWidth),
             ) {
                 drawRoundRect(
                     color = color,

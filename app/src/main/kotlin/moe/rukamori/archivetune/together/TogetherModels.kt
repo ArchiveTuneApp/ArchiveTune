@@ -58,12 +58,14 @@ data class TogetherRoomState(
 @Immutable
 sealed class TogetherRole {
     data object Host : TogetherRole()
+
     data object Guest : TogetherRole()
 }
 
 @Immutable
 sealed class TogetherSessionState {
     data object Idle : TogetherSessionState()
+
     data class Hosting(
         val sessionId: String,
         val joinLink: String,

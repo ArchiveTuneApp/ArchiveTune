@@ -27,7 +27,7 @@ import androidx.room.ForeignKey
             childColumns = ["artistId"],
             onDelete = ForeignKey.CASCADE,
         ),
-    ]
+    ],
 )
 data class AlbumArtistMap(
     @ColumnInfo(index = true) val albumId: String,

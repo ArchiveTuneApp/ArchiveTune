@@ -33,9 +33,7 @@ private val DiscordExperimentalButtonUrlOptions =
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DiscordExperimental(
-    navController: NavController,
-) {
+fun DiscordExperimental(navController: NavController) {
     val context = LocalContext.current
     val languages = remember(context) { TranslatorLanguages.load(context) }
     val languageCodes = remember(languages) { languages.map { it.code } }
@@ -46,7 +44,7 @@ fun DiscordExperimental(
     val (translatorContexts, onTranslatorContextsChange) =
         rememberPreference(
             key = TranslatorContextsKey,
-            defaultValue = "{song}, {artist}, {album}"
+            defaultValue = "{song}, {artist}, {album}",
         )
     val (translatorTargetLang, onTranslatorTargetLangChange) =
         rememberPreference(key = TranslatorTargetLangKey, defaultValue = "ENGLISH")
@@ -54,43 +52,43 @@ fun DiscordExperimental(
     val (button1Label, onButton1LabelChange) =
         rememberPreference(
             key = DiscordActivityButton1LabelKey,
-            defaultValue = "Listen on YouTube Music"
+            defaultValue = "Listen on YouTube Music",
         )
     val (button1Enabled, onButton1EnabledChange) =
         rememberPreference(
             key = DiscordActivityButton1EnabledKey,
-            defaultValue = true
+            defaultValue = true,
         )
     val (button2Label, onButton2LabelChange) =
         rememberPreference(
             key = DiscordActivityButton2LabelKey,
-            defaultValue = "Go to ArchiveTune"
+            defaultValue = "Go to ArchiveTune",
         )
     val (button2Enabled, onButton2EnabledChange) =
         rememberPreference(
             key = DiscordActivityButton2EnabledKey,
-            defaultValue = true
+            defaultValue = true,
         )
 
     val (button1UrlSource, onButton1UrlSourceChange) =
         rememberPreference(
             key = DiscordActivityButton1UrlSourceKey,
-            defaultValue = "songurl"
+            defaultValue = "songurl",
         )
     val (button1CustomUrl, onButton1CustomUrlChange) =
         rememberPreference(
             key = DiscordActivityButton1CustomUrlKey,
-            defaultValue = ""
+            defaultValue = "",
         )
     val (button2UrlSource, onButton2UrlSourceChange) =
         rememberPreference(
             key = DiscordActivityButton2UrlSourceKey,
-            defaultValue = "custom"
+            defaultValue = "custom",
         )
     val (button2CustomUrl, onButton2CustomUrlChange) =
         rememberPreference(
             key = DiscordActivityButton2CustomUrlKey,
-            defaultValue = "https://github.com/ArchiveTuneApp/ArchiveTune"
+            defaultValue = "https://github.com/ArchiveTuneApp/ArchiveTune",
         )
 
     Scaffold { inner ->
@@ -101,14 +99,15 @@ fun DiscordExperimental(
                     IconButton(onClick = navController::navigateUp) {
                         Icon(painterResource(R.drawable.arrow_back), contentDescription = null)
                     }
-                }
+                },
             )
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(
-                    bottom = inner.calculateBottomPadding() + 80.dp,
-                ),
+                contentPadding =
+                    PaddingValues(
+                        bottom = inner.calculateBottomPadding() + 80.dp,
+                    ),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 item {
@@ -237,12 +236,11 @@ fun DiscordExperimental(
 }
 
 @Composable
-private fun discordExperimentalButtonUrlSourceLabel(value: String): String {
-    return when (value) {
+private fun discordExperimentalButtonUrlSourceLabel(value: String): String =
+    when (value) {
         "songurl" -> stringResource(R.string.discord_url_source_song)
         "artisturl" -> stringResource(R.string.discord_url_source_artist)
         "albumurl" -> stringResource(R.string.discord_url_source_album)
         "custom" -> stringResource(R.string.discord_url_source_custom)
         else -> value
     }
-}

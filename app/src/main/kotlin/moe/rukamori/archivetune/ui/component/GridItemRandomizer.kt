@@ -34,7 +34,7 @@ fun RandomizeGridItem(
     isLoading: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-){
+) {
     val dotOffsetMultiplier by animateFloatAsState(
         targetValue = if (isLoading) 0f else 1f,
         animationSpec = tween(durationMillis = 600),

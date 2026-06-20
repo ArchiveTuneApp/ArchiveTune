@@ -60,10 +60,11 @@ fun SpotifyLibraryPlaylistListItem(
         playlist = libraryPlaylist,
         shape = shape,
         trailingContent = trailing,
-        modifier = modifier
-            .fillMaxWidth()
-            .focusable()
-            .clickable(onClick = openPlaylist),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .focusable()
+                .clickable(onClick = openPlaylist),
     )
 }
 
@@ -87,11 +88,16 @@ fun SpotifyTrackListItem(
     showSongIconPlaceholder: Boolean = true,
     trailingContent: @Composable RowScope.() -> Unit = {},
 ) {
-    val duration = track.durationMs.takeIf { it > 0 }?.toLong()?.let(::makeTimeString)
-    val subtitle = joinByBullet(
-        track.artists.joinToString { it.name },
-        duration,
-    )
+    val duration =
+        track.durationMs
+            .takeIf { it > 0 }
+            ?.toLong()
+            ?.let(::makeTimeString)
+    val subtitle =
+        joinByBullet(
+            track.artists.joinToString { it.name },
+            duration,
+        )
 
     ListItem(
         title = track.name,
@@ -117,13 +123,14 @@ fun SpotifyTrackListItem(
 
 private fun SpotifyPlaylist.toLibraryPlaylist(): Playlist =
     Playlist(
-        playlist = PlaylistEntity(
-            id = "SPOTIFY_PLAYLIST_$id",
-            name = name,
-            thumbnailUrl = SpotifyMapper.getPlaylistThumbnail(this),
-            remoteSongCount = tracks?.total ?: 0,
-            isEditable = false,
-        ),
+        playlist =
+            PlaylistEntity(
+                id = "SPOTIFY_PLAYLIST_$id",
+                name = name,
+                thumbnailUrl = SpotifyMapper.getPlaylistThumbnail(this),
+                remoteSongCount = tracks?.total ?: 0,
+                isEditable = false,
+            ),
         songCount = tracks?.total ?: 0,
         songThumbnails = images.map { it.url },
     )

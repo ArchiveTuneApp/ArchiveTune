@@ -29,7 +29,9 @@ data class LyricsEntity(
         const val LYRICS_NOT_FOUND = "LYRICS_NOT_FOUND"
     }
 
-    enum class Source(val value: String) {
+    enum class Source(
+        val value: String,
+    ) {
         REMOTE("REMOTE"),
         EMBEDDED("EMBEDDED"),
         USER_SELECTION("USER_SELECTION"),

@@ -33,8 +33,8 @@ android {
     applicationId = "moe.rukamori.archivetune"
         minSdk = 26
         targetSdk = 37
-        versionCode = 135
-        versionName = "13.4.0"
+        versionCode = 136
+        versionName = "13.5.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
@@ -61,12 +61,6 @@ android {
                 ?: System.getenv("CANVAS_BEARER_TOKEN")
                 ?: ""
         buildConfigField("String", "CANVAS_BEARER_TOKEN", "\"$canvasBearerToken\"")
-
-        val weblateApiToken =
-            localProperties.getProperty("WEBLATE_API_TOKEN")
-                ?: System.getenv("WEBLATE_API_TOKEN")
-                ?: ""
-        buildConfigField("String", "WEBLATE_API_TOKEN", "\"$weblateApiToken\"")
 
         val nightlyBuildHash =
             (

@@ -153,82 +153,107 @@ fun ShowMediaInfo(videoId: String) {
     }
 
     val heroTitle = song?.title ?: info?.title ?: videoId
-    val heroSubtitle = song?.artists
-        ?.takeIf { it.isNotEmpty() }
-        ?.joinToString { it.name }
-        ?: info?.author
-        ?: unknownText
+    val heroSubtitle =
+        song
+            ?.artists
+            ?.takeIf { it.isNotEmpty() }
+            ?.joinToString { it.name }
+            ?: info?.author
+            ?: unknownText
     val artworkModel = song?.thumbnailUrl ?: info?.authorThumbnail
     val playbackVolume = playerConnection?.let { "${(it.player.volume * 100).toInt()}%" }
 
-    val overviewDetails = buildList {
-        add(MediaInfoDetail(label = songTitleLabel, value = song?.title ?: info?.title ?: unknownText))
-        add(
-            MediaInfoDetail(
-                label = songArtistsLabel,
-                value = song?.artists
-                    ?.takeIf { it.isNotEmpty() }
-                    ?.joinToString { it.name }
-                    ?: info?.author
-                    ?: unknownText,
+    val overviewDetails =
+        buildList {
+            add(MediaInfoDetail(label = songTitleLabel, value = song?.title ?: info?.title ?: unknownText))
+            add(
+                MediaInfoDetail(
+                    label = songArtistsLabel,
+                    value =
+                        song
+                            ?.artists
+                            ?.takeIf { it.isNotEmpty() }
+                            ?.joinToString { it.name }
+                            ?: info?.author
+                            ?: unknownText,
+                ),
             )
-        )
-        add(MediaInfoDetail(label = mediaIdLabel, value = videoId))
-    }
+            add(MediaInfoDetail(label = mediaIdLabel, value = videoId))
+        }
 
-    val technicalDetails = buildList {
-        currentFormat?.itag?.toString()?.let { add(MediaInfoDetail(label = "Itag", value = it)) }
-        currentFormat?.mimeType?.takeIf { it.isNotBlank() }
-            ?.let { add(MediaInfoDetail(label = mimeTypeLabel, value = it)) }
-        currentFormat?.codecs?.takeIf { it.isNotBlank() }
-            ?.let { add(MediaInfoDetail(label = codecsLabel, value = it)) }
-        currentFormat?.bitrate?.takeIf { it > 0 }
-            ?.let { add(MediaInfoDetail(label = bitrateLabel, value = "${it / 1000} Kbps")) }
-        currentFormat?.sampleRate?.takeIf { it > 0 }
-            ?.let { add(MediaInfoDetail(label = sampleRateLabel, value = "$it Hz")) }
-        currentFormat?.loudnessDb?.let { add(MediaInfoDetail(label = loudnessLabel, value = "$it dB")) }
-        playbackVolume?.let { add(MediaInfoDetail(label = volumeLabel, value = it)) }
-        currentFormat?.contentLength?.takeIf { it > 0 }
-            ?.let {
-                add(
-                    MediaInfoDetail(
-                        label = fileSizeLabel,
-                        value = Formatter.formatShortFileSize(context, it),
+    val technicalDetails =
+        buildList {
+            currentFormat?.itag?.toString()?.let { add(MediaInfoDetail(label = "Itag", value = it)) }
+            currentFormat
+                ?.mimeType
+                ?.takeIf { it.isNotBlank() }
+                ?.let { add(MediaInfoDetail(label = mimeTypeLabel, value = it)) }
+            currentFormat
+                ?.codecs
+                ?.takeIf { it.isNotBlank() }
+                ?.let { add(MediaInfoDetail(label = codecsLabel, value = it)) }
+            currentFormat
+                ?.bitrate
+                ?.takeIf { it > 0 }
+                ?.let { add(MediaInfoDetail(label = bitrateLabel, value = "${it / 1000} Kbps")) }
+            currentFormat
+                ?.sampleRate
+                ?.takeIf { it > 0 }
+                ?.let { add(MediaInfoDetail(label = sampleRateLabel, value = "$it Hz")) }
+            currentFormat?.loudnessDb?.let { add(MediaInfoDetail(label = loudnessLabel, value = "$it dB")) }
+            playbackVolume?.let { add(MediaInfoDetail(label = volumeLabel, value = it)) }
+            currentFormat
+                ?.contentLength
+                ?.takeIf { it > 0 }
+                ?.let {
+                    add(
+                        MediaInfoDetail(
+                            label = fileSizeLabel,
+                            value = Formatter.formatShortFileSize(context, it),
+                        ),
                     )
-                )
-            }
-    }
+                }
+        }
 
-    val quickFacts = buildList {
-        currentFormat?.mimeType
-            ?.substringBefore(';')
-            ?.takeIf { it.isNotBlank() }
-            ?.let { add(MediaInfoQuickFact(iconRes = R.drawable.graphic_eq, text = it)) }
-        currentFormat?.bitrate?.takeIf { it > 0 }
-            ?.let { add(MediaInfoQuickFact(iconRes = R.drawable.waves, text = "${it / 1000} Kbps")) }
-        currentFormat?.contentLength?.takeIf { it > 0 }
-            ?.let {
-                add(
-                    MediaInfoQuickFact(
-                        iconRes = R.drawable.storage,
-                        text = Formatter.formatShortFileSize(context, it),
+    val quickFacts =
+        buildList {
+            currentFormat
+                ?.mimeType
+                ?.substringBefore(';')
+                ?.takeIf { it.isNotBlank() }
+                ?.let { add(MediaInfoQuickFact(iconRes = R.drawable.graphic_eq, text = it)) }
+            currentFormat
+                ?.bitrate
+                ?.takeIf { it > 0 }
+                ?.let { add(MediaInfoQuickFact(iconRes = R.drawable.waves, text = "${it / 1000} Kbps")) }
+            currentFormat
+                ?.contentLength
+                ?.takeIf { it > 0 }
+                ?.let {
+                    add(
+                        MediaInfoQuickFact(
+                            iconRes = R.drawable.storage,
+                            text = Formatter.formatShortFileSize(context, it),
+                        ),
                     )
-                )
-            }
-        info?.subscribers?.takeIf { it.isNotBlank() }
-            ?.let { add(MediaInfoQuickFact(iconRes = R.drawable.person, text = it)) }
-    }
+                }
+            info
+                ?.subscribers
+                ?.takeIf { it.isNotBlank() }
+                ?.let { add(MediaInfoQuickFact(iconRes = R.drawable.person, text = it)) }
+        }
 
-    val metrics = if (info != null) {
-        listOf(
-            MediaInfoMetric(R.string.subscribers, info?.subscribers ?: unknownText),
-            MediaInfoMetric(R.string.views, info?.viewCount?.let(::numberFormatter) ?: unknownText),
-            MediaInfoMetric(R.string.likes, info?.like?.let(::numberFormatter) ?: unknownText),
-            MediaInfoMetric(R.string.dislikes, info?.dislike?.let(::numberFormatter) ?: unknownText),
-        )
-    } else {
-        emptyList()
-    }
+    val metrics =
+        if (info != null) {
+            listOf(
+                MediaInfoMetric(R.string.subscribers, info?.subscribers ?: unknownText),
+                MediaInfoMetric(R.string.views, info?.viewCount?.let(::numberFormatter) ?: unknownText),
+                MediaInfoMetric(R.string.likes, info?.like?.let(::numberFormatter) ?: unknownText),
+                MediaInfoMetric(R.string.dislikes, info?.dislike?.let(::numberFormatter) ?: unknownText),
+            )
+        } else {
+            emptyList()
+        }
 
     LazyColumn(
         state = rememberLazyListState(),
@@ -303,10 +328,11 @@ fun ShowMediaInfo(videoId: String) {
                                     contentDescription = null,
                                 )
                             },
-                            colors = AssistChipDefaults.assistChipColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                labelColor = MaterialTheme.colorScheme.onSurface,
-                            ),
+                            colors =
+                                AssistChipDefaults.assistChipColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                    labelColor = MaterialTheme.colorScheme.onSurface,
+                                ),
                         )
                     }
                 }
@@ -327,20 +353,23 @@ fun ShowMediaInfo(videoId: String) {
                                 selectedTab = tab
                             }
                         },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(52.dp),
-                        shapes = when (index) {
-                            0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                            MediaInfoTab.entries.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                            else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-                        },
-                        colors = ToggleButtonDefaults.toggleButtonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        ),
+                        modifier =
+                            Modifier
+                                .weight(1f)
+                                .height(52.dp),
+                        shapes =
+                            when (index) {
+                                0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                                MediaInfoTab.entries.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                            },
+                        colors =
+                            ToggleButtonDefaults.toggleButtonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            ),
                     ) {
                         Text(
                             text = stringResource(tab.labelRes),
@@ -360,9 +389,10 @@ fun ShowMediaInfo(videoId: String) {
             ) { tab ->
                 Column(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .animateContentSize(),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .animateContentSize(),
                 ) {
                     when (tab) {
                         MediaInfoTab.Information -> {
@@ -383,7 +413,8 @@ fun ShowMediaInfo(videoId: String) {
                                     body = info?.description?.takeIf { it.isNotBlank() } ?: unknownText,
                                     copyText = copyText,
                                     onCopy = {
-                                        info?.description
+                                        info
+                                            ?.description
                                             ?.takeIf { value -> value.isNotBlank() }
                                             ?.let { copyToClipboard(context, it) }
                                     },
@@ -436,16 +467,18 @@ private fun MediaInfoHeroCard(
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        ),
+        colors =
+            CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            ),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
         ) {
             Surface(
                 shape = MaterialTheme.shapes.large,
@@ -457,9 +490,10 @@ private fun MediaInfoHeroCard(
                         model = artworkModel,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(MaterialTheme.shapes.large),
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .clip(MaterialTheme.shapes.large),
                     )
                 } else {
                     Box(
@@ -542,9 +576,10 @@ private fun MediaInfoDetailCard(
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
+        colors =
+            CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ),
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             items.forEachIndexed { index, item ->
@@ -592,15 +627,17 @@ private fun MediaInfoNarrativeCard(
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
+        colors =
+            CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ),
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -645,15 +682,17 @@ private fun MediaInfoMetricsGrid(metrics: List<MediaInfoMetric>) {
                 rowMetrics.forEach { metric ->
                     ElevatedCard(
                         modifier = Modifier.weight(1f),
-                        colors = CardDefaults.elevatedCardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                        ),
+                        colors =
+                            CardDefaults.elevatedCardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                            ),
                     ) {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
                         ) {
                             Text(
                                 text = stringResource(metric.labelRes),
@@ -684,16 +723,18 @@ private fun MediaInfoPendingCard(
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
+        colors =
+            CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ),
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
         ) {
             LoadingIndicator(modifier = Modifier.size(40.dp))
             Text(
@@ -710,16 +751,23 @@ private fun MediaInfoPendingCard(
     }
 }
 
-private fun copyToClipboard(context: Context, value: String) {
+private fun copyToClipboard(
+    context: Context,
+    value: String,
+) {
     val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     clipboardManager.setPrimaryClip(ClipData.newPlainText("text", value))
     Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show()
 }
 
-private fun shareMediaLink(context: Context, mediaUrl: String) {
-    val shareIntent = Intent(Intent.ACTION_SEND).apply {
-        type = "text/plain"
-        putExtra(Intent.EXTRA_TEXT, mediaUrl)
-    }
+private fun shareMediaLink(
+    context: Context,
+    mediaUrl: String,
+) {
+    val shareIntent =
+        Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, mediaUrl)
+        }
     context.startActivity(Intent.createChooser(shareIntent, null))
 }

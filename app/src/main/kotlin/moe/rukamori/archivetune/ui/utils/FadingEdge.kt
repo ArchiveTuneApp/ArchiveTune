@@ -15,7 +15,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 
-
 fun Modifier.fadingEdge(
     left: Dp? = null,
     top: Dp? = null,
@@ -27,60 +26,60 @@ fun Modifier.fadingEdge(
         if (top != null) {
             drawRect(
                 brush =
-                Brush.verticalGradient(
-                    colors =
-                    listOf(
-                        Color.Transparent,
-                        Color.Black,
+                    Brush.verticalGradient(
+                        colors =
+                            listOf(
+                                Color.Transparent,
+                                Color.Black,
+                            ),
+                        startY = 0f,
+                        endY = top.toPx(),
                     ),
-                    startY = 0f,
-                    endY = top.toPx(),
-                ),
                 blendMode = BlendMode.DstIn,
             )
         }
         if (bottom != null) {
             drawRect(
                 brush =
-                Brush.verticalGradient(
-                    colors =
-                    listOf(
-                        Color.Black,
-                        Color.Transparent,
+                    Brush.verticalGradient(
+                        colors =
+                            listOf(
+                                Color.Black,
+                                Color.Transparent,
+                            ),
+                        startY = size.height - bottom.toPx(),
+                        endY = size.height,
                     ),
-                    startY = size.height - bottom.toPx(),
-                    endY = size.height,
-                ),
                 blendMode = BlendMode.DstIn,
             )
         }
         if (left != null) {
             drawRect(
                 brush =
-                Brush.horizontalGradient(
-                    colors =
-                    listOf(
-                        Color.Black,
-                        Color.Transparent,
+                    Brush.horizontalGradient(
+                        colors =
+                            listOf(
+                                Color.Black,
+                                Color.Transparent,
+                            ),
+                        startX = 0f,
+                        endX = left.toPx(),
                     ),
-                    startX = 0f,
-                    endX = left.toPx(),
-                ),
                 blendMode = BlendMode.DstIn,
             )
         }
         if (right != null) {
             drawRect(
                 brush =
-                Brush.horizontalGradient(
-                    colors =
-                    listOf(
-                        Color.Transparent,
-                        Color.Black,
+                    Brush.horizontalGradient(
+                        colors =
+                            listOf(
+                                Color.Transparent,
+                                Color.Black,
+                            ),
+                        startX = size.width - right.toPx(),
+                        endX = size.width,
                     ),
-                    startX = size.width - right.toPx(),
-                    endX = size.width,
-                ),
                 blendMode = BlendMode.DstIn,
             )
         }
@@ -105,44 +104,47 @@ fun Modifier.smoothFadingEdge(
         if (top != null) {
             val topPx = top.toPx()
             drawRect(
-                brush = Brush.verticalGradient(
-                    colorStops = arrayOf(
-                        0.0f to Color.Transparent,
-                        0.3f to Color.Black.copy(alpha = 0.15f),
-                        0.5f to Color.Black.copy(alpha = 0.4f),
-                        0.7f to Color.Black.copy(alpha = 0.7f),
-                        0.85f to Color.Black.copy(alpha = 0.9f),
-                        1.0f to Color.Black,
+                brush =
+                    Brush.verticalGradient(
+                        colorStops =
+                            arrayOf(
+                                0.0f to Color.Transparent,
+                                0.3f to Color.Black.copy(alpha = 0.15f),
+                                0.5f to Color.Black.copy(alpha = 0.4f),
+                                0.7f to Color.Black.copy(alpha = 0.7f),
+                                0.85f to Color.Black.copy(alpha = 0.9f),
+                                1.0f to Color.Black,
+                            ),
+                        startY = 0f,
+                        endY = topPx,
                     ),
-                    startY = 0f,
-                    endY = topPx,
-                ),
                 blendMode = BlendMode.DstIn,
             )
         }
         if (bottom != null) {
             val bottomPx = bottom.toPx()
             drawRect(
-                brush = Brush.verticalGradient(
-                    colorStops = arrayOf(
-                        0.0f to Color.Black,
-                        0.15f to Color.Black.copy(alpha = 0.9f),
-                        0.3f to Color.Black.copy(alpha = 0.7f),
-                        0.5f to Color.Black.copy(alpha = 0.4f),
-                        0.7f to Color.Black.copy(alpha = 0.15f),
-                        1.0f to Color.Transparent,
+                brush =
+                    Brush.verticalGradient(
+                        colorStops =
+                            arrayOf(
+                                0.0f to Color.Black,
+                                0.15f to Color.Black.copy(alpha = 0.9f),
+                                0.3f to Color.Black.copy(alpha = 0.7f),
+                                0.5f to Color.Black.copy(alpha = 0.4f),
+                                0.7f to Color.Black.copy(alpha = 0.15f),
+                                1.0f to Color.Transparent,
+                            ),
+                        startY = size.height - bottomPx,
+                        endY = size.height,
                     ),
-                    startY = size.height - bottomPx,
-                    endY = size.height,
-                ),
                 blendMode = BlendMode.DstIn,
             )
         }
     }
 
-fun Modifier.smoothFadingEdge(
-    vertical: Dp,
-) = smoothFadingEdge(
-    top = vertical,
-    bottom = vertical,
-)
+fun Modifier.smoothFadingEdge(vertical: Dp) =
+    smoothFadingEdge(
+        top = vertical,
+        bottom = vertical,
+    )

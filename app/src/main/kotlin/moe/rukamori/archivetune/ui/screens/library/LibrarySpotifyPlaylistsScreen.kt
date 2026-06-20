@@ -40,10 +40,11 @@ fun LibrarySpotifyPlaylistsScreen(
 ) {
     val playlists by viewModel.playlists.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
-    val playerAwareBottomPadding = LocalPlayerAwareWindowInsets.current
-        .only(WindowInsetsSides.Bottom)
-        .asPaddingValues()
-        .calculateBottomPadding() + 12.dp
+    val playerAwareBottomPadding =
+        LocalPlayerAwareWindowInsets.current
+            .only(WindowInsetsSides.Bottom)
+            .asPaddingValues()
+            .calculateBottomPadding() + 12.dp
 
     ExpressivePullToRefreshBox(
         isRefreshing = isRefreshing,
@@ -52,11 +53,12 @@ fun LibrarySpotifyPlaylistsScreen(
     ) {
         LazyColumn(
             state = rememberLazyListState(),
-            contentPadding = PaddingValues(
-                start = 24.dp,
-                end = 24.dp,
-                bottom = playerAwareBottomPadding,
-            ),
+            contentPadding =
+                PaddingValues(
+                    start = 24.dp,
+                    end = 24.dp,
+                    bottom = playerAwareBottomPadding,
+                ),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.fillMaxSize(),
         ) {

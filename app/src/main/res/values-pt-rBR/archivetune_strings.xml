@@ -306,8 +306,6 @@
     <string name="percentage_format">%d%%</string>
     <string name="sensitivity_percentage">%1$d%%</string>
     <string name="canvas_cache">Cache do Canvas</string>
-    <string name="canvas_cache_items">%d itens</string>
-    <string name="canvas_cache_usage">%1$s / %2$s</string>
     <string name="clear_canvas_cache">Limpar cache do canvas</string>
     <string name="clear_canvas_cache_dialog">Tem certeza que deseja excluir todos os caches do canvas?</string>
     <string name="album_not_found">Álbum não encontrado</string>

@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -154,9 +155,10 @@ private fun AboutScreenContent(
     val listState = rememberLazyListState()
 
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.surface,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
@@ -178,10 +180,11 @@ private fun AboutScreenContent(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.largeTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                ),
+                colors =
+                    TopAppBarDefaults.largeTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    ),
                 actions = {
                     if (state is AboutScreenState.Success) {
                         AboutOverflowMenu(
@@ -197,14 +200,15 @@ private fun AboutScreenContent(
             )
         },
     ) { innerPadding ->
-        val stateModifier = Modifier
-            .fillMaxSize()
-            .padding(innerPadding)
-            .windowInsetsPadding(
-                LocalPlayerAwareWindowInsets.current.only(
-                    WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
-                ),
-            )
+        val stateModifier =
+            Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .windowInsetsPadding(
+                    LocalPlayerAwareWindowInsets.current.only(
+                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                    ),
+                )
 
         when (state) {
             AboutScreenState.Loading -> {
@@ -230,17 +234,19 @@ private fun AboutScreenContent(
                     model = state.model,
                     onOpenUri = onOpenUri,
                     onRetryContributors = onRetryContributors,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .windowInsetsPadding(
-                            LocalPlayerAwareWindowInsets.current.only(
-                                WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .windowInsetsPadding(
+                                LocalPlayerAwareWindowInsets.current.only(
+                                    WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                                ),
                             ),
+                    contentPadding =
+                        PaddingValues(
+                            top = innerPadding.calculateTopPadding() + 8.dp,
+                            bottom = SettingsDimensions.ScreenBottomPadding,
                         ),
-                    contentPadding = PaddingValues(
-                        top = innerPadding.calculateTopPadding() + 8.dp,
-                        bottom = 32.dp,
-                    ),
                     listState = listState,
                 )
             }
@@ -306,9 +312,7 @@ private fun AboutOverflowMenu(
 }
 
 @Composable
-private fun AboutLoadingContent(
-    modifier: Modifier = Modifier,
-) {
+private fun AboutLoadingContent(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center,
@@ -342,7 +346,9 @@ private fun AboutFullScreenDialogs(
     onRetryDependencyLicenses: () -> Unit,
 ) {
     when (model.activeDialog) {
-        AboutDialog.NONE -> Unit
+        AboutDialog.NONE -> {
+            Unit
+        }
 
         AboutDialog.TRANSLATION_CONTRIBUTORS -> {
             AboutFullScreenDialog(
@@ -380,10 +386,11 @@ private fun AboutFullScreenDialog(
 ) {
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(
-            usePlatformDefaultWidth = false,
-            decorFitsSystemWindows = false,
-        ),
+        properties =
+            DialogProperties(
+                usePlatformDefaultWidth = false,
+                decorFitsSystemWindows = false,
+            ),
     ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -407,10 +414,11 @@ private fun AboutFullScreenDialog(
                             )
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                    ),
+                    colors =
+                        TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        ),
                 )
             },
         ) { innerPadding ->
@@ -419,7 +427,7 @@ private fun AboutFullScreenDialog(
                     .fillMaxSize()
                     .padding(innerPadding)
                     .windowInsetsPadding(
-                        LocalPlayerAwareWindowInsets.current.only(
+                        WindowInsets.safeDrawing.only(
                             WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
                         ),
                     ),
@@ -602,17 +610,18 @@ private fun TranslationContributorListItem(
                 overflow = TextOverflow.Ellipsis,
             )
         },
-        supportingContent = contributors?.let { contributorNames ->
-            {
-                Text(
-                    text = contributorNames,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        },
+        supportingContent =
+            contributors?.let { contributorNames ->
+                {
+                    Text(
+                        text = contributorNames,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            },
     )
 }
 
@@ -706,10 +715,11 @@ private fun SegmentedListItemSurface(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = segmentedListItemShape(
-            index = index,
-            itemCount = itemCount,
-        ),
+        shape =
+            segmentedListItemShape(
+                index = index,
+                itemCount = itemCount,
+            ),
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         content = content,
     )
@@ -722,20 +732,31 @@ private fun segmentedListItemShape(
     val outerCorner = 24.dp
     val innerCorner = 4.dp
     return when {
-        itemCount <= 1 -> RoundedCornerShape(outerCorner)
-        index == 0 -> RoundedCornerShape(
-            topStart = outerCorner,
-            topEnd = outerCorner,
-            bottomEnd = innerCorner,
-            bottomStart = innerCorner,
-        )
-        index == itemCount - 1 -> RoundedCornerShape(
-            topStart = innerCorner,
-            topEnd = innerCorner,
-            bottomEnd = outerCorner,
-            bottomStart = outerCorner,
-        )
-        else -> RoundedCornerShape(innerCorner)
+        itemCount <= 1 -> {
+            RoundedCornerShape(outerCorner)
+        }
+
+        index == 0 -> {
+            RoundedCornerShape(
+                topStart = outerCorner,
+                topEnd = outerCorner,
+                bottomEnd = innerCorner,
+                bottomStart = innerCorner,
+            )
+        }
+
+        index == itemCount - 1 -> {
+            RoundedCornerShape(
+                topStart = innerCorner,
+                topEnd = innerCorner,
+                bottomEnd = outerCorner,
+                bottomStart = outerCorner,
+            )
+        }
+
+        else -> {
+            RoundedCornerShape(innerCorner)
+        }
     }
 }
 
@@ -816,15 +837,17 @@ private fun AboutContentContainer(
     content: @Composable () -> Unit,
 ) {
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = SettingsDimensions.ScreenHorizontalPadding),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = SettingsDimensions.ScreenHorizontalPadding),
         contentAlignment = Alignment.Center,
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .widthIn(max = 840.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 840.dp),
         ) {
             content()
         }
@@ -841,15 +864,17 @@ private fun AboutIdentityCard(
     Card(
         modifier = modifier,
         shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -891,9 +916,7 @@ private fun AboutIdentityCard(
 }
 
 @Composable
-private fun SurfaceAppIcon(
-    modifier: Modifier = Modifier,
-) {
+private fun SurfaceAppIcon(modifier: Modifier = Modifier) {
     androidx.compose.material3.Surface(
         modifier = modifier,
         shape = CircleShape,
@@ -906,9 +929,10 @@ private fun SurfaceAppIcon(
             painter = painterResource(R.drawable.about_splash),
             contentDescription = null,
             colorFilter = iconColorFilter,
-            modifier = Modifier
-                .padding(16.dp)
-                .size(64.dp),
+            modifier =
+                Modifier
+                    .padding(16.dp)
+                    .size(64.dp),
         )
     }
 }
@@ -947,9 +971,10 @@ private fun LinkChipRow(
         repeat(links.size) { index ->
             val link = links[index]
             val label = stringResource(link.labelResId)
-            val onClick = remember(link.url, onOpenUri) {
-                { onOpenUri(link.url) }
-            }
+            val onClick =
+                remember(link.url, onOpenUri) {
+                    { onOpenUri(link.url) }
+                }
 
             AssistChip(
                 onClick = onClick,
@@ -987,9 +1012,10 @@ private fun LeadDeveloperSection(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.extraLarge,
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            ),
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                ),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         ) {
             TeamMemberListItem(
@@ -1019,9 +1045,10 @@ private fun TeamMemberSection(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.large,
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-            ),
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                ),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         ) {
             Column {
@@ -1056,10 +1083,11 @@ private fun AboutSectionHeader(
         fontWeight = FontWeight.SemiBold,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         letterSpacing = MaterialTheme.typography.labelSmall.letterSpacing,
-        modifier = modifier.padding(
-            horizontal = SettingsDimensions.SectionHeaderHorizontalPadding,
-            vertical = SettingsDimensions.SectionHeaderBottomPadding,
-        ),
+        modifier =
+            modifier.padding(
+                horizontal = SettingsDimensions.SectionHeaderHorizontalPadding,
+                vertical = SettingsDimensions.SectionHeaderBottomPadding,
+            ),
     )
 }
 
@@ -1073,28 +1101,31 @@ private fun TeamMemberListItem(
     minHeight: Dp = 88.dp,
 ) {
     val profileUrl = member.profileUrl
-    val itemClickModifier = remember(profileUrl, onOpenUri) {
-        if (profileUrl.isNullOrBlank()) {
-            Modifier
-        } else {
-            Modifier.clickable { onOpenUri(profileUrl) }
+    val itemClickModifier =
+        remember(profileUrl, onOpenUri) {
+            if (profileUrl.isNullOrBlank()) {
+                Modifier
+            } else {
+                Modifier.clickable { onOpenUri(profileUrl) }
+            }
         }
-    }
 
     ListItem(
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(min = minHeight)
-            .then(itemClickModifier),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .heightIn(min = minHeight)
+                .then(itemClickModifier),
         colors = ListItemDefaults.colors(containerColor = containerColor),
         leadingContent = {
             AsyncImage(
                 model = member.avatarUrl,
                 contentDescription = member.name,
-                modifier = Modifier
-                    .size(avatarSize)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                modifier =
+                    Modifier
+                        .size(avatarSize)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceContainerHighest),
             )
         },
         headlineContent = {
@@ -1139,9 +1170,10 @@ private fun MemberLinkActions(
     ) {
         repeat(links.size) { index ->
             val link = links[index]
-            val onClick = remember(link.url, onOpenUri) {
-                { onOpenUri(link.url) }
-            }
+            val onClick =
+                remember(link.url, onOpenUri) {
+                    { onOpenUri(link.url) }
+                }
 
             FilledTonalIconButton(
                 onClick = onClick,
@@ -1174,9 +1206,10 @@ private fun ContributorsSection(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.large,
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-            ),
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                ),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         ) {
             when (state) {
@@ -1224,9 +1257,10 @@ private fun ContributorStatusContent(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(24.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -1294,30 +1328,34 @@ private fun ContributorListItem(
     onOpenProfile: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val itemClickModifier = remember(profileUrl, onOpenProfile) {
-        if (profileUrl.isBlank()) {
-            Modifier
-        } else {
-            Modifier.clickable { onOpenProfile(profileUrl) }
+    val itemClickModifier =
+        remember(profileUrl, onOpenProfile) {
+            if (profileUrl.isBlank()) {
+                Modifier
+            } else {
+                Modifier.clickable { onOpenProfile(profileUrl) }
+            }
         }
-    }
 
     ListItem(
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(min = 72.dp)
-            .then(itemClickModifier),
-        colors = ListItemDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .heightIn(min = 72.dp)
+                .then(itemClickModifier),
+        colors =
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ),
         leadingContent = {
             AsyncImage(
                 model = avatarUrl,
                 contentDescription = login,
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                modifier =
+                    Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceContainerHighest),
             )
         },
         headlineContent = {
@@ -1339,18 +1377,21 @@ private fun ContributorReadMoreListItem(
     onOpenProfile: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val onClick = remember(readMoreUrl, onOpenProfile) {
-        { onOpenProfile(readMoreUrl) }
-    }
+    val onClick =
+        remember(readMoreUrl, onOpenProfile) {
+            { onOpenProfile(readMoreUrl) }
+        }
 
     ListItem(
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(min = 72.dp)
-            .clickable(onClick = onClick),
-        colors = ListItemDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .heightIn(min = 72.dp)
+                .clickable(onClick = onClick),
+        colors =
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ),
         leadingContent = {
             Icon(
                 painter = painterResource(R.drawable.add_circle),

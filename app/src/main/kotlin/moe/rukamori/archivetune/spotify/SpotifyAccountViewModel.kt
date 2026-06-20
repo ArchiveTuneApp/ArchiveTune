@@ -22,116 +22,115 @@ import moe.rukamori.archivetune.utils.reportException
 import javax.inject.Inject
 
 @HiltViewModel
-class SpotifyAccountViewModel @Inject constructor(
-    private val repository: SpotifyLibraryRepository,
-) : ViewModel() {
-    private val _uiState = MutableStateFlow(SpotifyAccountUiState(isLoading = true))
-    val uiState: StateFlow<SpotifyAccountUiState> = _uiState.asStateFlow()
+class SpotifyAccountViewModel
+    @Inject
+    constructor(
+        private val repository: SpotifyLibraryRepository,
+    ) : ViewModel() {
+        private val _uiState = MutableStateFlow(SpotifyAccountUiState(isLoading = true))
+        val uiState: StateFlow<SpotifyAccountUiState> = _uiState.asStateFlow()
 
-    init {
-        restoreSession()
-    }
-
-    fun restoreSession() {
-        viewModelScope.launch(Dispatchers.IO) {
-            runCatching { repository.restoreSession() }
-                .onSuccess { session ->
-                    _uiState.update {
-                        it.copy(
-                            isAuthenticated = session.isAuthenticated,
-                            accountName = session.accountName,
-                            accountAvatarUrl = session.accountAvatarUrl,
-                            isLoading = false,
-                        )
-                    }
-                    if (session.isAuthenticated) reloadPlaylists()
-                }
-                .onFailure { error ->
-                    if (error is CancellationException) throw error
-                    reportException(error)
-                    _uiState.update {
-                        it.copy(
-                            isAuthenticated = false,
-                            isLoading = false,
-                            errorMessage = error.message,
-                        )
-                    }
-                }
+        init {
+            restoreSession()
         }
-    }
 
-    fun connectWithCookies(
-        spDc: String,
-        spKey: String,
-    ) {
-        if (spDc.isBlank()) return
-        viewModelScope.launch(Dispatchers.IO) {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            runCatching { repository.connectWithCookies(spDc = spDc, spKey = spKey) }
-                .onSuccess { session ->
-                    _uiState.update {
-                        it.copy(
-                            isAuthenticated = true,
-                            accountName = session.accountName,
-                            accountAvatarUrl = session.accountAvatarUrl,
-                            isLoading = false,
-                        )
+        fun restoreSession() {
+            viewModelScope.launch(Dispatchers.IO) {
+                runCatching { repository.restoreSession() }
+                    .onSuccess { session ->
+                        _uiState.update {
+                            it.copy(
+                                isAuthenticated = session.isAuthenticated,
+                                accountName = session.accountName,
+                                accountAvatarUrl = session.accountAvatarUrl,
+                                isLoading = false,
+                            )
+                        }
+                        if (session.isAuthenticated) reloadPlaylists()
+                    }.onFailure { error ->
+                        if (error is CancellationException) throw error
+                        reportException(error)
+                        _uiState.update {
+                            it.copy(
+                                isAuthenticated = false,
+                                isLoading = false,
+                                errorMessage = error.message,
+                            )
+                        }
                     }
-                    reloadPlaylists()
-                }
-                .onFailure { error ->
-                    if (error is CancellationException) throw error
-                    reportException(error)
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = error.message,
-                        )
-                    }
-                }
-        }
-    }
-
-    fun reloadPlaylists() {
-        if (_uiState.value.isLoading) return
-        viewModelScope.launch(Dispatchers.IO) {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            val playlists = repository.refreshPlaylists()
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    playlistCount = playlists.size,
-                    errorMessage = repository.errorMessage.value,
-                )
             }
         }
-    }
 
-    fun logout() {
-        if (_uiState.value.isLoading) return
-        viewModelScope.launch(Dispatchers.IO) {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            runCatching { repository.logout() }
-                .onSuccess {
-                    _uiState.value = SpotifyAccountUiState()
-                }
-                .onFailure { error ->
-                    if (error is CancellationException) throw error
-                    reportException(error)
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = error.message,
-                        )
+        fun connectWithCookies(
+            spDc: String,
+            spKey: String,
+        ) {
+            if (spDc.isBlank()) return
+            viewModelScope.launch(Dispatchers.IO) {
+                _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+                runCatching { repository.connectWithCookies(spDc = spDc, spKey = spKey) }
+                    .onSuccess { session ->
+                        _uiState.update {
+                            it.copy(
+                                isAuthenticated = true,
+                                accountName = session.accountName,
+                                accountAvatarUrl = session.accountAvatarUrl,
+                                isLoading = false,
+                            )
+                        }
+                        reloadPlaylists()
+                    }.onFailure { error ->
+                        if (error is CancellationException) throw error
+                        reportException(error)
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                errorMessage = error.message,
+                            )
+                        }
                     }
+            }
+        }
+
+        fun reloadPlaylists() {
+            if (_uiState.value.isLoading) return
+            viewModelScope.launch(Dispatchers.IO) {
+                _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+                val playlists = repository.refreshPlaylists()
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        playlistCount = playlists.size,
+                        errorMessage = repository.errorMessage.value,
+                    )
                 }
+            }
+        }
+
+        fun logout() {
+            if (_uiState.value.isLoading) return
+            viewModelScope.launch(Dispatchers.IO) {
+                _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+                runCatching { repository.logout() }
+                    .onSuccess {
+                        _uiState.value = SpotifyAccountUiState()
+                    }.onFailure { error ->
+                        if (error is CancellationException) throw error
+                        reportException(error)
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                errorMessage = error.message,
+                            )
+                        }
+                    }
+            }
+        }
+
+        fun dismissError() {
+            _uiState.update { it.copy(errorMessage = null) }
         }
     }
-
-    fun dismissError() {
-        _uiState.update { it.copy(errorMessage = null) }
-    }
-}
 
 @Immutable
 data class SpotifyAccountUiState(

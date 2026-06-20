@@ -23,34 +23,36 @@ sealed interface PoTokenState {
         val visitorData: String,
     ) : PoTokenState
 
-    data class Error(val message: String) : PoTokenState
+    data class Error(
+        val message: String,
+    ) : PoTokenState
 }
 
 @HiltViewModel
 class PoTokenViewModel
-@Inject
-constructor() : ViewModel() {
+    @Inject
+    constructor() : ViewModel() {
+        private val _state = MutableStateFlow<PoTokenState>(PoTokenState.Idle)
+        val state: StateFlow<PoTokenState> = _state.asStateFlow()
 
-    private val _state = MutableStateFlow<PoTokenState>(PoTokenState.Idle)
-    val state: StateFlow<PoTokenState> = _state.asStateFlow()
+        fun onTokensExtracted(
+            visitorData: String,
+            poToken: String,
+            playerToken: String,
+        ) {
+            _state.value =
+                PoTokenState.Success(
+                    gvsToken = poToken,
+                    playerToken = playerToken,
+                    visitorData = visitorData,
+                )
+        }
 
-    fun onTokensExtracted(
-        visitorData: String,
-        poToken: String,
-        playerToken: String,
-    ) {
-        _state.value = PoTokenState.Success(
-            gvsToken = poToken,
-            playerToken = playerToken,
-            visitorData = visitorData,
-        )
+        fun onExtractionError(message: String) {
+            _state.value = PoTokenState.Error(message)
+        }
+
+        fun resetState() {
+            _state.value = PoTokenState.Idle
+        }
     }
-
-    fun onExtractionError(message: String) {
-        _state.value = PoTokenState.Error(message)
-    }
-
-    fun resetState() {
-        _state.value = PoTokenState.Idle
-    }
-}

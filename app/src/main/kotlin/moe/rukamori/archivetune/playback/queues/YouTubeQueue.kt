@@ -8,12 +8,12 @@
 package moe.rukamori.archivetune.playback.queues
 
 import androidx.media3.common.MediaItem
-import moe.rukamori.archivetune.innertube.YouTube
-import moe.rukamori.archivetune.innertube.models.WatchEndpoint
-import moe.rukamori.archivetune.extensions.toMediaItem
-import moe.rukamori.archivetune.models.MediaMetadata
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
+import moe.rukamori.archivetune.extensions.toMediaItem
+import moe.rukamori.archivetune.innertube.YouTube
+import moe.rukamori.archivetune.innertube.models.WatchEndpoint
+import moe.rukamori.archivetune.models.MediaMetadata
 
 class YouTubeQueue(
     internal var endpoint: WatchEndpoint,
@@ -26,11 +26,12 @@ class YouTubeQueue(
     override suspend fun getInitialStatus(): Queue.Status {
         val nextResult =
             withContext(IO) {
-                YouTube.next(
-                    endpoint = endpoint,
-                    continuation = continuation,
-                    followAutomixPreview = followAutomixPreview,
-                ).getOrThrow()
+                YouTube
+                    .next(
+                        endpoint = endpoint,
+                        continuation = continuation,
+                        followAutomixPreview = followAutomixPreview,
+                    ).getOrThrow()
             }
         endpoint = nextResult.endpoint
         continuation = nextResult.continuation
@@ -43,17 +44,17 @@ class YouTubeQueue(
 
     override fun hasNextPage(): Boolean = continuation != null
 
-    override fun shouldExpandToFullQueueWhenAutoLoadMoreDisabled(): Boolean =
-        expandToFullQueueWhenAutoLoadMoreDisabled
+    override fun shouldExpandToFullQueueWhenAutoLoadMoreDisabled(): Boolean = expandToFullQueueWhenAutoLoadMoreDisabled
 
     override suspend fun nextPage(): List<MediaItem> {
         val nextResult =
             withContext(IO) {
-                YouTube.next(
-                    endpoint = endpoint,
-                    continuation = continuation,
-                    followAutomixPreview = followAutomixPreview,
-                ).getOrThrow()
+                YouTube
+                    .next(
+                        endpoint = endpoint,
+                        continuation = continuation,
+                        followAutomixPreview = followAutomixPreview,
+                    ).getOrThrow()
             }
         endpoint = nextResult.endpoint
         continuation = nextResult.continuation

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -57,13 +58,14 @@ fun IntegrationScreen(
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
             .verticalScroll(rememberScrollState())
+            .padding(bottom = SettingsDimensions.ScreenBottomPadding),
     ) {
         Spacer(
             Modifier.windowInsetsPadding(
                 LocalPlayerAwareWindowInsets.current.only(
-                    WindowInsetsSides.Top
-                )
-            )
+                    WindowInsetsSides.Top,
+                ),
+            ),
         )
 
         PreferenceGroup(title = stringResource(R.string.general)) {
@@ -101,7 +103,17 @@ fun IntegrationScreen(
 
             item {
                 PreferenceEntry(
-                    title = { Text(if (listenBrainzToken.isBlank()) stringResource(R.string.set_listenbrainz_token) else stringResource(R.string.edit_listenbrainz_token)) },
+                    title = {
+                        Text(
+                            if (listenBrainzToken.isBlank()) {
+                                stringResource(
+                                    R.string.set_listenbrainz_token,
+                                )
+                            } else {
+                                stringResource(R.string.edit_listenbrainz_token)
+                            },
+                        )
+                    },
                     icon = { Icon(painterResource(R.drawable.token), null) },
                     onClick = { showListenBrainzTokenEditor.value = true },
                 )
@@ -114,19 +126,21 @@ fun IntegrationScreen(
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
+                onLongClick = navController::backToMain,
             ) {
                 Icon(
                     painterResource(R.drawable.arrow_back),
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
-        }
+        },
     )
 
     if (showListenBrainzTokenEditor.value) {
         TextFieldDialog(
-            initialTextFieldValue = androidx.compose.ui.text.input.TextFieldValue(listenBrainzToken),
+            initialTextFieldValue =
+                androidx.compose.ui.text.input
+                    .TextFieldValue(listenBrainzToken),
             onDone = { data ->
                 onListenBrainzTokenChange(data)
                 showListenBrainzTokenEditor.value = false
@@ -139,7 +153,7 @@ fun IntegrationScreen(
             },
             extraContent = {
                 InfoLabel(text = stringResource(R.string.listenbrainz_scrobbling_description))
-            }
+            },
         )
     }
 }

@@ -232,8 +232,6 @@
     <string name="appearance">المظهر</string>
     <string name="theme">السمة</string>
     <string name="enable_dynamic_theme">تفعيل السمة الديناميكية</string>
-    <string name="use_system_font">استخدم خط النظام</string>
-    <string name="use_system_font_desc">استخدم خط الجهاز بدلاً من خط التطبيق</string>
     <string name="color_palette">لوحة الألوان</string>
     <string name="customize_theme_colors">اختر ألوان سمة التطبيق</string>
     <string name="selected_theme_color">لون السمة المختار</string>

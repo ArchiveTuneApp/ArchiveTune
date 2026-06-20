@@ -58,12 +58,13 @@ internal class MusicServiceWidgetUpdater(
     fun updateProgressTracking() {
         progressJob?.cancel()
         if (player.isPlaying && player.duration > 0) {
-            progressJob = scope.launch(SilentHandler) {
-                while (isActive && player.isPlaying) {
-                    updateProgress(player.playbackProgress())
-                    delay(1_000)
+            progressJob =
+                scope.launch(SilentHandler) {
+                    while (isActive && player.isPlaying) {
+                        updateProgress(player.playbackProgress())
+                        delay(1_000)
+                    }
                 }
-            }
         }
     }
 
@@ -72,15 +73,16 @@ internal class MusicServiceWidgetUpdater(
         val meta = mediaItem?.mediaMetadata
         val artFile = meta?.artworkUri?.let { cacheAlbumArt(it) }
         val dominantColor = artFile?.let { extractDominantColor(it) }
-        val snapshot = WidgetSnapshot(
-            title = meta?.title?.toString() ?: service.getString(R.string.no_track_playing),
-            artist = meta?.artist?.toString().orEmpty(),
-            isPlaying = player.isPlaying,
-            isAvailable = mediaItem != null,
-            playbackPosition = player.playbackProgress(),
-            artPath = artFile?.absolutePath,
-            dominantColor = dominantColor,
-        )
+        val snapshot =
+            WidgetSnapshot(
+                title = meta?.title?.toString() ?: service.getString(R.string.no_track_playing),
+                artist = meta?.artist?.toString().orEmpty(),
+                isPlaying = player.isPlaying,
+                isAvailable = mediaItem != null,
+                playbackPosition = player.playbackProgress(),
+                artPath = artFile?.absolutePath,
+                dominantColor = dominantColor,
+            )
 
         playbackWidgets.forEach { target ->
             updateWidget(target, snapshot)
@@ -135,65 +137,75 @@ internal class MusicServiceWidgetUpdater(
         this[MusicWidgetKeys.PLAYBACK_POSITION] = snapshot.playbackPosition
 
         val artPath = snapshot.artPath
-        if (artPath != null) this[MusicWidgetKeys.ART_PATH] = artPath
-        else remove(MusicWidgetKeys.ART_PATH)
+        if (artPath != null) {
+            this[MusicWidgetKeys.ART_PATH] = artPath
+        } else {
+            remove(MusicWidgetKeys.ART_PATH)
+        }
 
         val dominantColor = snapshot.dominantColor
-        if (dominantColor != null) this[MusicWidgetKeys.DOMINANT_COLOR] = dominantColor
-        else remove(MusicWidgetKeys.DOMINANT_COLOR)
+        if (dominantColor != null) {
+            this[MusicWidgetKeys.DOMINANT_COLOR] = dominantColor
+        } else {
+            remove(MusicWidgetKeys.DOMINANT_COLOR)
+        }
     }
 
-    private suspend fun cacheAlbumArt(uri: Uri): File? = withContext(Dispatchers.IO) {
-        val dest = File(service.cacheDir, "widget_art_${Integer.toHexString(uri.toString().hashCode())}.jpg")
+    private suspend fun cacheAlbumArt(uri: Uri): File? =
+        withContext(Dispatchers.IO) {
+            val dest = File(service.cacheDir, "widget_art_${Integer.toHexString(uri.toString().hashCode())}.jpg")
 
-        if (uri.scheme == "content" || uri.scheme == "file") {
-            return@withContext try {
-                service.contentResolver.openInputStream(uri)?.use { src ->
-                    dest.outputStream().use { dst -> src.copyTo(dst) }
-                }
-                if (dest.exists() && dest.length() > 0) dest else null
-            } catch (_: Exception) {
-                null
-            }
-        }
-
-        if (uri.scheme == "https" || uri.scheme == "http") {
-            return@withContext try {
-                val loader = service.applicationContext.imageLoader
-                val request = ImageRequest.Builder(service.applicationContext)
-                    .data(uri.toString())
-                    .size(512, 512)
-                    .allowHardware(false)
-                    .build()
-                val result = loader.execute(request)
-                if (result is SuccessResult) {
-                    val bitmap = result.image.toBitmap()
-                    dest.outputStream().use { out ->
-                        bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 88, out)
+            if (uri.scheme == "content" || uri.scheme == "file") {
+                return@withContext try {
+                    service.contentResolver.openInputStream(uri)?.use { src ->
+                        dest.outputStream().use { dst -> src.copyTo(dst) }
                     }
                     if (dest.exists() && dest.length() > 0) dest else null
-                } else {
+                } catch (_: Exception) {
                     null
                 }
+            }
+
+            if (uri.scheme == "https" || uri.scheme == "http") {
+                return@withContext try {
+                    val loader = service.applicationContext.imageLoader
+                    val request =
+                        ImageRequest
+                            .Builder(service.applicationContext)
+                            .data(uri.toString())
+                            .size(512, 512)
+                            .allowHardware(false)
+                            .build()
+                    val result = loader.execute(request)
+                    if (result is SuccessResult) {
+                        val bitmap = result.image.toBitmap()
+                        dest.outputStream().use { out ->
+                            bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 88, out)
+                        }
+                        if (dest.exists() && dest.length() > 0) dest else null
+                    } else {
+                        null
+                    }
+                } catch (_: Exception) {
+                    null
+                }
+            }
+
+            null
+        }
+
+    private suspend fun extractDominantColor(file: File): Int? =
+        withContext(Dispatchers.Default) {
+            try {
+                val bitmap = BitmapFactory.decodeFile(file.absolutePath) ?: return@withContext null
+                val palette = Palette.from(bitmap).generate()
+                palette.getDarkVibrantColor(
+                    palette.getDominantColor(android.graphics.Color.DKGRAY),
+                )
             } catch (_: Exception) {
                 null
             }
         }
-
-        null
-    }
-
-    private suspend fun extractDominantColor(file: File): Int? = withContext(Dispatchers.Default) {
-        try {
-            val bitmap = BitmapFactory.decodeFile(file.absolutePath) ?: return@withContext null
-            val palette = Palette.from(bitmap).generate()
-            palette.getDarkVibrantColor(
-                palette.getDominantColor(android.graphics.Color.DKGRAY),
-            )
-        } catch (_: Exception) {
-            null
-        }
-    }
 
     private fun Player.playbackProgress(): Float =
         if (duration > 0) (currentPosition.toFloat() / duration.toFloat()).coerceIn(0f, 1f) else 0f
@@ -214,23 +226,25 @@ internal class MusicServiceWidgetUpdater(
     )
 
     private companion object {
-        val playbackWidgets = listOf(
-            WidgetTarget(MusicWidget::class.java, MusicWidget()),
-            WidgetTarget(NowPlayingCardWidget::class.java, NowPlayingCardWidget()),
-            WidgetTarget(PlaybackDeckWidget::class.java, PlaybackDeckWidget()),
-            WidgetTarget(AlbumArtWidget::class.java, AlbumArtWidget()),
-            WidgetTarget(PlaybackCapsuleWidget::class.java, PlaybackCapsuleWidget()),
-            WidgetTarget(PlaybackSpotlightWidget::class.java, PlaybackSpotlightWidget()),
-            WidgetTarget(PlaybackCommandWidget::class.java, PlaybackCommandWidget()),
-        )
+        val playbackWidgets =
+            listOf(
+                WidgetTarget(MusicWidget::class.java, MusicWidget()),
+                WidgetTarget(NowPlayingCardWidget::class.java, NowPlayingCardWidget()),
+                WidgetTarget(PlaybackDeckWidget::class.java, PlaybackDeckWidget()),
+                WidgetTarget(AlbumArtWidget::class.java, AlbumArtWidget()),
+                WidgetTarget(PlaybackCapsuleWidget::class.java, PlaybackCapsuleWidget()),
+                WidgetTarget(PlaybackSpotlightWidget::class.java, PlaybackSpotlightWidget()),
+                WidgetTarget(PlaybackCommandWidget::class.java, PlaybackCommandWidget()),
+            )
 
-        val progressWidgets = listOf(
-            WidgetTarget(MusicWidget::class.java, MusicWidget()),
-            WidgetTarget(NowPlayingCardWidget::class.java, NowPlayingCardWidget()),
-            WidgetTarget(PlaybackDeckWidget::class.java, PlaybackDeckWidget()),
-            WidgetTarget(PlaybackCapsuleWidget::class.java, PlaybackCapsuleWidget()),
-            WidgetTarget(PlaybackSpotlightWidget::class.java, PlaybackSpotlightWidget()),
-            WidgetTarget(PlaybackCommandWidget::class.java, PlaybackCommandWidget()),
-        )
+        val progressWidgets =
+            listOf(
+                WidgetTarget(MusicWidget::class.java, MusicWidget()),
+                WidgetTarget(NowPlayingCardWidget::class.java, NowPlayingCardWidget()),
+                WidgetTarget(PlaybackDeckWidget::class.java, PlaybackDeckWidget()),
+                WidgetTarget(PlaybackCapsuleWidget::class.java, PlaybackCapsuleWidget()),
+                WidgetTarget(PlaybackSpotlightWidget::class.java, PlaybackSpotlightWidget()),
+                WidgetTarget(PlaybackCommandWidget::class.java, PlaybackCommandWidget()),
+            )
     }
 }

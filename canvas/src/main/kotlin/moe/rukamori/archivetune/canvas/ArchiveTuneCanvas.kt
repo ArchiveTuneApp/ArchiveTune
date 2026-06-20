@@ -32,16 +32,17 @@ object ArchiveTuneCanvas {
 
     @Volatile
     private var bearerToken: String? = null
-    
+
     fun initialize(bearerToken: String?) {
         this.bearerToken = bearerToken?.trim()?.takeIf { it.isNotEmpty() }
     }
 
-    private val json = Json {
-        ignoreUnknownKeys = true
-        isLenient = true
-        explicitNulls = false
-    }
+    private val json =
+        Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+            explicitNulls = false
+        }
 
     private val client by lazy {
         HttpClient(OkHttp) {
@@ -118,19 +119,21 @@ object ArchiveTuneCanvas {
                 else -> null
             }
 
-        val value = primary ?: run {
-            val fallbackResponse = runCatching {
-                fallbackClient.get {
-                    parameter("s", song)
-                    parameter("a", artist)
-                    parameter("storefront", storefront)
+        val value =
+            primary ?: run {
+                val fallbackResponse =
+                    runCatching {
+                        fallbackClient.get {
+                            parameter("s", song)
+                            parameter("a", artist)
+                            parameter("storefront", storefront)
+                        }
+                    }.getOrNull()
+                when (fallbackResponse?.status) {
+                    HttpStatusCode.OK -> runCatching { fallbackResponse.body<CanvasArtwork>() }.getOrNull()
+                    else -> null
                 }
-            }.getOrNull()
-            when (fallbackResponse?.status) {
-                HttpStatusCode.OK -> runCatching { fallbackResponse.body<CanvasArtwork>() }.getOrNull()
-                else -> null
-            }
-        } ?: AppleMusicProvider.getBySongArtist(song, artist, null, storefront)
+            } ?: AppleMusicProvider.getBySongArtist(song, artist, null, storefront)
 
         cache[key] =
             CacheEntry(
@@ -161,17 +164,19 @@ object ArchiveTuneCanvas {
                 else -> null
             }
 
-        val value = primary ?: run {
-            val fallbackResponse = runCatching {
-                fallbackClient.get {
-                    parameter("id", albumId)
+        val value =
+            primary ?: run {
+                val fallbackResponse =
+                    runCatching {
+                        fallbackClient.get {
+                            parameter("id", albumId)
+                        }
+                    }.getOrNull()
+                when (fallbackResponse?.status) {
+                    HttpStatusCode.OK -> runCatching { fallbackResponse.body<CanvasArtwork>() }.getOrNull()
+                    else -> null
                 }
-            }.getOrNull()
-            when (fallbackResponse?.status) {
-                HttpStatusCode.OK -> runCatching { fallbackResponse.body<CanvasArtwork>() }.getOrNull()
-                else -> null
-            }
-        } ?: AppleMusicProvider.getByAlbumId(albumId)
+            } ?: AppleMusicProvider.getByAlbumId(albumId)
 
         cache[key] =
             CacheEntry(
@@ -202,21 +207,24 @@ object ArchiveTuneCanvas {
                 else -> null
             }
 
-        val fallback = primary ?: run {
-            val fallbackResponse = runCatching {
-                fallbackClient.get {
-                    parameter("url", url)
+        val fallback =
+            primary ?: run {
+                val fallbackResponse =
+                    runCatching {
+                        fallbackClient.get {
+                            parameter("url", url)
+                        }
+                    }.getOrNull()
+                when (fallbackResponse?.status) {
+                    HttpStatusCode.OK -> runCatching { fallbackResponse.body<CanvasArtwork>() }.getOrNull()
+                    else -> null
                 }
-            }.getOrNull()
-            when (fallbackResponse?.status) {
-                HttpStatusCode.OK -> runCatching { fallbackResponse.body<CanvasArtwork>() }.getOrNull()
-                else -> null
             }
-        }
 
-        val value = fallback ?: parseAppleMusicAlbumUrl(url)?.let { (albumId, storefront) ->
-            AppleMusicProvider.getByAlbumId(albumId, storefront)
-        }
+        val value =
+            fallback ?: parseAppleMusicAlbumUrl(url)?.let { (albumId, storefront) ->
+                AppleMusicProvider.getByAlbumId(albumId, storefront)
+            }
 
         cache[key] =
             CacheEntry(
@@ -242,7 +250,10 @@ object ArchiveTuneCanvas {
         return albumId to storefront
     }
 
-    private fun cacheKey(prefix: String, vararg parts: String): String {
+    private fun cacheKey(
+        prefix: String,
+        vararg parts: String,
+    ): String {
         val normalized =
             parts
                 .map { it.trim().lowercase(Locale.ROOT) }
@@ -250,5 +261,3 @@ object ArchiveTuneCanvas {
         return "$prefix|$normalized"
     }
 }
-
-

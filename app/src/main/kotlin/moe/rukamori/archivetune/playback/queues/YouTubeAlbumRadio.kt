@@ -8,12 +8,12 @@
 package moe.rukamori.archivetune.playback.queues
 
 import androidx.media3.common.MediaItem
-import moe.rukamori.archivetune.innertube.YouTube
-import moe.rukamori.archivetune.innertube.models.WatchEndpoint
-import moe.rukamori.archivetune.extensions.toMediaItem
-import moe.rukamori.archivetune.models.MediaMetadata
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
+import moe.rukamori.archivetune.extensions.toMediaItem
+import moe.rukamori.archivetune.innertube.YouTube
+import moe.rukamori.archivetune.innertube.models.WatchEndpoint
+import moe.rukamori.archivetune.models.MediaMetadata
 
 class YouTubeAlbumRadio(
     internal val playlistId: String,
@@ -21,10 +21,11 @@ class YouTubeAlbumRadio(
     override val preloadItem: MediaMetadata? = null
 
     private val endpoint: WatchEndpoint
-        get() = WatchEndpoint(
-            playlistId = playlistId,
-            params = "wAEB"
-        )
+        get() =
+            WatchEndpoint(
+                playlistId = playlistId,
+                params = "wAEB",
+            )
 
     internal var albumSongCount = 0
     internal var continuation: String? = null
@@ -41,26 +42,33 @@ class YouTubeAlbumRadio(
         this.firstTimeLoaded = firstTimeLoaded
     }
 
-    override suspend fun getInitialStatus(): Queue.Status = withContext(IO) {
-        val albumSongs = YouTube.albumSongs(playlistId).getOrThrow()
-        albumSongCount = albumSongs.size
-        Queue.Status(
-            title = albumSongs.first().album?.name.orEmpty(),
-            items = albumSongs.map { it.toMediaItem() },
-            mediaItemIndex = 0
-        )
-    }
+    override suspend fun getInitialStatus(): Queue.Status =
+        withContext(IO) {
+            val albumSongs = YouTube.albumSongs(playlistId).getOrThrow()
+            albumSongCount = albumSongs.size
+            Queue.Status(
+                title =
+                    albumSongs
+                        .first()
+                        .album
+                        ?.name
+                        .orEmpty(),
+                items = albumSongs.map { it.toMediaItem() },
+                mediaItemIndex = 0,
+            )
+        }
 
     override fun hasNextPage(): Boolean = !firstTimeLoaded || continuation != null
 
-    override suspend fun nextPage(): List<MediaItem> = withContext(IO) {
-        val nextResult = YouTube.next(endpoint, continuation).getOrThrow()
-        continuation = nextResult.continuation
-        if (!firstTimeLoaded) {
-            firstTimeLoaded = true
-            nextResult.items.subList(albumSongCount, nextResult.items.size).map { it.toMediaItem() }
-        } else {
-            nextResult.items.map { it.toMediaItem() }
+    override suspend fun nextPage(): List<MediaItem> =
+        withContext(IO) {
+            val nextResult = YouTube.next(endpoint, continuation).getOrThrow()
+            continuation = nextResult.continuation
+            if (!firstTimeLoaded) {
+                firstTimeLoaded = true
+                nextResult.items.subList(albumSongCount, nextResult.items.size).map { it.toMediaItem() }
+            } else {
+                nextResult.items.map { it.toMediaItem() }
+            }
         }
-    }
 }

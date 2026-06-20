@@ -11,16 +11,17 @@ package moe.rukamori.archivetune.ui.player
 
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -38,7 +39,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.PlaybackException
-import android.widget.Toast
 import moe.rukamori.archivetune.MainActivity
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.utils.openYouTubeMusicUrl
@@ -71,17 +71,43 @@ fun PlaybackError(
         }
     val reason =
         when (errorInfo.kind) {
-            PlaybackErrorKind.LoginRefreshRequired -> stringResource(R.string.playback_requires_youtube_music_login_refresh)
-            PlaybackErrorKind.ConfirmationRequired -> stringResource(R.string.playback_requires_youtube_music_confirmation)
-            PlaybackErrorKind.NoInternet -> fallbackNoInternet
-            PlaybackErrorKind.Timeout -> fallbackTimeout
-            PlaybackErrorKind.NoStream -> fallbackNoStream
-            PlaybackErrorKind.MalformedStream -> fallbackMalformedStream
-            PlaybackErrorKind.Decoder -> "$fallbackUnknown (code ${error.errorCode})"
-            PlaybackErrorKind.Http -> "$fallbackUnknown (HTTP $httpCode)"
-            PlaybackErrorKind.Unknown -> error.cause?.message?.takeIf { it.isNotBlank() }
-                ?: error.message?.takeIf { it.isNotBlank() }
-                ?: fallbackUnknown
+            PlaybackErrorKind.LoginRefreshRequired -> {
+                stringResource(R.string.playback_requires_youtube_music_login_refresh)
+            }
+
+            PlaybackErrorKind.ConfirmationRequired -> {
+                stringResource(R.string.playback_requires_youtube_music_confirmation)
+            }
+
+            PlaybackErrorKind.NoInternet -> {
+                fallbackNoInternet
+            }
+
+            PlaybackErrorKind.Timeout -> {
+                fallbackTimeout
+            }
+
+            PlaybackErrorKind.NoStream -> {
+                fallbackNoStream
+            }
+
+            PlaybackErrorKind.MalformedStream -> {
+                fallbackMalformedStream
+            }
+
+            PlaybackErrorKind.Decoder -> {
+                "$fallbackUnknown (code ${error.errorCode})"
+            }
+
+            PlaybackErrorKind.Http -> {
+                "$fallbackUnknown (HTTP $httpCode)"
+            }
+
+            PlaybackErrorKind.Unknown -> {
+                error.cause?.message?.takeIf { it.isNotBlank() }
+                    ?: error.message?.takeIf { it.isNotBlank() }
+                    ?: fallbackUnknown
+            }
         }
 
     val details =
@@ -176,6 +202,7 @@ fun PlaybackError(
                                     }
                                 runCatching { context.startActivity(loginIntent) }
                             }
+
                             PlaybackRecoveryAction.OpenYouTubeMusic -> {
                                 if (!context.openYouTubeMusicUrl(recoveryUrl)) {
                                     Toast.makeText(context, couldNotOpenYouTubeMusicText, Toast.LENGTH_SHORT).show()
@@ -192,10 +219,11 @@ fun PlaybackError(
                     shapes = ButtonDefaults.shapes(),
                 ) {
                     Text(
-                        text = when (recoveryAction) {
-                            PlaybackRecoveryAction.RefreshLogin -> loginText
-                            PlaybackRecoveryAction.OpenYouTubeMusic -> openYouTubeMusicText
-                        }
+                        text =
+                            when (recoveryAction) {
+                                PlaybackRecoveryAction.RefreshLogin -> loginText
+                                PlaybackRecoveryAction.OpenYouTubeMusic -> openYouTubeMusicText
+                            },
                     )
                 }
             }
@@ -232,7 +260,8 @@ fun PlaybackError(
                         painter = painterResource(R.drawable.select_all),
                         contentDescription = null,
                     )
-                    androidx.compose.foundation.layout.Spacer(Modifier.width(8.dp))
+                    androidx.compose.foundation.layout
+                        .Spacer(Modifier.width(8.dp))
                     Text(text = copyText)
                 }
             }

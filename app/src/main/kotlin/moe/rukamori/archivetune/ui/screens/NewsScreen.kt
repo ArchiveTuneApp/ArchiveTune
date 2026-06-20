@@ -51,8 +51,8 @@ import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
@@ -98,16 +98,16 @@ import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import moe.rukamori.archivetune.LocalPlayerAwareWindowInsets
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.models.NewsItem
 import moe.rukamori.archivetune.ui.utils.backToMain
 import moe.rukamori.archivetune.viewmodels.NewsUiState
 import moe.rukamori.archivetune.viewmodels.NewsViewModel
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import moe.rukamori.archivetune.ui.component.IconButton as AppIconButton
 
 @Composable
@@ -130,9 +130,10 @@ fun NewsScreen(
     val listState = rememberLazyListState()
 
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
@@ -169,28 +170,30 @@ fun NewsScreen(
                                         )
                                     }
                                 },
-                                trailingIcon = if (searchQuery.isNotEmpty()) {
-                                    {
-                                        IconButton(
-                                            onClick = { viewModel.searchQuery.value = "" },
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(R.drawable.close),
-                                                contentDescription = stringResource(R.string.close),
-                                            )
+                                trailingIcon =
+                                    if (searchQuery.isNotEmpty()) {
+                                        {
+                                            IconButton(
+                                                onClick = { viewModel.searchQuery.value = "" },
+                                            ) {
+                                                Icon(
+                                                    painter = painterResource(R.drawable.close),
+                                                    contentDescription = stringResource(R.string.close),
+                                                )
+                                            }
                                         }
-                                    }
-                                } else {
-                                    null
-                                },
+                                    } else {
+                                        null
+                                    },
                             )
                         },
                         expanded = false,
                         onExpandedChange = {},
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                            .padding(top = 8.dp, bottom = 4.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .padding(top = 8.dp, bottom = 4.dp),
                     ) {}
                 } else {
                     LargeFlexibleTopAppBar(
@@ -226,10 +229,11 @@ fun NewsScreen(
                                 )
                             }
                         },
-                        colors = TopAppBarDefaults.largeTopAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                            scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                        ),
+                        colors =
+                            TopAppBarDefaults.largeTopAppBarColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                                scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            ),
                         scrollBehavior = scrollBehavior,
                     )
                 }
@@ -248,9 +252,10 @@ fun NewsScreen(
             when (state) {
                 is NewsUiState.Loading -> {
                     NewsLoadingState(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding),
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding),
                     )
                 }
 
@@ -258,46 +263,51 @@ fun NewsScreen(
                     NewsErrorState(
                         message = state.message,
                         onRetry = viewModel::fetchNews,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding),
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding),
                     )
                 }
 
                 is NewsUiState.Empty -> {
                     NewsEmptyState(
                         isSearching = searchQuery.isNotBlank(),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding),
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding),
                     )
                 }
 
                 is NewsUiState.Success -> {
                     BoxWithConstraints(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .windowInsetsPadding(
-                                LocalPlayerAwareWindowInsets.current.only(
-                                    WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .windowInsetsPadding(
+                                    LocalPlayerAwareWindowInsets.current.only(
+                                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                                    ),
                                 ),
-                            ),
                     ) {
-                        val horizontalPadding = if (maxWidth > 840.dp) {
-                            (maxWidth - 760.dp) / 2
-                        } else {
-                            16.dp
-                        }
+                        val horizontalPadding =
+                            if (maxWidth > 840.dp) {
+                                (maxWidth - 760.dp) / 2
+                            } else {
+                                16.dp
+                            }
 
                         LazyColumn(
                             state = listState,
                             verticalArrangement = Arrangement.spacedBy(14.dp),
-                            contentPadding = PaddingValues(
-                                top = innerPadding.calculateTopPadding() + 12.dp,
-                                bottom = innerPadding.calculateBottomPadding() + 24.dp,
-                                start = horizontalPadding,
-                                end = horizontalPadding,
-                            ),
+                            contentPadding =
+                                PaddingValues(
+                                    top = innerPadding.calculateTopPadding() + 12.dp,
+                                    bottom = innerPadding.calculateBottomPadding() + 24.dp,
+                                    start = horizontalPadding,
+                                    end = horizontalPadding,
+                                ),
                             modifier = Modifier.fillMaxSize(),
                         ) {
                             item(
@@ -376,13 +386,14 @@ private fun NewsListHeader(
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 Text(
-                    text = stringResource(
-                        if (isSearching) {
-                            R.string.news_search_results_title
-                        } else {
-                            R.string.news_tooltip_title
-                        },
-                    ),
+                    text =
+                        stringResource(
+                            if (isSearching) {
+                                R.string.news_search_results_title
+                            } else {
+                                R.string.news_tooltip_title
+                            },
+                        ),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
@@ -412,15 +423,17 @@ private fun NewsCard(
         onClick = { if (hasId) onNavigateToArticle() },
         enabled = hasId,
         shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        ),
-        elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = 2.dp,
-            pressedElevation = 6.dp,
-            focusedElevation = 4.dp,
-            hoveredElevation = 4.dp,
-        ),
+        colors =
+            CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            ),
+        elevation =
+            CardDefaults.elevatedCardElevation(
+                defaultElevation = 2.dp,
+                pressedElevation = 6.dp,
+                focusedElevation = 4.dp,
+                hoveredElevation = 4.dp,
+            ),
         modifier = modifier,
     ) {
         Column {
@@ -429,20 +442,22 @@ private fun NewsCard(
                     imageUrls = item.imageUrls,
                     title = item.title,
                     onImageClick = { url -> fullImageUrl = url },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp)
-                        .height(if (item.imageUrls.size > 1) 252.dp else 220.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp)
+                            .height(if (item.imageUrls.size > 1) 252.dp else 220.dp),
                 )
             }
 
             Column(
-                modifier = Modifier.padding(
-                    start = 20.dp,
-                    top = if (hasImages) 6.dp else 20.dp,
-                    end = 20.dp,
-                    bottom = 16.dp,
-                ),
+                modifier =
+                    Modifier.padding(
+                        start = 20.dp,
+                        top = if (hasImages) 6.dp else 20.dp,
+                        end = 20.dp,
+                        bottom = 16.dp,
+                    ),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 NewsMetaRow(item = item)
@@ -522,18 +537,23 @@ private fun NewsMetaRow(
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f, fill = false),
         ) {
-            val formattedDate = remember(item.timestamp) {
-                if (item.timestamp == 0L) ""
-                else DateTimeFormatter.ofPattern("d MMM yyyy").format(
-                    LocalDateTime.ofInstant(Instant.ofEpochSecond(item.timestamp), ZoneId.systemDefault())
-                )
-            }
+            val formattedDate =
+                remember(item.timestamp) {
+                    if (item.timestamp == 0L) {
+                        ""
+                    } else {
+                        DateTimeFormatter.ofPattern("d MMM yyyy").format(
+                            LocalDateTime.ofInstant(Instant.ofEpochSecond(item.timestamp), ZoneId.systemDefault()),
+                        )
+                    }
+                }
             Text(
-                text = stringResource(
-                    R.string.news_author_on_date,
-                    item.author,
-                    formattedDate,
-                ),
+                text =
+                    stringResource(
+                        R.string.news_author_on_date,
+                        item.author,
+                        formattedDate,
+                    ),
                 style = MaterialTheme.typography.labelLarge,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -552,9 +572,10 @@ private fun NewsImageCarousel(
 ) {
     if (imageUrls.size == 1) {
         Box(
-            modifier = modifier
-                .clip(MaterialTheme.shapes.extraLarge)
-                .clickable(role = Role.Image) { onImageClick(imageUrls.first()) },
+            modifier =
+                modifier
+                    .clip(MaterialTheme.shapes.extraLarge)
+                    .clickable(role = Role.Image) { onImageClick(imageUrls.first()) },
         ) {
             NewsAsyncImage(
                 imageUrl = imageUrls.first(),
@@ -582,10 +603,11 @@ private fun NewsImageCarousel(
             modifier = Modifier.fillMaxSize(),
         ) { index ->
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .maskClip(MaterialTheme.shapes.extraLarge)
-                    .clickable(role = Role.Image) { onImageClick(imageUrls[index]) },
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .maskClip(MaterialTheme.shapes.extraLarge)
+                        .clickable(role = Role.Image) { onImageClick(imageUrls[index]) },
             ) {
                 NewsAsyncImage(
                     imageUrl = imageUrls[index],
@@ -597,10 +619,11 @@ private fun NewsImageCarousel(
         }
 
         Row(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(12.dp),
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -619,25 +642,29 @@ private fun FullImageViewerDialog(
 ) {
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(
-            usePlatformDefaultWidth = false,
-            dismissOnBackPress = true,
-            dismissOnClickOutside = true,
-        ),
+        properties =
+            DialogProperties(
+                usePlatformDefaultWidth = false,
+                dismissOnBackPress = true,
+                dismissOnClickOutside = true,
+            ),
     ) {
         val context = LocalContext.current
-        val model = remember(context, imageUrl) {
-            ImageRequest.Builder(context)
-                .data(imageUrl)
-                .crossfade(true)
-                .build()
-        }
+        val model =
+            remember(context, imageUrl) {
+                ImageRequest
+                    .Builder(context)
+                    .data(imageUrl)
+                    .crossfade(true)
+                    .build()
+            }
 
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.92f))
-                .clickable(onClick = onDismiss),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.92f))
+                    .clickable(onClick = onDismiss),
             contentAlignment = Alignment.Center,
         ) {
             AsyncImage(
@@ -657,12 +684,14 @@ private fun NewsAsyncImage(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    val model = remember(context, imageUrl) {
-        ImageRequest.Builder(context)
-            .data(imageUrl)
-            .crossfade(true)
-            .build()
-    }
+    val model =
+        remember(context, imageUrl) {
+            ImageRequest
+                .Builder(context)
+                .data(imageUrl)
+                .crossfade(true)
+                .build()
+        }
 
     AsyncImage(
         model = model,
@@ -673,24 +702,25 @@ private fun NewsAsyncImage(
 }
 
 @Composable
-private fun NewsImageScrim(
-    modifier: Modifier = Modifier,
-) {
+private fun NewsImageScrim(modifier: Modifier = Modifier) {
     val surfaceColor = MaterialTheme.colorScheme.surfaceContainerHigh
-    val brush = remember(surfaceColor) {
-        Brush.verticalGradient(
-            colors = listOf(
-                Color.Transparent,
-                surfaceColor.copy(alpha = 0.78f),
-            ),
-            startY = 80f,
-        )
-    }
+    val brush =
+        remember(surfaceColor) {
+            Brush.verticalGradient(
+                colors =
+                    listOf(
+                        Color.Transparent,
+                        surfaceColor.copy(alpha = 0.78f),
+                    ),
+                startY = 80f,
+            )
+        }
 
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(brush),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(brush),
     )
 }
 
@@ -721,14 +751,16 @@ private fun NewsCarouselIndicator(
 
                 Surface(
                     shape = CircleShape,
-                    color = if (selected) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f)
-                    },
-                    modifier = Modifier
-                        .width(dotWidth)
-                        .height(7.dp),
+                    color =
+                        if (selected) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f)
+                        },
+                    modifier =
+                        Modifier
+                            .width(dotWidth)
+                            .height(7.dp),
                 ) {}
             }
         }
@@ -736,9 +768,7 @@ private fun NewsCarouselIndicator(
 }
 
 @Composable
-private fun NewsLoadingState(
-    modifier: Modifier = Modifier,
-) {
+private fun NewsLoadingState(modifier: Modifier = Modifier) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier.padding(24.dp),
@@ -772,12 +802,14 @@ private fun NewsEmptyState(
 ) {
     NewsStatePanel(
         icon = R.drawable.newspaper,
-        title = stringResource(
-            if (isSearching) R.string.news_no_results_title else R.string.news_empty_title,
-        ),
-        description = stringResource(
-            if (isSearching) R.string.news_no_results_desc else R.string.news_empty_desc,
-        ),
+        title =
+            stringResource(
+                if (isSearching) R.string.news_no_results_title else R.string.news_empty_title,
+            ),
+        description =
+            stringResource(
+                if (isSearching) R.string.news_no_results_desc else R.string.news_empty_desc,
+            ),
         iconColor = MaterialTheme.colorScheme.primary,
         modifier = modifier,
     )
@@ -800,10 +832,11 @@ private fun NewsErrorState(
             ElevatedButton(
                 onClick = onRetry,
                 shape = MaterialTheme.shapes.extraLarge,
-                colors = ButtonDefaults.elevatedButtonColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                ),
+                colors =
+                    ButtonDefaults.elevatedButtonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    ),
             ) {
                 Text(text = stringResource(R.string.news_retry))
             }
@@ -830,9 +863,10 @@ private fun NewsStatePanel(
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
             contentColor = MaterialTheme.colorScheme.onSurface,
             tonalElevation = 2.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .widthIn(max = 560.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 560.dp),
         ) {
             Column(
                 modifier = Modifier.padding(28.dp),

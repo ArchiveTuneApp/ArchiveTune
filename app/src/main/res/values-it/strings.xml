@@ -8,8 +8,6 @@
     <string name="playlists">Playlist</string>
     <!-- Top bar -->
     <plurals name="n_selected">
-        <item quantity="one"></item>
-        <item quantity="many"></item>
         <item quantity="other">%d selezionato</item>
     </plurals>
     <!-- Home -->
@@ -148,37 +146,30 @@
     <!-- Noun -->
     <plurals name="n_song">
         <item quantity="one">%d canzone</item>
-        <item quantity="many"></item>
         <item quantity="other">%d brani</item>
     </plurals>
     <plurals name="n_artist">
         <item quantity="one">%d artista</item>
-        <item quantity="many"></item>
         <item quantity="other">%d artisti</item>
     </plurals>
     <plurals name="n_album">
         <item quantity="one">%d album</item>
-        <item quantity="many"></item>
         <item quantity="other">%d album</item>
     </plurals>
     <plurals name="n_playlist">
         <item quantity="one">%d playlist</item>
-        <item quantity="many"></item>
         <item quantity="other">%d playlist</item>
     </plurals>
     <plurals name="n_week">
         <item quantity="one">%d settimana</item>
-        <item quantity="many"></item>
         <item quantity="other">%d settimane</item>
     </plurals>
     <plurals name="n_month">
         <item quantity="one">%d mese</item>
-        <item quantity="many"></item>
         <item quantity="other">%d mesi</item>
     </plurals>
     <plurals name="n_year">
         <item quantity="one">%d anno</item>
-        <item quantity="many"></item>
         <item quantity="other">%d anni</item>
     </plurals>
     <!-- Snackbar -->
@@ -196,7 +187,6 @@
     <string name="end_of_song">Fine della canzone</string>
     <plurals name="minute">
         <item quantity="one">1 minute</item>
-        <item quantity="many"></item>
         <item quantity="other">%d minuti</item>
     </plurals>
     <string name="error_no_stream">Nessun flusso disponibile</string>
@@ -225,8 +215,6 @@
     <string name="appearance">Aspetto</string>
     <string name="theme">Tema</string>
     <string name="enable_dynamic_theme">Abilita tema dinamico</string>
-    <string name="use_system_font">Utilizza il carattere di sistema</string>
-    <string name="use_system_font_desc">Utilizza il carattere del dispositivo anziché il carattere dell\'app</string>
     <!-- Color Palette -->
     <string name="color_palette">Tavolozza dei colori</string>
     <string name="customize_theme_colors">Scegli i colori del tema dell\'app</string>
@@ -708,6 +696,5 @@
     <string name="album_backdrop_desc">Mostra l’opera d’arte come sfondo sfocato sul lettore</string>
     <string name="backdrop_blur_amount">Quantità di sfocatura dello sfondo</string>
     <string name="backdrop_blur_amount_value">%1$d%%</string>
-    <string name="build_your_mix_failed">Errore nella creazione del mix</string>
     <string name="library_title">La tua Libreria</string>
 </resources>

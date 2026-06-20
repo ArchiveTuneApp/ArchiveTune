@@ -13,9 +13,7 @@ const val MusicRecognitionRoute = "music_recognition"
 const val ACTION_MUSIC_RECOGNITION = "moe.rukamori.archivetune.action.MUSIC_RECOGNITION"
 const val MusicRecognitionAutoStartRequestKey = "music_recognition_auto_start_request"
 
-fun NavHostController.openMusicRecognition(
-    autoStartRequestId: Long = System.currentTimeMillis(),
-) {
+fun NavHostController.openMusicRecognition(autoStartRequestId: Long = System.currentTimeMillis()) {
     val currentRoute = currentDestination?.route
     if (currentRoute != MusicRecognitionRoute && !popBackStack(MusicRecognitionRoute, inclusive = false)) {
         navigate(MusicRecognitionRoute) {

@@ -36,16 +36,16 @@ fun ShimmerHost(
         horizontalAlignment = horizontalAlignment,
         verticalArrangement = verticalArrangement,
         modifier =
-        modifier
-            .shimmer()
-            .graphicsLayer(alpha = 0.99f)
-            .drawWithContent {
-                drawContent()
-                drawRect(
-                    brush = Brush.verticalGradient(listOf(Color.Black, Color.Transparent)),
-                    blendMode = BlendMode.DstIn,
-                )
-            },
+            modifier
+                .shimmer()
+                .graphicsLayer(alpha = 0.99f)
+                .drawWithContent {
+                    drawContent()
+                    drawRect(
+                        brush = Brush.verticalGradient(listOf(Color.Black, Color.Transparent)),
+                        blendMode = BlendMode.DstIn,
+                    )
+                },
         content = content,
     )
 }
@@ -53,19 +53,19 @@ fun ShimmerHost(
 val ShimmerTheme =
     defaultShimmerTheme.copy(
         animationSpec =
-        infiniteRepeatable(
-            animation =
-            tween(
-                durationMillis = 800,
-                easing = LinearEasing,
-                delayMillis = 250,
+            infiniteRepeatable(
+                animation =
+                    tween(
+                        durationMillis = 800,
+                        easing = LinearEasing,
+                        delayMillis = 250,
+                    ),
+                repeatMode = RepeatMode.Restart,
             ),
-            repeatMode = RepeatMode.Restart,
-        ),
         shaderColors =
-        listOf(
-            Color.Unspecified.copy(alpha = 0.25f),
-            Color.Unspecified.copy(alpha = 0.50f),
-            Color.Unspecified.copy(alpha = 0.25f),
-        ),
+            listOf(
+                Color.Unspecified.copy(alpha = 0.25f),
+                Color.Unspecified.copy(alpha = 0.50f),
+                Color.Unspecified.copy(alpha = 0.25f),
+            ),
     )

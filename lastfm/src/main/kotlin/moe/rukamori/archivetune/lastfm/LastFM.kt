@@ -19,12 +19,12 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.Parameters
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
-import java.net.URI
-import java.security.MessageDigest
 import kotlinx.serialization.json.Json
 import moe.rukamori.archivetune.lastfm.models.Authentication
 import moe.rukamori.archivetune.lastfm.models.LastFmError
 import moe.rukamori.archivetune.lastfm.models.TokenResponse
+import java.net.URI
+import java.security.MessageDigest
 
 object LastFM {
     const val DEFAULT_API_ENDPOINT = "https://ws.audioscrobbler.com/2.0/"
@@ -40,12 +40,13 @@ object LastFM {
     )
 
     @Volatile
-    private var runtimeConfig = RuntimeConfig(
-        endpoint = DEFAULT_API_ENDPOINT,
-        apiKey = "",
-        secret = "",
-        sessionKey = null,
-    )
+    private var runtimeConfig =
+        RuntimeConfig(
+            endpoint = DEFAULT_API_ENDPOINT,
+            apiKey = "",
+            secret = "",
+            sessionKey = null,
+        )
 
     var sessionKey: String?
         get() = runtimeConfig.sessionKey
@@ -53,10 +54,11 @@ object LastFM {
             runtimeConfig = runtimeConfig.copy(sessionKey = value)
         }
 
-    private val json = Json {
-        isLenient = true
-        ignoreUnknownKeys = true
-    }
+    private val json =
+        Json {
+            isLenient = true
+            ignoreUnknownKeys = true
+        }
 
     private val client by lazy {
         HttpClient(OkHttp) {
@@ -83,34 +85,41 @@ object LastFM {
         format: String = "json",
     ) {
         headers.append(HttpHeaders.UserAgent, "ArchiveTune (https://github.com/ArchiveTuneApp/ArchiveTune)")
-        val paramsForSig = mutableMapOf(
-            "method" to method,
-            "api_key" to apiKey,
-        ).apply {
-            sessionKey?.let { put("sk", it) }
-            putAll(extra)
-        }
+        val paramsForSig =
+            mutableMapOf(
+                "method" to method,
+                "api_key" to apiKey,
+            ).apply {
+                sessionKey?.let { put("sk", it) }
+                putAll(extra)
+            }
         val apiSig = paramsForSig.apiSig(secret)
 
-        setBody(FormDataContent(Parameters.build {
-            paramsForSig.forEach { (key, value) -> append(key, value) }
-            append("api_sig", apiSig)
-            append("format", format)
-        }))
-    }
-
-    suspend fun getToken() = runCatching {
-        postAndDecode<TokenResponse>(
-            method = "auth.getToken",
+        setBody(
+            FormDataContent(
+                Parameters.build {
+                    paramsForSig.forEach { (key, value) -> append(key, value) }
+                    append("api_sig", apiSig)
+                    append("format", format)
+                },
+            ),
         )
     }
 
-    suspend fun getSession(token: String) = runCatching {
-        postAndDecode<Authentication>(
-            method = "auth.getSession",
-            extra = mapOf("token" to token),
-        )
-    }
+    suspend fun getToken() =
+        runCatching {
+            postAndDecode<TokenResponse>(
+                method = "auth.getToken",
+            )
+        }
+
+    suspend fun getSession(token: String) =
+        runCatching {
+            postAndDecode<Authentication>(
+                method = "auth.getSession",
+                extra = mapOf("token" to token),
+            )
+        }
 
     fun getAuthUrl(token: String): String {
         val config = runtimeConfig
@@ -121,14 +130,20 @@ object LastFM {
         }
     }
 
-    suspend fun getMobileSession(username: String, password: String) = runCatching {
+    suspend fun getMobileSession(
+        username: String,
+        password: String,
+    ) = runCatching {
         postAndDecode<Authentication>(
             method = "auth.getMobileSession",
             extra = mapOf("username" to username, "password" to password),
         )
     }
 
-    class LastFmException(val code: Int, override val message: String) : Exception(message) {
+    class LastFmException(
+        val code: Int,
+        override val message: String,
+    ) : Exception(message) {
         override fun toString(): String = "LastFmException(code=$code, message=$message)"
     }
 
@@ -142,13 +157,14 @@ object LastFM {
         postAndRead(
             method = "track.updateNowPlaying",
             sessionKey = requireSessionKey(),
-            extra = buildMap {
-                put("artist", artist)
-                put("track", track)
-                album?.let { put("album", it) }
-                trackNumber?.let { put("trackNumber", it.toString()) }
-                duration?.let { put("duration", it.toString()) }
-            },
+            extra =
+                buildMap {
+                    put("artist", artist)
+                    put("track", track)
+                    album?.let { put("album", it) }
+                    trackNumber?.let { put("trackNumber", it.toString()) }
+                    duration?.let { put("duration", it.toString()) }
+                },
         )
     }
 
@@ -163,18 +179,22 @@ object LastFM {
         postAndRead(
             method = "track.scrobble",
             sessionKey = requireSessionKey(),
-            extra = buildMap {
-                put("artist[0]", artist)
-                put("track[0]", track)
-                put("timestamp[0]", timestamp.toString())
-                album?.let { put("album[0]", it) }
-                trackNumber?.let { put("trackNumber[0]", it.toString()) }
-                duration?.let { put("duration[0]", it.toString()) }
-            },
+            extra =
+                buildMap {
+                    put("artist[0]", artist)
+                    put("track[0]", track)
+                    put("timestamp[0]", timestamp.toString())
+                    album?.let { put("album[0]", it) }
+                    trackNumber?.let { put("trackNumber[0]", it.toString()) }
+                    duration?.let { put("duration[0]", it.toString()) }
+                },
         )
     }
 
-    fun initialize(apiKey: String, secret: String) {
+    fun initialize(
+        apiKey: String,
+        secret: String,
+    ) {
         configure(
             endpoint = runtimeConfig.endpoint,
             apiKey = apiKey,
@@ -189,18 +209,18 @@ object LastFM {
         secret: String,
         sessionKey: String? = runtimeConfig.sessionKey,
     ) {
-        runtimeConfig = RuntimeConfig(
-            endpoint = normalizeEndpoint(endpoint),
-            apiKey = apiKey,
-            secret = secret,
-            sessionKey = sessionKey,
-        )
+        runtimeConfig =
+            RuntimeConfig(
+                endpoint = normalizeEndpoint(endpoint),
+                apiKey = apiKey,
+                secret = secret,
+                sessionKey = sessionKey,
+            )
     }
 
     fun currentConfig(): RuntimeConfig = runtimeConfig
 
-    fun isInitialized(): Boolean =
-        runtimeConfig.apiKey.isNotEmpty() && runtimeConfig.secret.isNotEmpty()
+    fun isInitialized(): Boolean = runtimeConfig.apiKey.isNotEmpty() && runtimeConfig.secret.isNotEmpty()
 
     fun normalizeEndpoint(endpoint: String): String {
         val uri = URI(endpoint.trim())
@@ -209,10 +229,11 @@ object LastFM {
         require(!uri.host.isNullOrBlank())
         require(uri.query == null && uri.fragment == null)
 
-        val path = uri.path
-            ?.takeIf { it.isNotBlank() && it != "/" }
-            ?.trimEnd('/')
-            ?: "/2.0"
+        val path =
+            uri.path
+                ?.takeIf { it.isNotBlank() && it != "/" }
+                ?.trimEnd('/')
+                ?: "/2.0"
 
         return URI(
             scheme,
@@ -225,20 +246,20 @@ object LastFM {
         ).toString()
     }
 
-    private fun requireSessionKey(): String =
-        runtimeConfig.sessionKey ?: throw LastFmException(9, "Session key missing")
+    private fun requireSessionKey(): String = runtimeConfig.sessionKey ?: throw LastFmException(9, "Session key missing")
 
     private suspend inline fun <reified T> postAndDecode(
         method: String,
         sessionKey: String? = null,
         extra: Map<String, String> = emptyMap(),
-    ): T = json.decodeFromString(
-        postAndRead(
-            method = method,
-            sessionKey = sessionKey,
-            extra = extra,
-        ),
-    )
+    ): T =
+        json.decodeFromString(
+            postAndRead(
+                method = method,
+                sessionKey = sessionKey,
+                extra = extra,
+            ),
+        )
 
     private suspend fun postAndRead(
         method: String,
@@ -246,15 +267,16 @@ object LastFM {
         extra: Map<String, String> = emptyMap(),
     ): String {
         val config = runtimeConfig
-        val response = client.post(config.endpoint) {
-            lastfmParams(
-                method = method,
-                apiKey = config.apiKey,
-                secret = config.secret,
-                sessionKey = sessionKey,
-                extra = extra,
-            )
-        }
+        val response =
+            client.post(config.endpoint) {
+                lastfmParams(
+                    method = method,
+                    apiKey = config.apiKey,
+                    secret = config.secret,
+                    sessionKey = sessionKey,
+                    extra = extra,
+                )
+            }
 
         val responseText = response.bodyAsText()
         if (!response.status.isSuccess()) {

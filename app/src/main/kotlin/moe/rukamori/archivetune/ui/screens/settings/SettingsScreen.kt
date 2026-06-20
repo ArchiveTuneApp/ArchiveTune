@@ -16,11 +16,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -69,53 +67,59 @@ fun SettingsScreen(
     val isAndroid12OrLater = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     val listState = rememberLazyListState()
 
-    val storagePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        Manifest.permission.READ_MEDIA_AUDIO
-    } else {
-        Manifest.permission.READ_EXTERNAL_STORAGE
-    }
+    val storagePermission =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_AUDIO
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
 
-    val notificationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        Manifest.permission.POST_NOTIFICATIONS
-    } else {
-        null
-    }
+    val notificationPermission =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.POST_NOTIFICATIONS
+        } else {
+            null
+        }
 
     var isStorageGranted by remember {
         mutableStateOf(
-            ContextCompat.checkSelfPermission(context, storagePermission) == PackageManager.PERMISSION_GRANTED
+            ContextCompat.checkSelfPermission(context, storagePermission) == PackageManager.PERMISSION_GRANTED,
         )
     }
 
     var isNotificationGranted by remember {
         mutableStateOf(
             notificationPermission == null ||
-                ContextCompat.checkSelfPermission(context, notificationPermission) == PackageManager.PERMISSION_GRANTED
+                ContextCompat.checkSelfPermission(context, notificationPermission) == PackageManager.PERMISSION_GRANTED,
         )
     }
 
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { result ->
-        isStorageGranted = result[storagePermission] == true || isStorageGranted
-        if (notificationPermission != null) {
-            isNotificationGranted = result[notificationPermission] == true || isNotificationGranted
+    val permissionLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions(),
+        ) { result ->
+            isStorageGranted = result[storagePermission] == true || isStorageGranted
+            if (notificationPermission != null) {
+                isNotificationGranted = result[notificationPermission] == true || isNotificationGranted
+            }
         }
-    }
 
     val shouldShowPermissionHint = !isStorageGranted || !isNotificationGranted
-    val hasUpdate = BuildConfig.UPDATER_AVAILABLE &&
-        Updater.isUpdateAvailable(latestVersionName, BuildConfig.VERSION_NAME)
+    val hasUpdate =
+        BuildConfig.UPDATER_AVAILABLE &&
+            Updater.isUpdateAvailable(latestVersionName, BuildConfig.VERSION_NAME)
     var isUpdateDismissed by remember { mutableStateOf(false) }
     val settingsGroups = buildSettingsGroups(navController, isAndroid12OrLater, hasUpdate, context)
-    val settingsItems = remember(settingsGroups) {
-        settingsGroups.flatMap { it.items }
-    }
+    val settingsItems =
+        remember(settingsGroups) {
+            settingsGroups.flatMap { it.items }
+        }
 
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.surface,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
@@ -137,10 +141,11 @@ fun SettingsScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.largeTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                ),
+                colors =
+                    TopAppBarDefaults.largeTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    ),
                 scrollBehavior = scrollBehavior,
             )
         },
@@ -148,17 +153,19 @@ fun SettingsScreen(
         LazyColumn(
             state = listState,
             verticalArrangement = Arrangement.spacedBy(2.dp),
-            modifier = Modifier
-                .fillMaxSize()
-                .windowInsetsPadding(
-                    LocalPlayerAwareWindowInsets.current.only(
-                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(
+                        LocalPlayerAwareWindowInsets.current.only(
+                            WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                        ),
                     ),
+            contentPadding =
+                PaddingValues(
+                    top = innerPadding.calculateTopPadding(),
+                    bottom = SettingsDimensions.ScreenBottomPadding,
                 ),
-            contentPadding = PaddingValues(
-                top = innerPadding.calculateTopPadding(),
-                bottom = 32.dp,
-            ),
         ) {
             if (hasUpdate && !isUpdateDismissed) {
                 item(key = "update", contentType = "settings_banner") {
@@ -166,9 +173,10 @@ fun SettingsScreen(
                         latestVersion = latestVersionName,
                         onClick = { navController.navigate("settings/update") },
                         onDismiss = { isUpdateDismissed = true },
-                        modifier = Modifier
-                            .padding(horizontal = SettingsDimensions.ScreenHorizontalPadding)
-                            .padding(bottom = SettingsDimensions.SectionSpacing),
+                        modifier =
+                            Modifier
+                                .padding(horizontal = SettingsDimensions.ScreenHorizontalPadding)
+                                .padding(bottom = SettingsDimensions.SectionSpacing),
                     )
                 }
             }
@@ -177,19 +185,21 @@ fun SettingsScreen(
                 item(key = "permission", contentType = "settings_banner") {
                     SettingsPermissionBanner(
                         onRequestPermission = {
-                            val toRequest = buildList {
-                                if (!isStorageGranted) add(storagePermission)
-                                if (!isNotificationGranted && notificationPermission != null) {
-                                    add(notificationPermission)
+                            val toRequest =
+                                buildList {
+                                    if (!isStorageGranted) add(storagePermission)
+                                    if (!isNotificationGranted && notificationPermission != null) {
+                                        add(notificationPermission)
+                                    }
                                 }
-                            }
                             if (toRequest.isNotEmpty()) {
                                 permissionLauncher.launch(toRequest.toTypedArray())
                             }
                         },
-                        modifier = Modifier
-                            .padding(horizontal = SettingsDimensions.ScreenHorizontalPadding)
-                            .padding(bottom = SettingsDimensions.SectionSpacing),
+                        modifier =
+                            Modifier
+                                .padding(horizontal = SettingsDimensions.ScreenHorizontalPadding)
+                                .padding(bottom = SettingsDimensions.SectionSpacing),
                     )
                 }
             }
@@ -205,10 +215,6 @@ fun SettingsScreen(
                     count = settingsItems.size,
                     modifier = Modifier.padding(horizontal = 26.dp),
                 )
-            }
-
-            item(key = "bottom_spacer", contentType = "settings_spacer") {
-                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }

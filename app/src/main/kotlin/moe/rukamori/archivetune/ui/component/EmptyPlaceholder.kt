@@ -39,9 +39,10 @@ fun EmptyPlaceholder(
 ) {
     Box(
         contentAlignment = Alignment.Center,
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp, vertical = 48.dp),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp, vertical = 48.dp),
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -49,10 +50,11 @@ fun EmptyPlaceholder(
         ) {
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(96.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.06f))
+                modifier =
+                    Modifier
+                        .size(96.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.06f)),
             ) {
                 Image(
                     painter = painterResource(icon),

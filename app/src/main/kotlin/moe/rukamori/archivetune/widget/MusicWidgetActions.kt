@@ -50,7 +50,10 @@ private const val ACTION_SKIP_NEXT = "moe.rukamori.archivetune.WIDGET_SKIP_NEXT"
 private const val ACTION_SKIP_PREV = "moe.rukamori.archivetune.WIDGET_SKIP_PREV"
 private const val TAG = "MusicWidgetActions"
 
-private fun sendWidgetAction(context: Context, action: String) {
+private fun sendWidgetAction(
+    context: Context,
+    action: String,
+) {
     val intent = Intent(action).setClass(context, MusicService::class.java)
     runCatching {
         context.startService(intent)

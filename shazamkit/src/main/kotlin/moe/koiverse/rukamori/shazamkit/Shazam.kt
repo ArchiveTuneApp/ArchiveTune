@@ -7,9 +7,6 @@
 
 package moe.rukamori.archivetune.shazamkit
 
-import moe.rukamori.archivetune.shazamkit.models.RecognitionResult
-import moe.rukamori.archivetune.shazamkit.models.ShazamRequestJson
-import moe.rukamori.archivetune.shazamkit.models.ShazamResponseJson
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
@@ -30,6 +27,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
+import moe.rukamori.archivetune.shazamkit.models.RecognitionResult
+import moe.rukamori.archivetune.shazamkit.models.ShazamRequestJson
+import moe.rukamori.archivetune.shazamkit.models.ShazamResponseJson
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -40,35 +40,34 @@ import kotlin.random.Random
  * Shazam music recognition with built-in rate limiting and queue management
  */
 object Shazam {
-
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     // Configuration
     private const val MAX_CONCURRENT_REQUESTS = 2
-    
+
     private const val MIN_REQUEST_INTERVAL_MS = 1000L
-    
+
     private const val MAX_RETRIES = 3
-    
+
     private const val INITIAL_RETRY_DELAY_MS = 2000L
-    
+
     private const val CACHE_DURATION_MS = 300000L
-    
+
     private const val MAX_QUEUE_SIZE = 50
 
     // Internal State
     private val activeRequests = AtomicInteger(0)
-    
+
     private var lastRequestTime = 0L
-    
+
     private val requestMutex = Mutex()
-    
+
     private val requestQueue = ConcurrentLinkedQueue<PendingRequest>()
-    
+
     private val resultCache = ConcurrentHashMap<String, CachedResult>()
-    
+
     private var nextRequestId = 0L
-    
+
     private var isProcessingQueue = false
 
     // HTTP Client Configuration
@@ -84,34 +83,43 @@ object Shazam {
                 )
             }
             expectSuccess = false
-            
+
             engine {
                 requestTimeout = 30000
             }
         }
     }
 
-    private val userAgents = listOf(
-        "Dalvik/2.1.0 (Linux; U; Android 5.0.2; VS980 4G Build/LRX22G)",
-        "Dalvik/1.6.0 (Linux; U; Android 4.4.2; SM-T210 Build/KOT49H)",
-        "Dalvik/2.1.0 (Linux; U; Android 5.1.1; SM-P905V Build/LMY47X)",
-        "Dalvik/2.1.0 (Linux; U; Android 6.0.1; SM-G920F Build/MMB29K)",
-        "Dalvik/2.1.0 (Linux; U; Android 5.0; SM-G900F Build/LRX21T)"
-    )
+    private val userAgents =
+        listOf(
+            "Dalvik/2.1.0 (Linux; U; Android 5.0.2; VS980 4G Build/LRX22G)",
+            "Dalvik/1.6.0 (Linux; U; Android 4.4.2; SM-T210 Build/KOT49H)",
+            "Dalvik/2.1.0 (Linux; U; Android 5.1.1; SM-P905V Build/LMY47X)",
+            "Dalvik/2.1.0 (Linux; U; Android 6.0.1; SM-G920F Build/MMB29K)",
+            "Dalvik/2.1.0 (Linux; U; Android 5.0; SM-G900F Build/LRX21T)",
+        )
 
-    private val timezones = listOf(
-        "Europe/Paris", "Europe/London", "America/New_York",
-        "America/Los_Angeles", "Asia/Tokyo", "Asia/Dubai"
-    )
+    private val timezones =
+        listOf(
+            "Europe/Paris",
+            "Europe/London",
+            "America/New_York",
+            "America/Los_Angeles",
+            "Asia/Tokyo",
+            "Asia/Dubai",
+        )
 
     /**
      * Recognize music from audio signature
-     * 
+     *
      * @param signature Audio signature in Shazam DejaVu format
      * @param sampleDurationMs Sample duration in milliseconds
      * @return Result containing recognition result or error
      */
-    suspend fun recognize(signature: String, sampleDurationMs: Long): Result<RecognitionResult> {
+    suspend fun recognize(
+        signature: String,
+        sampleDurationMs: Long,
+    ): Result<RecognitionResult> {
         val cacheKey = generateCacheKey(signature)
         getCachedResult(cacheKey)?.let {
             return Result.success(it)
@@ -158,28 +166,30 @@ object Shazam {
      */
     private suspend fun enqueueRequest(
         signature: String,
-        sampleDurationMs: Long
-    ): Result<RecognitionResult> = requestMutex.withLock {
-        if (requestQueue.size >= MAX_QUEUE_SIZE) {
-            return Result.failure(Exception("Request queue is full. Please wait."))
+        sampleDurationMs: Long,
+    ): Result<RecognitionResult> =
+        requestMutex.withLock {
+            if (requestQueue.size >= MAX_QUEUE_SIZE) {
+                return Result.failure(Exception("Request queue is full. Please wait."))
+            }
+
+            val requestId = nextRequestId++
+            val request =
+                PendingRequest(
+                    id = requestId,
+                    signature = signature,
+                    sampleDurationMs = sampleDurationMs,
+                )
+
+            requestQueue.offer(request)
+
+            if (!isProcessingQueue) {
+                isProcessingQueue = true
+                processQueue()
+            }
+
+            return request.awaitResult()
         }
-
-        val requestId = nextRequestId++
-        val request = PendingRequest(
-            id = requestId,
-            signature = signature,
-            sampleDurationMs = sampleDurationMs
-        )
-
-        requestQueue.offer(request)
-
-        if (!isProcessingQueue) {
-            isProcessingQueue = true
-            processQueue()
-        }
-
-        return request.awaitResult()
-    }
 
     /**
      * Process request queue
@@ -216,19 +226,19 @@ object Shazam {
      */
     private suspend fun executeRequest(
         signature: String,
-        sampleDurationMs: Long
+        sampleDurationMs: Long,
     ): Result<RecognitionResult> {
         var lastException: Exception? = null
 
         for (attempt in 0 until MAX_RETRIES) {
             try {
                 enforceRateLimit()
-                
+
                 val result = performRecognition(signature, sampleDurationMs)
-                
+
                 val cacheKey = generateCacheKey(signature)
                 cacheResult(cacheKey, result)
-                
+
                 return Result.success(result)
             } catch (e: Exception) {
                 lastException = e
@@ -255,40 +265,44 @@ object Shazam {
      */
     private suspend fun performRecognition(
         signature: String,
-        sampleDurationMs: Long
+        sampleDurationMs: Long,
     ): RecognitionResult {
         val timestamp = System.currentTimeMillis() / 1000
         val uuid1 = UUID.randomUUID().toString().uppercase()
         val uuid2 = UUID.randomUUID().toString()
 
-        val request = ShazamRequestJson(
-            geolocation = ShazamRequestJson.Geolocation(
-                altitude = Random.nextDouble() * 400 + 100,
-                latitude = Random.nextDouble() * 180 - 90,
-                longitude = Random.nextDouble() * 360 - 180
-            ),
-            signature = ShazamRequestJson.Signature(
-                samplems = sampleDurationMs,
+        val request =
+            ShazamRequestJson(
+                geolocation =
+                    ShazamRequestJson.Geolocation(
+                        altitude = Random.nextDouble() * 400 + 100,
+                        latitude = Random.nextDouble() * 180 - 90,
+                        longitude = Random.nextDouble() * 360 - 180,
+                    ),
+                signature =
+                    ShazamRequestJson.Signature(
+                        samplems = sampleDurationMs,
+                        timestamp = timestamp,
+                        uri = signature,
+                    ),
                 timestamp = timestamp,
-                uri = signature
-            ),
-            timestamp = timestamp,
-            timezone = timezones.random()
-        )
+                timezone = timezones.random(),
+            )
 
-        val response = client.post("https://amp.shazam.com/discovery/v5/en/US/android/-/tag/$uuid1/$uuid2") {
-            parameter("sync", "true")
-            parameter("webv3", "true")
-            parameter("sampling", "true")
-            parameter("connected", "")
-            parameter("shazamapiversion", "v3")
-            parameter("sharehub", "true")
-            parameter("video", "v3")
-            header("User-Agent", userAgents.random())
-            header("Content-Language", "en_US")
-            contentType(ContentType.Application.Json)
-            setBody(request)
-        }
+        val response =
+            client.post("https://amp.shazam.com/discovery/v5/en/US/android/-/tag/$uuid1/$uuid2") {
+                parameter("sync", "true")
+                parameter("webv3", "true")
+                parameter("sampling", "true")
+                parameter("connected", "")
+                parameter("shazamapiversion", "v3")
+                parameter("sharehub", "true")
+                parameter("video", "v3")
+                header("User-Agent", userAgents.random())
+                header("Content-Language", "en_US")
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
 
         if (!response.status.isSuccess()) {
             val statusCode = response.status.value
@@ -323,16 +337,12 @@ object Shazam {
     /**
      * Calculate delay using Exponential Backoff
      */
-    private fun calculateBackoffDelay(attempt: Int): Long {
-        return INITIAL_RETRY_DELAY_MS * (1 shl attempt)
-    }
+    private fun calculateBackoffDelay(attempt: Int): Long = INITIAL_RETRY_DELAY_MS * (1 shl attempt)
 
     /**
      * Generate cache key
      */
-    private fun generateCacheKey(signature: String): String {
-        return signature.hashCode().toString()
-    }
+    private fun generateCacheKey(signature: String): String = signature.hashCode().toString()
 
     /**
      * Get result from cache
@@ -352,11 +362,15 @@ object Shazam {
     /**
      * Cache result
      */
-    private fun cacheResult(key: String, result: RecognitionResult) {
-        resultCache[key] = CachedResult(
-            timestamp = System.currentTimeMillis(),
-            result = result
-        )
+    private fun cacheResult(
+        key: String,
+        result: RecognitionResult,
+    ) {
+        resultCache[key] =
+            CachedResult(
+                timestamp = System.currentTimeMillis(),
+                result = result,
+            )
 
         cleanupCache()
     }
@@ -393,22 +407,32 @@ object Shazam {
         val lyricsSection = track.sections?.find { it?.type == "LYRICS" }
         val lyrics = lyricsSection?.text
 
-        val appleAction = track.hub?.options?.firstOrNull {
-            it?.providername?.contains("apple", ignoreCase = true) == true
-        }?.actions?.firstOrNull()
-        
-        val spotifyProvider = track.hub?.providers?.find {
-            it?.caption?.contains("spotify", ignoreCase = true) == true
-        }
+        val appleAction =
+            track.hub
+                ?.options
+                ?.firstOrNull {
+                    it?.providername?.contains("apple", ignoreCase = true) == true
+                }?.actions
+                ?.firstOrNull()
 
-        val youtubeAction = track.hub?.options?.find {
-            it?.type?.contains("video", ignoreCase = true) == true
-        }?.actions?.firstOrNull()
-        
-        val youtubeVideoId = youtubeAction?.uri?.let { uri ->
-            uri.substringAfterLast("v=", "").takeIf { it.isNotEmpty() }
-                ?: uri.substringAfterLast("/", "").takeIf { it.isNotEmpty() && it.length == 11 }
-        }
+        val spotifyProvider =
+            track.hub?.providers?.find {
+                it?.caption?.contains("spotify", ignoreCase = true) == true
+            }
+
+        val youtubeAction =
+            track.hub
+                ?.options
+                ?.find {
+                    it?.type?.contains("video", ignoreCase = true) == true
+                }?.actions
+                ?.firstOrNull()
+
+        val youtubeVideoId =
+            youtubeAction?.uri?.let { uri ->
+                uri.substringAfterLast("v=", "").takeIf { it.isNotEmpty() }
+                    ?: uri.substringAfterLast("/", "").takeIf { it.isNotEmpty() && it.length == 11 }
+            }
 
         return RecognitionResult(
             trackId = track.key ?: tagid ?: "",
@@ -425,7 +449,7 @@ object Shazam {
             appleMusicUrl = appleAction?.uri,
             spotifyUrl = spotifyProvider?.actions?.firstOrNull()?.uri,
             isrc = track.isrc,
-            youtubeVideoId = youtubeVideoId
+            youtubeVideoId = youtubeVideoId,
         )
     }
 
@@ -435,7 +459,7 @@ object Shazam {
     private class PendingRequest(
         val id: Long,
         val signature: String,
-        val sampleDurationMs: Long
+        val sampleDurationMs: Long,
     ) {
         private val mutex = Mutex()
         private var result: Result<RecognitionResult>? = null
@@ -459,6 +483,6 @@ object Shazam {
      */
     private data class CachedResult(
         val timestamp: Long,
-        val result: RecognitionResult
+        val result: RecognitionResult,
     )
 }

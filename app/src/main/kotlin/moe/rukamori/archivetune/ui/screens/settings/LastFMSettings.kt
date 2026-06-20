@@ -54,7 +54,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import kotlin.math.roundToInt
 import moe.rukamori.archivetune.LocalPlayerAwareWindowInsets
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.constants.LastFmProvider
@@ -71,6 +70,7 @@ import moe.rukamori.archivetune.viewmodels.LastFmSettingsUiModel
 import moe.rukamori.archivetune.viewmodels.LastFmSettingsViewModel
 import moe.rukamori.archivetune.viewmodels.LastFmTimingEditorUiModel
 import moe.rukamori.archivetune.viewmodels.LastFmTimingSetting
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -152,26 +152,38 @@ private fun LastFmSettingsContent(
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
             .verticalScroll(rememberScrollState())
+            .padding(bottom = SettingsDimensions.ScreenBottomPadding),
     ) {
         Spacer(
             Modifier.windowInsetsPadding(
-                LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)
-            )
+                LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top),
+            ),
         )
 
         when (state) {
-            LastFmSettingsScreenState.Loading -> LastFmSettingsLoading()
-            LastFmSettingsScreenState.Empty -> Unit
-            is LastFmSettingsScreenState.Error -> LastFmSettingsError(state.messageResId)
-            is LastFmSettingsScreenState.Success -> LastFmSettingsSuccess(
-                model = state.model,
-                onOpenServiceEditor = onOpenServiceEditor,
-                onOpenLoginDialog = onOpenLoginDialog,
-                onLogout = onLogout,
-                onScrobblingChange = onScrobblingChange,
-                onNowPlayingChange = onNowPlayingChange,
-                onOpenTimingEditor = onOpenTimingEditor,
-            )
+            LastFmSettingsScreenState.Loading -> {
+                LastFmSettingsLoading()
+            }
+
+            LastFmSettingsScreenState.Empty -> {
+                Unit
+            }
+
+            is LastFmSettingsScreenState.Error -> {
+                LastFmSettingsError(state.messageResId)
+            }
+
+            is LastFmSettingsScreenState.Success -> {
+                LastFmSettingsSuccess(
+                    model = state.model,
+                    onOpenServiceEditor = onOpenServiceEditor,
+                    onOpenLoginDialog = onOpenLoginDialog,
+                    onLogout = onLogout,
+                    onScrobblingChange = onScrobblingChange,
+                    onNowPlayingChange = onNowPlayingChange,
+                    onOpenTimingEditor = onOpenTimingEditor,
+                )
+            }
         }
     }
 
@@ -208,9 +220,10 @@ private fun LastFmSettingsContent(
 @Composable
 private fun LastFmSettingsLoading() {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(24.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -224,7 +237,9 @@ private fun LastFmSettingsLoading() {
 }
 
 @Composable
-private fun LastFmSettingsError(@StringRes messageResId: Int) {
+private fun LastFmSettingsError(
+    @StringRes messageResId: Int,
+) {
     Text(
         text = stringResource(messageResId),
         color = MaterialTheme.colorScheme.error,
@@ -244,11 +259,12 @@ private fun LastFmSettingsSuccess(
     onOpenTimingEditor: (LastFmTimingSetting) -> Unit,
 ) {
     val providerName = stringResource(model.provider.titleResId())
-    val endpointDescription = if (model.endpointValid) {
-        model.resolvedEndpoint
-    } else {
-        stringResource(R.string.lastfm_endpoint_invalid)
-    }
+    val endpointDescription =
+        if (model.endpointValid) {
+            model.resolvedEndpoint
+        } else {
+            stringResource(R.string.lastfm_endpoint_invalid)
+        }
 
     PreferenceGroup(title = stringResource(R.string.lastfm_service)) {
         item {
@@ -263,11 +279,12 @@ private fun LastFmSettingsSuccess(
         item {
             PreferenceEntry(
                 title = { Text(stringResource(R.string.lastfm_api_credentials)) },
-                description = if (model.apiKeyOverride.isBlank() && model.secretOverride.isBlank()) {
-                    stringResource(R.string.lastfm_api_credentials_default)
-                } else {
-                    stringResource(R.string.lastfm_api_credentials_custom)
-                },
+                description =
+                    if (model.apiKeyOverride.isBlank() && model.secretOverride.isBlank()) {
+                        stringResource(R.string.lastfm_api_credentials_default)
+                    } else {
+                        stringResource(R.string.lastfm_api_credentials_custom)
+                    },
                 icon = { Icon(painterResource(R.drawable.token), null) },
                 onClick = onOpenServiceEditor,
             )
@@ -336,10 +353,11 @@ private fun LastFmSettingsSuccess(
         item {
             PreferenceEntry(
                 title = { Text(stringResource(R.string.scrobble_delay_percent)) },
-                description = stringResource(
-                    R.string.percent_format,
-                    (model.scrobbleDelayPercent * 100).roundToInt(),
-                ),
+                description =
+                    stringResource(
+                        R.string.percent_format,
+                        (model.scrobbleDelayPercent * 100).roundToInt(),
+                    ),
                 onClick = { onOpenTimingEditor(LastFmTimingSetting.DELAY_PERCENT) },
             )
         }
@@ -402,9 +420,10 @@ private fun LastFmLoginDialog(
 
                 if (dialog.isLoggingIn) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -421,10 +440,11 @@ private fun LastFmLoginDialog(
         confirmButton = {
             TextButton(
                 onClick = onLogin,
-                enabled = !dialog.isLoggingIn &&
-                    model.canLogin &&
-                    dialog.username.isNotBlank() &&
-                    dialog.password.isNotBlank(),
+                enabled =
+                    !dialog.isLoggingIn &&
+                        model.canLogin &&
+                        dialog.username.isNotBlank() &&
+                        dialog.password.isNotBlank(),
                 shapes = ButtonDefaults.shapes(),
             ) {
                 Text(stringResource(R.string.login))
@@ -461,9 +481,10 @@ private fun LastFmServiceEditorDialog(
         title = { Text(stringResource(R.string.lastfm_service)) },
         text = {
             Column(
-                modifier = Modifier
-                    .heightIn(max = 420.dp)
-                    .verticalScroll(rememberScrollState()),
+                modifier =
+                    Modifier
+                        .heightIn(max = 420.dp)
+                        .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text(
@@ -471,9 +492,10 @@ private fun LastFmServiceEditorDialog(
                     style = MaterialTheme.typography.labelLarge,
                 )
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     val providers = remember { LastFmProvider.entries.toList() }
@@ -584,12 +606,14 @@ private fun LastFmTimingEditorDialog(
                             modifier = Modifier.fillMaxWidth(),
                         )
                     }
+
                     LastFmTimingSetting.DELAY_PERCENT -> {
                         Text(
-                            text = stringResource(
-                                R.string.percent_format,
-                                (editor.scrobbleDelayPercent * 100).roundToInt(),
-                            ),
+                            text =
+                                stringResource(
+                                    R.string.percent_format,
+                                    (editor.scrobbleDelayPercent * 100).roundToInt(),
+                                ),
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.padding(bottom = 16.dp),
                         )
@@ -600,6 +624,7 @@ private fun LastFmTimingEditorDialog(
                             modifier = Modifier.fillMaxWidth(),
                         )
                     }
+
                     LastFmTimingSetting.DELAY_SECONDS -> {
                         Text(
                             text = stringResource(R.string.duration_seconds_short, editor.scrobbleDelaySeconds),

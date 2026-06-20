@@ -18,16 +18,18 @@ private const val YOUTUBE_PACKAGE = "com.google.android.youtube"
 private const val YOUTUBE_MUSIC_HOME_URL = "https://music.youtube.com"
 
 fun Context.openYouTubeMusicUrl(targetUrl: String): Boolean {
-    val uri = targetUrl
-        .trim()
-        .takeIf { it.isNotBlank() }
-        ?.let(Uri::parse)
-        ?: Uri.parse(YOUTUBE_MUSIC_HOME_URL)
+    val uri =
+        targetUrl
+            .trim()
+            .takeIf { it.isNotBlank() }
+            ?.let(Uri::parse)
+            ?: Uri.parse(YOUTUBE_MUSIC_HOME_URL)
 
-    val baseIntent = Intent(Intent.ACTION_VIEW, uri).apply {
-        addCategory(Intent.CATEGORY_BROWSABLE)
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    }
+    val baseIntent =
+        Intent(Intent.ACTION_VIEW, uri).apply {
+            addCategory(Intent.CATEGORY_BROWSABLE)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
 
     val externalResolvedIntent =
         packageManager
@@ -46,8 +48,8 @@ fun Context.openYouTubeMusicUrl(targetUrl: String): Boolean {
     ).filterNotNull().any(::tryStartActivity)
 }
 
-private fun Context.tryStartActivity(intent: Intent): Boolean {
-    return try {
+private fun Context.tryStartActivity(intent: Intent): Boolean =
+    try {
         startActivity(intent)
         true
     } catch (_: ActivityNotFoundException) {
@@ -55,4 +57,3 @@ private fun Context.tryStartActivity(intent: Intent): Boolean {
     } catch (_: SecurityException) {
         false
     }
-}

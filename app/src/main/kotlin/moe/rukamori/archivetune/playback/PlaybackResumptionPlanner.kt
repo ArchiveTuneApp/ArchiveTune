@@ -31,12 +31,14 @@ internal object PlaybackResumptionPlanner {
         val usePersistedItems =
             persisted != null &&
                 persisted.items.isNotEmpty() &&
-                (currentItems.isEmpty() || (
-                    isForPlayback &&
-                        currentItems.size == 1 &&
-                        persisted.items.size > 1 &&
-                        currentItems.first() == persisted.items[persisted.mediaItemIndex.coerceIn(persisted.items.indices)]
-                ))
+                (
+                    currentItems.isEmpty() || (
+                        isForPlayback &&
+                            currentItems.size == 1 &&
+                            persisted.items.size > 1 &&
+                            currentItems.first() == persisted.items[persisted.mediaItemIndex.coerceIn(persisted.items.indices)]
+                    )
+                )
 
         if (usePersistedItems && persisted != null) {
             return persisted.items.toResult(

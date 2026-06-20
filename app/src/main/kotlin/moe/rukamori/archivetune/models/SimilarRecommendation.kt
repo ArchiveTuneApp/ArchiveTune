@@ -7,8 +7,8 @@
 
 package moe.rukamori.archivetune.models
 
-import moe.rukamori.archivetune.innertube.models.YTItem
 import moe.rukamori.archivetune.db.entities.LocalItem
+import moe.rukamori.archivetune.innertube.models.YTItem
 
 data class SimilarRecommendation(
     val title: LocalItem,

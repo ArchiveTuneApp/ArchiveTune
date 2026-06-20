@@ -10,7 +10,6 @@ package moe.rukamori.archivetune.library
 import android.content.Context
 import com.google.common.collect.ImmutableList
 import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
 import kotlinx.coroutines.flow.first
 import moe.rukamori.archivetune.ai.AiServiceConfig
 import moe.rukamori.archivetune.ai.AiTextService
@@ -33,6 +32,7 @@ import moe.rukamori.archivetune.utils.dataStore
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.Locale
+import javax.inject.Inject
 
 private const val TopMixCountLimit = 5
 private const val TopMixCandidateLimit = 100
@@ -40,135 +40,142 @@ private const val TopMixSongsPerMix = 25
 private const val TopMixPromptCandidateLimit = 80
 
 class RefreshLibraryTopMixesUseCase
-@Inject
-constructor(
-    @ApplicationContext private val context: Context,
-    private val repository: LibraryTopMixRepository,
-) {
-    suspend operator fun invoke(): RefreshLibraryTopMixesResult {
-        val config = readAiConfig()
-        if (!config.canCallApi || isAiValidationFailed()) {
-            return RefreshLibraryTopMixesResult.Failure(TopMixGenerationFailure.AI_NOT_CONFIGURED)
-        }
-
-        val candidates = repository
-            .recentSongsForTopMixes(TopMixCandidateLimit)
-            .validateWithYtm()
-            .take(TopMixPromptCandidateLimit)
-        if (candidates.isEmpty()) {
-            return RefreshLibraryTopMixesResult.Failure(TopMixGenerationFailure.NO_RECENT_HISTORY)
-        }
-
-        return runCatching {
-            val mixes = requestAiMixes(config = config, candidates = candidates)
-            if (mixes.isEmpty()) {
-                RefreshLibraryTopMixesResult.Failure(TopMixGenerationFailure.NO_VALID_MIXES)
-            } else {
-                repository.replaceTopMixes(mixes)
-                RefreshLibraryTopMixesResult.Success
+    @Inject
+    constructor(
+        @ApplicationContext private val context: Context,
+        private val repository: LibraryTopMixRepository,
+    ) {
+        suspend operator fun invoke(): RefreshLibraryTopMixesResult {
+            val config = readAiConfig()
+            if (!config.canCallApi || isAiValidationFailed()) {
+                return RefreshLibraryTopMixesResult.Failure(TopMixGenerationFailure.AI_NOT_CONFIGURED)
             }
-        }.getOrElse { throwable ->
-            RefreshLibraryTopMixesResult.Failure(
-                reason = TopMixGenerationFailure.AI_REQUEST_FAILED,
-                cause = throwable,
+
+            val candidates =
+                repository
+                    .recentSongsForTopMixes(TopMixCandidateLimit)
+                    .validateWithYtm()
+                    .take(TopMixPromptCandidateLimit)
+            if (candidates.isEmpty()) {
+                return RefreshLibraryTopMixesResult.Failure(TopMixGenerationFailure.NO_RECENT_HISTORY)
+            }
+
+            return runCatching {
+                val mixes = requestAiMixes(config = config, candidates = candidates)
+                if (mixes.isEmpty()) {
+                    RefreshLibraryTopMixesResult.Failure(TopMixGenerationFailure.NO_VALID_MIXES)
+                } else {
+                    repository.replaceTopMixes(mixes)
+                    RefreshLibraryTopMixesResult.Success
+                }
+            }.getOrElse { throwable ->
+                RefreshLibraryTopMixesResult.Failure(
+                    reason = TopMixGenerationFailure.AI_REQUEST_FAILED,
+                    cause = throwable,
+                )
+            }
+        }
+
+        private suspend fun readAiConfig(): AiServiceConfig {
+            val prefs = context.dataStore.data.first()
+            val provider = prefs[AiProviderKey].toEnum(AiProvider.NONE)
+            return AiServiceConfig(
+                provider = provider,
+                apiKey = prefs[AiApiKeyKey].orEmpty(),
+                customEndpoint = prefs[AiCustomEndpointKey].orEmpty(),
+                model =
+                    if (provider == AiProvider.CUSTOM) {
+                        prefs[AiCustomModelKey].orEmpty()
+                    } else {
+                        prefs[AiSelectedModelKey].orEmpty()
+                    },
             )
         }
-    }
 
-    private suspend fun readAiConfig(): AiServiceConfig {
-        val prefs = context.dataStore.data.first()
-        val provider = prefs[AiProviderKey].toEnum(AiProvider.NONE)
-        return AiServiceConfig(
-            provider = provider,
-            apiKey = prefs[AiApiKeyKey].orEmpty(),
-            customEndpoint = prefs[AiCustomEndpointKey].orEmpty(),
-            model = if (provider == AiProvider.CUSTOM) {
-                prefs[AiCustomModelKey].orEmpty()
-            } else {
-                prefs[AiSelectedModelKey].orEmpty()
-            },
-        )
-    }
+        private suspend fun isAiValidationFailed(): Boolean =
+            context.dataStore.data
+                .first()[AiApiValidationStatusKey]
+                .toEnum(AiApiValidationStatus.UNKNOWN) == AiApiValidationStatus.FAILED
 
-    private suspend fun isAiValidationFailed(): Boolean =
-        context.dataStore.data
-            .first()[AiApiValidationStatusKey]
-            .toEnum(AiApiValidationStatus.UNKNOWN) == AiApiValidationStatus.FAILED
-
-    private suspend fun requestAiMixes(
-        config: AiServiceConfig,
-        candidates: List<ValidatedTopMixSong>,
-    ): List<GeneratedLibraryTopMix> {
-        val candidateById = candidates.associateBy { it.id }
-        val candidatePayload = JSONArray().apply {
-            candidates.forEachIndexed { index, candidate ->
-                put(
-                    JSONObject()
-                        .put("id", candidate.id)
-                        .put("title", candidate.title)
-                        .put("artists", candidate.artists.joinToString(", "))
-                        .put("recentRank", index + 1),
+        private suspend fun requestAiMixes(
+            config: AiServiceConfig,
+            candidates: List<ValidatedTopMixSong>,
+        ): List<GeneratedLibraryTopMix> {
+            val candidateById = candidates.associateBy { it.id }
+            val candidatePayload =
+                JSONArray().apply {
+                    candidates.forEachIndexed { index, candidate ->
+                        put(
+                            JSONObject()
+                                .put("id", candidate.id)
+                                .put("title", candidate.title)
+                                .put("artists", candidate.artists.joinToString(", "))
+                                .put("recentRank", index + 1),
+                        )
+                    }
+                }
+            val response =
+                AiTextService.complete(
+                    config = config,
+                    systemPrompt =
+                        """
+                        You are a music curator for ArchiveTune.
+                        Build up to $TopMixCountLimit personal mixes using only the provided candidate song IDs.
+                        Return JSON only with this schema: {"mixes":[{"title":"short title containing Mix","description":"short genre and mood description","songIds":["id"]}]}.
+                        Every title must contain the word Mix.
+                        Every description must describe the genre, mood, or sound of the selected songs.
+                        Select at most $TopMixSongsPerMix songs per mix, avoid duplicate songs inside a mix, and prioritize coherence.
+                        The mixes must be related to the user's recent listening history represented by the candidate list.
+                        """.trimIndent(),
+                    userPrompt =
+                        JSONObject()
+                            .put("basis", "recent listening history")
+                            .put("maxMixes", TopMixCountLimit)
+                            .put("maxSongsPerMix", TopMixSongsPerMix)
+                            .put("candidates", candidatePayload)
+                            .toString(),
+                    temperature = 0.35,
+                    maxTokens = 4096,
                 )
-            }
+            return parseGeneratedMixes(
+                response = response,
+                candidateById = candidateById,
+            )
         }
-        val response = AiTextService.complete(
-            config = config,
-            systemPrompt = """
-                You are a music curator for ArchiveTune.
-                Build up to $TopMixCountLimit personal mixes using only the provided candidate song IDs.
-                Return JSON only with this schema: {"mixes":[{"title":"short title containing Mix","description":"short genre and mood description","songIds":["id"]}]}.
-                Every title must contain the word Mix.
-                Every description must describe the genre, mood, or sound of the selected songs.
-                Select at most $TopMixSongsPerMix songs per mix, avoid duplicate songs inside a mix, and prioritize coherence.
-                The mixes must be related to the user's recent listening history represented by the candidate list.
-            """.trimIndent(),
-            userPrompt = JSONObject()
-                .put("basis", "recent listening history")
-                .put("maxMixes", TopMixCountLimit)
-                .put("maxSongsPerMix", TopMixSongsPerMix)
-                .put("candidates", candidatePayload)
-                .toString(),
-            temperature = 0.35,
-            maxTokens = 4096,
-        )
-        return parseGeneratedMixes(
-            response = response,
-            candidateById = candidateById,
-        )
-    }
 
-    private fun parseGeneratedMixes(
-        response: String,
-        candidateById: Map<String, ValidatedTopMixSong>,
-    ): List<GeneratedLibraryTopMix> {
-        val json = JSONObject(response.substringAfter('{').substringBeforeLast('}').let { "{$it}" })
-        val globalSongIds = LinkedHashSet<String>()
-        val mixes = json.optJSONArray("mixes") ?: JSONArray()
-        return buildList {
-            for (index in 0 until mixes.length()) {
-                if (size >= TopMixCountLimit) break
-                val mixJson = mixes.optJSONObject(index) ?: continue
-                val selected = mixJson
-                    .optJSONArray("songIds")
-                    .toStringList()
-                    .mapNotNull(candidateById::get)
-                    .filter { globalSongIds.add(it.id) }
-                    .distinctBy { it.id }
-                    .take(TopMixSongsPerMix)
-                if (selected.isEmpty()) continue
+        private fun parseGeneratedMixes(
+            response: String,
+            candidateById: Map<String, ValidatedTopMixSong>,
+        ): List<GeneratedLibraryTopMix> {
+            val json = JSONObject(response.substringAfter('{').substringBeforeLast('}').let { "{$it}" })
+            val globalSongIds = LinkedHashSet<String>()
+            val mixes = json.optJSONArray("mixes") ?: JSONArray()
+            return buildList {
+                for (index in 0 until mixes.length()) {
+                    if (size >= TopMixCountLimit) break
+                    val mixJson = mixes.optJSONObject(index) ?: continue
+                    val selected =
+                        mixJson
+                            .optJSONArray("songIds")
+                            .toStringList()
+                            .mapNotNull(candidateById::get)
+                            .filter { globalSongIds.add(it.id) }
+                            .distinctBy { it.id }
+                            .take(TopMixSongsPerMix)
+                    if (selected.isEmpty()) continue
 
-                add(
-                    GeneratedLibraryTopMix(
-                        id = "ai_top_mix_${System.currentTimeMillis()}_$index",
-                        title = mixJson.optString("title").sanitizeMixTitle(),
-                        description = mixJson.optString("description").sanitizeMixDescription(),
-                        tracks = ImmutableList.copyOf(selected.map { it.mediaMetadata }),
-                    ),
-                )
+                    add(
+                        GeneratedLibraryTopMix(
+                            id = "ai_top_mix_${System.currentTimeMillis()}_$index",
+                            title = mixJson.optString("title").sanitizeMixTitle(),
+                            description = mixJson.optString("description").sanitizeMixDescription(),
+                            tracks = ImmutableList.copyOf(selected.map { it.mediaMetadata }),
+                        ),
+                    )
+                }
             }
         }
     }
-}
 
 sealed interface RefreshLibraryTopMixesResult {
     data object Success : RefreshLibraryTopMixesResult
@@ -214,13 +221,16 @@ private suspend fun List<Song>.validateWithYtm(): List<ValidatedTopMixSong> {
 private suspend fun Song.validateWithYtm(): ValidatedTopMixSong? {
     val query = ytmValidationQuery()
     if (query.isBlank()) return null
-    val songs = YouTube.search(query, YouTube.SearchFilter.FILTER_SONG)
-        .getOrNull()
-        ?.items
-        .orEmpty()
-        .filterIsInstance<SongItem>()
-    val match = songs.firstOrNull { it.id == id }
-        ?: songs.firstOrNull { it.matchesLocalIdentity(this) }
+    val songs =
+        YouTube
+            .search(query, YouTube.SearchFilter.FILTER_SONG)
+            .getOrNull()
+            ?.items
+            .orEmpty()
+            .filterIsInstance<SongItem>()
+    val match =
+        songs.firstOrNull { it.id == id }
+            ?: songs.firstOrNull { it.matchesLocalIdentity(this) }
     return match?.let { songItem ->
         ValidatedTopMixSong(
             ytmSong = songItem,
@@ -270,12 +280,13 @@ private fun JSONArray?.toStringList(): List<String> =
     }
 
 private fun String.sanitizeMixTitle(): String {
-    val title = lineSequence()
-        .firstOrNull()
-        .orEmpty()
-        .trim()
-        .take(80)
-        .ifBlank { "Recent Listening Mix" }
+    val title =
+        lineSequence()
+            .firstOrNull()
+            .orEmpty()
+            .trim()
+            .take(80)
+            .ifBlank { "Recent Listening Mix" }
     return if (title.contains("mix", ignoreCase = true)) title else "$title Mix"
 }
 

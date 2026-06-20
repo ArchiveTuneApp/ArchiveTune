@@ -39,8 +39,6 @@ val ArchiveTuneCanvasKey = booleanPreferencesKey("archiveTuneCanvas")
 val ThumbnailCornerRadiusKey = floatPreferencesKey("thumbnailCornerRadius")
 val CropThumbnailToSquareKey = booleanPreferencesKey("cropThumbnailToSquare")
 
-
-
 val AodThumbnailShapeKey = stringPreferencesKey("aodThumbnailShape")
 val AodThumbnailSizeKey = floatPreferencesKey("aodThumbnailSize")
 val AodThumbnailShapeRotationKey = intPreferencesKey("aodThumbnailShapeRotation")
@@ -189,7 +187,7 @@ val TogetherAllowGuestsToControlPlaybackKey = booleanPreferencesKey("together_al
 val TogetherRequireHostApprovalToJoinKey = booleanPreferencesKey("together_require_host_approval_to_join")
 val TogetherLastJoinLinkKey = stringPreferencesKey("together_last_join_link")
 val TogetherWelcomeShownKey = booleanPreferencesKey("together_welcome_shown")
-    
+
 // ListenBrainz scrobbling
 val ListenBrainzEnabledKey = booleanPreferencesKey("listenbrainz_enabled")
 val ListenBrainzTokenKey = stringPreferencesKey("listenbrainz_token")
@@ -313,10 +311,12 @@ val DiscordUsernameKey = stringPreferencesKey("discordUsername")
 val DiscordNameKey = stringPreferencesKey("discordName")
 val DiscordAvatarUrlKey = stringPreferencesKey("discordAvatarUrl")
 val EnableDiscordRPCKey = booleanPreferencesKey("discordRPCEnable")
+
 // Discord activity customization keys
 val DiscordActivityNameKey = stringPreferencesKey("discordActivityName")
 val DiscordActivityDetailsKey = stringPreferencesKey("discordActivityDetails")
 val DiscordActivityStateKey = stringPreferencesKey("discordActivityState")
+
 // Custom button labels and urls for Discord activity buttons
 val DiscordActivityButton1LabelKey = stringPreferencesKey("discordActivityButton1Label")
 val DiscordActivityButton1UrlSourceKey = stringPreferencesKey("discordActivityButton1UrlSource")
@@ -327,6 +327,7 @@ val DiscordActivityButton2CustomUrlKey = stringPreferencesKey("discordActivityBu
 val DiscordActivityButton1EnabledKey = booleanPreferencesKey("discordActivityButton1Enabled")
 val DiscordActivityButton2EnabledKey = booleanPreferencesKey("discordActivityButton2Enabled")
 val DiscordShowWhenPausedKey = booleanPreferencesKey("discordShowWhenPaused")
+
 // Activity type for Discord presence (PLAYING, STREAMING, LISTENING, WATCHING, COMPETING)
 val DiscordActivityTypeKey = stringPreferencesKey("discordActivityType")
 val DiscordPresenceStatusKey = stringPreferencesKey("discordPresenceStatus") // "ONLINE", "IDLE", "DND", "INVISIBLE"
@@ -339,6 +340,7 @@ val DiscordLargeTextCustomKey = stringPreferencesKey("discordLargeTextCustom")
 val DiscordLargeImageCustomUrlKey = stringPreferencesKey("discordLargeImageCustomUrl")
 val DiscordSmallImageTypeKey = stringPreferencesKey("discordSmallImageType")
 val DiscordSmallImageCustomUrlKey = stringPreferencesKey("discordSmallImageCustomUrl")
+
 // Activity platform (discord client platform) selection
 val DiscordActivityPlatformKey = stringPreferencesKey("discordActivityPlatform")
 
@@ -413,19 +415,19 @@ val QuickPicksDisplayModeKey = stringPreferencesKey("quickPicksDisplayMode")
 enum class SongFilter {
     LIBRARY,
     LIKED,
-    DOWNLOADED
+    DOWNLOADED,
 }
 
 enum class ArtistFilter {
     LIBRARY,
-    LIKED
+    LIKED,
 }
 
 enum class AlbumFilter {
     LIBRARY,
     LIKED,
     DOWNLOADED,
-    DOWNLOADED_FULL
+    DOWNLOADED_FULL,
 }
 
 enum class SongSortType {
@@ -502,35 +504,41 @@ enum class MyTopFilter {
 
     fun toTimeMillis(): Long =
         when (this) {
-            DAY ->
+            DAY -> {
                 LocalDateTime
                     .now()
                     .minusDays(1)
                     .toInstant(ZoneOffset.UTC)
                     .toEpochMilli()
+            }
 
-            WEEK ->
+            WEEK -> {
                 LocalDateTime
                     .now()
                     .minusWeeks(1)
                     .toInstant(ZoneOffset.UTC)
                     .toEpochMilli()
+            }
 
-            MONTH ->
+            MONTH -> {
                 LocalDateTime
                     .now()
                     .minusMonths(1)
                     .toInstant(ZoneOffset.UTC)
                     .toEpochMilli()
+            }
 
-            YEAR ->
+            YEAR -> {
                 LocalDateTime
                     .now()
                     .minusMonths(12)
                     .toInstant(ZoneOffset.UTC)
                     .toEpochMilli()
+            }
 
-            ALL_TIME -> 0
+            ALL_TIME -> {
+                0
+            }
         }
 }
 
@@ -553,37 +561,42 @@ enum class PreferredLyricsProvider {
     PAXSENIX_YOUTUBE,
 }
 
-val DefaultLyricsProviderOrder = listOf(
-    PreferredLyricsProvider.BETTER_LYRICS,
-    PreferredLyricsProvider.LRCLIB,
-    PreferredLyricsProvider.KUGOU,
-    PreferredLyricsProvider.SIMPMUSIC,
-    PreferredLyricsProvider.UNISON,
-    PreferredLyricsProvider.PAXSENIX_APPLE_MUSIC,
-    PreferredLyricsProvider.PAXSENIX_NETEASE,
-    PreferredLyricsProvider.PAXSENIX_SPOTIFY,
+val DefaultLyricsProviderOrder =
+    listOf(
+        PreferredLyricsProvider.BETTER_LYRICS,
+        PreferredLyricsProvider.LRCLIB,
+        PreferredLyricsProvider.KUGOU,
+        PreferredLyricsProvider.SIMPMUSIC,
+        PreferredLyricsProvider.UNISON,
+        PreferredLyricsProvider.PAXSENIX_APPLE_MUSIC,
+        PreferredLyricsProvider.PAXSENIX_NETEASE,
+        PreferredLyricsProvider.PAXSENIX_SPOTIFY,
         PreferredLyricsProvider.PAXSENIX_MUSIXMATCH,
         PreferredLyricsProvider.PAXSENIX_YOUTUBE,
-)
+    )
 
 fun deserializeLyricsProviderOrder(orderStr: String?): List<PreferredLyricsProvider> {
     if (orderStr.isNullOrBlank()) return DefaultLyricsProviderOrder
 
-    val parsed = orderStr
-        .split(",")
-        .mapNotNull { name ->
-            PreferredLyricsProvider.entries.find { it.name == name.trim() }
-        }
-        .distinct()
+    val parsed =
+        orderStr
+            .split(",")
+            .mapNotNull { name ->
+                PreferredLyricsProvider.entries.find { it.name == name.trim() }
+            }.distinct()
 
-    val normalized = when {
-        parsed.take(3) == listOf(
-            PreferredLyricsProvider.LRCLIB,
-            PreferredLyricsProvider.KUGOU,
-            PreferredLyricsProvider.BETTER_LYRICS,
-        ) -> listOf(PreferredLyricsProvider.BETTER_LYRICS) + parsed.filterNot { it == PreferredLyricsProvider.BETTER_LYRICS }
-        else -> parsed
-    }
+    val normalized =
+        when {
+            parsed.take(3) ==
+                listOf(
+                    PreferredLyricsProvider.LRCLIB,
+                    PreferredLyricsProvider.KUGOU,
+                    PreferredLyricsProvider.BETTER_LYRICS,
+                )
+            -> listOf(PreferredLyricsProvider.BETTER_LYRICS) + parsed.filterNot { it == PreferredLyricsProvider.BETTER_LYRICS }
+
+            else -> parsed
+        }
 
     val missing = DefaultLyricsProviderOrder.filterNot { it in normalized }
     return normalized + missing
@@ -629,8 +642,8 @@ val PlayerCustomBlurKey = floatPreferencesKey("playerCustomBlur")
 val PlayerCustomContrastKey = floatPreferencesKey("playerCustomContrast")
 val PlayerCustomBrightnessKey = floatPreferencesKey("playerCustomBrightness")
 
-
 val LyricsAnimationStyleKey = stringPreferencesKey("lyricsAnimationStyle")
+
 enum class LyricsAnimationStyle {
     NONE,
     FADE,
@@ -667,10 +680,12 @@ val LyricsRomanizeOtherLanguagesKey = booleanPreferencesKey("lyricsRomanizeOther
 val TranslateLyricsKey = booleanPreferencesKey("translateLyrics")
 val UseLyricsV2Key = booleanPreferencesKey("useLyricsV2")
 val LyricsModeKey = stringPreferencesKey("lyricsMode")
+
 enum class LyricsMode {
     V2,
     ENHANCED,
 }
+
 val LyricsV2BounceFactorKey = floatPreferencesKey("lyricsV2BounceFactor")
 val LyricsV2GlowFactorKey = floatPreferencesKey("lyricsV2GlowFactor")
 val LyricsV2FillTransitionWidthKey = floatPreferencesKey("lyricsV2FillTransitionWidth")
@@ -819,6 +834,8 @@ val LastNotifiedVersionKey = stringPreferencesKey("lastNotifiedVersion")
 val GitHubContributorsEtagKey = stringPreferencesKey("github_contributors_etag")
 val GitHubContributorsJsonKey = stringPreferencesKey("github_contributors_json")
 val GitHubContributorsLastCheckedAtKey = longPreferencesKey("github_contributors_last_checked_at")
+val GitHubTranslationContributorsJsonKey = stringPreferencesKey("github_translation_contributors_json")
+val GitHubTranslationContributorsLastCheckedAtKey = longPreferencesKey("github_translation_contributors_last_checked_at")
 
 val GitHubReleasesEtagKey = stringPreferencesKey("github_releases_etag")
 val GitHubReleasesJsonKey = stringPreferencesKey("github_releases_json")
@@ -838,5 +855,3 @@ enum class UpdateChannel {
     NIGHTLY,
     DAILY_NIGHTLY,
 }
-
-

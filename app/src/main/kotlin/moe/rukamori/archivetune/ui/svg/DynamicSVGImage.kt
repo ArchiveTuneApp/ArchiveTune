@@ -31,18 +31,24 @@ fun DynamicSVGImage(
 ) {
     var size by remember { mutableStateOf(IntSize.Zero) }
 
-    val picture: Picture? = remember(isDarkTheme, tonalPalettes, size) {
-        if (size.width == 0 || size.height == 0) null
-        else SVG.getFromString(
-            svgImageString.parseDynamicColor(tonalPalettes, isDarkTheme)
-        ).renderToPicture(size.width, size.height)
-    }
+    val picture: Picture? =
+        remember(isDarkTheme, tonalPalettes, size) {
+            if (size.width == 0 || size.height == 0) {
+                null
+            } else {
+                SVG
+                    .getFromString(
+                        svgImageString.parseDynamicColor(tonalPalettes, isDarkTheme),
+                    ).renderToPicture(size.width, size.height)
+            }
+        }
 
     Canvas(
-        modifier = modifier.onGloballyPositioned { coordinates ->
-            val newSize = coordinates.size
-            if (newSize != size) size = newSize
-        },
+        modifier =
+            modifier.onGloballyPositioned { coordinates ->
+                val newSize = coordinates.size
+                if (newSize != size) size = newSize
+            },
     ) {
         picture?.let { pic ->
             drawIntoCanvas { canvas ->

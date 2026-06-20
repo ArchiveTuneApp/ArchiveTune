@@ -11,6 +11,7 @@ package moe.rukamori.archivetune.ui.menu
 
 import android.content.Intent
 import android.media.audiofx.AudioEffect
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
@@ -18,9 +19,9 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,6 +29,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,43 +37,41 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularWavyProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.ListItem
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -98,22 +98,20 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
-import android.widget.Toast
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
-import moe.rukamori.archivetune.innertube.YouTube
-import moe.rukamori.archivetune.innertube.models.WatchEndpoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import moe.rukamori.archivetune.LocalDatabase
 import moe.rukamori.archivetune.LocalDownloadUtil
 import moe.rukamori.archivetune.LocalPlayerConnection
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.constants.ArtistSeparatorsKey
-import moe.rukamori.archivetune.constants.ExternalDownloaderEnabledKey
-import moe.rukamori.archivetune.constants.ExternalDownloaderPackageKey
 import moe.rukamori.archivetune.constants.EqualizerBandLevelsMbKey
 import moe.rukamori.archivetune.constants.EqualizerBassBoostEnabledKey
 import moe.rukamori.archivetune.constants.EqualizerBassBoostStrengthKey
@@ -124,8 +122,12 @@ import moe.rukamori.archivetune.constants.EqualizerOutputGainMbKey
 import moe.rukamori.archivetune.constants.EqualizerSelectedProfileIdKey
 import moe.rukamori.archivetune.constants.EqualizerVirtualizerEnabledKey
 import moe.rukamori.archivetune.constants.EqualizerVirtualizerStrengthKey
+import moe.rukamori.archivetune.constants.ExternalDownloaderEnabledKey
+import moe.rukamori.archivetune.constants.ExternalDownloaderPackageKey
 import moe.rukamori.archivetune.constants.ListItemHeight
 import moe.rukamori.archivetune.constants.SpeedDialSongIdsKey
+import moe.rukamori.archivetune.innertube.YouTube
+import moe.rukamori.archivetune.innertube.models.WatchEndpoint
 import moe.rukamori.archivetune.models.MediaMetadata
 import moe.rukamori.archivetune.playback.EqCapabilities
 import moe.rukamori.archivetune.playback.EqProfile
@@ -145,18 +147,15 @@ import moe.rukamori.archivetune.utils.SpeedDialPinType
 import moe.rukamori.archivetune.utils.isLocalMediaId
 import moe.rukamori.archivetune.utils.parseSpeedDialPins
 import moe.rukamori.archivetune.utils.rememberPreference
-import moe.rukamori.archivetune.utils.shareLocalAudio
 import moe.rukamori.archivetune.utils.serializeSpeedDialPins
+import moe.rukamori.archivetune.utils.shareLocalAudio
 import moe.rukamori.archivetune.utils.toggleSpeedDialPin
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import java.util.UUID
 import kotlin.math.abs
 import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.math.round
 import kotlin.math.roundToInt
-import java.util.UUID
 
 @Composable
 fun PlayerMenu(
@@ -173,15 +172,17 @@ fun PlayerMenu(
     val database = LocalDatabase.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val deviceMusicVolumeController = rememberDeviceMusicVolumeController()
-    val onPlayerVolumeChange = remember(deviceMusicVolumeController) {
-        { volume: Float -> deviceMusicVolumeController.setVolumeFraction(volume) }
-    }
+    val onPlayerVolumeChange =
+        remember(deviceMusicVolumeController) {
+            { volume: Float -> deviceMusicVolumeController.setVolumeFraction(volume) }
+        }
     val activityResultLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
     val librarySong by database.song(mediaMetadata.id).collectAsState(initial = null)
     val coroutineScope = rememberCoroutineScope()
 
-    val download by LocalDownloadUtil.current.getDownload(mediaMetadata.id)
+    val download by LocalDownloadUtil.current
+        .getDownload(mediaMetadata.id)
         .collectAsState(initial = null)
 
     val artists =
@@ -196,36 +197,43 @@ fun PlayerMenu(
     val (speedDialSongIds, onSpeedDialSongIdsChange) = rememberPreference(SpeedDialSongIdsKey, "")
     val speedDialPins = remember(speedDialSongIds) { parseSpeedDialPins(speedDialSongIds) }
     val songPin = remember(mediaMetadata.id) { SpeedDialPin(type = SpeedDialPinType.SONG, id = mediaMetadata.id) }
-    val isInSpeedDial = remember(speedDialPins, songPin) {
-        speedDialPins.any { it.type == songPin.type && it.id == songPin.id }
-    }
-    val isLocalMedia = remember(librarySong?.song?.isLocal, mediaMetadata.id) {
-        librarySong?.song?.isLocal == true || mediaMetadata.id.isLocalMediaId()
-    }
+    val isInSpeedDial =
+        remember(speedDialPins, songPin) {
+            speedDialPins.any { it.type == songPin.type && it.id == songPin.id }
+        }
+    val isLocalMedia =
+        remember(librarySong?.song?.isLocal, mediaMetadata.id) {
+            librarySong?.song?.isLocal == true || mediaMetadata.id.isLocalMediaId()
+        }
 
     // Split artists by configured separators
     data class SplitArtist(
         val name: String,
-        val originalArtist: MediaMetadata.Artist?
+        val originalArtist: MediaMetadata.Artist?,
     )
 
-    val splitArtists = remember(artists, artistSeparators) {
-        if (artistSeparators.isEmpty()) {
-            artists.map { SplitArtist(it.name, it) }
-        } else {
-            val separatorRegex = "[${Regex.escape(artistSeparators)}]".toRegex()
-            artists.flatMap { artist ->
-                val parts = artist.name.split(separatorRegex).map { it.trim() }.filter { it.isNotEmpty() }
-                if (parts.size > 1) {
-                    parts.mapIndexed { index, name ->
-                        SplitArtist(name, if (index == 0) artist else null)
+    val splitArtists =
+        remember(artists, artistSeparators) {
+            if (artistSeparators.isEmpty()) {
+                artists.map { SplitArtist(it.name, it) }
+            } else {
+                val separatorRegex = "[${Regex.escape(artistSeparators)}]".toRegex()
+                artists.flatMap { artist ->
+                    val parts =
+                        artist.name
+                            .split(separatorRegex)
+                            .map { it.trim() }
+                            .filter { it.isNotEmpty() }
+                    if (parts.size > 1) {
+                        parts.mapIndexed { index, name ->
+                            SplitArtist(name, if (index == 0) artist else null)
+                        }
+                    } else {
+                        listOf(SplitArtist(artist.name, artist))
                     }
-                } else {
-                    listOf(SplitArtist(artist.name, artist))
                 }
             }
         }
-    }
 
     var showChoosePlaylistDialog by rememberSaveable {
         mutableStateOf(false)
@@ -243,10 +251,11 @@ fun PlayerMenu(
             showChoosePlaylistDialog = false
         },
         onAddComplete = { songCount, playlistNames ->
-            val message = when {
-                playlistNames.size == 1 -> context.getString(R.string.added_to_playlist, playlistNames.first())
-                else -> context.getString(R.string.added_to_n_playlists, playlistNames.size)
-            }
+            val message =
+                when {
+                    playlistNames.size == 1 -> context.getString(R.string.added_to_playlist, playlistNames.first())
+                    else -> context.getString(R.string.added_to_n_playlists, playlistNames.size)
+                }
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         },
     )
@@ -439,159 +448,174 @@ fun PlayerMenu(
 
     Spacer(modifier = Modifier.height(16.dp))
 
-
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(
-            start = 0.dp,
-            top = 0.dp,
-            end = 0.dp,
-            bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
-        ),
+        contentPadding =
+            PaddingValues(
+                start = 0.dp,
+                top = 0.dp,
+                end = 0.dp,
+                bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+            ),
     ) {
         item {
             MenuSurfaceSection(modifier = Modifier.padding(vertical = 6.dp)) {
                 NewActionGrid(
-                    actions = buildList {
-                        if (!isLocalMedia) {
-                            add(
-                                NewAction(
-                                    icon = {
-                                        Icon(
-                                            painter = painterResource(R.drawable.radio),
-                                            contentDescription = null,
-                                            modifier = Modifier.size(28.dp),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    },
-                                    text = stringResource(R.string.start_radio),
-                                    onClick = {
-                                        Toast.makeText(context, context.getString(R.string.starting_radio), Toast.LENGTH_SHORT).show()
-                                        playerConnection.startRadioSeamlessly()
-                                        onDismiss()
-                                    }
-                                ),
-                            )
-                        }
-                        add(
-                            NewAction(
-                                icon = {
-                                    Icon(
-                                        painter = painterResource(R.drawable.playlist_add),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(28.dp),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                },
-                                text = stringResource(R.string.add_to_playlist),
-                                onClick = { showChoosePlaylistDialog = true }
-                            ),
-                        )
-                        add(
-                            NewAction(
-                                icon = {
-                                    Icon(
-                                        painter = painterResource(if (isInSpeedDial) R.drawable.bookmark_filled else R.drawable.bookmark),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(28.dp),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                },
-                                text = stringResource(
-                                    if (isInSpeedDial) R.string.remove_from_speed_dial
-                                    else R.string.pin_to_speed_dial
-                                ),
-                                onClick = {
-                                    val updatedPins = toggleSpeedDialPin(speedDialPins, songPin)
-                                    onSpeedDialSongIdsChange(serializeSpeedDialPins(updatedPins))
-                                    onDismiss()
-                                }
-                            ),
-                        )
-                        add(
-                            if (isLocalMedia) {
-                                NewAction(
-                                    icon = {
-                                        Icon(
-                                            painter = painterResource(R.drawable.share),
-                                            contentDescription = null,
-                                            modifier = Modifier.size(28.dp),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    },
-                                    text = stringResource(R.string.share),
-                                    onClick = {
-                                        shareLocalAudio(context, mediaMetadata.id, librarySong?.format?.mimeType)
-                                        onDismiss()
-                                    }
-                                )
-                            } else {
-                                NewAction(
-                                    icon = {
-                                        Icon(
-                                            painter = painterResource(R.drawable.link),
-                                            contentDescription = null,
-                                            modifier = Modifier.size(28.dp),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    },
-                                    text = stringResource(R.string.copy_link),
-                                    onClick = {
-                                        val clipboard =
-                                            context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                        val clip =
-                                            android.content.ClipData.newPlainText(
-                                                context.getString(R.string.copy_link),
-                                                "https://music.youtube.com/watch?v=${mediaMetadata.id}",
+                    actions =
+                        buildList {
+                            if (!isLocalMedia) {
+                                add(
+                                    NewAction(
+                                        icon = {
+                                            Icon(
+                                                painter = painterResource(R.drawable.radio),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(28.dp),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                             )
-                                        clipboard.setPrimaryClip(clip)
-                                        android.widget.Toast.makeText(context, R.string.link_copied, android.widget.Toast.LENGTH_SHORT).show()
-                                        onDismiss()
-                                    }
+                                        },
+                                        text = stringResource(R.string.start_radio),
+                                        onClick = {
+                                            Toast.makeText(context, context.getString(R.string.starting_radio), Toast.LENGTH_SHORT).show()
+                                            playerConnection.startRadioSeamlessly()
+                                            onDismiss()
+                                        },
+                                    ),
                                 )
-                            },
-                        )
-                        if (!isLocalMedia) {
+                            }
                             add(
                                 NewAction(
                                     icon = {
                                         Icon(
-                                            painter = painterResource(R.drawable.fire),
+                                            painter = painterResource(R.drawable.playlist_add),
                                             contentDescription = null,
                                             modifier = Modifier.size(28.dp),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                     },
-                                    text = stringResource(R.string.music_together),
-                                    onClick = {
-                                        onDismiss()
-                                        playerBottomSheetState.snapTo(playerBottomSheetState.collapsedBound)
-                                        navController.navigate("settings/music_together")
-                                    }
+                                    text = stringResource(R.string.add_to_playlist),
+                                    onClick = { showChoosePlaylistDialog = true },
                                 ),
                             )
-                        }
-                        if (isQueueTrigger != true) {
                             add(
                                 NewAction(
                                     icon = {
                                         Icon(
-                                            painter = painterResource(R.drawable.bedtime),
+                                            painter =
+                                                painterResource(
+                                                    if (isInSpeedDial) R.drawable.bookmark_filled else R.drawable.bookmark,
+                                                ),
                                             contentDescription = null,
                                             modifier = Modifier.size(28.dp),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                     },
-                                    text = stringResource(R.string.aod_mode),
+                                    text =
+                                        stringResource(
+                                            if (isInSpeedDial) {
+                                                R.string.remove_from_speed_dial
+                                            } else {
+                                                R.string.pin_to_speed_dial
+                                            },
+                                        ),
                                     onClick = {
-                                        playerConnection.aodModeEnabled.value = true
+                                        val updatedPins = toggleSpeedDialPin(speedDialPins, songPin)
+                                        onSpeedDialSongIdsChange(serializeSpeedDialPins(updatedPins))
                                         onDismiss()
-                                    }
+                                    },
                                 ),
                             )
-                        }
-                    },
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp)
+                            add(
+                                if (isLocalMedia) {
+                                    NewAction(
+                                        icon = {
+                                            Icon(
+                                                painter = painterResource(R.drawable.share),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(28.dp),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                        },
+                                        text = stringResource(R.string.share),
+                                        onClick = {
+                                            shareLocalAudio(context, mediaMetadata.id, librarySong?.format?.mimeType)
+                                            onDismiss()
+                                        },
+                                    )
+                                } else {
+                                    NewAction(
+                                        icon = {
+                                            Icon(
+                                                painter = painterResource(R.drawable.link),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(28.dp),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                        },
+                                        text = stringResource(R.string.copy_link),
+                                        onClick = {
+                                            val clipboard =
+                                                context.getSystemService(
+                                                    android.content.Context.CLIPBOARD_SERVICE,
+                                                ) as android.content.ClipboardManager
+                                            val clip =
+                                                android.content.ClipData.newPlainText(
+                                                    context.getString(R.string.copy_link),
+                                                    "https://music.youtube.com/watch?v=${mediaMetadata.id}",
+                                                )
+                                            clipboard.setPrimaryClip(clip)
+                                            android.widget.Toast
+                                                .makeText(
+                                                    context,
+                                                    R.string.link_copied,
+                                                    android.widget.Toast.LENGTH_SHORT,
+                                                ).show()
+                                            onDismiss()
+                                        },
+                                    )
+                                },
+                            )
+                            if (!isLocalMedia) {
+                                add(
+                                    NewAction(
+                                        icon = {
+                                            Icon(
+                                                painter = painterResource(R.drawable.fire),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(28.dp),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                        },
+                                        text = stringResource(R.string.music_together),
+                                        onClick = {
+                                            onDismiss()
+                                            playerBottomSheetState.snapTo(playerBottomSheetState.collapsedBound)
+                                            navController.navigate("settings/music_together")
+                                        },
+                                    ),
+                                )
+                            }
+                            if (isQueueTrigger != true) {
+                                add(
+                                    NewAction(
+                                        icon = {
+                                            Icon(
+                                                painter = painterResource(R.drawable.bedtime),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(28.dp),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                        },
+                                        text = stringResource(R.string.aod_mode),
+                                        onClick = {
+                                            playerConnection.aodModeEnabled.value = true
+                                            onDismiss()
+                                        },
+                                    ),
+                                )
+                            }
+                        },
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
                 )
             }
         }
@@ -676,17 +700,19 @@ fun PlayerMenu(
                                         tint = MaterialTheme.colorScheme.error,
                                     )
                                 },
-                                modifier = Modifier.clickable {
-                                    DownloadService.sendRemoveDownload(
-                                        context,
-                                        ExoDownloadService::class.java,
-                                        mediaMetadata.id,
-                                        false,
-                                    )
-                                },
+                                modifier =
+                                    Modifier.clickable {
+                                        DownloadService.sendRemoveDownload(
+                                            context,
+                                            ExoDownloadService::class.java,
+                                            mediaMetadata.id,
+                                            false,
+                                        )
+                                    },
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                             )
                         }
+
                         Download.STATE_QUEUED, Download.STATE_DOWNLOADING -> {
                             ListItem(
                                 headlineContent = { Text(text = stringResource(R.string.downloading)) },
@@ -695,17 +721,19 @@ fun PlayerMenu(
                                         modifier = Modifier.size(24.dp),
                                     )
                                 },
-                                modifier = Modifier.clickable {
-                                    DownloadService.sendRemoveDownload(
-                                        context,
-                                        ExoDownloadService::class.java,
-                                        mediaMetadata.id,
-                                        false,
-                                    )
-                                },
+                                modifier =
+                                    Modifier.clickable {
+                                        DownloadService.sendRemoveDownload(
+                                            context,
+                                            ExoDownloadService::class.java,
+                                            mediaMetadata.id,
+                                            false,
+                                        )
+                                    },
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                             )
                         }
+
                         else -> {
                             ListItem(
                                 headlineContent = { Text(text = stringResource(R.string.action_download)) },
@@ -715,23 +743,24 @@ fun PlayerMenu(
                                         contentDescription = null,
                                     )
                                 },
-                                modifier = Modifier.clickable {
-                                    database.transaction {
-                                        insert(mediaMetadata)
-                                    }
-                                    val downloadRequest =
-                                        DownloadRequest
-                                            .Builder(mediaMetadata.id, mediaMetadata.id.toUri())
-                                            .setCustomCacheKey(mediaMetadata.id)
-                                            .setData(mediaMetadata.title.toByteArray())
-                                            .build()
-                                    DownloadService.sendAddDownload(
-                                        context,
-                                        ExoDownloadService::class.java,
-                                        downloadRequest,
-                                        false,
-                                    )
-                                },
+                                modifier =
+                                    Modifier.clickable {
+                                        database.transaction {
+                                            insert(mediaMetadata)
+                                        }
+                                        val downloadRequest =
+                                            DownloadRequest
+                                                .Builder(mediaMetadata.id, mediaMetadata.id.toUri())
+                                                .setCustomCacheKey(mediaMetadata.id)
+                                                .setData(mediaMetadata.title.toByteArray())
+                                                .build()
+                                        DownloadService.sendAddDownload(
+                                            context,
+                                            ExoDownloadService::class.java,
+                                            downloadRequest,
+                                            false,
+                                        )
+                                    },
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                             )
                         }
@@ -749,24 +778,36 @@ fun PlayerMenu(
                                     contentDescription = null,
                                 )
                             },
-                            modifier = Modifier.clickable {
-                                onDismiss()
-                                val url = "https://music.youtube.com/watch?v=${mediaMetadata.id}"
-                                if (externalDownloaderPackage.isBlank()) {
-                                    Toast.makeText(context, context.getString(R.string.external_downloader_not_configured), Toast.LENGTH_LONG).show()
-                                    return@clickable
-                                }
-                                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
-                                    setPackage(externalDownloaderPackage)
-                                    data = android.net.Uri.parse(url)
-                                    addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                                }
-                                try {
-                                    context.startActivity(intent)
-                                } catch (e: android.content.ActivityNotFoundException) {
-                                    Toast.makeText(context, context.getString(R.string.external_downloader_not_installed), Toast.LENGTH_SHORT).show()
-                                }
-                            },
+                            modifier =
+                                Modifier.clickable {
+                                    onDismiss()
+                                    val url = "https://music.youtube.com/watch?v=${mediaMetadata.id}"
+                                    if (externalDownloaderPackage.isBlank()) {
+                                        Toast
+                                            .makeText(
+                                                context,
+                                                context.getString(R.string.external_downloader_not_configured),
+                                                Toast.LENGTH_LONG,
+                                            ).show()
+                                        return@clickable
+                                    }
+                                    val intent =
+                                        android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+                                            setPackage(externalDownloaderPackage)
+                                            data = android.net.Uri.parse(url)
+                                            addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        }
+                                    try {
+                                        context.startActivity(intent)
+                                    } catch (e: android.content.ActivityNotFoundException) {
+                                        Toast
+                                            .makeText(
+                                                context,
+                                                context.getString(R.string.external_downloader_not_installed),
+                                                Toast.LENGTH_SHORT,
+                                            ).show()
+                                    }
+                                },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         )
                     }
@@ -791,10 +832,11 @@ fun PlayerMenu(
                                     tint = MaterialTheme.colorScheme.error,
                                 )
                             },
-                            modifier = Modifier.clickable {
-                                onRemoveFromQueue()
-                                onDismiss()
-                            },
+                            modifier =
+                                Modifier.clickable {
+                                    onRemoveFromQueue()
+                                    onDismiss()
+                                },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         )
 
@@ -854,7 +896,9 @@ fun PlayerMenu(
                             supportingContent = {
                                 val playbackParameters by playerConnection.playbackParameters.collectAsState()
                                 Text(
-                                    text = "x${formatMultiplier(playbackParameters.speed)} • x${formatMultiplier(playbackParameters.pitch)}",
+                                    text = "x${formatMultiplier(
+                                        playbackParameters.speed,
+                                    )} • x${formatMultiplier(playbackParameters.pitch)}",
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                 )
@@ -862,7 +906,6 @@ fun PlayerMenu(
                             modifier = Modifier.clickable { showPitchTempoDialog = true },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         )
-
                     }
                 }
             }
@@ -912,9 +955,10 @@ private fun PlayerVolumeCard(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 10.dp),
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.volume_off),
@@ -976,13 +1020,14 @@ private fun VolumeSliderL(
                         .background(MaterialTheme.colorScheme.primary),
             )
         },
-        colors = SliderDefaults.colors(
-            thumbColor = MaterialTheme.colorScheme.primary,
-            activeTrackColor = MaterialTheme.colorScheme.primary,
-            inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant,
-            activeTickColor = Color.Transparent,
-            inactiveTickColor = Color.Transparent,
-        ),
+        colors =
+            SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary,
+                inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                activeTickColor = Color.Transparent,
+                inactiveTickColor = Color.Transparent,
+            ),
     )
 }
 
@@ -1002,7 +1047,7 @@ fun TempoPitchDialog(onDismiss: () -> Unit) {
 
     var pitchMode by rememberSaveable {
         mutableStateOf(
-            if (isPitchSemitoneAligned(pitch)) PitchMode.Semitones else PitchMode.Multiplier
+            if (isPitchSemitoneAligned(pitch)) PitchMode.Semitones else PitchMode.Multiplier,
         )
     }
 
@@ -1043,9 +1088,10 @@ fun TempoPitchDialog(onDismiss: () -> Unit) {
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(18.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 12.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 12.dp),
             ) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(14.dp),
@@ -1081,7 +1127,7 @@ fun TempoPitchDialog(onDismiss: () -> Unit) {
                         onClick = {
                             tempo = (tempo - 0.01f).coerceIn(TempoMin, TempoMax).quantize(0.01f)
                             applyPlaybackParameters(tempo, pitch)
-                        }
+                        },
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.remove),
@@ -1108,7 +1154,7 @@ fun TempoPitchDialog(onDismiss: () -> Unit) {
                         onClick = {
                             tempo = (tempo + 0.01f).coerceIn(TempoMin, TempoMax).quantize(0.01f)
                             applyPlaybackParameters(tempo, pitch)
-                        }
+                        },
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.add),
@@ -1120,9 +1166,10 @@ fun TempoPitchDialog(onDismiss: () -> Unit) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
                 ) {
                     val presets = listOf(0.25f, 0.5f, 0.75f, 1f, 1.25f, 1.5f, 2f)
                     presets.forEach { preset ->
@@ -1159,14 +1206,16 @@ fun TempoPitchDialog(onDismiss: () -> Unit) {
 
                     Text(
                         text =
-                        when (pitchMode) {
-                            PitchMode.Semitones -> {
-                                val semitones = pitchToSemitones(pitch)
-                                "${if (semitones > 0) "+" else ""}$semitones"
-                            }
+                            when (pitchMode) {
+                                PitchMode.Semitones -> {
+                                    val semitones = pitchToSemitones(pitch)
+                                    "${if (semitones > 0) "+" else ""}$semitones"
+                                }
 
-                            PitchMode.Multiplier -> "x${formatMultiplier(pitch)}"
-                        },
+                                PitchMode.Multiplier -> {
+                                    "x${formatMultiplier(pitch)}"
+                                }
+                            },
                         style = MaterialTheme.typography.titleMedium,
                         textAlign = TextAlign.End,
                     )
@@ -1175,9 +1224,10 @@ fun TempoPitchDialog(onDismiss: () -> Unit) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
                 ) {
                     FilterChip(
                         selected = pitchMode == PitchMode.Semitones,
@@ -1213,9 +1263,10 @@ fun TempoPitchDialog(onDismiss: () -> Unit) {
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .horizontalScroll(rememberScrollState()),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .horizontalScroll(rememberScrollState()),
                         ) {
                             val presets = listOf(-12, -7, -5, 0, 5, 7, 12)
                             presets.forEach { preset ->
@@ -1243,7 +1294,7 @@ fun TempoPitchDialog(onDismiss: () -> Unit) {
                                 onClick = {
                                     pitch = (pitch - 0.01f).coerceIn(PitchMin, PitchMax).quantize(0.01f)
                                     applyPlaybackParameters(tempo, pitch)
-                                }
+                                },
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.remove),
@@ -1270,7 +1321,7 @@ fun TempoPitchDialog(onDismiss: () -> Unit) {
                                 onClick = {
                                     pitch = (pitch + 0.01f).coerceIn(PitchMin, PitchMax).quantize(0.01f)
                                     applyPlaybackParameters(tempo, pitch)
-                                }
+                                },
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.add),
@@ -1282,9 +1333,10 @@ fun TempoPitchDialog(onDismiss: () -> Unit) {
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .horizontalScroll(rememberScrollState()),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .horizontalScroll(rememberScrollState()),
                         ) {
                             val presets = listOf(0.25f, 0.5f, 0.75f, 1f, 1.25f, 1.5f, 2f)
                             presets.forEach { preset ->
@@ -1308,7 +1360,7 @@ fun TempoPitchDialog(onDismiss: () -> Unit) {
 
 private enum class PitchMode {
     Semitones,
-    Multiplier
+    Multiplier,
 }
 
 private const val TempoMin = 0.25f
@@ -1316,7 +1368,11 @@ private const val TempoMax = 2f
 private const val PitchMin = 0.25f
 private const val PitchMax = 2f
 
-private fun Float.safeCoerceIn(min: Float, max: Float, fallback: Float): Float {
+private fun Float.safeCoerceIn(
+    min: Float,
+    max: Float,
+    fallback: Float,
+): Float {
     val safe = if (this.isFinite()) this else fallback
     return safe.coerceIn(min, max)
 }
@@ -1331,9 +1387,7 @@ private fun pitchToSemitones(pitch: Float): Int {
     return (12f * log2(safePitch)).roundToInt().coerceIn(-12, 12)
 }
 
-private fun semitonesToPitch(semitones: Int): Float {
-    return 2f.pow(semitones.toFloat() / 12f).coerceIn(PitchMin, PitchMax)
-}
+private fun semitonesToPitch(semitones: Int): Float = 2f.pow(semitones.toFloat() / 12f).coerceIn(PitchMin, PitchMax)
 
 private fun isPitchSemitoneAligned(pitch: Float): Boolean {
     val safePitch = pitch.safeCoerceIn(PitchMin, PitchMax, fallback = 1f).coerceAtLeast(0.0001f)
@@ -1342,20 +1396,19 @@ private fun isPitchSemitoneAligned(pitch: Float): Boolean {
     return abs(reconstructed - pitch) < 0.0015f
 }
 
-private fun formatMultiplier(multiplier: Float): String {
-    return String.format("%.2f", multiplier)
-}
+private fun formatMultiplier(multiplier: Float): String = String.format("%.2f", multiplier)
 
 private fun sliderToMultiplier(slider: Float): Float {
     val t = slider.coerceIn(0f, 1f)
     val y = (t - 0.5f) * 2f
     val curve = 2.2f
     val absY = abs(y).pow(curve)
-    val shaped = when {
-        y > 0f -> absY
-        y < 0f -> -absY
-        else -> 0f
-    }
+    val shaped =
+        when {
+            y > 0f -> absY
+            y < 0f -> -absY
+            else -> 0f
+        }
     val exponent = if (y < 0f) 2f * shaped else shaped
     return 2f.pow(exponent).coerceIn(TempoMin, TempoMax)
 }
@@ -1366,11 +1419,12 @@ private fun multiplierToSlider(multiplier: Float): Float {
     val curve = 2.2f
     val shaped = if (m < 1f) (log / 2f) else log
     val absShaped = abs(shaped).pow(1f / curve)
-    val y = when {
-        shaped > 0f -> absShaped
-        shaped < 0f -> -absShaped
-        else -> 0f
-    }
+    val y =
+        when {
+            shaped > 0f -> absShaped
+            shaped < 0f -> -absShaped
+            else -> 0f
+        }
     return (0.5f + y / 2f).coerceIn(0f, 1f)
 }
 
@@ -1447,100 +1501,104 @@ fun EqualizerDialog(
     var showManageProfilesDialog by rememberSaveable { mutableStateOf(false) }
     var pendingExportProfileJson by rememberSaveable { mutableStateOf<String?>(null) }
 
-    val exportFileLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.CreateDocument("application/json"),
-    ) { uri ->
-        val raw = pendingExportProfileJson ?: return@rememberLauncherForActivityResult
-        pendingExportProfileJson = null
-        if (uri == null) return@rememberLauncherForActivityResult
-        coroutineScope.launch(Dispatchers.IO) {
-            runCatching {
-                context.contentResolver.openOutputStream(uri)?.use { stream ->
-                    stream.write(raw.toByteArray(Charsets.UTF_8))
+    val exportFileLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.CreateDocument("application/json"),
+        ) { uri ->
+            val raw = pendingExportProfileJson ?: return@rememberLauncherForActivityResult
+            pendingExportProfileJson = null
+            if (uri == null) return@rememberLauncherForActivityResult
+            coroutineScope.launch(Dispatchers.IO) {
+                runCatching {
+                    context.contentResolver.openOutputStream(uri)?.use { stream ->
+                        stream.write(raw.toByteArray(Charsets.UTF_8))
+                    }
                 }
-            }
-            withContext(Dispatchers.Main) {
-                Toast.makeText(context, context.getString(R.string.backup_create_success), Toast.LENGTH_SHORT).show()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, context.getString(R.string.backup_create_success), Toast.LENGTH_SHORT).show()
+                }
             }
         }
-    }
 
-    val importFileLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocument(),
-    ) { uri ->
-        if (uri == null) return@rememberLauncherForActivityResult
-        val currentProfiles = profiles
-        coroutineScope.launch(Dispatchers.IO) {
-            val raw = runCatching {
-                context.contentResolver.openInputStream(uri)?.use { stream ->
-                    stream.readBytes().toString(Charsets.UTF_8)
-                }
-            }.getOrNull()
-
-            if (raw.isNullOrBlank()) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(context, context.getString(R.string.eq_import_failed), Toast.LENGTH_SHORT).show()
-                }
-                return@launch
-            }
-
-            val payload =
-                decodeProfilesPayload(raw).takeIf { it.profiles.isNotEmpty() }
-                    ?: runCatching {
-                        EqProfilesPayload(EqualizerJson.json.decodeFromString<List<EqProfile>>(raw))
-                    }.getOrNull()
-                    ?: EqProfilesPayload()
-
-            if (payload.profiles.isEmpty()) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(context, context.getString(R.string.eq_import_failed), Toast.LENGTH_SHORT).show()
-                }
-                return@launch
-            }
-
-            val existingIds = currentProfiles.map { it.id }.toMutableSet()
-            val normalizedImported =
-                payload.profiles.map { p ->
-                    val baseName = p.name.trim().ifBlank { context.getString(R.string.eq_imported_profile) }
-                    val incomingId = p.id.trim()
-                    val finalId =
-                        if (incomingId.isBlank() || !existingIds.add(incomingId)) {
-                            generateSequence { UUID.randomUUID().toString() }.first { existingIds.add(it) }
-                        } else {
-                            incomingId
+    val importFileLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.OpenDocument(),
+        ) { uri ->
+            if (uri == null) return@rememberLauncherForActivityResult
+            val currentProfiles = profiles
+            coroutineScope.launch(Dispatchers.IO) {
+                val raw =
+                    runCatching {
+                        context.contentResolver.openInputStream(uri)?.use { stream ->
+                            stream.readBytes().toString(Charsets.UTF_8)
                         }
-                    p.copy(id = finalId, name = baseName)
+                    }.getOrNull()
+
+                if (raw.isNullOrBlank()) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, context.getString(R.string.eq_import_failed), Toast.LENGTH_SHORT).show()
+                    }
+                    return@launch
                 }
 
-            val updatedPayload =
-                EqProfilesPayload(
-                    profiles =
-                        (currentProfiles + normalizedImported)
-                            .distinctBy { it.id }
-                            .sortedBy { it.name.lowercase() },
-                )
+                val payload =
+                    decodeProfilesPayload(raw).takeIf { it.profiles.isNotEmpty() }
+                        ?: runCatching {
+                            EqProfilesPayload(EqualizerJson.json.decodeFromString<List<EqProfile>>(raw))
+                        }.getOrNull()
+                        ?: EqProfilesPayload()
 
-            val firstImported = normalizedImported.firstOrNull() ?: return@launch
+                if (payload.profiles.isEmpty()) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, context.getString(R.string.eq_import_failed), Toast.LENGTH_SHORT).show()
+                    }
+                    return@launch
+                }
 
-            withContext(Dispatchers.Main) {
-                setEqEnabled(true)
-                setBandLevelsRaw(encodeBandLevelsMb(firstImported.bandLevelsMb))
-                setOutputGainMb(firstImported.outputGainMb)
-                setOutputGainEnabled(firstImported.outputGainMb != 0)
-                setBassBoostStrength(firstImported.bassBoostStrength)
-                setBassBoostEnabled(firstImported.bassBoostStrength != 0)
-                setVirtualizerStrength(firstImported.virtualizerStrength)
-                setVirtualizerEnabled(firstImported.virtualizerStrength != 0)
-                setCustomProfilesJson(encodeProfilesPayload(updatedPayload))
-                setSelectedProfileId("profile:${firstImported.id}")
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.eq_import_success, normalizedImported.size),
-                    Toast.LENGTH_SHORT,
-                ).show()
+                val existingIds = currentProfiles.map { it.id }.toMutableSet()
+                val normalizedImported =
+                    payload.profiles.map { p ->
+                        val baseName = p.name.trim().ifBlank { context.getString(R.string.eq_imported_profile) }
+                        val incomingId = p.id.trim()
+                        val finalId =
+                            if (incomingId.isBlank() || !existingIds.add(incomingId)) {
+                                generateSequence { UUID.randomUUID().toString() }.first { existingIds.add(it) }
+                            } else {
+                                incomingId
+                            }
+                        p.copy(id = finalId, name = baseName)
+                    }
+
+                val updatedPayload =
+                    EqProfilesPayload(
+                        profiles =
+                            (currentProfiles + normalizedImported)
+                                .distinctBy { it.id }
+                                .sortedBy { it.name.lowercase() },
+                    )
+
+                val firstImported = normalizedImported.firstOrNull() ?: return@launch
+
+                withContext(Dispatchers.Main) {
+                    setEqEnabled(true)
+                    setBandLevelsRaw(encodeBandLevelsMb(firstImported.bandLevelsMb))
+                    setOutputGainMb(firstImported.outputGainMb)
+                    setOutputGainEnabled(firstImported.outputGainMb != 0)
+                    setBassBoostStrength(firstImported.bassBoostStrength)
+                    setBassBoostEnabled(firstImported.bassBoostStrength != 0)
+                    setVirtualizerStrength(firstImported.virtualizerStrength)
+                    setVirtualizerEnabled(firstImported.virtualizerStrength != 0)
+                    setCustomProfilesJson(encodeProfilesPayload(updatedPayload))
+                    setSelectedProfileId("profile:${firstImported.id}")
+                    Toast
+                        .makeText(
+                            context,
+                            context.getString(R.string.eq_import_success, normalizedImported.size),
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                }
             }
         }
-    }
 
     if (showSaveProfileDialog) {
         TextFieldDialog(
@@ -1999,9 +2057,10 @@ private fun EqActivateRow(
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 20.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 20.dp),
         ) {
             Text(
                 text = stringResource(R.string.tap_to_activate_equalizer),
@@ -2012,15 +2071,18 @@ private fun EqActivateRow(
             Switch(
                 checked = enabled,
                 onCheckedChange = onEnabledChange,
-                thumbContent = if (enabled) {
-                    {
-                        Icon(
-                            painter = painterResource(R.drawable.check),
-                            contentDescription = null,
-                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                        )
-                    }
-                } else null,
+                thumbContent =
+                    if (enabled) {
+                        {
+                            Icon(
+                                painter = painterResource(R.drawable.check),
+                                contentDescription = null,
+                                modifier = Modifier.size(SwitchDefaults.IconSize),
+                            )
+                        }
+                    } else {
+                        null
+                    },
             )
         }
     }
@@ -2052,11 +2114,12 @@ private fun EqHeroCard(
                     .background(
                         brush =
                             Brush.verticalGradient(
-                                colors = listOf(
-                                    heroAccentColor.copy(alpha = 0.95f),
-                                    MaterialTheme.colorScheme.secondaryContainer.copy(alpha = if (enabled) 0.78f else 0.52f),
-                                    MaterialTheme.colorScheme.surfaceContainerHigh,
-                                ),
+                                colors =
+                                    listOf(
+                                        heroAccentColor.copy(alpha = 0.95f),
+                                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = if (enabled) 0.78f else 0.52f),
+                                        MaterialTheme.colorScheme.surfaceContainerHigh,
+                                    ),
                             ),
                     ),
         ) {
@@ -2201,7 +2264,14 @@ private fun EqToggleSliderRow(
     onValueChangeFinished: (() -> Unit)? = null,
 ) {
     val containerColor by animateColorAsState(
-        targetValue = if (enabled) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f) else MaterialTheme.colorScheme.surfaceContainerHighest,
+        targetValue =
+            if (enabled) {
+                MaterialTheme.colorScheme.secondaryContainer.copy(
+                    alpha = 0.45f,
+                )
+            } else {
+                MaterialTheme.colorScheme.surfaceContainerHighest
+            },
         animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow),
         label = "eqToggleContainer",
     ) {
@@ -2267,20 +2337,25 @@ private fun decodeBandLevelsMb(raw: String?): List<Int> {
     return runCatching { EqualizerJson.json.decodeFromString<List<Int>>(raw) }.getOrNull() ?: emptyList()
 }
 
-private fun encodeBandLevelsMb(levelsMb: List<Int>): String {
-    return runCatching { EqualizerJson.json.encodeToString(levelsMb) }.getOrNull().orEmpty()
-}
+private fun encodeBandLevelsMb(levelsMb: List<Int>): String =
+    runCatching {
+        EqualizerJson.json.encodeToString(levelsMb)
+    }.getOrNull().orEmpty()
 
 private fun decodeProfilesPayload(raw: String?): EqProfilesPayload {
     if (raw.isNullOrBlank()) return EqProfilesPayload()
     return runCatching { EqualizerJson.json.decodeFromString<EqProfilesPayload>(raw) }.getOrNull() ?: EqProfilesPayload()
 }
 
-private fun encodeProfilesPayload(payload: EqProfilesPayload): String {
-    return runCatching { EqualizerJson.json.encodeToString(payload) }.getOrNull().orEmpty()
-}
+private fun encodeProfilesPayload(payload: EqProfilesPayload): String =
+    runCatching {
+        EqualizerJson.json.encodeToString(payload)
+    }.getOrNull().orEmpty()
 
-private fun resampleLevelsByIndex(levelsMb: List<Int>, targetCount: Int): List<Int> {
+private fun resampleLevelsByIndex(
+    levelsMb: List<Int>,
+    targetCount: Int,
+): List<Int> {
     if (targetCount <= 0) return emptyList()
     if (levelsMb.isEmpty()) return List(targetCount) { 0 }
     if (levelsMb.size == targetCount) return levelsMb
@@ -2289,8 +2364,16 @@ private fun resampleLevelsByIndex(levelsMb: List<Int>, targetCount: Int): List<I
     val lastIndex = levelsMb.lastIndex.toFloat().coerceAtLeast(1f)
     return List(targetCount) { i ->
         val pos = i.toFloat() * lastIndex / (targetCount - 1).toFloat()
-        val lo = kotlin.math.floor(pos).toInt().coerceIn(0, levelsMb.lastIndex)
-        val hi = kotlin.math.ceil(pos).toInt().coerceIn(0, levelsMb.lastIndex)
+        val lo =
+            kotlin.math
+                .floor(pos)
+                .toInt()
+                .coerceIn(0, levelsMb.lastIndex)
+        val hi =
+            kotlin.math
+                .ceil(pos)
+                .toInt()
+                .coerceIn(0, levelsMb.lastIndex)
         val t = (pos - lo.toFloat()).coerceIn(0f, 1f)
         val a = levelsMb[lo]
         val b = levelsMb[hi]

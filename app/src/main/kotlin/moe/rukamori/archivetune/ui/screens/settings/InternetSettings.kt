@@ -47,7 +47,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,6 +56,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -77,27 +77,31 @@ import java.util.concurrent.TimeUnit
 @Composable
 fun InternetWarningBox(modifier: Modifier = Modifier) {
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
         shape = RoundedCornerShape(SettingsDimensions.BannerCardCornerRadius),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.7f),
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.7f),
+            ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
             verticalAlignment = Alignment.Top,
             horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             Box(
-                modifier = Modifier
-                    .size(SettingsDimensions.BannerIconSize)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.error.copy(alpha = 0.12f)),
+                modifier =
+                    Modifier
+                        .size(SettingsDimensions.BannerIconSize)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.error.copy(alpha = 0.12f)),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -163,17 +167,19 @@ fun InternetSettings(
 
     val dnsProviders = remember { listOf("Cloudflare", "Google", "AdGuard", "Quad9", "Custom") }
     val proxyTypes = remember { listOf(Proxy.Type.HTTP, Proxy.Type.SOCKS) }
-    val ipRotationDescription = when {
-        loadingIpRotation -> stringResource(R.string.ip_rotation_loading)
-        refreshingIpRotation -> stringResource(R.string.ip_rotation_refreshing)
-        ipRotationEnabled -> stringResource(R.string.ip_rotation_active_proxies, activeProxyCount)
-        else -> stringResource(R.string.ip_rotation_desc)
-    }
+    val ipRotationDescription =
+        when {
+            loadingIpRotation -> stringResource(R.string.ip_rotation_loading)
+            refreshingIpRotation -> stringResource(R.string.ip_rotation_refreshing)
+            ipRotationEnabled -> stringResource(R.string.ip_rotation_active_proxies, activeProxyCount)
+            else -> stringResource(R.string.ip_rotation_desc)
+        }
 
     Column(
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .padding(bottom = SettingsDimensions.ScreenBottomPadding),
     ) {
         InternetWarningBox()
 
@@ -306,44 +312,55 @@ fun InternetSettings(
                                 try {
                                     val proxy = ProxyUtils.createProxyOrNull(proxyType, proxyHost, proxyPort)
                                     if (proxy == null) {
-                                        testResult = context.getString(
-                                            R.string.proxy_connection_failed,
-                                            context.getString(R.string.proxy_connection_invalid_configuration),
-                                        )
+                                        testResult =
+                                            context.getString(
+                                                R.string.proxy_connection_failed,
+                                                context.getString(R.string.proxy_connection_invalid_configuration),
+                                            )
                                         return@launch
                                     }
-                                    val clientBuilder = OkHttpClient.Builder()
-                                        .proxy(proxy)
-                                        .connectTimeout(10, TimeUnit.SECONDS)
-                                        .readTimeout(10, TimeUnit.SECONDS)
+                                    val clientBuilder =
+                                        OkHttpClient
+                                            .Builder()
+                                            .proxy(proxy)
+                                            .connectTimeout(10, TimeUnit.SECONDS)
+                                            .readTimeout(10, TimeUnit.SECONDS)
 
                                     if (proxyUsername.isNotBlank() && proxyPassword.isNotBlank()) {
                                         clientBuilder.proxyAuthenticator { _, response ->
                                             val credential = okhttp3.Credentials.basic(proxyUsername, proxyPassword)
-                                            response.request.newBuilder()
+                                            response.request
+                                                .newBuilder()
                                                 .header("Proxy-Authorization", credential)
                                                 .build()
                                         }
                                     }
 
                                     val client = clientBuilder.build()
-                                    val request = Request.Builder()
-                                        .url("https://music.youtube.com/generate_204")
-                                        .build()
+                                    val request =
+                                        Request
+                                            .Builder()
+                                            .url("https://music.youtube.com/generate_204")
+                                            .build()
                                     client.newCall(request).execute().use { response ->
-                                        testResult = if (response.isSuccessful || response.code == 204) {
-                                            context.getString(R.string.proxy_connection_success)
-                                        } else {
-                                            context.getString(R.string.proxy_connection_failed, "HTTP ${response.code}")
-                                        }
+                                        testResult =
+                                            if (response.isSuccessful || response.code == 204) {
+                                                context.getString(R.string.proxy_connection_success)
+                                            } else {
+                                                context.getString(R.string.proxy_connection_failed, "HTTP ${response.code}")
+                                            }
                                     }
                                 } catch (e: Exception) {
-                                    testResult = context.getString(R.string.proxy_connection_failed, e.message ?: context.getString(R.string.error_unknown))
+                                    testResult =
+                                        context.getString(
+                                            R.string.proxy_connection_failed,
+                                            e.message ?: context.getString(R.string.error_unknown),
+                                        )
                                 } finally {
                                     testingProxy = false
                                 }
                             }
-                        }
+                        },
                     )
                 }
             }
@@ -394,7 +411,7 @@ fun InternetSettings(
     if (testingProxy) {
         DefaultDialog(
             onDismiss = { },
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             CircularWavyProgressIndicator(
                 modifier = Modifier.size(48.dp),
@@ -412,7 +429,7 @@ fun InternetSettings(
             onConfirm = { testResult = null },
             content = {
                 Text(testResult!!)
-            }
+            },
         )
     }
 
@@ -429,7 +446,7 @@ fun InternetSettings(
                 )
             }
         },
-        scrollBehavior = scrollBehavior
+        scrollBehavior = scrollBehavior,
     )
 }
 
@@ -478,27 +495,32 @@ private fun IpRotationPreference(
                             label = "ipRotationSwitchThumbIcon",
                         ) { isChecked ->
                             Icon(
-                                painter = painterResource(
-                                    id = if (isChecked) R.drawable.check else R.drawable.close
-                                ),
+                                painter =
+                                    painterResource(
+                                        id = if (isChecked) R.drawable.check else R.drawable.close,
+                                    ),
                                 contentDescription = null,
                                 modifier = Modifier.size(SwitchDefaults.IconSize),
                             )
                         }
                     },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                        checkedTrackColor = MaterialTheme.colorScheme.primary,
-                        checkedIconColor = MaterialTheme.colorScheme.primary,
-                        uncheckedThumbColor = MaterialTheme.colorScheme.onSurface,
-                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
-                        uncheckedIconColor = MaterialTheme.colorScheme.surfaceVariant,
-                    ),
+                    colors =
+                        SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary,
+                            checkedIconColor = MaterialTheme.colorScheme.primary,
+                            uncheckedThumbColor = MaterialTheme.colorScheme.onSurface,
+                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                            uncheckedIconColor = MaterialTheme.colorScheme.surfaceVariant,
+                        ),
                 )
             }
         },
-        onClick = if (isBusy) null else {
-            { onCheckedChange(!checked) }
-        },
+        onClick =
+            if (isBusy) {
+                null
+            } else {
+                { onCheckedChange(!checked) }
+            },
     )
 }

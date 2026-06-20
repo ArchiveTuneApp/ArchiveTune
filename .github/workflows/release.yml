@@ -59,6 +59,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: true
 
       - name: Set up JDK 21
         uses: actions/setup-java@v5
@@ -81,7 +83,6 @@ jobs:
           LASTFM_SECRET: ${{ secrets.LASTFM_SECRET }}
           TOGETHER_BEARER_TOKEN: ${{ secrets.TOGETHER_BEARER_TOKEN }}
           CANVAS_BEARER_TOKEN: ${{ secrets.CANVAS_BEARER_TOKEN }}
-          WEBLATE_API_TOKEN: ${{ secrets.WEBLATE_API_TOKEN }}
         run: |
           set -euo pipefail
           DEVICE="mobile"
@@ -106,7 +107,15 @@ jobs:
               "app/build/outputs/apk/${DEVICE}${ABI_CAP}/release" \
               "app/build/outputs/apk/${DEVICE_CAP}${ABI_CAP}/release"
             do
-              apk="$(find "$dir" -maxdepth 1 -type f -name "*.apk" ! -name "*signed*.apk" 2>/dev/null | head -n 1 || true)"
+              [ -d "$dir" ] || continue
+
+              apk="$(find "$dir" -maxdepth 1 -type f -name "*-unsigned.apk" | head -n 1 || true)"
+              if [ -n "${apk:-}" ] && [ -f "$apk" ]; then
+                echo "$apk"
+                return 0
+              fi
+
+              apk="$(find "$dir" -maxdepth 1 -type f -name "*.apk" ! -name "*-signed.apk" ! -name "*-unsigned-signed.apk" | head -n 1 || true)"
               if [ -n "${apk:-}" ] && [ -f "$apk" ]; then
                 echo "$apk"
                 return 0
@@ -116,9 +125,19 @@ jobs:
             metadata="$(
               find app/build/outputs/apk -type f -name "output-metadata.json" \
                 \( \
+                  -path "*/gms${DEVICE_CAP}${ABI_CAP}/release/output-metadata.json" -o \
+                  -path "*/gms${DEVICE}${ABI_CAP}/release/output-metadata.json" -o \
+                  -path "*/gms/${DEVICE}/${ABI}/release/output-metadata.json" -o \
+                  -path "*/gms/${DEVICE}${ABI_CAP}/release/output-metadata.json" -o \
+                  -path "*/gms/${DEVICE_CAP}${ABI_CAP}/release/output-metadata.json" -o \
                   -path "*/${DEVICE}/${ABI}/release/output-metadata.json" -o \
                   -path "*/${DEVICE}${ABI_CAP}/release/output-metadata.json" -o \
                   -path "*/${DEVICE_CAP}${ABI_CAP}/release/output-metadata.json" -o \
+                  -path "*/gms${DEVICE_CAP}${ABI_CAP}/*/release/output-metadata.json" -o \
+                  -path "*/gms${DEVICE}${ABI_CAP}/*/release/output-metadata.json" -o \
+                  -path "*/gms/${DEVICE}/${ABI}/*/release/output-metadata.json" -o \
+                  -path "*/gms/${DEVICE}${ABI_CAP}/*/release/output-metadata.json" -o \
+                  -path "*/gms/${DEVICE_CAP}${ABI_CAP}/*/release/output-metadata.json" -o \
                   -path "*/${DEVICE}/${ABI}/*/release/output-metadata.json" -o \
                   -path "*/${DEVICE}${ABI_CAP}/*/release/output-metadata.json" -o \
                   -path "*/${DEVICE_CAP}${ABI_CAP}/*/release/output-metadata.json" \
@@ -137,7 +156,33 @@ jobs:
               fi
             fi
 
-            apk="$(find app/build/outputs/apk -type f -name "*.apk" ! -name "*signed*.apk" \( -path "*/${DEVICE}/${ABI}/*" -o -path "*/${DEVICE}${ABI_CAP}/*" -o -path "*/${DEVICE_CAP}${ABI_CAP}/*" \) | head -n 1 || true)"
+            apk="$(find app/build/outputs/apk -type f -name "*-unsigned.apk" \
+              \( \
+                -path "*/gms${DEVICE_CAP}${ABI_CAP}/*" -o \
+                -path "*/gms${DEVICE}${ABI_CAP}/*" -o \
+                -path "*/gms/${DEVICE}/${ABI}/*" -o \
+                -path "*/gms/${DEVICE}${ABI_CAP}/*" -o \
+                -path "*/gms/${DEVICE_CAP}${ABI_CAP}/*" -o \
+                -path "*/${DEVICE}/${ABI}/*" -o \
+                -path "*/${DEVICE}${ABI_CAP}/*" -o \
+                -path "*/${DEVICE_CAP}${ABI_CAP}/*" \
+              \) | head -n 1 || true)"
+            if [ -n "${apk:-}" ] && [ -f "$apk" ]; then
+              echo "$apk"
+              return 0
+            fi
+
+            apk="$(find app/build/outputs/apk -type f -name "*.apk" ! -name "*-signed.apk" ! -name "*-unsigned-signed.apk" \
+              \( \
+                -path "*/gms${DEVICE_CAP}${ABI_CAP}/*" -o \
+                -path "*/gms${DEVICE}${ABI_CAP}/*" -o \
+                -path "*/gms/${DEVICE}/${ABI}/*" -o \
+                -path "*/gms/${DEVICE}${ABI_CAP}/*" -o \
+                -path "*/gms/${DEVICE_CAP}${ABI_CAP}/*" -o \
+                -path "*/${DEVICE}/${ABI}/*" -o \
+                -path "*/${DEVICE}${ABI_CAP}/*" -o \
+                -path "*/${DEVICE_CAP}${ABI_CAP}/*" \
+              \) | head -n 1 || true)"
             if [ -n "${apk:-}" ] && [ -f "$apk" ]; then
               echo "$apk"
               return 0
@@ -172,7 +217,7 @@ jobs:
           test "$SHA_1" = "$SHA_2"
 
   build:
-    name: Build Release APKs (${{ matrix.distribution }}-${{ matrix.device }}-${{ matrix.abi }})
+    name: Build Release APKs
     needs: [check-version, reproducibility]
     # Removed '|| workflow_dispatch' so it respects the version check
     if: needs.check-version.outputs.version_changed == 'true'
@@ -243,6 +288,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: true
       
       - name: Set up JDK 21
         uses: actions/setup-java@v5
@@ -303,7 +350,6 @@ jobs:
           LASTFM_SECRET: ${{ secrets.LASTFM_SECRET }}
           TOGETHER_BEARER_TOKEN: ${{ secrets.TOGETHER_BEARER_TOKEN }}
           CANVAS_BEARER_TOKEN: ${{ secrets.CANVAS_BEARER_TOKEN }}
-          WEBLATE_API_TOKEN: ${{ secrets.WEBLATE_API_TOKEN }}
 
       - name: Resolve release output directory
         id: release_dir
@@ -404,16 +450,16 @@ jobs:
 
   create-release:
     needs: [check-version, build]
-    # Removed '|| workflow_dispatch' so it respects the version check
     if: needs.check-version.outputs.version_changed == 'true'
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      
+          persist-credentials: false
+
       - name: Download all APKs
         uses: actions/download-artifact@v8
         with:
@@ -462,20 +508,20 @@ jobs:
             }
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Create Release
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.RELEASE_PAT }}
         run: |
           MOBILE_UNIVERSAL_APK=$(find downloaded_artifacts/app-mobile-universal-release -name "*.apk" | head -n 1)
           OTHER_APKS=$(find downloaded_artifacts -path "*/app-*-release/*.apk" ! -path "*/app-mobile-universal-release/*")
 
-          # Cleaned up heredoc for safety
           cat > release_notes.md <<EOF
           ${{ steps.build_changelog.outputs.changelog }}
           EOF
-          
+
           gh release create "v${{ needs.check-version.outputs.new_version }}" \
+            --target "${{ github.sha }}" \
             --title "${{ needs.check-version.outputs.new_version }}" \
             --notes-file release_notes.md \
             "$MOBILE_UNIVERSAL_APK" \

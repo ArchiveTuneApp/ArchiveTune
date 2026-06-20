@@ -20,7 +20,7 @@ data class PaxsenixStats(
     @SerialName("overall_success_rate") val overallSuccessRate: String,
     val endpoints: Map<String, EndpointStats> = emptyMap(),
     val providers: Map<String, ProviderStats> = emptyMap(),
-    @SerialName("request_log") val requestLog: List<RequestLogEntry> = emptyList()
+    @SerialName("request_log") val requestLog: List<RequestLogEntry> = emptyList(),
 )
 
 @Serializable
@@ -29,14 +29,14 @@ data class EndpointStats(
     val errors: Int,
     @SerialName("success_rate") val successRate: String,
     @SerialName("avg_response_time_ms") val avgResponseTimeMs: Double,
-    @SerialName("last_accessed") val lastAccessed: String
+    @SerialName("last_accessed") val lastAccessed: String,
 )
 
 @Serializable
 data class ProviderStats(
     val hits: Int,
     val errors: Int,
-    @SerialName("success_rate") val successRate: String
+    @SerialName("success_rate") val successRate: String,
 )
 
 @Serializable
@@ -47,5 +47,5 @@ data class RequestLogEntry(
     val success: Boolean,
     @SerialName("response_time_ms") val responseTimeMs: Double,
     val ip: String,
-    @SerialName("user_agent") val userAgent: String
+    @SerialName("user_agent") val userAgent: String,
 )

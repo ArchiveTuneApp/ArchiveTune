@@ -197,7 +197,7 @@
     <string name="error_unknown">Bilinmeyen hata</string>
     <!-- Player action -->
     <string name="action_like">Beğen</string>
-    <string name="action_like_all">Herkes gibi</string>
+    <string name="action_like_all">Hepsini beğen</string>
     <string name="action_remove_like">Beğeniyi kaldır</string>
     <string name="action_remove_like_all">Tüm beğenileri kaldır</string>
     <string name="action_shuffle_on">Karıştır açık</string>
@@ -208,7 +208,7 @@
     <!-- Queue Title -->
     <string name="queue_all_songs">Tüm şarkılar</string>
     <string name="queue_searched_songs">Aranan şarkılar</string>
-    <string name="queue_continue_playing">Oynamaya Devam Et</string>
+    <string name="queue_continue_playing">Oynatmaya Devam Et</string>
     <string name="queue_autoplaying_similar">Benzer müziği otomatik oynatma</string>
     <!-- Notification name -->
     <string name="music_player">Müzik Çalar</string>
@@ -217,8 +217,6 @@
     <string name="appearance">Görünüm</string>
     <string name="theme">Tema</string>
     <string name="enable_dynamic_theme">Dinamik temayı etkinleştir</string>
-    <string name="use_system_font">Sistem yazı tipini kullan</string>
-    <string name="use_system_font_desc">Uygulama yazı tipi yerine cihaz yazı tipini kullanın</string>
     <!-- Color Palette -->
     <string name="color_palette">Renk Paleti</string>
     <string name="customize_theme_colors">Uygulamanızın tema renklerini seçin</string>
@@ -579,7 +577,7 @@
     <string name="loading_format">Biçim yükleniyor</string>
     <string name="buffer_health_label">Tampon Sağlığı</string>
     <string name="playback_speed_label">Oynatma Hızı</string>
-    <string name="state_label">Eyalet</string>
+    <string name="state_label">Durum</string>
     <string name="media_id_label">Medya Kimliği</string>
     <string name="about">Hakkında</string>
     <string name="app_version">Uygulama sürümü</string>
@@ -609,7 +607,7 @@
     <string name="permission_notifications_title">Bildirimler</string>
     <string name="permission_notifications_desc">Oynatma kontrollerini göstermek ve müziğin arka planda çalışmasını sağlamak için kullanılır.</string>
     <string name="permission_status_allowed">İzin verildi</string>
-    <string name="permission_status_all_granted">Gerekli tüm izinlere izin verilir. Başlamaya hazırsınız.</string>
+    <string name="permission_status_all_granted">Gerekli tüm izinlere izin verildi. Başlamaya hazırsınız.</string>
     <string name="permission_status_required">Lütfen devam etmek için gerekli tüm izinlere izin verin.</string>
     <string name="next">Sonraki</string>
     <string name="next_song">Sonraki Şarkı</string>
@@ -619,7 +617,7 @@
     <string name="speed_dial">Hızlı Seçimler</string>
     <string name="speed_dial_random">Hızlı seçimlerden rastgele oynat</string>
     <string name="integrations">Entegrasyonlar</string>
-    <string name="internal_subcategory_settings">Yerel ve ya Kategori ayarları</string>
+    <string name="internal_subcategory_settings">Dahili &amp; alt kategori ayarları</string>
     <string name="search_try_different">Farklı bir arama terimi deneyin</string>
     <string name="view_changelog">Değişiklik Günlüğünü Görüntüle</string>
     <string name="disable_animations">Animasyonları devre dışı bırak</string>

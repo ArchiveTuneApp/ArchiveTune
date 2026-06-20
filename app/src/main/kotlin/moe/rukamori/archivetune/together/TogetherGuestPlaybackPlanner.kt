@@ -49,7 +49,9 @@ internal object TogetherGuestPlaybackPlanner {
                 }
             }
 
-            else -> emptyList()
+            else -> {
+                emptyList()
+            }
         }
     }
 }

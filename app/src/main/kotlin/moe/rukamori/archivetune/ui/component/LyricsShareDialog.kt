@@ -25,9 +25,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -54,6 +54,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
@@ -63,8 +65,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -152,29 +152,33 @@ fun LyricsShareImageDialog(
             paletteGlassStyle = null
             return@LaunchedEffect
         }
-        val extractedStyle = withContext(Dispatchers.IO) {
-            runCatching {
-                val loader = ImageLoader(context)
-                val request = ImageRequest.Builder(context)
-                    .data(coverUrl)
-                    .allowHardware(false)
-                    .build()
-                val bitmap = loader.execute(request).image?.toBitmap() ?: return@runCatching null
-                LyricsGlassStyle.fromPalette(Palette.from(bitmap).generate())
-            }.getOrNull()
-        }
+        val extractedStyle =
+            withContext(Dispatchers.IO) {
+                runCatching {
+                    val loader = ImageLoader(context)
+                    val request =
+                        ImageRequest
+                            .Builder(context)
+                            .data(coverUrl)
+                            .allowHardware(false)
+                            .build()
+                    val bitmap = loader.execute(request).image?.toBitmap() ?: return@runCatching null
+                    LyricsGlassStyle.fromPalette(Palette.from(bitmap).generate())
+                }.getOrNull()
+            }
         paletteGlassStyle = extractedStyle
     }
 
     val availableStyles by remember(paletteGlassStyle) {
         derivedStateOf {
             LyricsGlassStyleOptions(
-                items = ImmutableList.copyOf(
-                    buildList {
-                        paletteGlassStyle?.let(::add)
-                        addAll(LyricsGlassStyle.allPresets.filterNot { it == paletteGlassStyle })
-                    },
-                ),
+                items =
+                    ImmutableList.copyOf(
+                        buildList {
+                            paletteGlassStyle?.let(::add)
+                            addAll(LyricsGlassStyle.allPresets.filterNot { it == paletteGlassStyle })
+                        },
+                    ),
             )
         }
     }
@@ -186,24 +190,26 @@ fun LyricsShareImageDialog(
             isSharing = true
             scope.launch {
                 try {
-                    val image = ComposeToImage.createLyricsImage(
-                        context = context,
-                        coverArtUrl = mediaMetadata?.thumbnailUrl,
-                        songTitle = payload.songTitle,
-                        artistName = payload.artists,
-                        lyrics = payload.lyricsText,
-                        width = options.aspectRatio.exportWidth,
-                        height = options.aspectRatio.exportHeight,
-                        glassStyle = selectedGlassStyle,
-                        shareOptions = options,
-                    )
+                    val image =
+                        ComposeToImage.createLyricsImage(
+                            context = context,
+                            coverArtUrl = mediaMetadata?.thumbnailUrl,
+                            songTitle = payload.songTitle,
+                            artistName = payload.artists,
+                            lyrics = payload.lyricsText,
+                            width = options.aspectRatio.exportWidth,
+                            height = options.aspectRatio.exportHeight,
+                            glassStyle = selectedGlassStyle,
+                            shareOptions = options,
+                        )
                     val fileName = "lyrics_${System.currentTimeMillis()}"
                     val uri = ComposeToImage.saveBitmapAsFile(context, image, fileName)
-                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                        type = "image/png"
-                        putExtra(Intent.EXTRA_STREAM, uri)
-                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    }
+                    val shareIntent =
+                        Intent(Intent.ACTION_SEND).apply {
+                            type = "image/png"
+                            putExtra(Intent.EXTRA_STREAM, uri)
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
                     context.startActivity(
                         Intent.createChooser(
                             shareIntent,
@@ -212,11 +218,12 @@ fun LyricsShareImageDialog(
                     )
                     onDismissRequest()
                 } catch (e: Exception) {
-                    Toast.makeText(
-                        context,
-                        context.getString(R.string.lyrics_share_export_failed, e.message ?: ""),
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    Toast
+                        .makeText(
+                            context,
+                            context.getString(R.string.lyrics_share_export_failed, e.message ?: ""),
+                            Toast.LENGTH_SHORT,
+                        ).show()
                 } finally {
                     isSharing = false
                 }
@@ -265,17 +272,19 @@ private fun LyricsShareStudioDialog(
         onDismissRequest = {
             if (!isSharing) onDismissRequest()
         },
-        properties = DialogProperties(
-            dismissOnBackPress = !isSharing,
-            dismissOnClickOutside = !isSharing,
-            usePlatformDefaultWidth = false,
-        ),
+        properties =
+            DialogProperties(
+                dismissOnBackPress = !isSharing,
+                dismissOnClickOutside = !isSharing,
+                usePlatformDefaultWidth = false,
+            ),
     ) {
         BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxSize()
-                .imePadding()
-                .systemBarsPadding(),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .imePadding()
+                    .systemBarsPadding(),
             contentAlignment = Alignment.Center,
         ) {
             val outerPadding = if (isCompactLayout) 12.dp else 24.dp
@@ -283,11 +292,12 @@ private fun LyricsShareStudioDialog(
             val maxDialogWidth = if (isCompactLayout) 560.dp else 980.dp
 
             Surface(
-                modifier = Modifier
-                    .padding(outerPadding)
-                    .fillMaxWidth()
-                    .widthIn(max = maxDialogWidth)
-                    .heightIn(max = maxDialogHeight),
+                modifier =
+                    Modifier
+                        .padding(outerPadding)
+                        .fillMaxWidth()
+                        .widthIn(max = maxDialogWidth)
+                        .heightIn(max = maxDialogHeight),
                 shape = MaterialTheme.shapes.extraLarge,
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 contentColor = MaterialTheme.colorScheme.onSurface,
@@ -370,15 +380,17 @@ private fun LyricsShareStudioScaffold(
     val sectionSpacing = if (isCompactLayout) 14.dp else 18.dp
 
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .animateContentSize(animationSpec = motionScheme.defaultSpatialSpec()),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .animateContentSize(animationSpec = motionScheme.defaultSpatialSpec()),
     ) {
         Column(
-            modifier = Modifier
-                .weight(1f, fill = true)
-                .verticalScroll(scrollState)
-                .padding(horizontal = horizontalPadding, vertical = verticalPadding),
+            modifier =
+                Modifier
+                    .weight(1f, fill = true)
+                    .verticalScroll(scrollState)
+                    .padding(horizontal = horizontalPadding, vertical = verticalPadding),
             verticalArrangement = Arrangement.spacedBy(sectionSpacing),
         ) {
             if (isCompactLayout) {
@@ -502,11 +514,12 @@ private fun LyricsShareHeader(
             )
         }
         LyricsShareInfoPill(
-            text = stringResource(
-                R.string.lyrics_share_resolution_value,
-                options.aspectRatio.exportWidth,
-                options.aspectRatio.exportHeight,
-            ),
+            text =
+                stringResource(
+                    R.string.lyrics_share_resolution_value,
+                    options.aspectRatio.exportWidth,
+                    options.aspectRatio.exportHeight,
+                ),
             emphasized = true,
         )
     }
@@ -544,15 +557,15 @@ private fun PreviewContainer(
                 contentAlignment = Alignment.Center,
             ) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth(previewWidthFraction)
-                        .widthIn(max = previewMaxWidth)
-                        .aspectRatio(options.aspectRatio.previewAspectRatio)
-                        .background(
-                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                            shape = MaterialTheme.shapes.large,
-                        )
-                        .padding(10.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth(previewWidthFraction)
+                            .widthIn(max = previewMaxWidth)
+                            .aspectRatio(options.aspectRatio.previewAspectRatio)
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                shape = MaterialTheme.shapes.large,
+                            ).padding(10.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     LyricsImageCard(
@@ -583,16 +596,18 @@ private fun ControlsSection(
 ) {
     val motionScheme = MaterialTheme.motionScheme
     Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .animateContentSize(animationSpec = motionScheme.defaultSpatialSpec()),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .animateContentSize(animationSpec = motionScheme.defaultSpatialSpec()),
         shape = MaterialTheme.shapes.extraLarge,
         color = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             LyricsShareControlGroup(title = stringResource(R.string.lyrics_share_layout)) {
@@ -652,12 +667,13 @@ private fun ControlsSection(
                         color = MaterialTheme.colorScheme.surfaceContainerLowest,
                     ) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(min = 64.dp)
-                                .clip(MaterialTheme.shapes.large)
-                                .clickable { onOptionsChange(options.copy(showArtwork = !options.showArtwork)) }
-                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 64.dp)
+                                    .clip(MaterialTheme.shapes.large)
+                                    .clickable { onOptionsChange(options.copy(showArtwork = !options.showArtwork)) }
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
@@ -685,9 +701,10 @@ private fun ControlsSection(
             } else {
                 TextButton(
                     onClick = onShowAdvancedOptions,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 48.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp),
                     shape = MaterialTheme.shapes.large,
                 ) {
                     Text(
@@ -727,20 +744,22 @@ private fun LyricsShareInfoPill(
 ) {
     Surface(
         shape = MaterialTheme.shapes.extraLarge,
-        color = if (emphasized) {
-            MaterialTheme.colorScheme.secondaryContainer
-        } else {
-            MaterialTheme.colorScheme.surfaceContainerHighest
-        },
+        color =
+            if (emphasized) {
+                MaterialTheme.colorScheme.secondaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceContainerHighest
+            },
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.labelMedium,
-            color = if (emphasized) {
-                MaterialTheme.colorScheme.onSecondaryContainer
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            },
+            color =
+                if (emphasized) {
+                    MaterialTheme.colorScheme.onSecondaryContainer
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
             textAlign = TextAlign.Center,
         )
@@ -757,41 +776,45 @@ private fun LyricsAspectRatioOption(
     val motionScheme = MaterialTheme.motionScheme
     val optionShape = if (selected) MaterialTheme.shapes.extraLarge else MaterialTheme.shapes.medium
     val containerColor by animateColorAsState(
-        targetValue = if (selected) {
-            MaterialTheme.colorScheme.primaryContainer
-        } else {
-            MaterialTheme.colorScheme.surfaceContainerLowest
-        },
+        targetValue =
+            if (selected) {
+                MaterialTheme.colorScheme.primaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceContainerLowest
+            },
         animationSpec = motionScheme.defaultEffectsSpec(),
         label = "lyricsAspectContainer",
     )
     val contentColor by animateColorAsState(
-        targetValue = if (selected) {
-            MaterialTheme.colorScheme.onPrimaryContainer
-        } else {
-            MaterialTheme.colorScheme.onSurfaceVariant
-        },
+        targetValue =
+            if (selected) {
+                MaterialTheme.colorScheme.onPrimaryContainer
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
         animationSpec = motionScheme.defaultEffectsSpec(),
         label = "lyricsAspectContent",
     )
 
     Surface(
-        modifier = modifier
-            .widthIn(min = 96.dp)
-            .heightIn(min = 48.dp)
-            .clip(optionShape)
-            .clickable(onClick = onClick),
+        modifier =
+            modifier
+                .widthIn(min = 96.dp)
+                .heightIn(min = 48.dp)
+                .clip(optionShape)
+                .clickable(onClick = onClick),
         shape = optionShape,
         color = containerColor,
         contentColor = contentColor,
     ) {
         Text(
             text = stringResource(aspectRatio.labelRes),
-            style = if (selected) {
-                MaterialTheme.typography.labelLargeEmphasized
-            } else {
-                MaterialTheme.typography.labelLarge
-            },
+            style =
+                if (selected) {
+                    MaterialTheme.typography.labelLargeEmphasized
+                } else {
+                    MaterialTheme.typography.labelLarge
+                },
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -810,30 +833,33 @@ private fun LyricsStyleOption(
     val motionScheme = MaterialTheme.motionScheme
     val optionShape = if (selected) MaterialTheme.shapes.extraLarge else MaterialTheme.shapes.large
     val borderColor by animateColorAsState(
-        targetValue = if (selected) {
-            MaterialTheme.colorScheme.primary
-        } else {
-            MaterialTheme.colorScheme.outlineVariant
-        },
+        targetValue =
+            if (selected) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.outlineVariant
+            },
         animationSpec = motionScheme.defaultEffectsSpec(),
         label = "lyricsStyleBorder",
     )
     val containerColor by animateColorAsState(
-        targetValue = if (selected) {
-            MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp)
-        } else {
-            MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
-        },
+        targetValue =
+            if (selected) {
+                MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp)
+            } else {
+                MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+            },
         animationSpec = motionScheme.defaultEffectsSpec(),
         label = "lyricsStyleContainer",
     )
 
     Surface(
-        modifier = modifier
-            .widthIn(min = 108.dp)
-            .heightIn(min = 48.dp)
-            .clip(optionShape)
-            .clickable(onClick = onClick),
+        modifier =
+            modifier
+                .widthIn(min = 108.dp)
+                .heightIn(min = 48.dp)
+                .clip(optionShape)
+                .clickable(onClick = onClick),
         shape = optionShape,
         color = containerColor,
         border = BorderStroke(width = if (selected) 1.5.dp else 1.dp, color = borderColor),
@@ -844,19 +870,21 @@ private fun LyricsStyleOption(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
-                modifier = Modifier
-                    .size(28.dp)
-                    .clip(MaterialTheme.shapes.extraLarge)
-                    .background(style.surfaceTint.copy(alpha = 0.8f)),
+                modifier =
+                    Modifier
+                        .size(28.dp)
+                        .clip(MaterialTheme.shapes.extraLarge)
+                        .background(style.surfaceTint.copy(alpha = 0.8f)),
                 contentAlignment = Alignment.Center,
             ) {
                 Box(
-                    modifier = Modifier
-                        .size(16.dp)
-                        .background(
-                            color = style.surfaceTint.copy(alpha = style.surfaceAlpha),
-                            shape = MaterialTheme.shapes.extraLarge,
-                        ),
+                    modifier =
+                        Modifier
+                            .size(16.dp)
+                            .background(
+                                color = style.surfaceTint.copy(alpha = style.surfaceAlpha),
+                                shape = MaterialTheme.shapes.extraLarge,
+                            ),
                 )
             }
             Text(
@@ -917,16 +945,18 @@ private fun ActionsSection(
     modifier: Modifier = Modifier,
 ) {
     val actionModifier = Modifier.height(52.dp)
-    val contentPadding = Modifier.padding(
-        horizontal = if (isCompactLayout) 16.dp else 24.dp,
-        vertical = 14.dp,
-    )
+    val contentPadding =
+        Modifier.padding(
+            horizontal = if (isCompactLayout) 16.dp else 24.dp,
+            vertical = 14.dp,
+        )
 
     if (isCompactLayout) {
         Column(
-            modifier = modifier
-                .fillMaxWidth()
-                .then(contentPadding),
+            modifier =
+                modifier
+                    .fillMaxWidth()
+                    .then(contentPadding),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Button(
@@ -934,10 +964,11 @@ private fun ActionsSection(
                 enabled = !isSharing,
                 modifier = actionModifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.large,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                ),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                    ),
             ) {
                 Text(
                     text = stringResource(R.string.share),
@@ -962,18 +993,20 @@ private fun ActionsSection(
         }
     } else {
         Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .then(contentPadding),
+            modifier =
+                modifier
+                    .fillMaxWidth()
+                    .then(contentPadding),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             TextButton(
                 onClick = onDismiss,
                 enabled = !isSharing,
-                modifier = actionModifier
-                    .weight(1f)
-                    .fillMaxWidth(),
+                modifier =
+                    actionModifier
+                        .weight(1f)
+                        .fillMaxWidth(),
                 shape = MaterialTheme.shapes.large,
             ) {
                 Text(
@@ -987,14 +1020,16 @@ private fun ActionsSection(
             Button(
                 onClick = onShare,
                 enabled = !isSharing,
-                modifier = actionModifier
-                    .weight(1.2f)
-                    .fillMaxWidth(),
+                modifier =
+                    actionModifier
+                        .weight(1.2f)
+                        .fillMaxWidth(),
                 shape = MaterialTheme.shapes.large,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                ),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                    ),
             ) {
                 Text(
                     text = stringResource(R.string.share),

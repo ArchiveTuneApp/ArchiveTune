@@ -7,11 +7,11 @@
 
 package moe.rukamori.archivetune.network
 
-import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.transformLatest
+import javax.inject.Inject
 
 private const val OfflineBannerDebounceMillis = 750L
 private const val OfflineBannerDurationMillis = 3000L
@@ -59,9 +59,9 @@ internal fun Flow<Boolean>.asNetworkBannerUiState(
 }
 
 class ObserveNetworkBannerStateUseCase
-@Inject
-constructor(
-    private val networkMonitor: NetworkMonitor,
-) {
-    operator fun invoke(): Flow<NetworkBannerUiState> = networkMonitor.isOnline.asNetworkBannerUiState()
-}
+    @Inject
+    constructor(
+        private val networkMonitor: NetworkMonitor,
+    ) {
+        operator fun invoke(): Flow<NetworkBannerUiState> = networkMonitor.isOnline.asNetworkBannerUiState()
+    }

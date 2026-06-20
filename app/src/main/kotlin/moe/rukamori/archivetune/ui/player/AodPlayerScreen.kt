@@ -36,13 +36,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -53,8 +54,6 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import moe.rukamori.archivetune.R
-import moe.rukamori.archivetune.models.MediaMetadata
-import androidx.compose.ui.platform.LocalView
 import moe.rukamori.archivetune.constants.AodAccentStyle
 import moe.rukamori.archivetune.constants.AodAccentStyleKey
 import moe.rukamori.archivetune.constants.AodAmbientIntensityKey
@@ -66,7 +65,6 @@ import moe.rukamori.archivetune.constants.AodContentPositionKey
 import moe.rukamori.archivetune.constants.AodControlSizeKey
 import moe.rukamori.archivetune.constants.AodControlStyle
 import moe.rukamori.archivetune.constants.AodControlStyleKey
-import moe.rukamori.archivetune.constants.EnableHapticFeedbackKey
 import moe.rukamori.archivetune.constants.AodHorizontalPaddingKey
 import moe.rukamori.archivetune.constants.AodShowAlbumKey
 import moe.rukamori.archivetune.constants.AodShowArtistKey
@@ -83,11 +81,13 @@ import moe.rukamori.archivetune.constants.AodThumbnailShapeRotationKey
 import moe.rukamori.archivetune.constants.AodThumbnailSizeKey
 import moe.rukamori.archivetune.constants.AodTitleMaxLinesKey
 import moe.rukamori.archivetune.constants.AodVerticalSpacingKey
+import moe.rukamori.archivetune.constants.EnableHapticFeedbackKey
+import moe.rukamori.archivetune.models.MediaMetadata
 import moe.rukamori.archivetune.ui.utils.supportsArtworkGlowShadow
 import moe.rukamori.archivetune.ui.utils.toComposeShape
+import moe.rukamori.archivetune.utils.makeTimeString
 import moe.rukamori.archivetune.utils.rememberEnumPreference
 import moe.rukamori.archivetune.utils.rememberPreference
-import moe.rukamori.archivetune.utils.makeTimeString
 
 private val White70 = Color.White.copy(alpha = 0.70f)
 private val White65 = Color.White.copy(alpha = 0.65f)
@@ -139,42 +139,48 @@ fun AodPlayerScreen(
     val accentColor =
         if (accentStyle == AodAccentStyle.THEME) MaterialTheme.colorScheme.primary else Color.White
     val supportsArtworkGlowShadow = thumbnailShapeType.supportsArtworkGlowShadow()
-    val thumbnailShape = thumbnailShapeType.toComposeShape(
-        cornerRadius = thumbnailCornerRadius,
-        startAngle = thumbnailShapeRotation,
-    )
+    val thumbnailShape =
+        thumbnailShapeType.toComposeShape(
+            cornerRadius = thumbnailCornerRadius,
+            startAngle = thumbnailShapeRotation,
+        )
     val artworkSize = thumbnailSize.coerceIn(160f, 340f).dp
     val artworkSizePx = with(density) { artworkSize.roundToPx().coerceAtLeast(1) }
-    val imageRequest = remember(context, mediaMetadata.thumbnailUrl, artworkSizePx) {
-        ImageRequest.Builder(context)
-            .data(mediaMetadata.thumbnailUrl)
-            .size(artworkSizePx, artworkSizePx)
-            .allowHardware(true)
-            .build()
-    }
-    val artistText = remember(mediaMetadata.artists) {
-        mediaMetadata.artists.joinToString { it.name }
-    }
+    val imageRequest =
+        remember(context, mediaMetadata.thumbnailUrl, artworkSizePx) {
+            ImageRequest
+                .Builder(context)
+                .data(mediaMetadata.thumbnailUrl)
+                .size(artworkSizePx, artworkSizePx)
+                .allowHardware(true)
+                .build()
+        }
+    val artistText =
+        remember(mediaMetadata.artists) {
+            mediaMetadata.artists.joinToString { it.name }
+        }
     val contentAlignment = contentPosition.toBoxAlignment()
     val textHorizontalAlignment = textAlignment.toHorizontalAlignment()
     val textAlign = textAlignment.toTextAlign()
 
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .aodBackground(
-                style = backgroundStyle,
-                accentColor = accentColor,
-                ambientIntensity = ambientIntensity,
-            ),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .aodBackground(
+                    style = backgroundStyle,
+                    accentColor = accentColor,
+                    ambientIntensity = ambientIntensity,
+                ),
     ) {
         if (showExitButton) {
             IconButton(
                 onClick = onExit,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .safeDrawingPadding()
-                    .padding(8.dp),
+                modifier =
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .safeDrawingPadding()
+                        .padding(8.dp),
             ) {
                 Icon(
                     painter = painterResource(R.drawable.close),
@@ -187,36 +193,37 @@ fun AodPlayerScreen(
         Column(
             horizontalAlignment = textHorizontalAlignment,
             verticalArrangement = Arrangement.spacedBy(verticalSpacing.coerceIn(8f, 36f).dp),
-            modifier = Modifier
-                .align(contentAlignment)
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .navigationBarsPadding()
-                .padding(horizontal = horizontalPadding.coerceIn(16f, 72f).dp)
-                .padding(vertical = 32.dp),
+            modifier =
+                Modifier
+                    .align(contentAlignment)
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
+                    .padding(horizontal = horizontalPadding.coerceIn(16f, 72f).dp)
+                    .padding(vertical = 32.dp),
         ) {
             if (showThumbnail) {
                 AsyncImage(
                     model = imageRequest,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .size(artworkSize)
-                        .then(
-                            if (artworkGlow && supportsArtworkGlowShadow) {
-                                Modifier.shadow(
-                                    elevation = 28.dp,
-                                    shape = thumbnailShape,
-                                    clip = false,
-                                    ambientColor = accentColor,
-                                    spotColor = accentColor,
-                                )
-                            } else {
-                                Modifier
-                            },
-                        )
-                        .clip(thumbnailShape),
+                    modifier =
+                        Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .size(artworkSize)
+                            .then(
+                                if (artworkGlow && supportsArtworkGlowShadow) {
+                                    Modifier.shadow(
+                                        elevation = 28.dp,
+                                        shape = thumbnailShape,
+                                        clip = false,
+                                        ambientColor = accentColor,
+                                        spotColor = accentColor,
+                                    )
+                                } else {
+                                    Modifier
+                                },
+                            ).clip(thumbnailShape),
                 )
             }
 
@@ -299,21 +306,24 @@ private fun AodSliderSection(
 ) {
     val seekEnabled = duration > 0L && duration != C.TIME_UNSET
     val displayPosition = sliderPosition ?: position
-    val sliderValue = remember(displayPosition, seekEnabled) {
-        if (seekEnabled) displayPosition.toFloat() else 0f
-    }
+    val sliderValue =
+        remember(displayPosition, seekEnabled) {
+            if (seekEnabled) displayPosition.toFloat() else 0f
+        }
     val positionText = remember(displayPosition) { makeTimeString(displayPosition) }
-    val durationText = remember(duration, seekEnabled) {
-        if (seekEnabled) makeTimeString(duration) else ""
-    }
-    val sliderColors = SliderDefaults.colors(
-        thumbColor = accentColor,
-        activeTrackColor = accentColor,
-        inactiveTrackColor = White30,
-        disabledThumbColor = White30,
-        disabledActiveTrackColor = White30,
-        disabledInactiveTrackColor = White15,
-    )
+    val durationText =
+        remember(duration, seekEnabled) {
+            if (seekEnabled) makeTimeString(duration) else ""
+        }
+    val sliderColors =
+        SliderDefaults.colors(
+            thumbColor = accentColor,
+            activeTrackColor = accentColor,
+            inactiveTrackColor = White30,
+            disabledThumbColor = White30,
+            disabledActiveTrackColor = White30,
+            disabledInactiveTrackColor = White15,
+        )
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Slider(
@@ -328,9 +338,10 @@ private fun AodSliderSection(
         if (showTimeLabels) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 4.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp),
             ) {
                 Text(
                     text = positionText,
@@ -365,14 +376,16 @@ private fun AodControls(
     val skipButtonSize = (controlSize * 0.75f).dp
     val playIconSize = (controlSize * 0.5f).dp
     val skipIconSize = (controlSize * 0.5f).dp
-    val playButtonColors = IconButtonDefaults.filledIconButtonColors(
-        containerColor = accentColor,
-        contentColor = if (accentColor == Color.White) Color.Black else MaterialTheme.colorScheme.onPrimary,
-    )
-    val tonalButtonColors = IconButtonDefaults.filledTonalIconButtonColors(
-        containerColor = accentColor.copy(alpha = 0.22f),
-        contentColor = Color.White,
-    )
+    val playButtonColors =
+        IconButtonDefaults.filledIconButtonColors(
+            containerColor = accentColor,
+            contentColor = if (accentColor == Color.White) Color.Black else MaterialTheme.colorScheme.onPrimary,
+        )
+    val tonalButtonColors =
+        IconButtonDefaults.filledTonalIconButtonColors(
+            containerColor = accentColor.copy(alpha = 0.22f),
+            contentColor = Color.White,
+        )
 
     Row(
         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -381,7 +394,12 @@ private fun AodControls(
     ) {
         IconButton(
             onClick = {
-                if (enableHapticFeedback) view.performHapticFeedback(android.view.HapticFeedbackConstants.CONTEXT_CLICK, android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING)
+                if (enableHapticFeedback) {
+                    view.performHapticFeedback(
+                        android.view.HapticFeedbackConstants.CONTEXT_CLICK,
+                        android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING,
+                    )
+                }
                 onSkipPrevious()
             },
             enabled = canSkipPrevious,
@@ -399,12 +417,18 @@ private fun AodControls(
             AodControlStyle.FILLED -> {
                 FilledIconButton(
                     onClick = {
-                        if (enableHapticFeedback) view.performHapticFeedback(android.view.HapticFeedbackConstants.CONTEXT_CLICK, android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING)
+                        if (enableHapticFeedback) {
+                            view.performHapticFeedback(
+                                android.view.HapticFeedbackConstants.CONTEXT_CLICK,
+                                android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING,
+                            )
+                        }
                         onPlayPause()
                     },
-                    modifier = Modifier
-                        .size(playButtonSize)
-                        .clip(CircleShape),
+                    modifier =
+                        Modifier
+                            .size(playButtonSize)
+                            .clip(CircleShape),
                     colors = playButtonColors,
                 ) {
                     Icon(
@@ -414,15 +438,22 @@ private fun AodControls(
                     )
                 }
             }
+
             AodControlStyle.TONAL -> {
                 FilledTonalIconButton(
                     onClick = {
-                        if (enableHapticFeedback) view.performHapticFeedback(android.view.HapticFeedbackConstants.CONTEXT_CLICK, android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING)
+                        if (enableHapticFeedback) {
+                            view.performHapticFeedback(
+                                android.view.HapticFeedbackConstants.CONTEXT_CLICK,
+                                android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING,
+                            )
+                        }
                         onPlayPause()
                     },
-                    modifier = Modifier
-                        .size(playButtonSize)
-                        .clip(CircleShape),
+                    modifier =
+                        Modifier
+                            .size(playButtonSize)
+                            .clip(CircleShape),
                     colors = tonalButtonColors,
                 ) {
                     Icon(
@@ -432,10 +463,16 @@ private fun AodControls(
                     )
                 }
             }
+
             AodControlStyle.MINIMAL -> {
                 IconButton(
                     onClick = {
-                        if (enableHapticFeedback) view.performHapticFeedback(android.view.HapticFeedbackConstants.CONTEXT_CLICK, android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING)
+                        if (enableHapticFeedback) {
+                            view.performHapticFeedback(
+                                android.view.HapticFeedbackConstants.CONTEXT_CLICK,
+                                android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING,
+                            )
+                        }
                         onPlayPause()
                     },
                     modifier = Modifier.size(playButtonSize),
@@ -452,7 +489,12 @@ private fun AodControls(
 
         IconButton(
             onClick = {
-                if (enableHapticFeedback) view.performHapticFeedback(android.view.HapticFeedbackConstants.CONTEXT_CLICK, android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING)
+                if (enableHapticFeedback) {
+                    view.performHapticFeedback(
+                        android.view.HapticFeedbackConstants.CONTEXT_CLICK,
+                        android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING,
+                    )
+                }
                 onSkipNext()
             },
             enabled = canSkipNext,
@@ -475,31 +517,46 @@ private fun Modifier.aodBackground(
     ambientIntensity: Float,
 ): Modifier {
     val alpha = ambientIntensity.coerceIn(0f, 1f)
-    val brush = remember(style, accentColor, alpha) {
-        when (style) {
-            AodBackgroundStyle.PURE_BLACK -> Brush.verticalGradient(listOf(Color.Black, Color.Black))
-            AodBackgroundStyle.SOFT_RADIAL -> Brush.radialGradient(
-                colors = listOf(
-                    accentColor.copy(alpha = 0.22f * alpha),
-                    Color.Black,
-                ),
-            )
-            AodBackgroundStyle.TONAL_EDGE -> Brush.verticalGradient(
-                colors = listOf(
-                    accentColor.copy(alpha = 0.18f * alpha),
-                    Color.Black,
-                    accentColor.copy(alpha = 0.12f * alpha),
-                ),
-            )
-            AodBackgroundStyle.AMBIENT_GLOW -> Brush.linearGradient(
-                colors = listOf(
-                    accentColor.copy(alpha = 0.28f * alpha),
-                    Color.Black,
-                    Color(0xFF101010),
-                ),
-            )
+    val brush =
+        remember(style, accentColor, alpha) {
+            when (style) {
+                AodBackgroundStyle.PURE_BLACK -> {
+                    Brush.verticalGradient(listOf(Color.Black, Color.Black))
+                }
+
+                AodBackgroundStyle.SOFT_RADIAL -> {
+                    Brush.radialGradient(
+                        colors =
+                            listOf(
+                                accentColor.copy(alpha = 0.22f * alpha),
+                                Color.Black,
+                            ),
+                    )
+                }
+
+                AodBackgroundStyle.TONAL_EDGE -> {
+                    Brush.verticalGradient(
+                        colors =
+                            listOf(
+                                accentColor.copy(alpha = 0.18f * alpha),
+                                Color.Black,
+                                accentColor.copy(alpha = 0.12f * alpha),
+                            ),
+                    )
+                }
+
+                AodBackgroundStyle.AMBIENT_GLOW -> {
+                    Brush.linearGradient(
+                        colors =
+                            listOf(
+                                accentColor.copy(alpha = 0.28f * alpha),
+                                Color.Black,
+                                Color(0xFF101010),
+                            ),
+                    )
+                }
+            }
         }
-    }
 
     return background(brush)
 }

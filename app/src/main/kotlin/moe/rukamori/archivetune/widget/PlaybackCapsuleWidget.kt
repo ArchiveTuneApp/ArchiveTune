@@ -43,11 +43,13 @@ import androidx.glance.text.TextStyle
 import moe.rukamori.archivetune.R
 
 class PlaybackCapsuleWidget : GlanceAppWidget() {
-
     override val stateDefinition = PreferencesGlanceStateDefinition
     override val sizeMode = SizeMode.Exact
 
-    override suspend fun provideGlance(context: Context, id: GlanceId) {
+    override suspend fun provideGlance(
+        context: Context,
+        id: GlanceId,
+    ) {
         provideContent {
             PlaybackCapsuleContent(context)
         }
@@ -60,23 +62,25 @@ private fun PlaybackCapsuleContent(context: Context) {
     val state = prefs.toWidgetPlaybackState(context)
 
     GlanceTheme(
-        colors = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            GlanceTheme.colors
-        } else {
-            ArchiveTuneWidgetColors.providers
-        },
+        colors =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                GlanceTheme.colors
+            } else {
+                ArchiveTuneWidgetColors.providers
+            },
     ) {
         val palette = rememberWidgetPalette(state.dominantColor)
         val size = LocalSize.current
         val compact = size.width < 292.dp || size.height < 82.dp
 
         Box(
-            modifier = GlanceModifier
-                .fillMaxSize()
-                .background(palette.surface)
-                .cornerRadius(30.dp)
-                .padding(if (compact) 6.dp else 8.dp)
-                .clickable(openArchiveTuneAction(context)),
+            modifier =
+                GlanceModifier
+                    .fillMaxSize()
+                    .background(palette.surface)
+                    .cornerRadius(30.dp)
+                    .padding(if (compact) 6.dp else 8.dp)
+                    .clickable(openArchiveTuneAction(context)),
         ) {
             PlaybackCapsuleLayout(
                 state = state,
@@ -97,9 +101,10 @@ private fun PlaybackCapsuleLayout(
 ) {
     Column(modifier = GlanceModifier.fillMaxSize()) {
         Row(
-            modifier = GlanceModifier
-                .fillMaxWidth()
-                .defaultWeight(),
+            modifier =
+                GlanceModifier
+                    .fillMaxWidth()
+                    .defaultWeight(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val artworkSize = if (compact) 50.dp else 58.dp
@@ -121,20 +126,22 @@ private fun PlaybackCapsuleLayout(
             ) {
                 Text(
                     text = state.title,
-                    style = TextStyle(
-                        color = palette.onSurface,
-                        fontSize = if (compact) 14.sp else 16.sp,
-                        fontWeight = FontWeight.Bold,
-                    ),
+                    style =
+                        TextStyle(
+                            color = palette.onSurface,
+                            fontSize = if (compact) 14.sp else 16.sp,
+                            fontWeight = FontWeight.Bold,
+                        ),
                     maxLines = 1,
                 )
                 Spacer(GlanceModifier.height(2.dp))
                 Text(
                     text = state.artist,
-                    style = TextStyle(
-                        color = palette.onSurfaceVariant,
-                        fontSize = if (compact) 12.sp else 13.sp,
-                    ),
+                    style =
+                        TextStyle(
+                            color = palette.onSurfaceVariant,
+                            fontSize = if (compact) 12.sp else 13.sp,
+                        ),
                     maxLines = 1,
                 )
             }
@@ -145,9 +152,10 @@ private fun PlaybackCapsuleLayout(
                     modifier = GlanceModifier.size(if (compact) 50.dp else 56.dp),
                     action = playPauseAction(),
                     icon = if (state.isPlaying) R.drawable.pause else R.drawable.play,
-                    contentDescription = context.getString(
-                        if (state.isPlaying) R.string.widget_pause else R.string.play,
-                    ),
+                    contentDescription =
+                        context.getString(
+                            if (state.isPlaying) R.string.widget_pause else R.string.play,
+                        ),
                     backgroundColor = palette.primaryContainer,
                     contentColor = palette.onPrimaryContainer,
                     cornerRadius = if (state.isPlaying) 15.dp else 28.dp,
@@ -161,10 +169,11 @@ private fun PlaybackCapsuleLayout(
                 progress = state.playbackPosition,
                 color = palette.progress,
                 backgroundColor = palette.progressTrack,
-                modifier = GlanceModifier
-                    .fillMaxWidth()
-                    .height(if (compact) 5.dp else 6.dp)
-                    .cornerRadius(3.dp),
+                modifier =
+                    GlanceModifier
+                        .fillMaxWidth()
+                        .height(if (compact) 5.dp else 6.dp)
+                        .cornerRadius(3.dp),
             )
         }
     }

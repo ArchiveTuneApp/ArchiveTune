@@ -50,12 +50,14 @@ fun DownloadProgressFloatingToolbar(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val progress = remember(state.progress) {
-        state.progress.coerceIn(0f, 1f)
-    }
-    val percent = remember(progress) {
-        (progress * 100f).roundToInt().coerceIn(0, 100)
-    }
+    val progress =
+        remember(state.progress) {
+            state.progress.coerceIn(0f, 1f)
+        }
+    val percent =
+        remember(progress) {
+            (progress * 100f).roundToInt().coerceIn(0, 100)
+        }
     val colorScheme = MaterialTheme.colorScheme
 
     HorizontalFloatingToolbar(
@@ -74,14 +76,16 @@ fun DownloadProgressFloatingToolbar(
                 )
             }
         },
-        colors = FloatingToolbarDefaults.standardFloatingToolbarColors(
-            toolbarContainerColor = colorScheme.surfaceContainerHigh,
-        ),
+        colors =
+            FloatingToolbarDefaults.standardFloatingToolbarColors(
+                toolbarContainerColor = colorScheme.surfaceContainerHigh,
+            ),
     ) {
         Row(
-            modifier = Modifier
-                .heightIn(min = 56.dp)
-                .padding(horizontal = 12.dp, vertical = 6.dp),
+            modifier =
+                Modifier
+                    .heightIn(min = 56.dp)
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {

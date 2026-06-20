@@ -18,27 +18,22 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.toArgb
-import androidx.core.graphics.ColorUtils
-import moe.rukamori.archivetune.constants.LibraryFilter
-import moe.rukamori.archivetune.constants.ShowSpotifyPlaylistsKey
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -67,6 +62,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -77,27 +74,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.ColorUtils
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.flow.firstOrNull
-import moe.rukamori.archivetune.extensions.toMediaItem
 import kotlinx.coroutines.launch
 import moe.rukamori.archivetune.LocalDatabase
 import moe.rukamori.archivetune.LocalPlayerAwareWindowInsets
 import moe.rukamori.archivetune.LocalPlayerConnection
 import moe.rukamori.archivetune.R
+import moe.rukamori.archivetune.constants.LibraryFilter
+import moe.rukamori.archivetune.constants.ShowSpotifyPlaylistsKey
+import moe.rukamori.archivetune.extensions.toMediaItem
 import moe.rukamori.archivetune.playback.queues.ListQueue
 import moe.rukamori.archivetune.spotify.SpotifyLibraryViewModel
 import moe.rukamori.archivetune.spotify.SpotifyMapper
 import moe.rukamori.archivetune.spotify.models.SpotifyPlaylist
 import moe.rukamori.archivetune.ui.component.ExpressivePullToRefreshBox
 import moe.rukamori.archivetune.utils.rememberPreference
+import moe.rukamori.archivetune.viewmodels.LibraryMixViewModel
 import moe.rukamori.archivetune.viewmodels.LibraryTopMixEmptyReason
 import moe.rukamori.archivetune.viewmodels.LibraryTopMixUiModel
 import moe.rukamori.archivetune.viewmodels.LibraryTopMixesUiState
-import moe.rukamori.archivetune.viewmodels.LibraryMixViewModel
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -125,26 +125,29 @@ fun LibraryMixScreen(
     val topMixesUiState by viewModel.topMixesUiState.collectAsStateWithLifecycle()
     val spotifyPlaylists by spotifyLibraryViewModel.playlists.collectAsStateWithLifecycle()
     val (showSpotifyPlaylists) = rememberPreference(ShowSpotifyPlaylistsKey, false)
-    
-    val filteredPlaylistIds by database.playlistIdsByTags(
-        if (selectedTagIds.isEmpty()) emptyList() else selectedTagIds.toList(),
-    ).collectAsState(initial = emptyList())
 
-    val visiblePlaylists = remember(playlists, selectedTagIds, filteredPlaylistIds) {
-        playlists.filter { playlist ->
-            val name = playlist.playlist.name
-            val matchesName = !name.contains("episode", ignoreCase = true)
-            val matchesTags = selectedTagIds.isEmpty() || playlist.id in filteredPlaylistIds
-            matchesName && matchesTags
+    val filteredPlaylistIds by database
+        .playlistIdsByTags(
+            if (selectedTagIds.isEmpty()) emptyList() else selectedTagIds.toList(),
+        ).collectAsState(initial = emptyList())
+
+    val visiblePlaylists =
+        remember(playlists, selectedTagIds, filteredPlaylistIds) {
+            playlists.filter { playlist ->
+                val name = playlist.playlist.name
+                val matchesName = !name.contains("episode", ignoreCase = true)
+                val matchesTags = selectedTagIds.isEmpty() || playlist.id in filteredPlaylistIds
+                matchesName && matchesTags
+            }
         }
-    }
-    val visibleSpotifyPlaylists = remember(showSpotifyPlaylists, spotifyPlaylists) {
-        if (showSpotifyPlaylists) {
-            spotifyPlaylists
-        } else {
-            emptyList()
+    val visibleSpotifyPlaylists =
+        remember(showSpotifyPlaylists, spotifyPlaylists) {
+            if (showSpotifyPlaylists) {
+                spotifyPlaylists
+            } else {
+                emptyList()
+            }
         }
-    }
 
     LaunchedEffect(viewModel) {
         viewModel.topMixEvents.collect { message ->
@@ -152,10 +155,11 @@ fun LibraryMixScreen(
         }
     }
 
-    val playerAwareBottomPadding = LocalPlayerAwareWindowInsets.current
-        .only(WindowInsetsSides.Bottom)
-        .asPaddingValues()
-        .calculateBottomPadding() + 12.dp
+    val playerAwareBottomPadding =
+        LocalPlayerAwareWindowInsets.current
+            .only(WindowInsetsSides.Bottom)
+            .asPaddingValues()
+            .calculateBottomPadding() + 12.dp
 
     ExpressivePullToRefreshBox(
         isRefreshing = isRefreshing,
@@ -166,59 +170,62 @@ fun LibraryMixScreen(
             state = rememberLazyListState(),
             verticalArrangement = Arrangement.spacedBy(24.dp),
             contentPadding = PaddingValues(bottom = playerAwareBottomPadding),
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
         ) {
             // 1. Favorite Songs Spotlight Card
             item(key = "spotlight_card") {
-                val isDark = MaterialTheme.colorScheme.surface.let { 
-                    ColorUtils.calculateLuminance(it.toArgb()) < 0.5 
-                }
+                val isDark =
+                    MaterialTheme.colorScheme.surface.let {
+                        ColorUtils.calculateLuminance(it.toArgb()) < 0.5
+                    }
                 val primaryColor = MaterialTheme.colorScheme.primary
                 val surfaceContainer = MaterialTheme.colorScheme.surfaceContainer
-                val spotlightBg = remember(surfaceContainer, primaryColor, isDark) {
-                    if (isDark) {
-                        Color(ColorUtils.blendARGB(surfaceContainer.toArgb(), primaryColor.toArgb(), 0.12f))
-                    } else {
-                        Color(ColorUtils.blendARGB(surfaceContainer.toArgb(), primaryColor.toArgb(), 0.08f))
+                val spotlightBg =
+                    remember(surfaceContainer, primaryColor, isDark) {
+                        if (isDark) {
+                            Color(ColorUtils.blendARGB(surfaceContainer.toArgb(), primaryColor.toArgb(), 0.12f))
+                        } else {
+                            Color(ColorUtils.blendARGB(surfaceContainer.toArgb(), primaryColor.toArgb(), 0.08f))
+                        }
                     }
-                }
 
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp)
-                        .clip(RoundedCornerShape(32.dp))
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    spotlightBg,
-                                    spotlightBg.copy(alpha = 0.9f)
-                                )
-                            )
-                        )
-                        .clickable {
-                            navController.navigate("auto_playlist/liked")
-                        }
-                        .padding(16.dp)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp)
+                            .clip(RoundedCornerShape(32.dp))
+                            .background(
+                                Brush.verticalGradient(
+                                    colors =
+                                        listOf(
+                                            spotlightBg,
+                                            spotlightBg.copy(alpha = 0.9f),
+                                        ),
+                                ),
+                            ).clickable {
+                                navController.navigate("auto_playlist/liked")
+                            }.padding(16.dp),
                 ) {
                     Column {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             // Left collage or standard cover
                             Box(
-                                modifier = Modifier
-                                    .size(64.dp)
-                                    .clip(RoundedCornerShape(20.dp))
-                                    .background(primaryColor.copy(alpha = 0.16f)),
-                                contentAlignment = Alignment.Center
+                                modifier =
+                                    Modifier
+                                        .size(64.dp)
+                                        .clip(RoundedCornerShape(20.dp))
+                                        .background(primaryColor.copy(alpha = 0.16f)),
+                                contentAlignment = Alignment.Center,
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.favorite),
                                     contentDescription = null,
                                     tint = primaryColor,
-                                    modifier = Modifier.size(28.dp)
+                                    modifier = Modifier.size(28.dp),
                                 )
                             }
 
@@ -228,41 +235,44 @@ fun LibraryMixScreen(
                             Column(modifier = Modifier.weight(1f)) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .clip(CircleShape)
-                                        .background(primaryColor.copy(alpha = 0.16f))
-                                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                                    modifier =
+                                        Modifier
+                                            .clip(CircleShape)
+                                            .background(primaryColor.copy(alpha = 0.16f))
+                                            .padding(horizontal = 8.dp, vertical = 2.dp),
                                 ) {
                                     Icon(
                                         painter = painterResource(id = R.drawable.star),
                                         contentDescription = null,
                                         tint = primaryColor,
-                                        modifier = Modifier.size(10.dp)
+                                        modifier = Modifier.size(10.dp),
                                     )
                                     Spacer(modifier = Modifier.width(3.dp))
                                     Text(
                                         text = stringResource(R.string.most_played_badge),
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 9.sp,
-                                            letterSpacing = 0.5.sp
-                                        ),
-                                        color = primaryColor
+                                        style =
+                                            MaterialTheme.typography.labelSmall.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 9.sp,
+                                                letterSpacing = 0.5.sp,
+                                            ),
+                                        color = primaryColor,
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = stringResource(R.string.favorite_songs_title),
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontWeight = FontWeight.Bold
-                                    ),
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    style =
+                                        MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.Bold,
+                                        ),
+                                    color = MaterialTheme.colorScheme.onSurface,
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     text = "$likedSongsCount ${stringResource(R.string.tracks_label)}",
                                     style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
                         }
@@ -273,7 +283,7 @@ fun LibraryMixScreen(
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Button(
                                 onClick = {
@@ -286,22 +296,23 @@ fun LibraryMixScreen(
                                     }
                                 },
                                 shape = CircleShape,
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary,
-                                    contentColor = MaterialTheme.colorScheme.onPrimary
-                                ),
+                                colors =
+                                    ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                                    ),
                                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                                modifier = Modifier.height(36.dp)
+                                modifier = Modifier.height(36.dp),
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.play),
                                     contentDescription = null,
-                                    modifier = Modifier.size(14.dp)
+                                    modifier = Modifier.size(14.dp),
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
                                     text = stringResource(R.string.play_all),
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                                 )
                             }
 
@@ -315,16 +326,17 @@ fun LibraryMixScreen(
                                         }
                                     }
                                 },
-                                colors = IconButtonDefaults.iconButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                    contentColor = MaterialTheme.colorScheme.primary
-                                ),
-                                modifier = Modifier.size(36.dp)
+                                colors =
+                                    IconButtonDefaults.iconButtonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                        contentColor = MaterialTheme.colorScheme.primary,
+                                    ),
+                                modifier = Modifier.size(36.dp),
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.shuffle),
                                     contentDescription = stringResource(R.string.shuffle),
-                                    modifier = Modifier.size(16.dp)
+                                    modifier = Modifier.size(16.dp),
                                 )
                             }
                         }
@@ -335,14 +347,15 @@ fun LibraryMixScreen(
             // 2. Shortcuts 2x2 Grid
             item(key = "shortcuts_grid") {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
                         // Liked Songs
                         ShortcutCard(
@@ -352,7 +365,7 @@ fun LibraryMixScreen(
                             containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f),
                             iconColor = MaterialTheme.colorScheme.error,
                             modifier = Modifier.weight(1f),
-                            onClick = { navController.navigate("auto_playlist/liked") }
+                            onClick = { navController.navigate("auto_playlist/liked") },
                         )
 
                         // Offline/Downloaded
@@ -363,13 +376,13 @@ fun LibraryMixScreen(
                             containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
                             iconColor = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.weight(1f),
-                            onClick = { navController.navigate("auto_playlist/downloaded") }
+                            onClick = { navController.navigate("auto_playlist/downloaded") },
                         )
                     }
 
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
                         // Cached
                         ShortcutCard(
@@ -379,7 +392,7 @@ fun LibraryMixScreen(
                             containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
                             iconColor = MaterialTheme.colorScheme.tertiary,
                             modifier = Modifier.weight(1f),
-                            onClick = { navController.navigate("cache_playlist/cached") }
+                            onClick = { navController.navigate("cache_playlist/cached") },
                         )
 
                         // Local Files
@@ -390,7 +403,7 @@ fun LibraryMixScreen(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
                             iconColor = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.weight(1f),
-                            onClick = { navController.navigate("local_songs") }
+                            onClick = { navController.navigate("local_songs") },
                         )
                     }
                 }
@@ -404,47 +417,50 @@ fun LibraryMixScreen(
                             text = stringResource(R.string.recently_played),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
-                            color = MaterialTheme.colorScheme.onBackground
+                            color = MaterialTheme.colorScheme.onBackground,
                         )
                         LazyRow(
                             contentPadding = PaddingValues(horizontal = 24.dp),
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         ) {
                             items(recentSongs) { song ->
                                 Column(
-                                    modifier = Modifier
-                                        .width(110.dp)
-                                        .clickable {
-                                            playerConnection.playQueue(ListQueue(items = listOf(song.toMediaItem())))
-                                        }
+                                    modifier =
+                                        Modifier
+                                            .width(110.dp)
+                                            .clickable {
+                                                playerConnection.playQueue(ListQueue(items = listOf(song.toMediaItem())))
+                                            },
                                 ) {
                                     Box(
-                                        modifier = Modifier
-                                            .size(110.dp)
-                                            .clip(RoundedCornerShape(28.dp))
+                                        modifier =
+                                            Modifier
+                                                .size(110.dp)
+                                                .clip(RoundedCornerShape(28.dp)),
                                     ) {
                                         AsyncImage(
                                             model = song.song.thumbnailUrl,
                                             contentDescription = null,
                                             contentScale = ContentScale.Crop,
-                                            modifier = Modifier.fillMaxSize()
+                                            modifier = Modifier.fillMaxSize(),
                                         )
                                         // Play Overlay button
                                         Box(
-                                            modifier = Modifier
-                                                .align(Alignment.BottomEnd)
-                                                .padding(8.dp)
-                                                .size(28.dp)
-                                                .clip(CircleShape)
-                                                .background(MaterialTheme.colorScheme.primary),
-                                            contentAlignment = Alignment.Center
+                                            modifier =
+                                                Modifier
+                                                    .align(Alignment.BottomEnd)
+                                                    .padding(8.dp)
+                                                    .size(28.dp)
+                                                    .clip(CircleShape)
+                                                    .background(MaterialTheme.colorScheme.primary),
+                                            contentAlignment = Alignment.Center,
                                         ) {
                                             Icon(
                                                 painter = painterResource(id = R.drawable.play),
                                                 contentDescription = null,
                                                 tint = MaterialTheme.colorScheme.onPrimary,
-                                                modifier = Modifier.size(14.dp)
+                                                modifier = Modifier.size(14.dp),
                                             )
                                         }
                                     }
@@ -454,14 +470,14 @@ fun LibraryMixScreen(
                                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
-                                        color = MaterialTheme.colorScheme.onBackground
+                                        color = MaterialTheme.colorScheme.onBackground,
                                     )
                                     Text(
                                         text = song.artists.joinToString(", ") { it.name },
                                         style = MaterialTheme.typography.bodySmall,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
-                                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                                     )
                                 }
                             }
@@ -497,27 +513,30 @@ fun LibraryMixScreen(
                 item(key = "your_playlists") {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 24.dp, vertical = 8.dp),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 24.dp, vertical = 8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
                                 text = stringResource(R.string.your_playlists),
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.onBackground
+                                color = MaterialTheme.colorScheme.onBackground,
                             )
                             Text(
                                 text = stringResource(R.string.see_all),
-                                style = MaterialTheme.typography.labelMedium.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.primary
-                                ),
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .clickable { onTabSelected(LibraryFilter.PLAYLISTS) }
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                style =
+                                    MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    ),
+                                modifier =
+                                    Modifier
+                                        .clip(CircleShape)
+                                        .clickable { onTabSelected(LibraryFilter.PLAYLISTS) }
+                                        .padding(horizontal = 8.dp, vertical = 4.dp),
                             )
                         }
 
@@ -525,85 +544,91 @@ fun LibraryMixScreen(
                             contentPadding = PaddingValues(horizontal = 24.dp),
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         ) {
                             items(
                                 items = visiblePlaylists.take(8),
                                 key = { playlist -> "playlist_${playlist.id}" },
                                 contentType = { "library_playlist" },
                             ) { playlist ->
-                                val cardBgColor = rememberArtworkCardColor(
-                                    thumbnailUrl = playlist.thumbnails.getOrNull(0),
-                                    fallbackColor = MaterialTheme.colorScheme.surfaceContainerLow
-                                )
+                                val cardBgColor =
+                                    rememberArtworkCardColor(
+                                        thumbnailUrl = playlist.thumbnails.getOrNull(0),
+                                        fallbackColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                                    )
 
                                 val interactionSource = remember { MutableInteractionSource() }
                                 val isPressed by interactionSource.collectIsPressedAsState()
                                 val scale by animateFloatAsState(
                                     targetValue = if (isPressed) 0.97f else 1.0f,
                                     animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
-                                    label = "MixPlaylistCardScale"
+                                    label = "MixPlaylistCardScale",
                                 )
 
                                 Column(
-                                    modifier = Modifier
-                                        .width(130.dp)
-                                        .graphicsLayer {
-                                            scaleX = scale
-                                            scaleY = scale
-                                        }
-                                        .clip(RoundedCornerShape(32.dp))
-                                        .background(cardBgColor)
-                                        .clickable(
-                                            interactionSource = interactionSource,
-                                            indication = null,
-                                            onClick = {
-                                                if (!playlist.playlist.isEditable && playlist.songCount == 0 && playlist.playlist.remoteSongCount != 0) {
-                                                    navController.navigate("online_playlist/${playlist.playlist.browseId}")
-                                                } else {
-                                                    navController.navigate("local_playlist/${playlist.id}")
-                                                }
-                                            }
-                                        )
-                                        .padding(12.dp)
+                                    modifier =
+                                        Modifier
+                                            .width(130.dp)
+                                            .graphicsLayer {
+                                                scaleX = scale
+                                                scaleY = scale
+                                            }.clip(RoundedCornerShape(32.dp))
+                                            .background(cardBgColor)
+                                            .clickable(
+                                                interactionSource = interactionSource,
+                                                indication = null,
+                                                onClick = {
+                                                    if (!playlist.playlist.isEditable && playlist.songCount == 0 &&
+                                                        playlist.playlist.remoteSongCount != 0
+                                                    ) {
+                                                        navController.navigate("online_playlist/${playlist.playlist.browseId}")
+                                                    } else {
+                                                        navController.navigate("local_playlist/${playlist.id}")
+                                                    }
+                                                },
+                                            ).padding(12.dp),
                                 ) {
                                     Box(
-                                        modifier = Modifier
-                                            .size(106.dp)
-                                            .clip(RoundedCornerShape(24.dp))
+                                        modifier =
+                                            Modifier
+                                                .size(106.dp)
+                                                .clip(RoundedCornerShape(24.dp)),
                                     ) {
                                         AsyncImage(
                                             model = playlist.thumbnails.getOrNull(0),
                                             contentDescription = null,
                                             contentScale = ContentScale.Crop,
-                                            modifier = Modifier.fillMaxSize()
+                                            modifier = Modifier.fillMaxSize(),
                                         )
                                         // Play Overlay button
                                         Box(
-                                            modifier = Modifier
-                                                .align(Alignment.BottomEnd)
-                                                .padding(6.dp)
-                                                .size(28.dp)
-                                                .clip(CircleShape)
-                                                .background(MaterialTheme.colorScheme.primary)
-                                                .clickable {
-                                                    playerConnection.let { conn ->
-                                                        coroutineScope.launch {
-                                                            database.playlistSongs(playlist.id).firstOrNull()?.let { songs ->
-                                                                if (songs.isNotEmpty()) {
-                                                                    conn.playQueue(ListQueue(items = songs.map { it.song.toMediaItem() }))
+                                            modifier =
+                                                Modifier
+                                                    .align(Alignment.BottomEnd)
+                                                    .padding(6.dp)
+                                                    .size(28.dp)
+                                                    .clip(CircleShape)
+                                                    .background(MaterialTheme.colorScheme.primary)
+                                                    .clickable {
+                                                        playerConnection.let { conn ->
+                                                            coroutineScope.launch {
+                                                                database.playlistSongs(playlist.id).firstOrNull()?.let { songs ->
+                                                                    if (songs.isNotEmpty()) {
+                                                                        conn.playQueue(
+                                                                            ListQueue(items = songs.map { it.song.toMediaItem() }),
+                                                                        )
+                                                                    }
                                                                 }
                                                             }
                                                         }
-                                                    }
-                                                },
-                                            contentAlignment = Alignment.Center
+                                                    },
+                                            contentAlignment = Alignment.Center,
                                         ) {
                                             Icon(
                                                 painter = painterResource(id = R.drawable.play),
                                                 contentDescription = null,
                                                 tint = MaterialTheme.colorScheme.onPrimary,
-                                                modifier = Modifier.size(14.dp)
+                                                modifier = Modifier.size(14.dp),
                                             )
                                         }
                                     }
@@ -613,14 +638,14 @@ fun LibraryMixScreen(
                                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
-                                        color = MaterialTheme.colorScheme.onBackground
+                                        color = MaterialTheme.colorScheme.onBackground,
                                     )
                                     Text(
                                         text = "${playlist.songCount} ${stringResource(R.string.tracks_label)}",
                                         style = MaterialTheme.typography.bodySmall,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
-                                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                                     )
                                 }
                             }
@@ -641,36 +666,38 @@ fun LibraryMixScreen(
                             // Ending "More" card
                             item {
                                 Column(
-                                    modifier = Modifier
-                                        .width(130.dp)
-                                        .height(168.dp)
-                                        .clip(RoundedCornerShape(32.dp))
-                                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
-                                        .clickable {
-                                            onTabSelected(LibraryFilter.PLAYLISTS)
-                                        },
+                                    modifier =
+                                        Modifier
+                                            .width(130.dp)
+                                            .height(168.dp)
+                                            .clip(RoundedCornerShape(32.dp))
+                                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+                                            .clickable {
+                                                onTabSelected(LibraryFilter.PLAYLISTS)
+                                            },
                                     verticalArrangement = Arrangement.Center,
-                                    horizontalAlignment = Alignment.CenterHorizontally
+                                    horizontalAlignment = Alignment.CenterHorizontally,
                                 ) {
                                     Box(
-                                        modifier = Modifier
-                                            .size(56.dp)
-                                            .clip(CircleShape)
-                                            .background(MaterialTheme.colorScheme.surfaceVariant),
-                                        contentAlignment = Alignment.Center
+                                        modifier =
+                                            Modifier
+                                                .size(56.dp)
+                                                .clip(CircleShape)
+                                                .background(MaterialTheme.colorScheme.surfaceVariant),
+                                        contentAlignment = Alignment.Center,
                                     ) {
                                         Icon(
                                             painter = painterResource(id = R.drawable.expand_more),
                                             contentDescription = stringResource(R.string.more_playlists_desc),
                                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.size(24.dp)
+                                            modifier = Modifier.size(24.dp),
                                         )
                                     }
                                     Spacer(modifier = Modifier.height(12.dp))
                                     Text(
                                         text = stringResource(R.string.more_label),
                                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                                        color = MaterialTheme.colorScheme.onBackground
+                                        color = MaterialTheme.colorScheme.onBackground,
                                     )
                                 }
                             }
@@ -684,52 +711,57 @@ fun LibraryMixScreen(
                 item(key = "your_artists") {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 24.dp, vertical = 8.dp),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 24.dp, vertical = 8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
                                 text = stringResource(R.string.your_artists),
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.onBackground
+                                color = MaterialTheme.colorScheme.onBackground,
                             )
                             Text(
                                 text = stringResource(R.string.see_all),
-                                style = MaterialTheme.typography.labelMedium.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.primary
-                                ),
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .clickable { onTabSelected(LibraryFilter.ARTISTS) }
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                style =
+                                    MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    ),
+                                modifier =
+                                    Modifier
+                                        .clip(CircleShape)
+                                        .clickable { onTabSelected(LibraryFilter.ARTISTS) }
+                                        .padding(horizontal = 8.dp, vertical = 4.dp),
                             )
                         }
                         LazyRow(
                             contentPadding = PaddingValues(horizontal = 24.dp),
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         ) {
                             items(artists.take(10)) { item ->
                                 val artist = item.artist
                                 Column(
-                                    modifier = Modifier
-                                        .width(80.dp)
-                                        .clickable {
-                                            navController.navigate("artist/${artist.id}")
-                                        },
-                                    horizontalAlignment = Alignment.CenterHorizontally
+                                    modifier =
+                                        Modifier
+                                            .width(80.dp)
+                                            .clickable {
+                                                navController.navigate("artist/${artist.id}")
+                                            },
+                                    horizontalAlignment = Alignment.CenterHorizontally,
                                 ) {
                                     AsyncImage(
                                         model = artist.thumbnailUrl,
                                         contentDescription = null,
                                         contentScale = ContentScale.Crop,
-                                        modifier = Modifier
-                                            .size(72.dp)
-                                            .clip(CircleShape)
+                                        modifier =
+                                            Modifier
+                                                .size(72.dp)
+                                                .clip(CircleShape),
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
@@ -738,7 +770,7 @@ fun LibraryMixScreen(
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
                                         textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                        color = MaterialTheme.colorScheme.onBackground
+                                        color = MaterialTheme.colorScheme.onBackground,
                                     )
                                 }
                             }
@@ -746,32 +778,34 @@ fun LibraryMixScreen(
                             // Ending "+" button
                             item {
                                 Column(
-                                    modifier = Modifier
-                                        .width(80.dp)
-                                        .clickable {
-                                            onTabSelected(LibraryFilter.ARTISTS)
-                                        },
-                                    horizontalAlignment = Alignment.CenterHorizontally
+                                    modifier =
+                                        Modifier
+                                            .width(80.dp)
+                                            .clickable {
+                                                onTabSelected(LibraryFilter.ARTISTS)
+                                            },
+                                    horizontalAlignment = Alignment.CenterHorizontally,
                                 ) {
                                     Box(
-                                        modifier = Modifier
-                                            .size(72.dp)
-                                            .clip(CircleShape)
-                                            .background(MaterialTheme.colorScheme.surfaceVariant),
-                                        contentAlignment = Alignment.Center
+                                        modifier =
+                                            Modifier
+                                                .size(72.dp)
+                                                .clip(CircleShape)
+                                                .background(MaterialTheme.colorScheme.surfaceVariant),
+                                        contentAlignment = Alignment.Center,
                                     ) {
                                         Icon(
                                             painter = painterResource(id = R.drawable.add),
                                             contentDescription = stringResource(R.string.more_label),
                                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.size(24.dp)
+                                            modifier = Modifier.size(24.dp),
                                         )
                                     }
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
                                         text = stringResource(R.string.more_label),
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                                        color = MaterialTheme.colorScheme.onBackground
+                                        color = MaterialTheme.colorScheme.onBackground,
                                     )
                                 }
                             }
@@ -790,10 +824,11 @@ private fun SpotifyPlaylistCompactCard(
     modifier: Modifier = Modifier,
 ) {
     val thumbnailUrl = remember(playlist) { SpotifyMapper.getPlaylistThumbnail(playlist) }
-    val cardBgColor = rememberArtworkCardColor(
-        thumbnailUrl = thumbnailUrl,
-        fallbackColor = MaterialTheme.colorScheme.surfaceContainerLow,
-    )
+    val cardBgColor =
+        rememberArtworkCardColor(
+            thumbnailUrl = thumbnailUrl,
+            fallbackColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        )
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
@@ -803,25 +838,25 @@ private fun SpotifyPlaylistCompactCard(
     )
 
     Column(
-        modifier = modifier
-            .width(130.dp)
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
-            .clip(RoundedCornerShape(32.dp))
-            .background(cardBgColor)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick,
-            )
-            .padding(12.dp),
+        modifier =
+            modifier
+                .width(130.dp)
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                }.clip(RoundedCornerShape(32.dp))
+                .background(cardBgColor)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = onClick,
+                ).padding(12.dp),
     ) {
         Box(
-            modifier = Modifier
-                .size(106.dp)
-                .clip(RoundedCornerShape(24.dp)),
+            modifier =
+                Modifier
+                    .size(106.dp)
+                    .clip(RoundedCornerShape(24.dp)),
         ) {
             AsyncImage(
                 model = thumbnailUrl,
@@ -830,12 +865,13 @@ private fun SpotifyPlaylistCompactCard(
                 modifier = Modifier.fillMaxSize(),
             )
             Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(6.dp)
-                    .size(28.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary),
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(6.dp)
+                        .size(28.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -873,27 +909,36 @@ private fun TopMixesForYouSection(
     modifier: Modifier = Modifier,
 ) {
     when (state) {
-        LibraryTopMixesUiState.Loading -> TopMixesMessageSection(
-            message = stringResource(R.string.library_top_mixes_loading),
-            isRefreshing = true,
-            onRefresh = onRefresh,
-            showRefresh = false,
-            modifier = modifier,
-        )
-        is LibraryTopMixesUiState.Empty -> TopMixesEmptySection(
-            reason = state.reason,
-            isRefreshing = state.isRefreshing,
-            onRefresh = onRefresh,
-            onConfigureAi = onConfigureAi,
-            modifier = modifier,
-        )
-        is LibraryTopMixesUiState.Error -> TopMixesMessageSection(
-            message = state.message,
-            isRefreshing = false,
-            onRefresh = onRefresh,
-            showRefresh = true,
-            modifier = modifier,
-        )
+        LibraryTopMixesUiState.Loading -> {
+            TopMixesMessageSection(
+                message = stringResource(R.string.library_top_mixes_loading),
+                isRefreshing = true,
+                onRefresh = onRefresh,
+                showRefresh = false,
+                modifier = modifier,
+            )
+        }
+
+        is LibraryTopMixesUiState.Empty -> {
+            TopMixesEmptySection(
+                reason = state.reason,
+                isRefreshing = state.isRefreshing,
+                onRefresh = onRefresh,
+                onConfigureAi = onConfigureAi,
+                modifier = modifier,
+            )
+        }
+
+        is LibraryTopMixesUiState.Error -> {
+            TopMixesMessageSection(
+                message = state.message,
+                isRefreshing = false,
+                onRefresh = onRefresh,
+                showRefresh = true,
+                modifier = modifier,
+            )
+        }
+
         is LibraryTopMixesUiState.Success -> {
             if (state.mixes.isEmpty()) {
                 TopMixesMessageSection(
@@ -970,39 +1015,44 @@ private fun TopMixesEmptySection(
             showRefresh = reason != LibraryTopMixEmptyReason.AI_NOT_CONFIGURED,
         )
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
             shape = RoundedCornerShape(32.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-            ),
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                ),
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text(
-                    text = stringResource(
-                        when (reason) {
-                            LibraryTopMixEmptyReason.AI_NOT_CONFIGURED -> R.string.library_top_mixes_ai_not_configured_title
-                            LibraryTopMixEmptyReason.NO_RECENT_HISTORY -> R.string.library_top_mixes_no_recent_history_title
-                        },
-                    ),
+                    text =
+                        stringResource(
+                            when (reason) {
+                                LibraryTopMixEmptyReason.AI_NOT_CONFIGURED -> R.string.library_top_mixes_ai_not_configured_title
+                                LibraryTopMixEmptyReason.NO_RECENT_HISTORY -> R.string.library_top_mixes_no_recent_history_title
+                            },
+                        ),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    text = stringResource(
-                        when (reason) {
-                            LibraryTopMixEmptyReason.AI_NOT_CONFIGURED -> R.string.library_top_mixes_ai_not_configured_desc
-                            LibraryTopMixEmptyReason.NO_RECENT_HISTORY -> R.string.library_top_mixes_no_recent_history
-                        },
-                    ),
+                    text =
+                        stringResource(
+                            when (reason) {
+                                LibraryTopMixEmptyReason.AI_NOT_CONFIGURED -> R.string.library_top_mixes_ai_not_configured_desc
+                                LibraryTopMixEmptyReason.NO_RECENT_HISTORY -> R.string.library_top_mixes_no_recent_history
+                            },
+                        ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -1030,9 +1080,10 @@ private fun TopMixesHeader(
     showRefresh: Boolean,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 24.dp, top = 8.dp, end = 16.dp, bottom = 8.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(start = 24.dp, top = 8.dp, end = 16.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -1078,28 +1129,30 @@ private fun LibraryTopMixCard(
     )
 
     Card(
-        modifier = modifier
-            .width(180.dp)
-            .height(130.dp)
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onPlay,
-            ),
+        modifier =
+            modifier
+                .width(180.dp)
+                .height(130.dp)
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                }.clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = onPlay,
+                ),
         shape = RoundedCornerShape(32.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxHeight()
+                    .padding(16.dp),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             Column {
@@ -1130,20 +1183,22 @@ private fun LibraryTopMixCard(
                         val artworkUrl = track.thumbnailUrl
                         if (artworkUrl == null) {
                             Box(
-                                modifier = Modifier
-                                    .size(28.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)),
+                                modifier =
+                                    Modifier
+                                        .size(28.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)),
                             )
                         } else {
                             AsyncImage(
                                 model = artworkUrl,
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(28.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)),
+                                modifier =
+                                    Modifier
+                                        .size(28.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)),
                             )
                         }
                     }
@@ -1151,10 +1206,11 @@ private fun LibraryTopMixCard(
 
                 IconButton(
                     onClick = onPlay,
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                    ),
+                    colors =
+                        IconButtonDefaults.iconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                        ),
                     modifier = Modifier.size(48.dp),
                 ) {
                     Icon(
@@ -1176,81 +1232,83 @@ fun ShortcutCard(
     containerColor: Color,
     iconColor: Color,
     modifier: Modifier = Modifier,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.96f else 1.0f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
-        label = "ShortcutCardScale"
+        label = "ShortcutCardScale",
     )
 
-    val isDark = MaterialTheme.colorScheme.surface.let { 
-        ColorUtils.calculateLuminance(it.toArgb()) < 0.5 
-    }
-    
+    val isDark =
+        MaterialTheme.colorScheme.surface.let {
+            ColorUtils.calculateLuminance(it.toArgb()) < 0.5
+        }
+
     val surfaceContainerColor = MaterialTheme.colorScheme.surfaceContainer
-    val finalBgColor = remember(surfaceContainerColor, iconColor, isDark) {
-        if (isDark) {
-            Color(ColorUtils.blendARGB(surfaceContainerColor.toArgb(), iconColor.toArgb(), 0.08f))
-        } else {
-            Color(ColorUtils.blendARGB(surfaceContainerColor.toArgb(), iconColor.toArgb(), 0.06f))
+    val finalBgColor =
+        remember(surfaceContainerColor, iconColor, isDark) {
+            if (isDark) {
+                Color(ColorUtils.blendARGB(surfaceContainerColor.toArgb(), iconColor.toArgb(), 0.08f))
+            } else {
+                Color(ColorUtils.blendARGB(surfaceContainerColor.toArgb(), iconColor.toArgb(), 0.06f))
+            }
         }
-    }
-    
-    val iconBgColor = remember(iconColor, isDark) {
-        if (isDark) {
-            iconColor.copy(alpha = 0.16f)
-        } else {
-            iconColor.copy(alpha = 0.10f)
+
+    val iconBgColor =
+        remember(iconColor, isDark) {
+            if (isDark) {
+                iconColor.copy(alpha = 0.16f)
+            } else {
+                iconColor.copy(alpha = 0.10f)
+            }
         }
-    }
 
     Box(
-        modifier = modifier
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
-            .clip(RoundedCornerShape(26.dp))
-            .background(finalBgColor)
-            .clickable(
-                interactionSource = interactionSource,
-                onClick = onClick
-            )
-            .padding(12.dp)
+        modifier =
+            modifier
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                }.clip(RoundedCornerShape(26.dp))
+                .background(finalBgColor)
+                .clickable(
+                    interactionSource = interactionSource,
+                    onClick = onClick,
+                ).padding(12.dp),
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-                    .background(iconBgColor),
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(iconBgColor),
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     painter = painterResource(id = iconRes),
                     contentDescription = null,
                     tint = iconColor,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(16.dp),
                 )
             }
             Column {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
                     text = countText,
                     style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
     }
 }
-

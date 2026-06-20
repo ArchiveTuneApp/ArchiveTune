@@ -47,9 +47,10 @@ import androidx.navigation.navArgument
 import moe.rukamori.archivetune.BuildConfig
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.constants.DarkModeKey
+import moe.rukamori.archivetune.constants.PureBlackKey
 import moe.rukamori.archivetune.constants.UpdateChannel
 import moe.rukamori.archivetune.defaultUpdateChannel
-import moe.rukamori.archivetune.constants.PureBlackKey
+import moe.rukamori.archivetune.musicrecognition.MusicRecognitionRoute
 import moe.rukamori.archivetune.ui.component.BottomSheet
 import moe.rukamori.archivetune.ui.component.BottomSheetMenu
 import moe.rukamori.archivetune.ui.component.LocalMenuState
@@ -59,31 +60,33 @@ import moe.rukamori.archivetune.ui.screens.artist.ArtistAlbumsScreen
 import moe.rukamori.archivetune.ui.screens.artist.ArtistItemsScreen
 import moe.rukamori.archivetune.ui.screens.artist.ArtistScreen
 import moe.rukamori.archivetune.ui.screens.artist.ArtistSongsScreen
-import moe.rukamori.archivetune.ui.screens.library.LocalSongScreen
 import moe.rukamori.archivetune.ui.screens.library.LibraryScreen
+import moe.rukamori.archivetune.ui.screens.library.LocalSongScreen
+import moe.rukamori.archivetune.ui.screens.musicrecognition.MusicRecognitionScreen
 import moe.rukamori.archivetune.ui.screens.playlist.AutoPlaylistScreen
+import moe.rukamori.archivetune.ui.screens.playlist.CachePlaylistScreen
 import moe.rukamori.archivetune.ui.screens.playlist.LocalPlaylistScreen
 import moe.rukamori.archivetune.ui.screens.playlist.OnlinePlaylistScreen
 import moe.rukamori.archivetune.ui.screens.playlist.SpotifyPlaylistScreen
 import moe.rukamori.archivetune.ui.screens.playlist.TopPlaylistScreen
-import moe.rukamori.archivetune.ui.screens.playlist.CachePlaylistScreen
+import moe.rukamori.archivetune.ui.screens.search.OnlineSearchResult
 import moe.rukamori.archivetune.ui.screens.search.OnlineSearchResultArgument
 import moe.rukamori.archivetune.ui.screens.search.OnlineSearchResultRoute
 import moe.rukamori.archivetune.ui.screens.search.OnlineSearchResultRoutePrefix
-import moe.rukamori.archivetune.ui.screens.search.OnlineSearchResult
 import moe.rukamori.archivetune.ui.screens.settings.AboutScreen
 import moe.rukamori.archivetune.ui.screens.settings.AccountSettings
 import moe.rukamori.archivetune.ui.screens.settings.AiIntegrationSettings
 import moe.rukamori.archivetune.ui.screens.settings.AodCustomizedScreen
 import moe.rukamori.archivetune.ui.screens.settings.AppearanceSettings
-import moe.rukamori.archivetune.ui.screens.settings.CustomizeBackground
 import moe.rukamori.archivetune.ui.screens.settings.BackupAndRestore
 import moe.rukamori.archivetune.ui.screens.settings.ChangelogScreen
 import moe.rukamori.archivetune.ui.screens.settings.ContentSettings
+import moe.rukamori.archivetune.ui.screens.settings.CustomizeBackground
 import moe.rukamori.archivetune.ui.screens.settings.DarkMode
-import moe.rukamori.archivetune.ui.screens.settings.DiscordSettings
 import moe.rukamori.archivetune.ui.screens.settings.DebugSettings
+import moe.rukamori.archivetune.ui.screens.settings.DiscordSettings
 import moe.rukamori.archivetune.ui.screens.settings.IntegrationScreen
+import moe.rukamori.archivetune.ui.screens.settings.InternetSettings
 import moe.rukamori.archivetune.ui.screens.settings.LastFMSettings
 import moe.rukamori.archivetune.ui.screens.settings.LyricsAnimationSettings
 import moe.rukamori.archivetune.ui.screens.settings.LyricsSettings
@@ -92,13 +95,10 @@ import moe.rukamori.archivetune.ui.screens.settings.PalettePickerScreen
 import moe.rukamori.archivetune.ui.screens.settings.PlayerSettings
 import moe.rukamori.archivetune.ui.screens.settings.PoTokenScreen
 import moe.rukamori.archivetune.ui.screens.settings.PrivacySettings
-import moe.rukamori.archivetune.ui.screens.settings.InternetSettings
 import moe.rukamori.archivetune.ui.screens.settings.SettingsScreen
 import moe.rukamori.archivetune.ui.screens.settings.StorageSettings
 import moe.rukamori.archivetune.ui.screens.settings.ThemeCreatorScreen
 import moe.rukamori.archivetune.ui.screens.settings.UpdateScreen
-import moe.rukamori.archivetune.musicrecognition.MusicRecognitionRoute
-import moe.rukamori.archivetune.ui.screens.musicrecognition.MusicRecognitionScreen
 import moe.rukamori.archivetune.ui.utils.ShowMediaInfo
 import moe.rukamori.archivetune.utils.rememberEnumPreference
 import moe.rukamori.archivetune.utils.rememberPreference
@@ -133,20 +133,22 @@ fun NavGraphBuilder.navigationBuilder(
     }
     composable(
         route = "view_news/{newsId}",
-        arguments = listOf(
-            navArgument("newsId") { type = NavType.StringType },
-        ),
+        arguments =
+            listOf(
+                navArgument("newsId") { type = NavType.StringType },
+            ),
     ) {
         ViewNewsScreen(navController)
     }
     composable(
         route = "year_in_music?year={year}",
-        arguments = listOf(
-            navArgument("year") {
-                type = NavType.IntType
-                defaultValue = -1
-            }
-        ),
+        arguments =
+            listOf(
+                navArgument("year") {
+                    type = NavType.IntType
+                    defaultValue = -1
+                },
+            ),
     ) { backStackEntry ->
         val selectedYear = backStackEntry.arguments?.getInt("year")?.takeIf { it > 0 }
         YearInMusicScreen(
@@ -167,30 +169,31 @@ fun NavGraphBuilder.navigationBuilder(
         NewReleaseScreen(navController, scrollBehavior)
     }
     composable("charts_screen") {
-       ChartsScreen(navController)
+        ChartsScreen(navController)
     }
     composable(
         route = "browse/{browseId}",
-        arguments = listOf(
-            navArgument("browseId") {
-                type = NavType.StringType
-            }
-        )
+        arguments =
+            listOf(
+                navArgument("browseId") {
+                    type = NavType.StringType
+                },
+            ),
     ) {
         BrowseScreen(
             navController,
             scrollBehavior,
-            it.arguments?.getString("browseId")
+            it.arguments?.getString("browseId"),
         )
     }
     composable(
         route = OnlineSearchResultRoute,
         arguments =
-        listOf(
-            navArgument(OnlineSearchResultArgument) {
-                type = NavType.StringType
-            },
-        ),
+            listOf(
+                navArgument(OnlineSearchResultArgument) {
+                    type = NavType.StringType
+                },
+            ),
         enterTransition = {
             if (disableAnimations) {
                 fadeIn(tween(0))
@@ -229,106 +232,107 @@ fun NavGraphBuilder.navigationBuilder(
     composable(
         route = "album/{albumId}",
         arguments =
-        listOf(
-            navArgument("albumId") {
-                type = NavType.StringType
-            },
-        ),
+            listOf(
+                navArgument("albumId") {
+                    type = NavType.StringType
+                },
+            ),
     ) {
         AlbumScreen(navController, scrollBehavior)
     }
     composable(
         route = "artist/{artistId}",
         arguments =
-        listOf(
-            navArgument("artistId") {
-                type = NavType.StringType
-            },
-        ),
+            listOf(
+                navArgument("artistId") {
+                    type = NavType.StringType
+                },
+            ),
     ) {
         ArtistScreen(navController, scrollBehavior)
     }
     composable(
         route = "artist/{artistId}/songs",
         arguments =
-        listOf(
-            navArgument("artistId") {
-                type = NavType.StringType
-            },
-        ),
+            listOf(
+                navArgument("artistId") {
+                    type = NavType.StringType
+                },
+            ),
     ) {
         ArtistSongsScreen(navController, scrollBehavior)
     }
     composable(
         route = "artist/{artistId}/albums",
-        arguments = listOf(
-            navArgument("artistId") {
-                type = NavType.StringType
-            }
-        )
+        arguments =
+            listOf(
+                navArgument("artistId") {
+                    type = NavType.StringType
+                },
+            ),
     ) {
         ArtistAlbumsScreen(navController, scrollBehavior)
     }
     composable(
         route = "artist/{artistId}/items?browseId={browseId}&params={params}",
         arguments =
-        listOf(
-            navArgument("artistId") {
-                type = NavType.StringType
-            },
-            navArgument("browseId") {
-                type = NavType.StringType
-                nullable = true
-            },
-            navArgument("params") {
-                type = NavType.StringType
-                nullable = true
-            },
-        ),
+            listOf(
+                navArgument("artistId") {
+                    type = NavType.StringType
+                },
+                navArgument("browseId") {
+                    type = NavType.StringType
+                    nullable = true
+                },
+                navArgument("params") {
+                    type = NavType.StringType
+                    nullable = true
+                },
+            ),
     ) {
         ArtistItemsScreen(navController, scrollBehavior)
     }
     composable(
         route = "online_playlist/{playlistId}",
         arguments =
-        listOf(
-            navArgument("playlistId") {
-                type = NavType.StringType
-            },
-        ),
+            listOf(
+                navArgument("playlistId") {
+                    type = NavType.StringType
+                },
+            ),
     ) {
         OnlinePlaylistScreen(navController, scrollBehavior)
     }
     composable(
         route = "local_playlist/{playlistId}",
         arguments =
-        listOf(
-            navArgument("playlistId") {
-                type = NavType.StringType
-            },
-        ),
+            listOf(
+                navArgument("playlistId") {
+                    type = NavType.StringType
+                },
+            ),
     ) {
         LocalPlaylistScreen(navController, scrollBehavior)
     }
     composable(
         route = "spotify_playlist/{playlistId}",
         arguments =
-        listOf(
-            navArgument("playlistId") {
-                type = NavType.StringType
-            },
-        ),
+            listOf(
+                navArgument("playlistId") {
+                    type = NavType.StringType
+                },
+            ),
     ) {
         SpotifyPlaylistScreen(navController, scrollBehavior)
     }
     composable(
         route = "auto_playlist/{playlist}",
         arguments =
-        listOf(
-            navArgument("playlist") {
-                type = NavType.StringType
-            },
-        ),
+            listOf(
+                navArgument("playlist") {
+                    type = NavType.StringType
+                },
+            ),
     ) {
         AutoPlaylistScreen(navController, scrollBehavior)
     }
@@ -338,35 +342,35 @@ fun NavGraphBuilder.navigationBuilder(
             listOf(
                 navArgument("playlist") {
                     type = NavType.StringType
-            },
-        ),
+                },
+            ),
     ) {
         CachePlaylistScreen(navController, scrollBehavior)
     }
     composable(
         route = "top_playlist/{top}",
         arguments =
-        listOf(
-            navArgument("top") {
-                type = NavType.StringType
-            },
-        ),
+            listOf(
+                navArgument("top") {
+                    type = NavType.StringType
+                },
+            ),
     ) {
         TopPlaylistScreen(navController, scrollBehavior)
     }
     composable(
         route = "youtube_browse/{browseId}?params={params}",
         arguments =
-        listOf(
-            navArgument("browseId") {
-                type = NavType.StringType
-                nullable = true
-            },
-            navArgument("params") {
-                type = NavType.StringType
-                nullable = true
-            },
-        ),
+            listOf(
+                navArgument("browseId") {
+                    type = NavType.StringType
+                    nullable = true
+                },
+                navArgument("params") {
+                    type = NavType.StringType
+                    nullable = true
+                },
+            ),
     ) {
         YouTubeBrowseScreen(navController)
     }
@@ -428,7 +432,8 @@ fun NavGraphBuilder.navigationBuilder(
         LastFMSettings(navController, scrollBehavior)
     }
     composable("settings/discord/experimental") {
-        moe.rukamori.archivetune.ui.screens.settings.DiscordExperimental(navController)
+        moe.rukamori.archivetune.ui.screens.settings
+            .DiscordExperimental(navController)
     }
     composable("settings/misc") {
         DebugSettings(navController)
@@ -440,18 +445,20 @@ fun NavGraphBuilder.navigationBuilder(
     }
     composable(
         route = "settings/changelog?channel={channel}",
-        arguments = listOf(
-            navArgument("channel") {
-                type = NavType.StringType
-                nullable = true
-                defaultValue = null
-            }
-        )
+        arguments =
+            listOf(
+                navArgument("channel") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+            ),
     ) { backStackEntry ->
         val channelName = backStackEntry.arguments?.getString("channel")
-        val channel = channelName?.let {
-            runCatching { UpdateChannel.valueOf(it) }.getOrNull()
-        } ?: defaultUpdateChannel
+        val channel =
+            channelName?.let {
+                runCatching { UpdateChannel.valueOf(it) }.getOrNull()
+            } ?: defaultUpdateChannel
         ChangelogScreen(navController, scrollBehavior, channel = channel)
     }
     composable("settings/about") {
@@ -465,17 +472,18 @@ fun NavGraphBuilder.navigationBuilder(
     }
     composable(
         route = "$LOGIN_ROUTE?$LOGIN_URL_ARGUMENT={$LOGIN_URL_ARGUMENT}",
-        arguments = listOf(
-            navArgument(LOGIN_URL_ARGUMENT) {
-                type = NavType.StringType
-                nullable = true
-                defaultValue = null
-            }
-        )
+        arguments =
+            listOf(
+                navArgument(LOGIN_URL_ARGUMENT) {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+            ),
     ) { backStackEntry ->
         LoginScreen(
             navController,
-            startUrl = backStackEntry.arguments?.getString(LOGIN_URL_ARGUMENT)?.let(Uri::decode)
+            startUrl = backStackEntry.arguments?.getString(LOGIN_URL_ARGUMENT)?.let(Uri::decode),
         )
     }
 }

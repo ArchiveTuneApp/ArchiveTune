@@ -55,6 +55,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -62,7 +63,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -204,9 +204,10 @@ private fun YearInMusicRecapScreen(
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(RecapBlack)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(RecapBlack),
     ) {
         RecapBackdrop(
             enabled = !disableBlur && !isShareCaptureMode,
@@ -238,8 +239,9 @@ private fun YearInMusicRecapScreen(
                     )
                 }
             },
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier =
+                Modifier
+                    .fillMaxSize(),
         )
 
         if (canShare) {
@@ -255,43 +257,48 @@ private fun YearInMusicRecapScreen(
                                 awaitNextPreDraw(view)
                                 awaitNextPreDraw(view)
 
-                                val raw = ComposeToImage.captureViewBitmap(
-                                    view = view,
-                                    backgroundColor = RecapBlack.toArgb(),
-                                )
-                                val bounds = currentCardBounds
-                                val cardBitmap = if (bounds != null && bounds.width > 0f && bounds.height > 0f) {
-                                    ComposeToImage.cropBitmap(
-                                        source = raw,
-                                        left = bounds.left.toInt().coerceAtLeast(0),
-                                        top = bounds.top.toInt().coerceAtLeast(0),
-                                        width = bounds.width.toInt().coerceAtLeast(1),
-                                        height = bounds.height.toInt().coerceAtLeast(1),
+                                val raw =
+                                    ComposeToImage.captureViewBitmap(
+                                        view = view,
+                                        backgroundColor = RecapBlack.toArgb(),
                                     )
-                                } else {
-                                    raw
-                                }
-                                val fitted = ComposeToImage.fitBitmap(
-                                    source = cardBitmap,
-                                    targetWidth = 1080,
-                                    targetHeight = 1920,
-                                    backgroundColor = RecapBlack.toArgb(),
-                                )
-                                val uri = ComposeToImage.saveBitmapAsFile(
-                                    context = context,
-                                    bitmap = fitted,
-                                    fileName = "ArchiveTune_YearInMusic_${content.selectedYear}_${currentPage + 1}",
-                                )
-                                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                    type = "image/png"
-                                    putExtra(Intent.EXTRA_STREAM, uri)
-                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                }
+                                val bounds = currentCardBounds
+                                val cardBitmap =
+                                    if (bounds != null && bounds.width > 0f && bounds.height > 0f) {
+                                        ComposeToImage.cropBitmap(
+                                            source = raw,
+                                            left = bounds.left.toInt().coerceAtLeast(0),
+                                            top = bounds.top.toInt().coerceAtLeast(0),
+                                            width = bounds.width.toInt().coerceAtLeast(1),
+                                            height = bounds.height.toInt().coerceAtLeast(1),
+                                        )
+                                    } else {
+                                        raw
+                                    }
+                                val fitted =
+                                    ComposeToImage.fitBitmap(
+                                        source = cardBitmap,
+                                        targetWidth = 1080,
+                                        targetHeight = 1920,
+                                        backgroundColor = RecapBlack.toArgb(),
+                                    )
+                                val uri =
+                                    ComposeToImage.saveBitmapAsFile(
+                                        context = context,
+                                        bitmap = fitted,
+                                        fileName = "ArchiveTune_YearInMusic_${content.selectedYear}_${currentPage + 1}",
+                                    )
+                                val shareIntent =
+                                    Intent(Intent.ACTION_SEND).apply {
+                                        type = "image/png"
+                                        putExtra(Intent.EXTRA_STREAM, uri)
+                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                    }
                                 context.startActivity(
                                     Intent.createChooser(
                                         shareIntent,
                                         context.getString(R.string.share_summary),
-                                    )
+                                    ),
                                 )
                             } finally {
                                 isShareCaptureMode = false
@@ -299,16 +306,15 @@ private fun YearInMusicRecapScreen(
                             }
                         }
                     },
-                    modifier = Modifier
-                        .windowInsetsPadding(
-                            LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
-                        )
-                        .padding(end = 16.dp, bottom = 16.dp)
-                        .widthIn(max = 168.dp),
+                    modifier =
+                        Modifier
+                            .windowInsetsPadding(
+                                LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal),
+                            ).padding(end = 16.dp, bottom = 16.dp)
+                            .widthIn(max = 168.dp),
                 )
             }
         }
-
     }
 }
 
@@ -348,7 +354,7 @@ private fun rememberYearInMusicCards(content: YearInMusicUiState.Content): List<
                         totalListeningTime = content.totalListeningTime,
                         totalSongsPlayed = content.totalSongsPlayed,
                         label = introLabel,
-                    )
+                    ),
                 )
                 add(
                     YearInMusicRecapCard.Totals(
@@ -357,7 +363,7 @@ private fun rememberYearInMusicCards(content: YearInMusicUiState.Content): List<
                         topSong = content.topSongsStats.firstOrNull(),
                         topArtist = content.topArtists.firstOrNull(),
                         label = totalsLabel,
-                    )
+                    ),
                 )
                 content.topSongsStats.firstOrNull()?.let { topSong ->
                     add(
@@ -365,7 +371,7 @@ private fun rememberYearInMusicCards(content: YearInMusicUiState.Content): List<
                             song = topSong,
                             originalSong = content.topSongs.firstOrNull { it.id == topSong.id } ?: content.topSongs.firstOrNull(),
                             label = topTrackLabel,
-                        )
+                        ),
                     )
                 }
                 if (content.topArtists.isNotEmpty()) {
@@ -373,7 +379,7 @@ private fun rememberYearInMusicCards(content: YearInMusicUiState.Content): List<
                         YearInMusicRecapCard.RankedArtists(
                             artists = content.topArtists,
                             label = artistsLabel,
-                        )
+                        ),
                     )
                 }
                 if (content.topAlbums.isNotEmpty()) {
@@ -381,7 +387,7 @@ private fun rememberYearInMusicCards(content: YearInMusicUiState.Content): List<
                         YearInMusicRecapCard.RankedAlbums(
                             albums = content.topAlbums,
                             label = albumsLabel,
-                        )
+                        ),
                     )
                 }
                 add(
@@ -393,7 +399,7 @@ private fun rememberYearInMusicCards(content: YearInMusicUiState.Content): List<
                         topArtists = content.topArtists,
                         topAlbums = content.topAlbums,
                         label = summaryLabel,
-                    )
+                    ),
                 )
             }
         }
@@ -439,13 +445,14 @@ private fun RecapCardPager(
             canAdvance = canAdvance,
             onTopSongLongClick = onTopSongLongClick,
             onTopArtistLongClick = onTopArtistLongClick,
-            modifier = Modifier
-                .fillMaxSize()
-                .onGloballyPositioned { coordinates ->
-                    if (page == pagerState.currentPage) {
-                        onCardBoundsChanged(coordinates.boundsInRoot())
-                    }
-                },
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .onGloballyPositioned { coordinates ->
+                        if (page == pagerState.currentPage) {
+                            onCardBoundsChanged(coordinates.boundsInRoot())
+                        }
+                    },
         )
     }
 }
@@ -460,61 +467,83 @@ private fun RecapCardFrame(
     onTopArtistLongClick: (Artist) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val gradient = remember(card.id) {
-        when (card) {
-            is YearInMusicRecapCard.Empty -> listOf(RecapSurfaceHigh, RecapBlack)
-            is YearInMusicRecapCard.Intro -> listOf(RecapRedDeep, RecapBlack, RecapSurface)
-            is YearInMusicRecapCard.Totals -> listOf(RecapRed, RecapBlack, RecapPurple.copy(alpha = 0.72f))
-            is YearInMusicRecapCard.TopSong -> listOf(RecapBlack, RecapRedDeep, RecapBlack)
-            is YearInMusicRecapCard.RankedArtists -> listOf(RecapBlack, RecapSurface, RecapRedDeep)
-            is YearInMusicRecapCard.RankedAlbums -> listOf(RecapRedDeep, RecapBlack, RecapSurface)
-            is YearInMusicRecapCard.Summary -> listOf(RecapBlack, RecapRedDeep, RecapPurple.copy(alpha = 0.78f))
+    val gradient =
+        remember(card.id) {
+            when (card) {
+                is YearInMusicRecapCard.Empty -> listOf(RecapSurfaceHigh, RecapBlack)
+                is YearInMusicRecapCard.Intro -> listOf(RecapRedDeep, RecapBlack, RecapSurface)
+                is YearInMusicRecapCard.Totals -> listOf(RecapRed, RecapBlack, RecapPurple.copy(alpha = 0.72f))
+                is YearInMusicRecapCard.TopSong -> listOf(RecapBlack, RecapRedDeep, RecapBlack)
+                is YearInMusicRecapCard.RankedArtists -> listOf(RecapBlack, RecapSurface, RecapRedDeep)
+                is YearInMusicRecapCard.RankedAlbums -> listOf(RecapRedDeep, RecapBlack, RecapSurface)
+                is YearInMusicRecapCard.Summary -> listOf(RecapBlack, RecapRedDeep, RecapPurple.copy(alpha = 0.78f))
+            }
         }
-    }
 
     Surface(
         modifier = modifier.clickable(enabled = canAdvance, onClick = onCardClick),
         color = RecapBlack,
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Brush.verticalGradient(gradient)),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(Brush.verticalGradient(gradient)),
         ) {
             RecapNoiseOverlay(modifier = Modifier.fillMaxSize())
 
             when (card) {
-                is YearInMusicRecapCard.Empty -> EmptyRecapCard(
-                    card = card,
-                    applySafeContentInsets = applySafeContentInsets,
-                )
-                is YearInMusicRecapCard.Intro -> IntroRecapCard(
-                    card = card,
-                    applySafeContentInsets = applySafeContentInsets,
-                )
-                is YearInMusicRecapCard.Totals -> TotalsRecapCard(
-                    card = card,
-                    applySafeContentInsets = applySafeContentInsets,
-                )
-                is YearInMusicRecapCard.TopSong -> TopSongRecapCard(
-                    card = card,
-                    applySafeContentInsets = applySafeContentInsets,
-                    onClick = onCardClick,
-                    onLongClick = { card.originalSong?.let(onTopSongLongClick) },
-                )
-                is YearInMusicRecapCard.RankedArtists -> RankedArtistsRecapCard(
-                    card = card,
-                    applySafeContentInsets = applySafeContentInsets,
-                    onArtistLongClick = onTopArtistLongClick,
-                )
-                is YearInMusicRecapCard.RankedAlbums -> RankedAlbumsRecapCard(
-                    card = card,
-                    applySafeContentInsets = applySafeContentInsets,
-                )
-                is YearInMusicRecapCard.Summary -> SummaryRecapCard(
-                    card = card,
-                    applySafeContentInsets = applySafeContentInsets,
-                )
+                is YearInMusicRecapCard.Empty -> {
+                    EmptyRecapCard(
+                        card = card,
+                        applySafeContentInsets = applySafeContentInsets,
+                    )
+                }
+
+                is YearInMusicRecapCard.Intro -> {
+                    IntroRecapCard(
+                        card = card,
+                        applySafeContentInsets = applySafeContentInsets,
+                    )
+                }
+
+                is YearInMusicRecapCard.Totals -> {
+                    TotalsRecapCard(
+                        card = card,
+                        applySafeContentInsets = applySafeContentInsets,
+                    )
+                }
+
+                is YearInMusicRecapCard.TopSong -> {
+                    TopSongRecapCard(
+                        card = card,
+                        applySafeContentInsets = applySafeContentInsets,
+                        onClick = onCardClick,
+                        onLongClick = { card.originalSong?.let(onTopSongLongClick) },
+                    )
+                }
+
+                is YearInMusicRecapCard.RankedArtists -> {
+                    RankedArtistsRecapCard(
+                        card = card,
+                        applySafeContentInsets = applySafeContentInsets,
+                        onArtistLongClick = onTopArtistLongClick,
+                    )
+                }
+
+                is YearInMusicRecapCard.RankedAlbums -> {
+                    RankedAlbumsRecapCard(
+                        card = card,
+                        applySafeContentInsets = applySafeContentInsets,
+                    )
+                }
+
+                is YearInMusicRecapCard.Summary -> {
+                    SummaryRecapCard(
+                        card = card,
+                        applySafeContentInsets = applySafeContentInsets,
+                    )
+                }
             }
         }
     }
@@ -561,50 +590,53 @@ private fun IntroRecapCard(
     applySafeContentInsets: Boolean,
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(
-                        Color(0xFF56C8F2),
-                        Color(0xFF77D77C),
-                        RecapPink,
-                        Color(0xFFB7B5FF),
-                    )
-                )
-            )
-            .then(if (applySafeContentInsets) Modifier.windowInsetsPadding(WindowInsets.safeDrawing) else Modifier)
-            .padding(24.dp),
-    ) {
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .size(176.dp)
-                .graphicsLayer {
-                    rotationZ = -18f
-                    translationX = 44f
-                    translationY = 30f
-                }
-                .clip(RoundedCornerShape(18.dp))
+        modifier =
+            Modifier
+                .fillMaxSize()
                 .background(
                     Brush.linearGradient(
-                        colors = listOf(Color(0xFFFFE569), RecapPink, Color(0xFFFF8A42))
-                    )
-                )
+                        colors =
+                            listOf(
+                                Color(0xFF56C8F2),
+                                Color(0xFF77D77C),
+                                RecapPink,
+                                Color(0xFFB7B5FF),
+                            ),
+                    ),
+                ).then(if (applySafeContentInsets) Modifier.windowInsetsPadding(WindowInsets.safeDrawing) else Modifier)
+                .padding(24.dp),
+    ) {
+        Box(
+            modifier =
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .size(176.dp)
+                    .graphicsLayer {
+                        rotationZ = -18f
+                        translationX = 44f
+                        translationY = 30f
+                    }.clip(RoundedCornerShape(18.dp))
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(Color(0xFFFFE569), RecapPink, Color(0xFFFF8A42)),
+                        ),
+                    ),
         )
 
         Row(
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .padding(top = 72.dp),
+            modifier =
+                Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(top = 72.dp),
             horizontalArrangement = Arrangement.spacedBy(5.dp),
         ) {
             repeat(11) { index ->
                 Box(
-                    modifier = Modifier
-                        .width(5.dp)
-                        .height((92 - index * 3).dp)
-                        .background(if (index % 2 == 0) RecapLime else RecapBlue.copy(alpha = 0.76f))
+                    modifier =
+                        Modifier
+                            .width(5.dp)
+                            .height((92 - index * 3).dp)
+                            .background(if (index % 2 == 0) RecapLime else RecapBlue.copy(alpha = 0.76f)),
                 )
             }
         }
@@ -615,9 +647,10 @@ private fun IntroRecapCard(
         )
 
         Column(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(top = 84.dp),
+            modifier =
+                Modifier
+                    .align(Alignment.TopStart)
+                    .padding(top = 84.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Text(
@@ -655,11 +688,12 @@ private fun IntroRecapCard(
                 lineHeight = 19.sp,
             )
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(999.dp))
-                    .background(RecapInk)
-                    .padding(vertical = 14.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(RecapInk)
+                        .padding(vertical = 14.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -739,33 +773,37 @@ private fun TopSongRecapCard(
     val imageModel = rememberShareSafeImageRequest(card.song.thumbnailUrl)
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = onLongClick,
-            )
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .combinedClickable(
+                    onClick = onClick,
+                    onLongClick = onLongClick,
+                ),
     ) {
         AsyncImage(
             model = imageModel,
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-                .blur(18.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .blur(18.dp),
         )
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            RecapBlack.copy(alpha = 0.28f),
-                            RecapBlack.copy(alpha = 0.74f),
-                            RecapBlack.copy(alpha = 0.96f),
-                        )
-                    )
-                )
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors =
+                                listOf(
+                                    RecapBlack.copy(alpha = 0.28f),
+                                    RecapBlack.copy(alpha = 0.74f),
+                                    RecapBlack.copy(alpha = 0.96f),
+                                ),
+                        ),
+                    ),
         )
         RecapCardContent(
             badge = "#1 ${stringResource(R.string.year_in_music_top_track)}",
@@ -778,14 +816,15 @@ private fun TopSongRecapCard(
                     model = imageModel,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(220.dp)
-                        .clip(RoundedCornerShape(26.dp))
-                        .border(
-                            width = 2.dp,
-                            color = RecapCream.copy(alpha = 0.82f),
-                            shape = RoundedCornerShape(26.dp),
-                        ),
+                    modifier =
+                        Modifier
+                            .size(220.dp)
+                            .clip(RoundedCornerShape(26.dp))
+                            .border(
+                                width = 2.dp,
+                                color = RecapCream.copy(alpha = 0.82f),
+                                shape = RoundedCornerShape(26.dp),
+                            ),
                 )
                 Text(
                     text = card.song.title,
@@ -801,11 +840,12 @@ private fun TopSongRecapCard(
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 RecapChip(
                     icon = R.drawable.play,
-                    text = pluralStringResource(
-                        R.plurals.n_time,
-                        card.song.songCountListened,
-                        card.song.songCountListened,
-                    ),
+                    text =
+                        pluralStringResource(
+                            R.plurals.n_time,
+                            card.song.songCountListened,
+                            card.song.songCountListened,
+                        ),
                     color = RecapRed,
                 )
                 RecapChip(
@@ -840,7 +880,12 @@ private fun RankedArtistsRecapCard(
                 lineHeight = 42.sp,
             )
             Text(
-                text = card.artists.firstOrNull()?.artist?.name.orEmpty(),
+                text =
+                    card.artists
+                        .firstOrNull()
+                        ?.artist
+                        ?.name
+                        .orEmpty(),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = RecapRed,
@@ -854,10 +899,11 @@ private fun RankedArtistsRecapCard(
                 RankedArtistRow(
                     rank = index + 1,
                     artist = artist,
-                    modifier = Modifier.combinedClickable(
-                        onClick = {},
-                        onLongClick = { onArtistLongClick(artist) },
-                    ),
+                    modifier =
+                        Modifier.combinedClickable(
+                            onClick = {},
+                            onLongClick = { onArtistLongClick(artist) },
+                        ),
                 )
             }
         }
@@ -884,7 +930,12 @@ private fun RankedAlbumsRecapCard(
                 lineHeight = 42.sp,
             )
             Text(
-                text = card.albums.firstOrNull()?.album?.title.orEmpty(),
+                text =
+                    card.albums
+                        .firstOrNull()
+                        ?.album
+                        ?.title
+                        .orEmpty(),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = RecapYellow,
@@ -910,20 +961,21 @@ private fun SummaryRecapCard(
     applySafeContentInsets: Boolean,
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF7BA9FF),
-                        Color(0xFFD7E7FF),
-                        Color(0xFFE9B4FF),
-                        Color(0xFFFF6F8F),
-                    )
-                )
-            )
-            .then(if (applySafeContentInsets) Modifier.windowInsetsPadding(WindowInsets.safeDrawing) else Modifier)
-            .padding(horizontal = 20.dp, vertical = 18.dp),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors =
+                            listOf(
+                                Color(0xFF7BA9FF),
+                                Color(0xFFD7E7FF),
+                                Color(0xFFE9B4FF),
+                                Color(0xFFFF6F8F),
+                            ),
+                    ),
+                ).then(if (applySafeContentInsets) Modifier.windowInsetsPadding(WindowInsets.safeDrawing) else Modifier)
+                .padding(horizontal = 20.dp, vertical = 18.dp),
     ) {
         SummaryGuideLine(modifier = Modifier.align(Alignment.TopCenter))
         SummaryGuideLine(modifier = Modifier.align(Alignment.Center))
@@ -1043,23 +1095,25 @@ private fun SummaryRankColumn(
                 model = imageModel,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(118.dp)
-                    .clip(imageShape)
-                    .background(Color.White.copy(alpha = 0.42f))
-                    .border(
-                        width = 2.dp,
-                        color = Color.White.copy(alpha = 0.72f),
-                        shape = imageShape,
-                    ),
+                modifier =
+                    Modifier
+                        .size(118.dp)
+                        .clip(imageShape)
+                        .background(Color.White.copy(alpha = 0.42f))
+                        .border(
+                            width = 2.dp,
+                            color = Color.White.copy(alpha = 0.72f),
+                            shape = imageShape,
+                        ),
             )
             Text(
                 text = title,
-                modifier = Modifier
-                    .graphicsLayer { rotationZ = -4f }
-                    .clip(RoundedCornerShape(7.dp))
-                    .background(RecapLime)
-                    .padding(horizontal = 7.dp, vertical = 2.dp),
+                modifier =
+                    Modifier
+                        .graphicsLayer { rotationZ = -4f }
+                        .clip(RoundedCornerShape(7.dp))
+                        .background(RecapLime)
+                        .padding(horizontal = 7.dp, vertical = 2.dp),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Black,
                 color = RecapInk,
@@ -1113,10 +1167,11 @@ private fun PassportStamp(
     ) {
         Text(
             text = label,
-            modifier = Modifier
-                .clip(RoundedCornerShape(999.dp))
-                .background(Color.White.copy(alpha = 0.72f))
-                .padding(horizontal = 8.dp, vertical = 2.dp),
+            modifier =
+                Modifier
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(Color.White.copy(alpha = 0.72f))
+                    .padding(horizontal = 8.dp, vertical = 2.dp),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Black,
             color = RecapInk,
@@ -1127,17 +1182,19 @@ private fun PassportStamp(
             model = imageModel,
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(width = 82.dp, height = 62.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(Color.White.copy(alpha = 0.5f))
-                .border(
-                    width = 2.dp,
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(Color.White, RecapLime, Color.White)
+            modifier =
+                Modifier
+                    .size(width = 82.dp, height = 62.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color.White.copy(alpha = 0.5f))
+                    .border(
+                        width = 2.dp,
+                        brush =
+                            Brush.horizontalGradient(
+                                colors = listOf(Color.White, RecapLime, Color.White),
+                            ),
+                        shape = RoundedCornerShape(10.dp),
                     ),
-                    shape = RoundedCornerShape(10.dp),
-                ),
         )
         Text(
             text = count.toString(),
@@ -1156,16 +1213,18 @@ private fun SummaryGuideLine(modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
-            modifier = Modifier
-                .width(64.dp)
-                .height(2.dp)
-                .background(RecapInk.copy(alpha = 0.42f))
+            modifier =
+                Modifier
+                    .width(64.dp)
+                    .height(2.dp)
+                    .background(RecapInk.copy(alpha = 0.42f)),
         )
         Box(
-            modifier = Modifier
-                .width(64.dp)
-                .height(2.dp)
-                .background(RecapInk.copy(alpha = 0.42f))
+            modifier =
+                Modifier
+                    .width(64.dp)
+                    .height(2.dp)
+                    .background(RecapInk.copy(alpha = 0.42f)),
         )
     }
 }
@@ -1208,10 +1267,11 @@ private fun RecapCardContent(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .then(if (applySafeContentInsets) Modifier.windowInsetsPadding(WindowInsets.safeDrawing) else Modifier)
-            .padding(24.dp),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .then(if (applySafeContentInsets) Modifier.windowInsetsPadding(WindowInsets.safeDrawing) else Modifier)
+                .padding(24.dp),
         verticalArrangement = verticalArrangement,
     ) {
         RecapBadge(text = badge)
@@ -1233,15 +1293,15 @@ private fun HeroMetricTile(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(RecapTokens.SectionRadius))
-            .background(RecapCream.copy(alpha = 0.13f))
-            .border(
-                width = 1.dp,
-                color = RecapCream.copy(alpha = 0.14f),
-                shape = RoundedCornerShape(RecapTokens.SectionRadius),
-            )
-            .padding(16.dp),
+        modifier =
+            modifier
+                .clip(RoundedCornerShape(RecapTokens.SectionRadius))
+                .background(RecapCream.copy(alpha = 0.13f))
+                .border(
+                    width = 1.dp,
+                    color = RecapCream.copy(alpha = 0.14f),
+                    shape = RoundedCornerShape(RecapTokens.SectionRadius),
+                ).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Text(
@@ -1277,9 +1337,10 @@ private fun RankedArtistRow(
             model = imageModel,
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(46.dp)
-                .clip(CircleShape),
+            modifier =
+                Modifier
+                    .size(46.dp)
+                    .clip(CircleShape),
         )
         Column(
             modifier = Modifier.weight(1f),
@@ -1315,9 +1376,10 @@ private fun RankedAlbumRow(
     album: Album,
 ) {
     val imageModel = rememberShareSafeImageRequest(album.thumbnailUrl)
-    val artistNames = remember(album.artists) {
-        album.artists.take(2).joinToString(" / ") { it.name }
-    }
+    val artistNames =
+        remember(album.artists) {
+            album.artists.take(2).joinToString(" / ") { it.name }
+        }
 
     RankedRowContainer {
         RankNumber(rank = rank, color = RecapYellow)
@@ -1325,9 +1387,10 @@ private fun RankedAlbumRow(
             model = imageModel,
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(46.dp)
-                .clip(RoundedCornerShape(12.dp)),
+            modifier =
+                Modifier
+                    .size(46.dp)
+                    .clip(RoundedCornerShape(12.dp)),
         )
         Column(
             modifier = Modifier.weight(1f),
@@ -1364,16 +1427,16 @@ private fun RankedRowContainer(
     content: @Composable RowScope.() -> Unit,
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(RecapTokens.ItemRadius))
-            .background(RecapSurfaceHigh.copy(alpha = 0.82f))
-            .border(
-                width = 1.dp,
-                color = RecapCream.copy(alpha = 0.08f),
-                shape = RoundedCornerShape(RecapTokens.ItemRadius),
-            )
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(RecapTokens.ItemRadius))
+                .background(RecapSurfaceHigh.copy(alpha = 0.82f))
+                .border(
+                    width = 1.dp,
+                    color = RecapCream.copy(alpha = 0.08f),
+                    shape = RoundedCornerShape(RecapTokens.ItemRadius),
+                ).padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         content = content,
@@ -1386,10 +1449,11 @@ private fun RankNumber(
     color: Color,
 ) {
     Box(
-        modifier = Modifier
-            .size(34.dp)
-            .clip(CircleShape)
-            .background(color.copy(alpha = 0.18f)),
+        modifier =
+            Modifier
+                .size(34.dp)
+                .clip(CircleShape)
+                .background(color.copy(alpha = 0.18f)),
         contentAlignment = Alignment.Center,
     ) {
         Text(
@@ -1424,11 +1488,12 @@ private fun RecapStatRow(
     color: Color,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(RecapTokens.SectionRadius))
-            .background(RecapSurfaceHigh.copy(alpha = 0.72f))
-            .padding(14.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(RecapTokens.SectionRadius))
+                .background(RecapSurfaceHigh.copy(alpha = 0.72f))
+                .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -1468,15 +1533,15 @@ private fun RecapChip(
     color: Color,
 ) {
     Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(999.dp))
-            .background(color.copy(alpha = 0.2f))
-            .border(
-                width = 1.dp,
-                color = color.copy(alpha = 0.34f),
-                shape = RoundedCornerShape(999.dp),
-            )
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+        modifier =
+            Modifier
+                .clip(RoundedCornerShape(999.dp))
+                .background(color.copy(alpha = 0.2f))
+                .border(
+                    width = 1.dp,
+                    color = color.copy(alpha = 0.34f),
+                    shape = RoundedCornerShape(999.dp),
+                ).padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
@@ -1499,23 +1564,24 @@ private fun RecapChip(
 @Composable
 private fun RecapBadge(text: String) {
     Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(999.dp))
-            .background(RecapCream.copy(alpha = 0.14f))
-            .border(
-                width = 1.dp,
-                color = RecapCream.copy(alpha = 0.16f),
-                shape = RoundedCornerShape(999.dp),
-            )
-            .padding(horizontal = 12.dp, vertical = 7.dp),
+        modifier =
+            Modifier
+                .clip(RoundedCornerShape(999.dp))
+                .background(RecapCream.copy(alpha = 0.14f))
+                .border(
+                    width = 1.dp,
+                    color = RecapCream.copy(alpha = 0.16f),
+                    shape = RoundedCornerShape(999.dp),
+                ).padding(horizontal = 12.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Box(
-            modifier = Modifier
-                .size(8.dp)
-                .clip(CircleShape)
-                .background(RecapRed),
+            modifier =
+                Modifier
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(RecapRed),
         )
         Text(
             text = text,
@@ -1536,9 +1602,10 @@ private fun IconBadge(
     modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier
-            .clip(CircleShape)
-            .background(background),
+        modifier =
+            modifier
+                .clip(CircleShape)
+                .background(background),
         contentAlignment = Alignment.Center,
     ) {
         Icon(
@@ -1556,35 +1623,39 @@ private fun RecapBackdrop(
     modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier.background(
-            Brush.radialGradient(
-                colors = if (enabled) {
-                    listOf(
-                        RecapRed.copy(alpha = 0.38f),
-                        RecapPurple.copy(alpha = 0.22f),
-                        RecapBlack,
-                    )
-                } else {
-                    listOf(RecapBlack, RecapBlack)
-                },
-                radius = 1200f,
-            )
-        )
+        modifier =
+            modifier.background(
+                Brush.radialGradient(
+                    colors =
+                        if (enabled) {
+                            listOf(
+                                RecapRed.copy(alpha = 0.38f),
+                                RecapPurple.copy(alpha = 0.22f),
+                                RecapBlack,
+                            )
+                        } else {
+                            listOf(RecapBlack, RecapBlack)
+                        },
+                    radius = 1200f,
+                ),
+            ),
     )
 }
 
 @Composable
 private fun RecapNoiseOverlay(modifier: Modifier = Modifier) {
     Box(
-        modifier = modifier.background(
-            Brush.linearGradient(
-                colors = listOf(
-                    Color.White.copy(alpha = 0.05f),
-                    Color.Transparent,
-                    Color.Black.copy(alpha = 0.18f),
-                )
-            )
-        )
+        modifier =
+            modifier.background(
+                Brush.linearGradient(
+                    colors =
+                        listOf(
+                            Color.White.copy(alpha = 0.05f),
+                            Color.Transparent,
+                            Color.Black.copy(alpha = 0.18f),
+                        ),
+                ),
+            ),
     )
 }
 
@@ -1633,7 +1704,8 @@ private fun rememberShareSafeImageRequest(data: Any?): Any? {
     val context = LocalContext.current
     return remember(data, context) {
         data?.let {
-            ImageRequest.Builder(context)
+            ImageRequest
+                .Builder(context)
                 .data(it)
                 .allowHardware(false)
                 .build()
@@ -1644,13 +1716,14 @@ private fun rememberShareSafeImageRequest(data: Any?): Any? {
 private suspend fun awaitNextPreDraw(view: View) {
     suspendCancellableCoroutine { cont ->
         val vto = view.viewTreeObserver
-        val listener = object : ViewTreeObserver.OnPreDrawListener {
-            override fun onPreDraw(): Boolean {
-                if (vto.isAlive) vto.removeOnPreDrawListener(this)
-                cont.resume(Unit)
-                return true
+        val listener =
+            object : ViewTreeObserver.OnPreDrawListener {
+                override fun onPreDraw(): Boolean {
+                    if (vto.isAlive) vto.removeOnPreDrawListener(this)
+                    cont.resume(Unit)
+                    return true
+                }
             }
-        }
         vto.addOnPreDrawListener(listener)
         cont.invokeOnCancellation {
             if (vto.isAlive) vto.removeOnPreDrawListener(listener)

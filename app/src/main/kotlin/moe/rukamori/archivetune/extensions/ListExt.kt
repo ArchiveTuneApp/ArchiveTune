@@ -7,8 +7,8 @@
 
 package moe.rukamori.archivetune.extensions
 
-import moe.rukamori.archivetune.db.entities.Song
 import moe.rukamori.archivetune.db.entities.Album
+import moe.rukamori.archivetune.db.entities.Song
 
 fun <T> List<T>.reversed(reversed: Boolean) = if (reversed) asReversed() else this
 

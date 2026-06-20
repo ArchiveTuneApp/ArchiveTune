@@ -5,12 +5,11 @@
  * Do not remove or alter this notice. - Per GPL-3.0 Section 4 & Section 5
  */
 
- package moe.rukamori.archivetune.utils
+package moe.rukamori.archivetune.utils
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import moe.rukamori.archivetune.utils.reportException
 import android.net.Uri
 import androidx.core.graphics.createBitmap
 import androidx.media3.common.util.BitmapLoader
@@ -20,11 +19,12 @@ import coil3.request.ImageRequest
 import coil3.request.SuccessResult
 import coil3.request.allowHardware
 import coil3.toBitmap
-import kotlinx.coroutines.delay
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.guava.future
+import moe.rukamori.archivetune.utils.reportException
 import kotlin.math.roundToInt
 
 class CoilBitmapLoader(
@@ -58,11 +58,13 @@ class CoilBitmapLoader(
             val attempts = 3
             for (attempt in 1..attempts) {
                 try {
-                    val request = ImageRequest.Builder(context)
-                        .data(uri)
-                        .allowHardware(false)
-                        .size(maxIconSizePx, maxIconSizePx)
-                        .build()
+                    val request =
+                        ImageRequest
+                            .Builder(context)
+                            .data(uri)
+                            .allowHardware(false)
+                            .size(maxIconSizePx, maxIconSizePx)
+                            .build()
 
                     val result = context.imageLoader.execute(request)
 

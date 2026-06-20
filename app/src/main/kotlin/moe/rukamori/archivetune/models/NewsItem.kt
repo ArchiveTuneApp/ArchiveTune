@@ -8,9 +8,9 @@
 package moe.rukamori.archivetune.models
 
 import androidx.compose.runtime.Immutable
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -48,23 +48,34 @@ object NewsImageUrlsSerializer : KSerializer<List<String>> {
         val jsonDecoder = decoder as? JsonDecoder ?: return delegate.deserialize(decoder)
 
         return when (val element = jsonDecoder.decodeJsonElement()) {
-            JsonNull -> emptyList()
-
-            is JsonArray -> element.mapNotNull { item ->
-                (item as? JsonPrimitive)?.contentOrNull?.trim()?.takeIf { it.isNotEmpty() }
+            JsonNull -> {
+                emptyList()
             }
 
-            is JsonPrimitive -> element.contentOrNull
-                ?.trim()
-                ?.takeIf { it.isNotEmpty() }
-                ?.let(::listOf)
-                ?: emptyList()
+            is JsonArray -> {
+                element.mapNotNull { item ->
+                    (item as? JsonPrimitive)?.contentOrNull?.trim()?.takeIf { it.isNotEmpty() }
+                }
+            }
 
-            else -> emptyList()
+            is JsonPrimitive -> {
+                element.contentOrNull
+                    ?.trim()
+                    ?.takeIf { it.isNotEmpty() }
+                    ?.let(::listOf)
+                    ?: emptyList()
+            }
+
+            else -> {
+                emptyList()
+            }
         }
     }
 
-    override fun serialize(encoder: Encoder, value: List<String>) {
+    override fun serialize(
+        encoder: Encoder,
+        value: List<String>,
+    ) {
         delegate.serialize(encoder, value)
     }
 }

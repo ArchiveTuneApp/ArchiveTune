@@ -8,16 +8,17 @@
 package moe.rukamori.archivetune.ui.component
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudOff
@@ -34,10 +35,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.shape.RoundedCornerShape
 import moe.rukamori.archivetune.network.NetworkBannerUiState
 
 private data class NetworkBannerVisuals(
@@ -61,19 +61,24 @@ fun NetworkStatusBanner(
     val visuals =
         when (lastVisibleState) {
             NetworkBannerUiState.Hidden,
-            NetworkBannerUiState.Offline -> NetworkBannerVisuals(
-                message = "No internet connection",
-                icon = Icons.Default.CloudOff,
-                containerColor = Color(0xFF7F1D1D),
-                contentColor = Color.White,
-            )
+            NetworkBannerUiState.Offline,
+            -> {
+                NetworkBannerVisuals(
+                    message = "No internet connection",
+                    icon = Icons.Default.CloudOff,
+                    containerColor = Color(0xFF7F1D1D),
+                    contentColor = Color.White,
+                )
+            }
 
-            NetworkBannerUiState.BackOnline -> NetworkBannerVisuals(
-                message = "Back online",
-                icon = Icons.Default.CloudDone,
-                containerColor = Color(0xFF1E8E3E),
-                contentColor = Color.White,
-            )
+            NetworkBannerUiState.BackOnline -> {
+                NetworkBannerVisuals(
+                    message = "Back online",
+                    icon = Icons.Default.CloudDone,
+                    containerColor = Color(0xFF1E8E3E),
+                    contentColor = Color.White,
+                )
+            }
         }
 
     AnimatedVisibility(

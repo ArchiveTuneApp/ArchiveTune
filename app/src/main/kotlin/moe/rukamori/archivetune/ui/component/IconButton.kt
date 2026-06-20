@@ -51,14 +51,14 @@ fun ResizableIconButton(
         painter = painterResource(icon),
         contentDescription = null,
         colorFilter = ColorFilter.tint(color),
-        modifier = modifier
-            .clickable(
-                indication = indication ?: ripple(bounded = false),
-                interactionSource = remember { MutableInteractionSource() },
-                enabled = enabled,
-                onClick = onClick,
-            )
-            .alpha(if (enabled) 1f else 0.5f),
+        modifier =
+            modifier
+                .clickable(
+                    indication = indication ?: ripple(bounded = false),
+                    interactionSource = remember { MutableInteractionSource() },
+                    enabled = enabled,
+                    onClick = onClick,
+                ).alpha(if (enabled) 1f else 0.5f),
     )
 }
 
@@ -74,22 +74,24 @@ fun IconButton(
     content: @Composable () -> Unit,
 ) {
     Box(
-        modifier = modifier
-            .minimumInteractiveComponentSize()
-            .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
-            .clip(CircleShape)
-            .background(color = colors.containerColor)
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = onLongClick,
-                enabled = enabled,
-                role = Role.Button,
-                interactionSource = interactionSource,
-                indication = ripple(
-                    bounded = false,
-                    radius = 24.dp
+        modifier =
+            modifier
+                .minimumInteractiveComponentSize()
+                .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
+                .clip(CircleShape)
+                .background(color = colors.containerColor)
+                .combinedClickable(
+                    onClick = onClick,
+                    onLongClick = onLongClick,
+                    enabled = enabled,
+                    role = Role.Button,
+                    interactionSource = interactionSource,
+                    indication =
+                        ripple(
+                            bounded = false,
+                            radius = 24.dp,
+                        ),
                 ),
-            ),
         contentAlignment = Alignment.Center,
     ) {
         val contentColor = colors.contentColor

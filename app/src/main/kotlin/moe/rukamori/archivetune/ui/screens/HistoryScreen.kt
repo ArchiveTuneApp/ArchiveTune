@@ -90,10 +90,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import kotlinx.coroutines.delay
-import moe.rukamori.archivetune.innertube.YouTube
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import kotlinx.coroutines.delay
 import moe.rukamori.archivetune.LocalAnimationsDisabled
 import moe.rukamori.archivetune.LocalPlayerAwareWindowInsets
 import moe.rukamori.archivetune.LocalPlayerConnection
@@ -104,6 +103,7 @@ import moe.rukamori.archivetune.db.entities.EventWithSong
 import moe.rukamori.archivetune.extensions.metadata
 import moe.rukamori.archivetune.extensions.toMediaItem
 import moe.rukamori.archivetune.extensions.togglePlayPause
+import moe.rukamori.archivetune.innertube.YouTube
 import moe.rukamori.archivetune.innertube.pages.HistoryPage
 import moe.rukamori.archivetune.innertube.utils.hasYouTubeLoginCookie
 import moe.rukamori.archivetune.models.toMediaMetadata
@@ -115,7 +115,6 @@ import moe.rukamori.archivetune.ui.component.NavigationTitle
 import moe.rukamori.archivetune.ui.component.SongListItem
 import moe.rukamori.archivetune.ui.component.TopSearch
 import moe.rukamori.archivetune.ui.component.YouTubeListItem
-import moe.rukamori.archivetune.ui.component.IconButton as AppIconButton
 import moe.rukamori.archivetune.ui.menu.SelectionMediaMetadataMenu
 import moe.rukamori.archivetune.ui.menu.SongMenu
 import moe.rukamori.archivetune.ui.menu.YouTubeSongMenu
@@ -126,6 +125,7 @@ import moe.rukamori.archivetune.viewmodels.DateAgo
 import moe.rukamori.archivetune.viewmodels.HistoryViewModel
 import moe.rukamori.archivetune.viewmodels.RemoteHistoryUiState
 import java.time.format.DateTimeFormatter
+import moe.rukamori.archivetune.ui.component.IconButton as AppIconButton
 
 @Composable
 fun HistoryScreen(
@@ -146,9 +146,10 @@ fun HistoryScreen(
     val remoteHistoryState by viewModel.remoteHistoryState.collectAsStateWithLifecycle()
 
     val innerTubeCookie by rememberPreference(InnerTubeCookieKey, "")
-    val isLoggedIn = remember(innerTubeCookie) {
-        hasYouTubeLoginCookie(innerTubeCookie)
-    }
+    val isLoggedIn =
+        remember(innerTubeCookie) {
+            hasYouTubeLoginCookie(innerTubeCookie)
+        }
 
     var isSearching by rememberSaveable { mutableStateOf(false) }
     var query by rememberSaveable(stateSaver = TextFieldValue.Saver) {
@@ -159,9 +160,10 @@ fun HistoryScreen(
     val focusRequester = remember { FocusRequester() }
     val localListState = rememberLazyListState()
     val remoteListState = rememberLazyListState()
-    val scrollBehavior = appBarScrollBehavior(
-        canScroll = { !isSearching && selectedEventIds.isEmpty() },
-    )
+    val scrollBehavior =
+        appBarScrollBehavior(
+            canScroll = { !isSearching && selectedEventIds.isEmpty() },
+        )
 
     val searchQuery = query.text.trim()
     val showSearchBar = isSearching || searchQuery.isNotBlank()
@@ -169,93 +171,109 @@ fun HistoryScreen(
         derivedStateOf { selectedEventIds.toSet() }
     }
 
-    val filteredEvents = remember(events, searchQuery) {
-        filterLocalEvents(events, searchQuery)
-    }
-    val localVisibleEvents = remember(filteredEvents) {
-        filteredEvents.values.flatten()
-    }
-    val localVisibleEventIds = remember(localVisibleEvents) {
-        localVisibleEvents.map { it.event.id }
-    }
+    val filteredEvents =
+        remember(events, searchQuery) {
+            filterLocalEvents(events, searchQuery)
+        }
+    val localVisibleEvents =
+        remember(filteredEvents) {
+            filteredEvents.values.flatten()
+        }
+    val localVisibleEventIds =
+        remember(localVisibleEvents) {
+            localVisibleEvents.map { it.event.id }
+        }
     val localVisibleEventIdSet by remember(localVisibleEventIds) {
         derivedStateOf { localVisibleEventIds.toSet() }
     }
-    val selectedSongs = remember(localVisibleEvents, selectedEventIdSet) {
-        localVisibleEvents.filter { it.event.id in selectedEventIdSet }
-    }
-    val selectedHistoryEventIds = remember(selectedSongs) {
-        selectedSongs.map { it.event.id }
-    }
+    val selectedSongs =
+        remember(localVisibleEvents, selectedEventIdSet) {
+            localVisibleEvents.filter { it.event.id in selectedEventIdSet }
+        }
+    val selectedHistoryEventIds =
+        remember(selectedSongs) {
+            selectedSongs.map { it.event.id }
+        }
     val selectionCount = selectedSongs.size
 
-    val filteredRemoteSections = remember(remoteHistoryState, searchQuery) {
-        when (remoteHistoryState) {
-            is RemoteHistoryUiState.Success -> {
-                filterRemoteSections(
-                    (remoteHistoryState as RemoteHistoryUiState.Success).page.sections.orEmpty(),
-                    searchQuery,
-                )
-            }
+    val filteredRemoteSections =
+        remember(remoteHistoryState, searchQuery) {
+            when (remoteHistoryState) {
+                is RemoteHistoryUiState.Success -> {
+                    filterRemoteSections(
+                        (remoteHistoryState as RemoteHistoryUiState.Success).page.sections.orEmpty(),
+                        searchQuery,
+                    )
+                }
 
-            else -> emptyList()
+                else -> {
+                    emptyList()
+                }
+            }
         }
-    }
-    val remoteVisibleSongs = remember(filteredRemoteSections) {
-        filteredRemoteSections.flatMap { it.songs }
-    }
-    val availableSources = remember(isLoggedIn) {
-        if (isLoggedIn) {
-            listOf(HistorySource.LOCAL, HistorySource.REMOTE)
-        } else {
-            listOf(HistorySource.LOCAL)
+    val remoteVisibleSongs =
+        remember(filteredRemoteSections) {
+            filteredRemoteSections.flatMap { it.songs }
         }
-    }
+    val availableSources =
+        remember(isLoggedIn) {
+            if (isLoggedIn) {
+                listOf(HistorySource.LOCAL, HistorySource.REMOTE)
+            } else {
+                listOf(HistorySource.LOCAL)
+            }
+        }
     val activeListState = if (historySource == HistorySource.REMOTE) remoteListState else localListState
     val motionDuration = if (animationsDisabled) 0 else 220
 
-    val clearSelection = remember {
-        { selectedEventIds = emptyList() }
-    }
-    val resetSearch = remember(focusManager) {
-        {
-            isSearching = false
-            query = TextFieldValue()
-            focusManager.clearFocus()
+    val clearSelection =
+        remember {
+            { selectedEventIds = emptyList() }
         }
-    }
-
-    val dateAgoToString: (DateAgo) -> String = remember(context) {
-        { dateAgo ->
-            when (dateAgo) {
-                DateAgo.Today -> context.getString(R.string.today)
-                DateAgo.Yesterday -> context.getString(R.string.yesterday)
-                DateAgo.ThisWeek -> context.getString(R.string.this_week)
-                DateAgo.LastWeek -> context.getString(R.string.last_week)
-                is DateAgo.Other -> dateAgo.date.format(DateTimeFormatter.ofPattern("yyyy/MM"))
+    val resetSearch =
+        remember(focusManager) {
+            {
+                isSearching = false
+                query = TextFieldValue()
+                focusManager.clearFocus()
             }
         }
-    }
 
-    val currentSourceLabel = stringResource(
-        if (historySource == HistorySource.LOCAL) {
-            R.string.local_history
+    val dateAgoToString: (DateAgo) -> String =
+        remember(context) {
+            { dateAgo ->
+                when (dateAgo) {
+                    DateAgo.Today -> context.getString(R.string.today)
+                    DateAgo.Yesterday -> context.getString(R.string.yesterday)
+                    DateAgo.ThisWeek -> context.getString(R.string.this_week)
+                    DateAgo.LastWeek -> context.getString(R.string.last_week)
+                    is DateAgo.Other -> dateAgo.date.format(DateTimeFormatter.ofPattern("yyyy/MM"))
+                }
+            }
+        }
+
+    val currentSourceLabel =
+        stringResource(
+            if (historySource == HistorySource.LOCAL) {
+                R.string.local_history
+            } else {
+                R.string.remote_history
+            },
+        )
+    val currentSourceSummary =
+        stringResource(
+            if (historySource == HistorySource.LOCAL) {
+                R.string.history_local_summary
+            } else {
+                R.string.history_remote_summary
+            },
+        )
+    val currentVisibleCount =
+        if (historySource == HistorySource.REMOTE) {
+            remoteVisibleSongs.size
         } else {
-            R.string.remote_history
-        },
-    )
-    val currentSourceSummary = stringResource(
-        if (historySource == HistorySource.LOCAL) {
-            R.string.history_local_summary
-        } else {
-            R.string.history_remote_summary
-        },
-    )
-    val currentVisibleCount = if (historySource == HistorySource.REMOTE) {
-        remoteVisibleSongs.size
-    } else {
-        localVisibleEvents.size
-    }
+            localVisibleEvents.size
+        }
 
     val historyOverviewCard: @Composable () -> Unit = {
         HistoryOverviewCard(
@@ -271,20 +289,23 @@ fun HistoryScreen(
                 if (newSource == HistorySource.REMOTE) {
                     when (remoteHistoryState) {
                         is RemoteHistoryUiState.Error -> {
-                            viewModel.fetchRemoteHistory()  // error: fetch with loading (user expects feedback)
+                            viewModel.fetchRemoteHistory() // error: fetch with loading (user expects feedback)
                         }
+
                         is RemoteHistoryUiState.Empty -> {
-                            viewModel.enqueueSilentFetch()  // empty: try silent fetch
+                            viewModel.enqueueSilentFetch() // empty: try silent fetch
                         }
+
                         else -> {
                             // Already has data: no fetch needed
                         }
                     }
                 }
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
         )
     }
 
@@ -408,7 +429,7 @@ fun HistoryScreen(
     LaunchedEffect("prefetch", isLoggedIn) {
         if (!isLoggedIn) return@LaunchedEffect
         if (remoteHistoryState is RemoteHistoryUiState.Success) return@LaunchedEffect
-        delay(1_000)  // wait for screen
+        delay(1_000) // wait for screen
 
         viewModel.fetchRemoteHistorySilent()
     }
@@ -420,7 +441,7 @@ fun HistoryScreen(
 
             // Retry 3 times with increasing delay (handles slow internet)
             repeat(3) { attempt ->
-                delay(3000L * (attempt + 1))  // 3s, 6s, 9s
+                delay(3000L * (attempt + 1)) // 3s, 6s, 9s
                 viewModel.fetchRemoteHistorySilent()
                 if (remoteHistoryState is RemoteHistoryUiState.Success) return@collect
             }
@@ -437,9 +458,9 @@ fun HistoryScreen(
 
     Scaffold(
         modifier =
-        Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+            Modifier
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.surface,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
@@ -472,9 +493,10 @@ fun HistoryScreen(
                             },
                         ) {
                             Icon(
-                                painter = painterResource(
-                                    if (selectionCount > 0) R.drawable.close else R.drawable.arrow_back,
-                                ),
+                                painter =
+                                    painterResource(
+                                        if (selectionCount > 0) R.drawable.close else R.drawable.arrow_back,
+                                    ),
                                 contentDescription = null,
                             )
                         }
@@ -493,10 +515,11 @@ fun HistoryScreen(
                         }
                     },
                     scrollBehavior = scrollBehavior,
-                    colors = TopAppBarDefaults.largeTopAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                    ),
+                    colors =
+                        TopAppBarDefaults.largeTopAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        ),
                 )
             }
         },
@@ -640,14 +663,14 @@ private fun LocalHistoryFeed(
     LazyColumn(
         state = listState,
         modifier =
-        Modifier
-            .fillMaxSize()
-            .padding(top = topPadding)
-            .windowInsetsPadding(
-                LocalPlayerAwareWindowInsets.current.only(
-                    WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+            Modifier
+                .fillMaxSize()
+                .padding(top = topPadding)
+                .windowInsetsPadding(
+                    LocalPlayerAwareWindowInsets.current.only(
+                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                    ),
                 ),
-            ),
         contentPadding = PaddingValues(bottom = 112.dp),
     ) {
         item("history_header_spacer") {
@@ -660,12 +683,14 @@ private fun LocalHistoryFeed(
         if (visibleEvents.isEmpty()) {
             item("local_history_empty") {
                 HistoryStateCard(
-                    title = stringResource(
-                        if (isSearchActive) R.string.history_no_results_title else R.string.history_local_empty_title,
-                    ),
-                    description = stringResource(
-                        if (isSearchActive) R.string.history_no_results_desc else R.string.history_local_empty_desc,
-                    ),
+                    title =
+                        stringResource(
+                            if (isSearchActive) R.string.history_no_results_title else R.string.history_local_empty_title,
+                        ),
+                    description =
+                        stringResource(
+                            if (isSearchActive) R.string.history_no_results_desc else R.string.history_local_empty_desc,
+                        ),
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                 )
             }
@@ -674,9 +699,10 @@ private fun LocalHistoryFeed(
                 stickyHeader(key = "header_$dateAgo") {
                     NavigationTitle(
                         title = dateAgoToString(dateAgo),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surface),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surface),
                     )
                 }
 
@@ -705,22 +731,22 @@ private fun LocalHistoryFeed(
                                 )
                             }
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp)
-                            .combinedClickable(
-                                onClick = {
-                                    if (isSelectionMode) {
-                                        onToggleSelection(event.event.id)
-                                    } else {
-                                        onSongClick(dateAgo, songsForDate, index, event)
-                                    }
-                                },
-                                onLongClick = {
-                                    onStartSelection(event.event.id)
-                                },
-                            )
-                            .animateItem(),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp)
+                                .combinedClickable(
+                                    onClick = {
+                                        if (isSelectionMode) {
+                                            onToggleSelection(event.event.id)
+                                        } else {
+                                            onSongClick(dateAgo, songsForDate, index, event)
+                                        }
+                                    },
+                                    onLongClick = {
+                                        onStartSelection(event.event.id)
+                                    },
+                                ).animateItem(),
                     )
                 }
             }
@@ -745,14 +771,14 @@ private fun RemoteHistoryFeed(
     LazyColumn(
         state = listState,
         modifier =
-        Modifier
-            .fillMaxSize()
-            .padding(top = topPadding)
-            .windowInsetsPadding(
-                LocalPlayerAwareWindowInsets.current.only(
-                    WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+            Modifier
+                .fillMaxSize()
+                .padding(top = topPadding)
+                .windowInsetsPadding(
+                    LocalPlayerAwareWindowInsets.current.only(
+                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                    ),
                 ),
-            ),
         contentPadding = PaddingValues(bottom = 112.dp),
     ) {
         item("history_header_spacer") {
@@ -810,9 +836,10 @@ private fun RemoteHistoryFeed(
                         stickyHeader(key = "header_${section.title}") {
                             NavigationTitle(
                                 title = section.title,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.surface),
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .background(MaterialTheme.colorScheme.surface),
                             )
                         }
 
@@ -835,14 +862,14 @@ private fun RemoteHistoryFeed(
                                         )
                                     }
                                 },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 8.dp)
-                                    .combinedClickable(
-                                        onClick = { onSongClick(song) },
-                                        onLongClick = { onSongMenu(song) },
-                                    )
-                                    .animateItem(),
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 8.dp)
+                                        .combinedClickable(
+                                            onClick = { onSongClick(song) },
+                                            onLongClick = { onSongMenu(song) },
+                                        ).animateItem(),
                             )
                         }
                     }
@@ -870,9 +897,10 @@ private fun HistoryOverviewCard(
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 20.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 20.dp),
         ) {
             Text(
                 text = title,
@@ -932,29 +960,33 @@ private fun HistorySourceSelector(
                         onSourceChange(source)
                     }
                 },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(52.dp),
-                shapes = when (index) {
-                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                    availableSources.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-                },
-                colors = ToggleButtonDefaults.toggleButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                ),
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .height(52.dp),
+                shapes =
+                    when (index) {
+                        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                        availableSources.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                        else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                    },
+                colors =
+                    ToggleButtonDefaults.toggleButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    ),
             ) {
                 Text(
-                    text = stringResource(
-                        if (source == HistorySource.LOCAL) {
-                            R.string.local_history
-                        } else {
-                            R.string.remote_history
-                        },
-                    ),
+                    text =
+                        stringResource(
+                            if (source == HistorySource.LOCAL) {
+                                R.string.local_history
+                            } else {
+                                R.string.remote_history
+                            },
+                        ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -981,9 +1013,10 @@ private fun HistoryStateCard(
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.Start,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 24.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 24.dp),
         ) {
             if (loading) {
                 CircularWavyProgressIndicator(
@@ -1025,19 +1058,19 @@ private fun BoxScope.HistorySelectionToolbar(
     AnimatedVisibility(
         visible = visible,
         enter =
-        fadeIn(tween(if (animationsDisabled) 0 else 220)) +
-            slideInVertically(animationSpec = tween(if (animationsDisabled) 0 else 220)) { it / 2 },
+            fadeIn(tween(if (animationsDisabled) 0 else 220)) +
+                slideInVertically(animationSpec = tween(if (animationsDisabled) 0 else 220)) { it / 2 },
         exit =
-        fadeOut(tween(if (animationsDisabled) 0 else 220)) +
-            slideOutVertically(animationSpec = tween(if (animationsDisabled) 0 else 220)) { it / 2 },
-        modifier = Modifier
-            .align(Alignment.BottomCenter)
-            .windowInsetsPadding(
-                LocalPlayerAwareWindowInsets.current.only(
-                    WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
-                ),
-            )
-            .padding(16.dp),
+            fadeOut(tween(if (animationsDisabled) 0 else 220)) +
+                slideOutVertically(animationSpec = tween(if (animationsDisabled) 0 else 220)) { it / 2 },
+        modifier =
+            Modifier
+                .align(Alignment.BottomCenter)
+                .windowInsetsPadding(
+                    LocalPlayerAwareWindowInsets.current.only(
+                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                    ),
+                ).padding(16.dp),
     ) {
         HorizontalFloatingToolbar(
             expanded = true,
@@ -1053,9 +1086,10 @@ private fun BoxScope.HistorySelectionToolbar(
                     )
                 }
             },
-            colors = FloatingToolbarDefaults.standardFloatingToolbarColors(
-                toolbarContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            ),
+            colors =
+                FloatingToolbarDefaults.standardFloatingToolbarColors(
+                    toolbarContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                ),
         ) {
             HistoryToolbarAction(
                 icon = if (allVisibleSelected) R.drawable.deselect else R.drawable.select_all,
@@ -1075,10 +1109,11 @@ private fun HistoryToolbarAction(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .clip(MaterialTheme.shapes.large)
-            .clickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+        modifier =
+            Modifier
+                .clip(MaterialTheme.shapes.large)
+                .clickable(role = Role.Button, onClick = onClick)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         Icon(
             painter = painterResource(icon),
@@ -1103,7 +1138,8 @@ private fun filterLocalEvents(
     return events
         .mapValues { (_, songs) ->
             songs.filter { event ->
-                event.song.song.title.contains(query, ignoreCase = true) ||
+                event.song.song.title
+                    .contains(query, ignoreCase = true) ||
                     event.song.artists.any { artist ->
                         artist.name.contains(query, ignoreCase = true)
                     }
@@ -1120,12 +1156,13 @@ private fun filterRemoteSections(
     return sections
         .map { section ->
             section.copy(
-                songs = section.songs.filter { song ->
-                    song.title.contains(query, ignoreCase = true) ||
-                        song.artists.any { artist ->
-                            artist.name.contains(query, ignoreCase = true)
-                        }
-                },
+                songs =
+                    section.songs.filter { song ->
+                        song.title.contains(query, ignoreCase = true) ||
+                            song.artists.any { artist ->
+                                artist.name.contains(query, ignoreCase = true)
+                            }
+                    },
             )
         }.filter { it.songs.isNotEmpty() }
 }

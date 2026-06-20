@@ -11,11 +11,13 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 internal fun extractJsonArray(raw: String): JSONArray {
-    val trimmed = raw.trim()
-        .removePrefix("```json")
-        .removePrefix("```")
-        .removeSuffix("```")
-        .trim()
+    val trimmed =
+        raw
+            .trim()
+            .removePrefix("```json")
+            .removePrefix("```")
+            .removeSuffix("```")
+            .trim()
     val start = trimmed.indexOf('[')
     val end = trimmed.lastIndexOf(']')
     require(start >= 0 && end > start) { "AI response did not contain a JSON array" }

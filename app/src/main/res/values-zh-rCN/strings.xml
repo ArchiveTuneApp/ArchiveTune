@@ -151,8 +151,6 @@
     <string name="appearance">外观</string>
     <string name="theme">主题</string>
     <string name="enable_dynamic_theme">启用动态主题</string>
-    <string name="use_system_font">使用系统字体</string>
-    <string name="use_system_font_desc">使用设备字体，而不是应用字体</string>
     <string name="color_palette">调色板</string>
     <string name="customize_theme_colors">选择你的应用主题颜色</string>
     <string name="selected_theme_color">选定主题颜色</string>

@@ -5,7 +5,6 @@
  * Do not remove or alter this notice. - Per GPL-3.0 Section 4 & Section 5
  */
 
- 
 package moe.rukamori.archivetune.together
 
 import androidx.datastore.core.DataStore
@@ -15,11 +14,11 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
-import java.net.URI
-import java.util.concurrent.TimeUnit
 import moe.rukamori.archivetune.constants.TogetherOnlineEndpointCacheKey
 import moe.rukamori.archivetune.constants.TogetherOnlineEndpointLastCheckedAtKey
 import moe.rukamori.archivetune.utils.getAsync
+import java.net.URI
+import java.util.concurrent.TimeUnit
 
 object TogetherOnlineEndpoint {
     private const val EndpointSourceUrl =
@@ -39,9 +38,7 @@ object TogetherOnlineEndpoint {
             }
         }
 
-    suspend fun baseUrlOrNull(
-        dataStore: DataStore<Preferences>,
-    ): String? {
+    suspend fun baseUrlOrNull(dataStore: DataStore<Preferences>): String? {
         val now = System.currentTimeMillis()
         val cached = dataStore.getAsync(TogetherOnlineEndpointCacheKey)?.trim().orEmpty()
         val lastCheckedAt = dataStore.getAsync(TogetherOnlineEndpointLastCheckedAtKey, 0L)
@@ -79,7 +76,8 @@ object TogetherOnlineEndpoint {
         if (text.isBlank()) return null
 
         val candidate =
-            text.lineSequence()
+            text
+                .lineSequence()
                 .map { it.trim() }
                 .firstOrNull { it.isNotBlank() }
                 ?: return null
@@ -121,9 +119,7 @@ object TogetherOnlineEndpoint {
         }
     }
 
-    private fun deriveWebSocketUrlFromBaseUrl(
-        baseUrl: String,
-    ): String? {
+    private fun deriveWebSocketUrlFromBaseUrl(baseUrl: String): String? {
         val uri = runCatching { URI(baseUrl.trim()) }.getOrNull() ?: return null
         val host = uri.host?.trim()?.ifBlank { null } ?: return null
         val scheme = uri.scheme?.trim()?.lowercase()
@@ -155,7 +151,11 @@ object TogetherOnlineEndpoint {
             val scheme = baseUri.scheme?.trim()?.lowercase()
             val wsScheme = if (scheme == "https") "wss" else "ws"
             val portPart = if (baseUri.port != -1 && baseUri.port != 80 && baseUri.port != 443) ":${baseUri.port}" else ""
-            val basePath = baseUri.path?.trim()?.trimEnd('/').orEmpty()
+            val basePath =
+                baseUri.path
+                    ?.trim()
+                    ?.trimEnd('/')
+                    .orEmpty()
             return "$wsScheme://$host$portPart$basePath$trimmed"
         }
 

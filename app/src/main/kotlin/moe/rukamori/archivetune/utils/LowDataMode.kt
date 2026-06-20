@@ -22,8 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.getSystemService
 import moe.rukamori.archivetune.constants.LowDataModeKey
 
-fun Context.isLowDataModeActive(): Boolean =
-    isLowDataModeActive(dataStore.get(LowDataModeKey, true))
+fun Context.isLowDataModeActive(): Boolean = isLowDataModeActive(dataStore.get(LowDataModeKey, true))
 
 fun Context.isLowDataModeActive(enabled: Boolean): Boolean {
     if (!enabled) return false
@@ -74,7 +73,8 @@ fun rememberLowDataModeActive(enabled: Boolean): Boolean {
 
         active = context.isLowDataModeActive(enabled)
         val request =
-            NetworkRequest.Builder()
+            NetworkRequest
+                .Builder()
                 .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .build()
 

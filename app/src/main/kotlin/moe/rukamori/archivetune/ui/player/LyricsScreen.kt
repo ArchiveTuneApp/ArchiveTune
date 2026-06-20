@@ -115,11 +115,12 @@ import moe.rukamori.archivetune.utils.rememberEnumPreference
 import moe.rukamori.archivetune.utils.rememberPreference
 import kotlin.coroutines.cancellation.CancellationException
 
-private val AppleMusicFallbackGradient = listOf(
-    Color(0xFF202020),
-    Color(0xFF141414),
-    Color(0xFF050505),
-)
+private val AppleMusicFallbackGradient =
+    listOf(
+        Color(0xFF202020),
+        Color(0xFF141414),
+        Color(0xFF050505),
+    )
 
 private val AppleMusicForeground = Color.White
 
@@ -145,44 +146,50 @@ fun LyricsScreen(
     val playbackState by playerConnection.playbackState.collectAsStateWithLifecycle()
     val isPlaying by playerConnection.isPlaying.collectAsStateWithLifecycle()
     val deviceMusicVolumeController = rememberDeviceMusicVolumeController()
-    val onVolumeChange = remember(deviceMusicVolumeController) {
-        { volume: Float ->
-            deviceMusicVolumeController.setVolumeFraction(volume)
+    val onVolumeChange =
+        remember(deviceMusicVolumeController) {
+            { volume: Float ->
+                deviceMusicVolumeController.setVolumeFraction(volume)
+            }
         }
-    }
     val currentLyrics by playerConnection.currentLyrics.collectAsStateWithLifecycle(initialValue = null)
 
     val (enableHapticFeedback) = rememberPreference(EnableHapticFeedbackKey, true)
     val lyricsMode by rememberEnumPreference(LyricsModeKey, LyricsMode.ENHANCED)
 
-    val hapticClick = remember(enableHapticFeedback, view) {
-        {
-            if (enableHapticFeedback) {
-                view.performHapticFeedback(
-                    HapticFeedbackConstants.CONTEXT_CLICK,
-                    HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING,
-                )
+    val hapticClick =
+        remember(enableHapticFeedback, view) {
+            {
+                if (enableHapticFeedback) {
+                    view.performHapticFeedback(
+                        HapticFeedbackConstants.CONTEXT_CLICK,
+                        HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING,
+                    )
+                }
             }
         }
-    }
-    val lyricsHelper = remember(context) {
-        EntryPointAccessors.fromApplication(
-            context.applicationContext,
-            moe.rukamori.archivetune.di.LyricsHelperEntryPoint::class.java,
-        ).lyricsHelper()
-    }
+    val lyricsHelper =
+        remember(context) {
+            EntryPointAccessors
+                .fromApplication(
+                    context.applicationContext,
+                    moe.rukamori.archivetune.di.LyricsHelperEntryPoint::class.java,
+                ).lyricsHelper()
+        }
 
     LaunchedEffect(mediaMetadata.id, currentLyrics?.lyrics) {
         if (currentLyrics != null) return@LaunchedEffect
         try {
-            val existingLyrics = withContext(Dispatchers.IO) {
-                database.lyrics(mediaMetadata.id).first()
-            }
+            val existingLyrics =
+                withContext(Dispatchers.IO) {
+                    database.lyrics(mediaMetadata.id).first()
+                }
             if (existingLyrics != null) return@LaunchedEffect
 
-            val lyrics = withContext(Dispatchers.IO) {
-                lyricsHelper.getLyrics(mediaMetadata)
-            }
+            val lyrics =
+                withContext(Dispatchers.IO) {
+                    lyricsHelper.getLyrics(mediaMetadata)
+                }
             withContext(Dispatchers.IO) {
                 database.query {
                     insertLyricsIfAbsent(
@@ -202,11 +209,12 @@ fun LyricsScreen(
     var sliderPosition by remember(mediaMetadata.id) { mutableStateOf<Long?>(null) }
     var gradientColors by remember(mediaMetadata.thumbnailUrl) { mutableStateOf(AppleMusicFallbackGradient) }
 
-    val gradientColorsCache = remember {
-        object : LinkedHashMap<String, List<Color>>(20, 0.75f, true) {
-            override fun removeEldestEntry(eldest: Map.Entry<String, List<Color>>) = size > 20
+    val gradientColorsCache =
+        remember {
+            object : LinkedHashMap<String, List<Color>>(20, 0.75f, true) {
+                override fun removeEldestEntry(eldest: Map.Entry<String, List<Color>>) = size > 20
+            }
         }
-    }
     val fallbackColor = remember { Color.Black.toArgb() }
 
     LaunchedEffect(mediaMetadata.id, mediaMetadata.thumbnailUrl) {
@@ -223,36 +231,42 @@ fun LyricsScreen(
 
         gradientColors = AppleMusicFallbackGradient
 
-        val request = ImageRequest.Builder(context)
-            .data(thumbnailUrl)
-            .size(Size(PlayerColorExtractor.Config.IMAGE_SIZE, PlayerColorExtractor.Config.IMAGE_SIZE))
-            .allowHardware(false)
-            .build()
+        val request =
+            ImageRequest
+                .Builder(context)
+                .data(thumbnailUrl)
+                .size(Size(PlayerColorExtractor.Config.IMAGE_SIZE, PlayerColorExtractor.Config.IMAGE_SIZE))
+                .allowHardware(false)
+                .build()
 
-        val extractedColors = try {
-            val image = withContext(Dispatchers.IO) {
-                context.imageLoader.execute(request)
-            }.image
-            if (image == null) {
-                null
-            } else {
-                val bitmap = image.toBitmap()
-                withContext(Dispatchers.Default) {
-                    val palette = Palette.from(bitmap)
-                        .maximumColorCount(PlayerColorExtractor.Config.MAX_COLOR_COUNT)
-                        .resizeBitmapArea(PlayerColorExtractor.Config.BITMAP_AREA)
-                        .generate()
-                    PlayerColorExtractor.extractGradientColors(
-                        palette = palette,
-                        fallbackColor = fallbackColor,
-                    )
+        val extractedColors =
+            try {
+                val image =
+                    withContext(Dispatchers.IO) {
+                        context.imageLoader.execute(request)
+                    }.image
+                if (image == null) {
+                    null
+                } else {
+                    val bitmap = image.toBitmap()
+                    withContext(Dispatchers.Default) {
+                        val palette =
+                            Palette
+                                .from(bitmap)
+                                .maximumColorCount(PlayerColorExtractor.Config.MAX_COLOR_COUNT)
+                                .resizeBitmapArea(PlayerColorExtractor.Config.BITMAP_AREA)
+                                .generate()
+                        PlayerColorExtractor.extractGradientColors(
+                            palette = palette,
+                            fallbackColor = fallbackColor,
+                        )
+                    }
                 }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                null
             }
-        } catch (e: CancellationException) {
-            throw e
-        } catch (_: Exception) {
-            null
-        }
 
         gradientColors = extractedColors ?: AppleMusicFallbackGradient
         gradientColorsCache[thumbnailUrl] = gradientColors
@@ -291,42 +305,47 @@ fun LyricsScreen(
         )
 
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .windowInsetsPadding(WindowInsets.systemBars),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.systemBars),
         ) {
             AppleMusicGrabber(onClick = onBackClick)
             AppleMusicTrackHeader(
                 mediaMetadata = mediaMetadata,
                 onMoreClick = showLyricsMenu,
                 onDismissClick = onBackClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
             )
 
             if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
                 Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .padding(horizontal = 36.dp, vertical = 8.dp),
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .padding(horizontal = 36.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     AppleMusicLyricsPane(
                         lyricsMode = lyricsMode,
                         sliderPositionProvider = { sliderPosition },
                         lyricsSyncOffset = lyricsSyncOffset,
-                        modifier = Modifier
-                            .weight(1.15f)
-                            .fillMaxHeight()
-                            .padding(end = 32.dp),
+                        modifier =
+                            Modifier
+                                .weight(1.15f)
+                                .fillMaxHeight()
+                                .padding(end = 32.dp),
                     )
 
                     Column(
-                        modifier = Modifier
-                            .weight(0.85f)
-                            .widthIn(max = 420.dp),
+                        modifier =
+                            Modifier
+                                .weight(0.85f)
+                                .widthIn(max = 420.dp),
                         verticalArrangement = Arrangement.Center,
                     ) {
                         AppleMusicControls(
@@ -366,9 +385,10 @@ fun LyricsScreen(
                     lyricsMode = lyricsMode,
                     sliderPositionProvider = { sliderPosition },
                     lyricsSyncOffset = lyricsSyncOffset,
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
                 )
 
                 AppleMusicControls(
@@ -399,9 +419,10 @@ fun LyricsScreen(
                         hapticClick()
                         playerConnection.seekToNext()
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 40.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 40.dp),
                 )
             }
         }
@@ -415,28 +436,31 @@ private fun AppleMusicBackground(
     modifier: Modifier = Modifier,
 ) {
     val colors = if (gradientColors.isNotEmpty()) gradientColors else AppleMusicFallbackGradient
-    val backgroundBrush = remember(colors) {
-        Brush.verticalGradient(
-            listOf(
-                colors.getOrElse(0) { AppleMusicFallbackGradient[0] }.copy(alpha = 0.88f),
-                colors.getOrElse(1) { AppleMusicFallbackGradient[1] }.copy(alpha = 0.76f),
-                colors.getOrElse(2) { AppleMusicFallbackGradient[2] }.copy(alpha = 0.96f),
-            ),
-        )
-    }
-    val bottomScrim = remember {
-        Brush.verticalGradient(
-            listOf(
-                Color.Transparent,
-                Color.Black.copy(alpha = 0.28f),
-            ),
-        )
-    }
+    val backgroundBrush =
+        remember(colors) {
+            Brush.verticalGradient(
+                listOf(
+                    colors.getOrElse(0) { AppleMusicFallbackGradient[0] }.copy(alpha = 0.88f),
+                    colors.getOrElse(1) { AppleMusicFallbackGradient[1] }.copy(alpha = 0.76f),
+                    colors.getOrElse(2) { AppleMusicFallbackGradient[2] }.copy(alpha = 0.96f),
+                ),
+            )
+        }
+    val bottomScrim =
+        remember {
+            Brush.verticalGradient(
+                listOf(
+                    Color.Transparent,
+                    Color.Black.copy(alpha = 0.28f),
+                ),
+            )
+        }
 
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(AppleMusicFallbackGradient.last()),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(AppleMusicFallbackGradient.last()),
     ) {
         AnimatedContent(
             targetState = mediaMetadata.thumbnailUrl,
@@ -448,27 +472,31 @@ private fun AppleMusicBackground(
                     model = thumbnailUrl,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .blur(46.dp)
-                        .alpha(0.62f),
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .blur(46.dp)
+                            .alpha(0.62f),
                 )
             }
         }
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(backgroundBrush),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(backgroundBrush),
         )
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.18f)),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.18f)),
         )
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(bottomScrim),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(bottomScrim),
         )
     }
 }
@@ -480,24 +508,26 @@ private fun AppleMusicGrabber(
 ) {
     val closeDescription = stringResource(R.string.close)
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(44.dp)
-            .semantics { contentDescription = closeDescription }
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                role = Role.Button,
-                onClick = onClick,
-            ),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(44.dp)
+                .semantics { contentDescription = closeDescription }
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    role = Role.Button,
+                    onClick = onClick,
+                ),
         contentAlignment = Alignment.Center,
     ) {
         Box(
-            modifier = Modifier
-                .width(42.dp)
-                .height(5.dp)
-                .clip(RoundedCornerShape(50))
-                .background(AppleMusicForeground.copy(alpha = 0.34f)),
+            modifier =
+                Modifier
+                    .width(42.dp)
+                    .height(5.dp)
+                    .clip(RoundedCornerShape(50))
+                    .background(AppleMusicForeground.copy(alpha = 0.34f)),
         )
     }
 }
@@ -509,19 +539,21 @@ private fun AppleMusicTrackHeader(
     onDismissClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val artistText = remember(mediaMetadata.id, mediaMetadata.artists) {
-        mediaMetadata.artists.joinToString { it.name }
-    }
+    val artistText =
+        remember(mediaMetadata.id, mediaMetadata.artists) {
+            mediaMetadata.artists.joinToString { it.name }
+        }
 
     Row(
         modifier = modifier.heightIn(min = 64.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
-            modifier = Modifier
-                .size(58.dp)
-                .clip(RoundedCornerShape(7.dp))
-                .background(AppleMusicForeground.copy(alpha = 0.18f)),
+            modifier =
+                Modifier
+                    .size(58.dp)
+                    .clip(RoundedCornerShape(7.dp))
+                    .background(AppleMusicForeground.copy(alpha = 0.18f)),
             contentAlignment = Alignment.Center,
         ) {
             AsyncImage(
@@ -587,21 +619,23 @@ private fun AppleMusicHeaderIconButton(
     onClick: () -> Unit,
 ) {
     Box(
-        modifier = Modifier
-            .size(48.dp)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(bounded = false, radius = 24.dp),
-                role = Role.Button,
-                onClick = onClick,
-            ),
+        modifier =
+            Modifier
+                .size(48.dp)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = ripple(bounded = false, radius = 24.dp),
+                    role = Role.Button,
+                    onClick = onClick,
+                ),
         contentAlignment = Alignment.Center,
     ) {
         Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(CircleShape)
-                .background(AppleMusicForeground.copy(alpha = 0.18f)),
+            modifier =
+                Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(AppleMusicForeground.copy(alpha = 0.18f)),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
@@ -625,9 +659,10 @@ private fun AppleMusicLyricsPane(
         lyricsMode = lyricsMode,
         sliderPositionProvider = sliderPositionProvider,
         lyricsSyncOffset = lyricsSyncOffset,
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp),
         textColor = AppleMusicForeground,
     )
 }
@@ -671,9 +706,10 @@ private fun AppleMusicControls(
         )
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 4.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
@@ -689,9 +725,10 @@ private fun AppleMusicControls(
         }
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 26.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 26.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -714,11 +751,12 @@ private fun AppleMusicControls(
                 } else {
                     Icon(
                         painter = painterResource(if (isPlaying) R.drawable.pause else R.drawable.play),
-                        contentDescription = if (isPlaying) {
-                            stringResource(R.string.widget_pause)
-                        } else {
-                            stringResource(R.string.play)
-                        },
+                        contentDescription =
+                            if (isPlaying) {
+                                stringResource(R.string.widget_pause)
+                            } else {
+                                stringResource(R.string.play)
+                            },
                         tint = AppleMusicForeground,
                         modifier = Modifier.size(54.dp),
                     )
@@ -734,9 +772,10 @@ private fun AppleMusicControls(
         }
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 26.dp, bottom = 15.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 26.dp, bottom = 15.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
@@ -753,9 +792,10 @@ private fun AppleMusicControls(
                 trackHeight = 8.dp,
                 onValueChange = onVolumeChange,
                 onValueChangeFinished = {},
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 16.dp),
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .padding(horizontal = 16.dp),
             )
             Icon(
                 painter = painterResource(R.drawable.volume_up),
@@ -804,12 +844,13 @@ private fun AppleMusicSlider(
     val safeStart = valueRange.start
     val safeEnd = valueRange.endInclusive.coerceAtLeast(safeStart + 1f)
     val safeRange = safeStart..safeEnd
-    val sliderColors = SliderDefaults.colors(
-        activeTrackColor = activeColor,
-        activeTickColor = activeColor,
-        thumbColor = Color.Transparent,
-        inactiveTrackColor = inactiveColor,
-    )
+    val sliderColors =
+        SliderDefaults.colors(
+            activeTrackColor = activeColor,
+            activeTickColor = activeColor,
+            thumbColor = Color.Transparent,
+            inactiveTrackColor = inactiveColor,
+        )
 
     Slider(
         value = value.coerceIn(safeRange),
@@ -838,17 +879,22 @@ private fun LyricsContent(
     modifier: Modifier = Modifier,
 ) {
     when (lyricsMode) {
-        LyricsMode.V2 -> LyricsV2(
-            sliderPositionProvider = sliderPositionProvider,
-            lyricsSyncOffset = lyricsSyncOffset,
-            modifier = modifier,
-            textColorOverride = textColor,
-        )
-        LyricsMode.ENHANCED -> LyricsEnhanced(
-            sliderPositionProvider = sliderPositionProvider,
-            lyricsSyncOffset = lyricsSyncOffset,
-            modifier = modifier,
-            textColorOverride = textColor,
-        )
+        LyricsMode.V2 -> {
+            LyricsV2(
+                sliderPositionProvider = sliderPositionProvider,
+                lyricsSyncOffset = lyricsSyncOffset,
+                modifier = modifier,
+                textColorOverride = textColor,
+            )
+        }
+
+        LyricsMode.ENHANCED -> {
+            LyricsEnhanced(
+                sliderPositionProvider = sliderPositionProvider,
+                lyricsSyncOffset = lyricsSyncOffset,
+                modifier = modifier,
+                textColorOverride = textColor,
+            )
+        }
     }
 }

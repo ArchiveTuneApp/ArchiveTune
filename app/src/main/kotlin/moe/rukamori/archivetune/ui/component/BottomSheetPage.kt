@@ -26,10 +26,10 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -57,9 +57,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.ui.utils.top
-import kotlinx.coroutines.launch
 
 val LocalBottomSheetPageState = compositionLocalOf { BottomSheetPageState() }
 
@@ -86,6 +86,7 @@ fun BottomSheetPage(
     modifier: Modifier = Modifier,
     state: BottomSheetPageState,
     background: Color = MaterialTheme.colorScheme.surfaceColorAtElevation(NavigationBarDefaults.Elevation),
+    contentWindowInsets: WindowInsets = WindowInsets.navigationBars,
 ) {
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
@@ -101,68 +102,73 @@ fun BottomSheetPage(
         }
 
         Spacer(
-            modifier = Modifier
-                .pointerInput(Unit) {
-                    detectTapGestures {
-                        state.dismiss()
-                    }
-                }
-                .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f))
-                .fillMaxSize(),
+            modifier =
+                Modifier
+                    .pointerInput(Unit) {
+                        detectTapGestures {
+                            state.dismiss()
+                        }
+                    }.background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f))
+                    .fillMaxSize(),
         )
     }
 
     AnimatedVisibility(
         visible = state.isVisible,
-        enter = slideInVertically(
-            initialOffsetY = { it },
-            animationSpec = tween(300)
-        ),
-        exit = slideOutVertically(
-            targetOffsetY = { it },
-            animationSpec = tween(300)
-        ),
+        enter =
+            slideInVertically(
+                initialOffsetY = { it },
+                animationSpec = tween(300),
+            ),
+        exit =
+            slideOutVertically(
+                targetOffsetY = { it },
+                animationSpec = tween(300),
+            ),
         modifier = modifier,
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
-                .padding(top = 100.dp) // Give enough space from top
-                .clip(ShapeDefaults.Large.top())
-                .background(background)
-                .pointerInput(Unit) {
-                    detectVerticalDragGestures(
-                        onDragEnd = {
-                            if (dragOffset > 100) {
-                                state.dismiss()
-                            }
-                            dragOffset = 0f
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.statusBars)
+                    .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
+                    .padding(top = 100.dp) // Give enough space from top
+                    .clip(ShapeDefaults.Large.top())
+                    .background(background)
+                    .pointerInput(Unit) {
+                        detectVerticalDragGestures(
+                            onDragEnd = {
+                                if (dragOffset > 100) {
+                                    state.dismiss()
+                                }
+                                dragOffset = 0f
+                            },
+                        ) { _, dragAmount ->
+                            dragOffset += dragAmount
                         }
-                    ) { _, dragAmount ->
-                        dragOffset += dragAmount
-                    }
-                }
+                    },
         ) {
             // Drag handle at the top center
             Box(
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(vertical = 12.dp)
-                    .size(width = 32.dp, height = 4.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                        shape = RoundedCornerShape(2.dp)
-                    )
+                modifier =
+                    Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(vertical = 12.dp)
+                        .size(width = 32.dp, height = 4.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                            shape = RoundedCornerShape(2.dp),
+                        ),
             )
-            
+
             // Content with proper spacing
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .windowInsetsPadding(WindowInsets.navigationBars)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .windowInsetsPadding(contentWindowInsets),
             ) {
                 state.content(this)
             }

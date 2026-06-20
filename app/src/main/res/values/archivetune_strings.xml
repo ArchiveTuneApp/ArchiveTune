@@ -361,6 +361,11 @@
     <string name="storage_folder_not_writable">ArchiveTune cannot write cache files in this folder.</string>
     <string name="storage_cache_cleared">Cache cleared.</string>
     <string name="storage_cache_clear_failed">Cache could not be cleared. Check SD card access.</string>
+    <string name="storage_clear_song_cache_progress">Clearing song cache...%1$d%%</string>
+    <string name="storage_clear_downloads_progress">Clearing downloads...%1$d%%</string>
+    <string name="storage_clear_image_cache_progress">Clearing image cache...%1$d%%</string>
+    <string name="storage_clear_canvas_cache_progress">Clearing canvas cache...%1$d%%</string>
+    <string name="storage_cache_clear_warning">Keep ArchiveTune open while cache files are being removed.</string>
     <string name="storage_size_ratio">%1$s / %2$s</string>
     <string name="sensitivity_percentage">%1$d%%</string>
     <string name="clear_song_cache_dialog">  Are you sure you want to clear all cached songs?</string>

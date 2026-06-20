@@ -234,8 +234,6 @@
     <string name="enable_dynamic_theme">Включить динамическую тему</string>
     <string name="random_theme_on_startup">Случайная тема при запуске</string>
     <string name="random_theme_on_startup_desc">Применять случайную цветовую схему при каждом запуске приложения</string>
-    <string name="use_system_font">Использовать системный шрифт</string>
-    <string name="use_system_font_desc">Использовать шрифт устройства вместо шрифта приложения</string>
     <string name="color_palette">Цветовая схема</string>
     <string name="customize_theme_colors">Выберите свои цвета для темы</string>
     <string name="selected_theme_color">Выбранный цвет темы</string>

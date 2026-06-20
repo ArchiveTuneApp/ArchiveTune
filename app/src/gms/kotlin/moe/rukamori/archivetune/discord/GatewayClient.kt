@@ -16,12 +16,17 @@ import timber.log.Timber
 import kotlin.random.Random
 
 private sealed class GatewayFrame {
-    data class Text(val text: String) : GatewayFrame()
-    data class Close(val code: Int, val reason: String) : GatewayFrame()
+    data class Text(
+        val text: String,
+    ) : GatewayFrame()
+
+    data class Close(
+        val code: Int,
+        val reason: String,
+    ) : GatewayFrame()
 }
 
 class GatewayClient {
-
     companion object {
         private const val TAG = "GatewayClient"
     }
@@ -64,68 +69,99 @@ class GatewayClient {
 
         debug("connecting $url")
 
-        httpClient = OkHttpClient.Builder()
-            .build()
+        httpClient =
+            OkHttpClient
+                .Builder()
+                .build()
 
-        val request = Request.Builder()
-            .url(url)
-            .build()
+        val request =
+            Request
+                .Builder()
+                .url(url)
+                .build()
 
-        wsSession = httpClient!!.newWebSocket(request, object : WebSocketListener() {
-            override fun onOpen(webSocket: WebSocket, response: Response) {
-                response.close()
+        wsSession =
+            httpClient!!.newWebSocket(
+                request,
+                object : WebSocketListener() {
+                    override fun onOpen(
+                        webSocket: WebSocket,
+                        response: Response,
+                    ) {
+                        response.close()
+                    }
+
+                    override fun onMessage(
+                        webSocket: WebSocket,
+                        text: String,
+                    ) {
+                        scope.launch { incomingChannel.send(GatewayFrame.Text(text)) }
+                    }
+
+                    override fun onClosing(
+                        webSocket: WebSocket,
+                        code: Int,
+                        reason: String,
+                    ) {
+                        scope.launch { incomingChannel.send(GatewayFrame.Close(code, reason)) }
+                    }
+
+                    override fun onClosed(
+                        webSocket: WebSocket,
+                        code: Int,
+                        reason: String,
+                    ) {
+                        scope.launch { incomingChannel.send(GatewayFrame.Close(code, reason)) }
+                    }
+
+                    override fun onFailure(
+                        webSocket: WebSocket,
+                        t: Throwable,
+                        response: Response?,
+                    ) {
+                        response?.close()
+                        onError?.invoke(t)
+                    }
+                },
+            )
+
+        helloTimerJob =
+            scope.launch {
+                delay(GatewayDefaults.HELLO_TIMEOUT_MS)
+                debug("HELLO timeout")
+                wsSession?.close(4009, "HELLO timeout")
+                ready.completeExceptionally(Exception("HELLO timeout"))
             }
 
-            override fun onMessage(webSocket: WebSocket, text: String) {
-                scope.launch { incomingChannel.send(GatewayFrame.Text(text)) }
-            }
+        processingJob =
+            scope.launch {
+                try {
+                    for (frame in incomingChannel) {
+                        when (frame) {
+                            is GatewayFrame.Text -> {
+                                handleMessage(frame.text, ready)
+                            }
 
-            override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-                scope.launch { incomingChannel.send(GatewayFrame.Close(code, reason)) }
-            }
-
-            override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-                scope.launch { incomingChannel.send(GatewayFrame.Close(code, reason)) }
-            }
-
-            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                response?.close()
-                onError?.invoke(t)
-            }
-        })
-
-        helloTimerJob = scope.launch {
-            delay(GatewayDefaults.HELLO_TIMEOUT_MS)
-            debug("HELLO timeout")
-            wsSession?.close(4009, "HELLO timeout")
-            ready.completeExceptionally(Exception("HELLO timeout"))
-        }
-
-        processingJob = scope.launch {
-            try {
-                for (frame in incomingChannel) {
-                    when (frame) {
-                        is GatewayFrame.Text -> handleMessage(frame.text, ready)
-                        is GatewayFrame.Close -> {
-                            handleClose(frame.reason, frame.code)
-                            if (!ready.isCompleted) ready.completeExceptionally(
-                                Exception("Gateway closed before ready")
-                            )
+                            is GatewayFrame.Close -> {
+                                handleClose(frame.reason, frame.code)
+                                if (!ready.isCompleted) {
+                                    ready.completeExceptionally(
+                                        Exception("Gateway closed before ready"),
+                                    )
+                                }
+                            }
                         }
                     }
+                } catch (e: Exception) {
+                    if (!ready.isCompleted) ready.completeExceptionally(e)
+                    onError?.invoke(e)
                 }
-            } catch (e: Exception) {
-                if (!ready.isCompleted) ready.completeExceptionally(e)
-                onError?.invoke(e)
             }
-        }
 
         ready.await()
     }
 
-    fun sendPresenceUpdate(presenceJson: JSONObject): Boolean {
-        return send(GatewayOp.PRESENCE_UPDATE, presenceJson)
-    }
+    fun sendPresenceUpdate(presenceJson: JSONObject): Boolean = send(GatewayOp.PRESENCE_UPDATE, presenceJson)
 
     fun disconnect() {
         closed = true
@@ -140,7 +176,10 @@ class GatewayClient {
         }
     }
 
-    private fun send(op: Int, d: Any?): Boolean {
+    private fun send(
+        op: Int,
+        d: Any?,
+    ): Boolean {
         val session = wsSession ?: return false
         scope.launch {
             try {
@@ -153,7 +192,10 @@ class GatewayClient {
         return true
     }
 
-    private fun buildJsonString(op: Int, d: Any?): String {
+    private fun buildJsonString(
+        op: Int,
+        d: Any?,
+    ): String {
         val json = JSONObject()
         json.put("op", op)
         when (d) {
@@ -169,7 +211,10 @@ class GatewayClient {
         return json.toString()
     }
 
-    private fun handleMessage(raw: String, ready: CompletableDeferred<Unit>) {
+    private fun handleMessage(
+        raw: String,
+        ready: CompletableDeferred<Unit>,
+    ) {
         try {
             val json = JSONObject(raw)
             val op = json.getInt("op")
@@ -191,19 +236,23 @@ class GatewayClient {
                     debug("HELLO received, heartbeat_interval=${interval}ms")
                     sendIdentify()
                 }
+
                 GatewayOp.HEARTBEAT_ACK -> {
                     lastAck = true
                     ping = (System.currentTimeMillis() - lastHeartbeatAt).toInt()
                     debug("heartbeat ack (${ping}ms)")
                 }
+
                 GatewayOp.HEARTBEAT -> {
                     debug("received server heartbeat")
                     sendHeartbeat(force = true)
                 }
+
                 GatewayOp.RECONNECT -> {
                     debug("server requested RECONNECT")
                     forceClose(4000, "server reconnect")
                 }
+
                 GatewayOp.INVALID_SESSION -> {
                     val resumable = if (d is Boolean) d else false
                     debug("INVALID_SESSION resumable=$resumable")
@@ -213,7 +262,10 @@ class GatewayClient {
                     }
                     forceClose(if (resumable) 4000 else 1000, "invalid session")
                 }
-                GatewayOp.DISPATCH -> handleDispatch(t ?: "", d, s, ready)
+
+                GatewayOp.DISPATCH -> {
+                    handleDispatch(t ?: "", d, s, ready)
+                }
             }
         } catch (e: Exception) {
             onError?.invoke(e)
@@ -236,6 +288,7 @@ class GatewayClient {
                 ready.complete(Unit)
                 onReady?.invoke(re)
             }
+
             "RESUMED" -> {
                 debug("RESUMED: session restored, seq=$liveSeq")
                 touchSession(
@@ -245,7 +298,10 @@ class GatewayClient {
                 )
                 ready.complete(Unit)
             }
-            else -> debug("dispatch $t")
+
+            else -> {
+                debug("dispatch $t")
+            }
         }
     }
 
@@ -279,16 +335,17 @@ class GatewayClient {
         stopHeartbeat()
         debug("heartbeat every ${intervalMs}ms")
         val firstDelay = (intervalMs * Random.nextDouble()).toLong()
-        heartbeatJob = scope.launch {
-            delay(firstDelay)
-            if (wsSession != null) {
-                sendHeartbeat()
-                while (isActive) {
-                    delay(intervalMs)
+        heartbeatJob =
+            scope.launch {
+                delay(firstDelay)
+                if (wsSession != null) {
                     sendHeartbeat()
+                    while (isActive) {
+                        delay(intervalMs)
+                        sendHeartbeat()
+                    }
                 }
             }
-        }
     }
 
     private fun sendHeartbeat(force: Boolean = false) {
@@ -316,11 +373,17 @@ class GatewayClient {
     ) {
     }
 
-    private fun forceClose(code: Int, reason: String) {
+    private fun forceClose(
+        code: Int,
+        reason: String,
+    ) {
         scope.launch { wsSession?.close(code, reason) }
     }
 
-    private fun handleClose(reason: String, code: Int) {
+    private fun handleClose(
+        reason: String,
+        code: Int,
+    ) {
         if (closed) return
         closed = true
         stopHeartbeat()
@@ -335,7 +398,7 @@ class GatewayClient {
                 reason = reason,
                 resumable = !fatal && snapshot != null,
                 session = snapshot,
-            )
+            ),
         )
         debug("close code=$code reason=$reason resumable=${!fatal && snapshot != null}")
     }

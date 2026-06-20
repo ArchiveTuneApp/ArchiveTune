@@ -9,9 +9,9 @@ package moe.rukamori.archivetune.utils
 
 import android.content.Context
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import moe.rukamori.archivetune.storage.StorageFolderKind
 import moe.rukamori.archivetune.storage.StorageLocationRepository
 import java.io.File
@@ -20,15 +20,18 @@ import java.io.File
 data class SavedArtwork(
     val songId: String,
     val thumbnail: String? = null,
-    val artist: String? = null
+    val artist: String? = null,
 )
 
 object ArtworkStorage {
     private const val FILENAME = "archivetune_saved_artworks.json"
-    private val json = Json { prettyPrint = true; ignoreUnknownKeys = true }
+    private val json =
+        Json {
+            prettyPrint = true
+            ignoreUnknownKeys = true
+        }
 
-    private fun fileFor(context: Context): File =
-        StorageLocationRepository.cacheFile(context, StorageFolderKind.ARTWORK_CACHE, FILENAME)
+    private fun fileFor(context: Context): File = StorageLocationRepository.cacheFile(context, StorageFolderKind.ARTWORK_CACHE, FILENAME)
 
     fun loadAll(context: Context): List<SavedArtwork> {
         try {
@@ -42,9 +45,15 @@ object ArtworkStorage {
         }
     }
 
-    fun findBySongId(context: Context, songId: String): SavedArtwork? = loadAll(context).firstOrNull { it.songId == songId }
+    fun findBySongId(
+        context: Context,
+        songId: String,
+    ): SavedArtwork? = loadAll(context).firstOrNull { it.songId == songId }
 
-    fun saveOrUpdate(context: Context, artwork: SavedArtwork) {
+    fun saveOrUpdate(
+        context: Context,
+        artwork: SavedArtwork,
+    ) {
         try {
             val list = loadAll(context).toMutableList()
             val idx = list.indexOfFirst { it.songId == artwork.songId }
@@ -65,7 +74,10 @@ object ArtworkStorage {
             false
         }
 
-    fun removeBySongId(context: Context, songId: String) {
+    fun removeBySongId(
+        context: Context,
+        songId: String,
+    ) {
         try {
             val list = loadAll(context).toMutableList()
             val idx = list.indexOfFirst { it.songId == songId }

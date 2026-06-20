@@ -123,24 +123,36 @@ private fun AssignTagsContent(
     ) {
         AssignTagsHeader(
             title = stringResource(R.string.assign_tags),
-            subtitle = (state as? PlaylistTagsScreenState.Success)?.let { success ->
-                pluralStringResource(
-                    R.plurals.n_selected,
-                    success.selectedTagIds.size,
-                    success.selectedTagIds.size,
-                )
-            },
+            subtitle =
+                (state as? PlaylistTagsScreenState.Success)?.let { success ->
+                    pluralStringResource(
+                        R.plurals.n_selected,
+                        success.selectedTagIds.size,
+                        success.selectedTagIds.size,
+                    )
+                },
         )
 
         when (state) {
-            PlaylistTagsScreenState.Loading -> AssignTagsLoadingContent()
-            PlaylistTagsScreenState.Empty -> AssignTagsEmptyContent(onManageTags = onManageTags)
-            is PlaylistTagsScreenState.Error -> AssignTagsErrorContent(messageResId = state.messageResId)
-            is PlaylistTagsScreenState.Success -> AssignTagsList(
-                tags = state.tags,
-                selectedTagIds = state.selectedTagIds,
-                onTagToggle = onTagToggle,
-            )
+            PlaylistTagsScreenState.Loading -> {
+                AssignTagsLoadingContent()
+            }
+
+            PlaylistTagsScreenState.Empty -> {
+                AssignTagsEmptyContent(onManageTags = onManageTags)
+            }
+
+            is PlaylistTagsScreenState.Error -> {
+                AssignTagsErrorContent(messageResId = state.messageResId)
+            }
+
+            is PlaylistTagsScreenState.Success -> {
+                AssignTagsList(
+                    tags = state.tags,
+                    selectedTagIds = state.selectedTagIds,
+                    onTagToggle = onTagToggle,
+                )
+            }
         }
 
         Column(
@@ -199,9 +211,10 @@ private fun AssignTagsList(
     onTagToggle: (String) -> Unit,
 ) {
     LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(max = 420.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .heightIn(max = 420.dp),
         verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
     ) {
         itemsIndexed(
@@ -234,10 +247,11 @@ private fun AssignTagRow(
         selected = selected,
         onClick = onClick,
         shapes = ListItemDefaults.segmentedShapes(index = index, count = count),
-        colors = ListItemDefaults.segmentedColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-        ),
+        colors =
+            ListItemDefaults.segmentedColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+            ),
         leadingContent = {
             TagColorSwatch(
                 color = tag.color,
@@ -246,15 +260,17 @@ private fun AssignTagRow(
         },
         trailingContent = {
             Icon(
-                painter = painterResource(
-                    if (selected) R.drawable.check else R.drawable.add,
-                ),
+                painter =
+                    painterResource(
+                        if (selected) R.drawable.check else R.drawable.add,
+                    ),
                 contentDescription = null,
-                tint = if (selected) {
-                    MaterialTheme.colorScheme.onSecondaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
+                tint =
+                    if (selected) {
+                        MaterialTheme.colorScheme.onSecondaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
                 modifier = Modifier.size(24.dp),
             )
         },
@@ -283,11 +299,12 @@ private fun AssignTagsToPlaylistsDialog(
         ) {
             AssignTagsHeader(
                 title = stringResource(R.string.assign_tags_to_playlists),
-                subtitle = pluralStringResource(
-                    R.plurals.n_selected,
-                    state.selectedBulkPlaylistIds.size,
-                    state.selectedBulkPlaylistIds.size,
-                ),
+                subtitle =
+                    pluralStringResource(
+                        R.plurals.n_selected,
+                        state.selectedBulkPlaylistIds.size,
+                        state.selectedBulkPlaylistIds.size,
+                    ),
             )
 
             AssignTagsBulkSection(
@@ -333,9 +350,10 @@ private fun AssignTagsBulkSection(
     onTagToggle: (String) -> Unit,
 ) {
     LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(max = 220.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .heightIn(max = 220.dp),
         verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
     ) {
         itemsIndexed(
@@ -362,9 +380,10 @@ private fun AssignPlaylistsBulkSection(
     onPlaylistToggle: (String) -> Unit,
 ) {
     LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(max = 300.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .heightIn(max = 300.dp),
         verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
     ) {
         itemsIndexed(
@@ -397,29 +416,32 @@ private fun AssignPlaylistRow(
         selected = selected,
         onClick = onClick,
         shapes = ListItemDefaults.segmentedShapes(index = index, count = count),
-        colors = ListItemDefaults.segmentedColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            selectedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
-        ),
+        colors =
+            ListItemDefaults.segmentedColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                selectedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
+            ),
         leadingContent = {
             Surface(
                 shape = if (selected) MaterialTheme.shapes.extraLarge else MaterialTheme.shapes.large,
-                color = if (selected) {
-                    MaterialTheme.colorScheme.tertiary
-                } else {
-                    MaterialTheme.colorScheme.surfaceContainerHighest
-                },
+                color =
+                    if (selected) {
+                        MaterialTheme.colorScheme.tertiary
+                    } else {
+                        MaterialTheme.colorScheme.surfaceContainerHighest
+                    },
                 modifier = Modifier.size(48.dp),
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         painter = painterResource(R.drawable.queue_music),
                         contentDescription = null,
-                        tint = if (selected) {
-                            MaterialTheme.colorScheme.onTertiary
-                        } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        },
+                        tint =
+                            if (selected) {
+                                MaterialTheme.colorScheme.onTertiary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
                         modifier = Modifier.size(24.dp),
                     )
                 }
@@ -427,26 +449,29 @@ private fun AssignPlaylistRow(
         },
         supportingContent = {
             Text(
-                text = pluralStringResource(
-                    R.plurals.n_song,
-                    playlist.songCount,
-                    playlist.songCount,
-                ),
+                text =
+                    pluralStringResource(
+                        R.plurals.n_song,
+                        playlist.songCount,
+                        playlist.songCount,
+                    ),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
         },
         trailingContent = {
             Icon(
-                painter = painterResource(
-                    if (selected) R.drawable.check else R.drawable.add,
-                ),
+                painter =
+                    painterResource(
+                        if (selected) R.drawable.check else R.drawable.add,
+                    ),
                 contentDescription = null,
-                tint = if (selected) {
-                    MaterialTheme.colorScheme.onTertiaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
+                tint =
+                    if (selected) {
+                        MaterialTheme.colorScheme.onTertiaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
                 modifier = Modifier.size(24.dp),
             )
         },
@@ -514,9 +539,10 @@ private fun AssignTagsHeader(
 @Composable
 private fun AssignTagsLoadingContent() {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 36.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 36.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -530,9 +556,7 @@ private fun AssignTagsLoadingContent() {
 }
 
 @Composable
-private fun AssignTagsEmptyContent(
-    onManageTags: () -> Unit,
-) {
+private fun AssignTagsEmptyContent(onManageTags: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
@@ -565,9 +589,7 @@ private fun AssignTagsEmptyContent(
 }
 
 @Composable
-private fun AssignTagsErrorContent(
-    messageResId: Int,
-) {
+private fun AssignTagsErrorContent(messageResId: Int) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
@@ -602,11 +624,12 @@ private fun TagColorSwatch(
     val motionScheme = MaterialTheme.motionScheme
     val swatchColor = rememberTagColor(color)
     val borderColor by animateColorAsState(
-        targetValue = if (selected) {
-            MaterialTheme.colorScheme.primary
-        } else {
-            MaterialTheme.colorScheme.outline
-        },
+        targetValue =
+            if (selected) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.outline
+            },
         animationSpec = motionScheme.defaultEffectsSpec(),
         label = "assignTagSwatchBorder",
     )
@@ -648,17 +671,19 @@ private fun PlaylistTagsDialogScaffold(
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp)
-                .imePadding()
-                .navigationBarsPadding(),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(24.dp)
+                    .imePadding()
+                    .navigationBarsPadding(),
             contentAlignment = Alignment.Center,
         ) {
             Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = maxHeight),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = maxHeight),
                 shape = AlertDialogDefaults.shape,
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 tonalElevation = AlertDialogDefaults.TonalElevation,

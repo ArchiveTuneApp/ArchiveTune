@@ -16,15 +16,15 @@ data class PlaylistSuggestion(
     val totalQueries: Int,
     val query: String,
     val hasMore: Boolean = true,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
 )
 
 data class PlaylistSuggestionPage(
     val items: List<YTItem>,
-    val continuation: String?
+    val continuation: String?,
 )
 
 data class PlaylistSuggestionQuery(
     val query: String,
-    val priority: Int
+    val priority: Int,
 )

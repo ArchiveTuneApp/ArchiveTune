@@ -43,9 +43,10 @@ fun ExpressivePullToRefreshBox(
                 state = state,
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(indicatorPadding),
+                modifier =
+                    Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(indicatorPadding),
             )
         },
         content = content,

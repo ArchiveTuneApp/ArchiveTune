@@ -7,7 +7,6 @@
 
 @file:OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 
-
 package moe.rukamori.archivetune.ui.component
 
 import androidx.compose.animation.AnimatedContent
@@ -111,9 +110,7 @@ private val PreferenceEntryHorizontalPadding = 22.dp
 private val PreferenceEntryVerticalPadding = 18.dp
 
 @Composable
-private fun rememberPreferenceIconShape(): Shape {
-    return MaterialShapes.Ghostish.toShape()
-}
+private fun rememberPreferenceIconShape(): Shape = MaterialShapes.Ghostish.toShape()
 
 private fun segmentedPreferenceItemShape(
     index: Int,
@@ -122,32 +119,46 @@ private fun segmentedPreferenceItemShape(
     val large = PreferenceGroupLargeCorner
     val small = PreferenceGroupSmallCorner
     return when {
-        count <= 1 -> RoundedCornerShape(large)
-        index == 0 -> RoundedCornerShape(
-            topStart = large,
-            topEnd = large,
-            bottomEnd = small,
-            bottomStart = small,
-        )
-        index == count - 1 -> RoundedCornerShape(
-            topStart = small,
-            topEnd = small,
-            bottomEnd = large,
-            bottomStart = large,
-        )
-        else -> RoundedCornerShape(small)
+        count <= 1 -> {
+            RoundedCornerShape(large)
+        }
+
+        index == 0 -> {
+            RoundedCornerShape(
+                topStart = large,
+                topEnd = large,
+                bottomEnd = small,
+                bottomStart = small,
+            )
+        }
+
+        index == count - 1 -> {
+            RoundedCornerShape(
+                topStart = small,
+                topEnd = small,
+                bottomEnd = large,
+                bottomStart = large,
+            )
+        }
+
+        else -> {
+            RoundedCornerShape(small)
+        }
     }
 }
 
-private fun preferenceItemShapeForPosition(position: PreferenceGroupPosition?): Shape {
-    return when (position) {
+private fun preferenceItemShapeForPosition(position: PreferenceGroupPosition?): Shape =
+    when (position) {
         null,
-        PreferenceGroupPosition.Single -> segmentedPreferenceItemShape(index = 0, count = 1)
+        PreferenceGroupPosition.Single,
+        -> segmentedPreferenceItemShape(index = 0, count = 1)
+
         PreferenceGroupPosition.First -> segmentedPreferenceItemShape(index = 0, count = 2)
+
         PreferenceGroupPosition.Middle -> segmentedPreferenceItemShape(index = 1, count = 3)
+
         PreferenceGroupPosition.Last -> segmentedPreferenceItemShape(index = 1, count = 2)
     }
-}
 
 @Composable
 fun PreferenceEntry(
@@ -164,9 +175,10 @@ fun PreferenceEntry(
     val inGroup = LocalPreferenceInGroup.current
     val groupPosition = LocalPreferenceGroupPosition.current
     val preferenceIconShape = rememberPreferenceIconShape()
-    val preferenceItemShape = remember(groupPosition) {
-        preferenceItemShapeForPosition(groupPosition)
-    }
+    val preferenceItemShape =
+        remember(groupPosition) {
+            preferenceItemShapeForPosition(groupPosition)
+        }
     val resolvedShape = shape ?: preferenceItemShape
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -179,28 +191,29 @@ fun PreferenceEntry(
     val rowContent: @Composable () -> Unit = {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = PreferenceEntryMinHeight)
-                .then(if (isEnabled && onClick != null) Modifier.focusable() else Modifier)
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = LocalIndication.current,
-                    enabled = isEnabled && onClick != null,
-                    onClick = onClick ?: {},
-                )
-                .alpha(if (isEnabled) 1f else 0.5f)
-                .padding(
-                    horizontal = PreferenceEntryHorizontalPadding,
-                    vertical = PreferenceEntryVerticalPadding,
-                ),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = PreferenceEntryMinHeight)
+                    .then(if (isEnabled && onClick != null) Modifier.focusable() else Modifier)
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = LocalIndication.current,
+                        enabled = isEnabled && onClick != null,
+                        onClick = onClick ?: {},
+                    ).alpha(if (isEnabled) 1f else 0.5f)
+                    .padding(
+                        horizontal = PreferenceEntryHorizontalPadding,
+                        vertical = PreferenceEntryVerticalPadding,
+                    ),
         ) {
             if (icon != null) {
                 Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                        .size(44.dp)
-                        .clip(preferenceIconShape),
+                    modifier =
+                        Modifier
+                            .align(Alignment.CenterVertically)
+                            .size(44.dp)
+                            .clip(preferenceIconShape),
                     contentAlignment = Alignment.Center,
                 ) {
                     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary) {
@@ -239,17 +252,21 @@ fun PreferenceEntry(
 
     Card(
         shape = resolvedShape,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(
-                horizontal = if (inGroup) 0.dp else 16.dp,
-                vertical = if (inGroup) 0.dp else 3.dp,
-            )
-            .graphicsLayer { scaleX = scale; scaleY = scale },
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = if (inGroup) 0.dp else 16.dp,
+                    vertical = if (inGroup) 0.dp else 3.dp,
+                ).graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                },
     ) {
         rowContent()
     }
@@ -277,7 +294,7 @@ fun <T> SegmentedPreference(
         content = {
             Spacer(Modifier.height(12.dp))
             SingleChoiceSegmentedButtonRow(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 values.forEachIndexed { index, value ->
                     SegmentedButton(
@@ -285,23 +302,24 @@ fun <T> SegmentedPreference(
                         onClick = { onValueSelected(value) },
                         selected = value == selectedValue,
                         enabled = isEnabled,
-                        colors = SegmentedButtonDefaults.colors(
-                            activeContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            activeContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            inactiveContainerColor = MaterialTheme.colorScheme.surface,
-                            inactiveContentColor = MaterialTheme.colorScheme.onSurface
-                        )
+                        colors =
+                            SegmentedButtonDefaults.colors(
+                                activeContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                activeContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                inactiveContainerColor = MaterialTheme.colorScheme.surface,
+                                inactiveContentColor = MaterialTheme.colorScheme.onSurface,
+                            ),
                     ) {
                         Text(
                             text = valueText(value),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            style = MaterialTheme.typography.labelLarge
+                            style = MaterialTheme.typography.labelLarge,
                         )
                     }
                 }
             }
-        }
+        },
     )
 }
 
@@ -362,11 +380,12 @@ fun <T> ListPreference(
             onDismiss = { showBottomSheet = false },
             onValueSelected = { value ->
                 onValueSelected(value)
-                coroutineScope.launch {
-                    sheetState.hide()
-                }.invokeOnCompletion {
-                    showBottomSheet = false
-                }
+                coroutineScope
+                    .launch {
+                        sheetState.hide()
+                    }.invokeOnCompletion {
+                        showBottomSheet = false
+                    }
             },
         )
     }
@@ -447,27 +466,30 @@ private fun <T> PreferenceSelectionBottomSheet(
         },
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 26.dp)
-                .padding(bottom = 12.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 26.dp)
+                    .padding(bottom = 12.dp),
         ) {
             ProvideTextStyle(
                 MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
             ) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 18.dp, bottom = 22.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(top = 18.dp, bottom = 22.dp),
                 ) {
                     title()
                 }
             }
 
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 520.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 520.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(bottom = 24.dp),
             ) {
@@ -503,17 +525,17 @@ private fun PreferenceSelectionOption(
         if (selected) contentColor.copy(alpha = 0.78f) else MaterialTheme.colorScheme.onSurfaceVariant
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = if (description == null) 72.dp else 96.dp)
-            .clip(MaterialTheme.shapes.extraLarge)
-            .background(containerColor)
-            .selectable(
-                selected = selected,
-                onClick = onClick,
-                role = Role.RadioButton,
-            )
-            .padding(horizontal = 24.dp, vertical = 20.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .heightIn(min = if (description == null) 72.dp else 96.dp)
+                .clip(MaterialTheme.shapes.extraLarge)
+                .background(containerColor)
+                .selectable(
+                    selected = selected,
+                    onClick = onClick,
+                    role = Role.RadioButton,
+                ).padding(horizontal = 24.dp, vertical = 20.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(
@@ -555,10 +577,11 @@ private fun PreferenceSelectionOption(
 @Composable
 private fun PreferenceValueChip(text: String) {
     Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(50))
-            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
-            .padding(horizontal = 16.dp, vertical = 7.dp),
+        modifier =
+            Modifier
+                .clip(RoundedCornerShape(50))
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                .padding(horizontal = 16.dp, vertical = 7.dp),
     ) {
         Text(
             text = text,
@@ -571,12 +594,16 @@ private fun PreferenceValueChip(text: String) {
     }
 }
 
-private fun preferenceOptionKey(index: Int, value: Any?): String {
-    val valueKey = when (value) {
-        is Enum<*> -> value.name
-        null -> "null"
-        else -> value.hashCode().toString()
-    }
+private fun preferenceOptionKey(
+    index: Int,
+    value: Any?,
+): String {
+    val valueKey =
+        when (value) {
+            is Enum<*> -> value.name
+            null -> "null"
+            else -> value.hashCode().toString()
+        }
     return "${value?.javaClass?.name.orEmpty()}:$valueKey:$index"
 }
 
@@ -609,26 +636,28 @@ fun SwitchPreference(
                         label = "switchThumbIcon",
                     ) { isChecked ->
                         Icon(
-                            painter = painterResource(
-                                id = if (isChecked) R.drawable.check else R.drawable.close
-                            ),
+                            painter =
+                                painterResource(
+                                    id = if (isChecked) R.drawable.check else R.drawable.close,
+                                ),
                             contentDescription = null,
                             modifier = Modifier.size(SwitchDefaults.IconSize),
                         )
                     }
                 },
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                    checkedTrackColor = MaterialTheme.colorScheme.primary,
-                    checkedIconColor = MaterialTheme.colorScheme.primary,
-                    uncheckedThumbColor = MaterialTheme.colorScheme.onSurface,
-                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
-                    uncheckedIconColor = MaterialTheme.colorScheme.surfaceVariant,
-                ),
+                colors =
+                    SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary,
+                        checkedIconColor = MaterialTheme.colorScheme.primary,
+                        uncheckedThumbColor = MaterialTheme.colorScheme.onSurface,
+                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        uncheckedIconColor = MaterialTheme.colorScheme.surfaceVariant,
+                    ),
             )
         },
         onClick = { onCheckedChange(!checked) },
-        isEnabled = isEnabled
+        isEnabled = isEnabled,
     )
 }
 
@@ -652,10 +681,10 @@ fun EditTextPreference(
         TextFieldDialog(
             title = title,
             initialTextFieldValue =
-            TextFieldValue(
-                text = value,
-                selection = TextRange(value.length),
-            ),
+                TextFieldValue(
+                    text = value,
+                    selection = TextRange(value.length),
+                ),
             singleLine = singleLine,
             keyboardOptions = keyboardOptions,
             isInputValid = isInputValid,
@@ -692,15 +721,16 @@ fun NumberEditTextPreference(
         TextFieldDialog(
             title = title,
             initialTextFieldValue =
-            TextFieldValue(
-                text = value.toString(),
-                selection = TextRange(value.toString().length),
-            ),
+                TextFieldValue(
+                    text = value.toString(),
+                    selection = TextRange(value.toString().length),
+                ),
             singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done
-            ),
+            keyboardOptions =
+                KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done,
+                ),
             isInputValid = isInputValid,
             onDone = { it.toIntOrNull()?.let(onValueChange) },
             onDismiss = { showDialog = false },
@@ -740,7 +770,7 @@ fun SliderPreference(
             titleBar = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Center,
                 ) {
                     Text(
                         text = stringResource(R.string.history_duration),
@@ -765,11 +795,12 @@ fun SliderPreference(
             content = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = pluralStringResource(
-                            R.plurals.seconds,
-                            sliderValue.roundToInt(),
-                            sliderValue.roundToInt()
-                        ),
+                        text =
+                            pluralStringResource(
+                                R.plurals.seconds,
+                                sliderValue.roundToInt(),
+                                sliderValue.roundToInt(),
+                            ),
                         style = MaterialTheme.typography.bodyLarge,
                     )
 
@@ -783,11 +814,12 @@ fun SliderPreference(
 
                     Spacer(Modifier.height(16.dp))
 
-                    val sliderState = rememberSliderState(
-                        value = sliderValue,
-                        valueRange = HISTORY_DURATION_RANGE,
-                        onValueChangeFinished = {},
-                    )
+                    val sliderState =
+                        rememberSliderState(
+                            value = sliderValue,
+                            valueRange = HISTORY_DURATION_RANGE,
+                            onValueChangeFinished = {},
+                        )
                     sliderState.onValueChange = { sliderValue = it }
                     sliderState.value = sliderValue
 
@@ -802,7 +834,7 @@ fun SliderPreference(
                         },
                     )
                 }
-            }
+            },
         )
     }
 
@@ -837,7 +869,7 @@ fun CrossfadeSliderPreference(
             titleBar = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Center,
                 ) {
                     Text(
                         text = stringResource(R.string.audio_crossfade_dialog_title),
@@ -868,18 +900,19 @@ fun CrossfadeSliderPreference(
                     val rounded =
                         ((sliderValue * 2f).roundToInt().toFloat() / 2f)
                             .coerceIn(0f, 10f)
-                    val isWhole = (rounded - rounded.roundToInt().toFloat()).let { delta ->
-                        kotlin.math.abs(delta) < 0.001f
-                    }
+                    val isWhole =
+                        (rounded - rounded.roundToInt().toFloat()).let { delta ->
+                            kotlin.math.abs(delta) < 0.001f
+                        }
                     val displayValue =
                         if (isWhole) rounded.roundToInt().toString() else String.format(java.util.Locale.getDefault(), "%.1f", rounded)
                     Text(
                         text =
-                        if (rounded <= 0f) {
-                            stringResource(R.string.dark_theme_off)
-                        } else {
-                            stringResource(R.string.audio_crossfade_seconds, displayValue)
-                        },
+                            if (rounded <= 0f) {
+                                stringResource(R.string.dark_theme_off)
+                            } else {
+                                stringResource(R.string.audio_crossfade_seconds, displayValue)
+                            },
                         style = MaterialTheme.typography.bodyLarge,
                     )
 
@@ -893,12 +926,13 @@ fun CrossfadeSliderPreference(
 
                     Spacer(Modifier.height(16.dp))
 
-                    val crossfadeSliderState = rememberSliderState(
-                        value = sliderValue,
-                        steps = 19,
-                        valueRange = 0f..10f,
-                        onValueChangeFinished = {},
-                    )
+                    val crossfadeSliderState =
+                        rememberSliderState(
+                            value = sliderValue,
+                            steps = 19,
+                            valueRange = 0f..10f,
+                            onValueChangeFinished = {},
+                        )
                     crossfadeSliderState.onValueChange = { sliderValue = it.coerceIn(0f, 10f) }
                     crossfadeSliderState.value = sliderValue
 
@@ -913,16 +947,17 @@ fun CrossfadeSliderPreference(
                         },
                     )
                 }
-            }
+            },
         )
     }
 
     val rounded =
         ((valueSeconds * 2f).roundToInt().toFloat() / 2f)
             .coerceIn(0f, 10f)
-    val isWhole = (rounded - rounded.roundToInt().toFloat()).let { delta ->
-        kotlin.math.abs(delta) < 0.001f
-    }
+    val isWhole =
+        (rounded - rounded.roundToInt().toFloat()).let { delta ->
+            kotlin.math.abs(delta) < 0.001f
+        }
     val displayValue =
         if (isWhole) rounded.roundToInt().toString() else String.format(java.util.Locale.getDefault(), "%.1f", rounded)
     val descriptionText =
@@ -967,7 +1002,7 @@ fun NumberPickerPreference(
             titleBar = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Center,
                 ) {
                     title()
                 }
@@ -996,12 +1031,13 @@ fun NumberPickerPreference(
 
                     Spacer(Modifier.height(16.dp))
 
-                    val pickerSliderState = rememberSliderState(
-                        value = sliderValue,
-                        steps = maxValue - minValue - 1,
-                        valueRange = minValue.toFloat()..maxValue.toFloat(),
-                        onValueChangeFinished = {},
-                    )
+                    val pickerSliderState =
+                        rememberSliderState(
+                            value = sliderValue,
+                            steps = maxValue - minValue - 1,
+                            valueRange = minValue.toFloat()..maxValue.toFloat(),
+                            onValueChangeFinished = {},
+                        )
                     pickerSliderState.onValueChange = {
                         sliderValue = it.coerceIn(minValue.toFloat(), maxValue.toFloat())
                     }
@@ -1018,7 +1054,7 @@ fun NumberPickerPreference(
                         },
                     )
                 }
-            }
+            },
         )
     }
 
@@ -1065,18 +1101,20 @@ fun PreferenceGroup(
         }
 
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = PreferenceGroupHorizontalPadding),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = PreferenceGroupHorizontalPadding),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             scope.items.forEachIndexed { index, itemContent ->
-                val position = when {
-                    itemCount == 1 -> PreferenceGroupPosition.Single
-                    index == 0 -> PreferenceGroupPosition.First
-                    index == itemCount - 1 -> PreferenceGroupPosition.Last
-                    else -> PreferenceGroupPosition.Middle
-                }
+                val position =
+                    when {
+                        itemCount == 1 -> PreferenceGroupPosition.Single
+                        index == 0 -> PreferenceGroupPosition.First
+                        index == itemCount - 1 -> PreferenceGroupPosition.Last
+                        else -> PreferenceGroupPosition.Middle
+                    }
                 CompositionLocalProvider(
                     LocalPreferenceInGroup provides true,
                     LocalPreferenceGroupPosition provides position,

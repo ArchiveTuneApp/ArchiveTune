@@ -21,15 +21,15 @@ data class Album(
         entityColumn = "id",
         parentColumn = "id",
         associateBy =
-        Junction(
-            value = AlbumArtistMap::class,
-            parentColumn = "albumId",
-            entityColumn = "artistId",
-        ),
+            Junction(
+                value = AlbumArtistMap::class,
+                parentColumn = "albumId",
+                entityColumn = "artistId",
+            ),
     )
     val artists: List<ArtistEntity> = emptyList(),
     val songCountListened: Int? = 0,
-    val timeListened: Long? = 0
+    val timeListened: Long? = 0,
 ) : LocalItem() {
     override val id: String
         get() = album.id

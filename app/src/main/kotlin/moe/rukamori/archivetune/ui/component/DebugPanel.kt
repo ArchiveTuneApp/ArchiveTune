@@ -21,13 +21,12 @@ import moe.rukamori.archivetune.R
 fun DebugPanelItem(
     title: @Composable () -> Unit,
     description: (@Composable () -> Unit)? = null,
-    trailingContent: (@Composable () -> Unit)? = null
-): Material3SettingsItem {
-    return Material3SettingsItem(
+    trailingContent: (@Composable () -> Unit)? = null,
+): Material3SettingsItem =
+    Material3SettingsItem(
         icon = painterResource(R.drawable.info),
         title = title,
         description = description,
         trailingContent = trailingContent,
-        isHighlighted = true
+        isHighlighted = true,
     )
-}

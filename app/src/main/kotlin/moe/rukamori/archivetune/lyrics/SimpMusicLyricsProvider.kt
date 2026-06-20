@@ -16,8 +16,7 @@ import moe.rukamori.archivetune.utils.get
 object SimpMusicLyricsProvider : LyricsProvider {
     override val name: String = "SimpMusic"
 
-    override fun isEnabled(context: Context): Boolean =
-        context.dataStore[EnableSimpMusicLyricsKey] ?: true
+    override fun isEnabled(context: Context): Boolean = context.dataStore[EnableSimpMusicLyricsKey] ?: true
 
     override suspend fun getLyrics(
         id: String,
@@ -38,4 +37,3 @@ object SimpMusicLyricsProvider : LyricsProvider {
         SimpMusicLyrics.getAllLyrics(videoId = id, duration = duration, callback = callback)
     }
 }
-
