@@ -85,6 +85,7 @@ import moe.rukamori.archivetune.ui.screens.settings.CustomizeBackground
 import moe.rukamori.archivetune.ui.screens.settings.DarkMode
 import moe.rukamori.archivetune.ui.screens.settings.DebugSettings
 import moe.rukamori.archivetune.ui.screens.settings.DiscordSettings
+import moe.rukamori.archivetune.ui.screens.settings.HiddenPlaylistsScreen
 import moe.rukamori.archivetune.ui.screens.settings.IntegrationScreen
 import moe.rukamori.archivetune.ui.screens.settings.InternetSettings
 import moe.rukamori.archivetune.ui.screens.settings.LastFMSettings
@@ -379,6 +380,9 @@ fun NavGraphBuilder.navigationBuilder(
     }
     composable("settings/account") {
         AccountSettings(navController, scrollBehavior, latestVersionName())
+    }
+    composable("settings/hidden_playlists") {
+        HiddenPlaylistsScreen(navController, scrollBehavior)
     }
     composable("settings/appearance") {
         AppearanceSettings(navController, scrollBehavior)

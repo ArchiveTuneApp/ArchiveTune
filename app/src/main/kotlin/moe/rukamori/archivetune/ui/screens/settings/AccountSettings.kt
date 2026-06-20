@@ -489,6 +489,15 @@ fun AccountSettings(
             item {
                 ExpressiveSectionCard(title = miscLabel) {
                     ExpressiveActionRow(
+                        icon = painterResource(R.drawable.visibility_off),
+                        title = stringResource(R.string.hidden_playlists),
+                        subtitle = stringResource(R.string.hidden_playlists_description),
+                        onClick = { navController.navigate("settings/hidden_playlists") },
+                    )
+
+                    ExpressiveDivider()
+
+                    ExpressiveActionRow(
                         icon = painterResource(R.drawable.token),
                         title = tokenActionTitle,
                         subtitle = tokenDescription,
