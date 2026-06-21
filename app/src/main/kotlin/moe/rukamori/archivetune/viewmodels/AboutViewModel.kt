@@ -447,7 +447,19 @@ class AboutViewModel
                             id = "donate",
                             iconResId = R.drawable.coffee,
                             labelResId = R.string.about_content_desc_donate,
-                            url = "https://sociabuzz.com/chrtrxwstia",
+                            url = "https://koiiverse.cloud/donate",
+                        ),
+                        AboutLinkUiModel(
+                            id = "discord",
+                            iconResId = R.drawable.discord,
+                            labelResId = R.string.discord,
+                            url = "https://discord.gg/XF2fpb9rTq",
+                        ),
+                        AboutLinkUiModel(
+                            id = "privacy_policy",
+                            iconResId = R.drawable.lock,
+                            labelResId = R.string.privacy,
+                            url = "https://archivetune.koiiverse.cloud/privacy",
                         ),
                     ),
                 leadDeveloper =
