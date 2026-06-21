@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -127,7 +128,7 @@ private fun RestoreBackupFileScreen(
         is BackupScreenState.Error -> {
             DefaultDialog(
                 onDismiss = onNavigateBack,
-                icon = { Icon(painterResource(R.drawable.alert), null) },
+                icon = { Icon(painterResource(R.drawable.error), null) },
                 title = { Text(stringResource(R.string.restore_failed)) },
                 buttons = {
                     TextButton(onClick = onNavigateBack, shapes = ButtonDefaults.shapes()) {
