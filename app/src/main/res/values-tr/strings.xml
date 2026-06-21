@@ -948,4 +948,12 @@
     <string name="lastfm_login_api_key_suspended">API anahtarı askıya alındı.</string>
     <string name="lastfm_login_network_error">Ağ hatası. Bağlantınızı kontrol edin.</string>
     <string name="lastfm_login_failed">Giriş başarısız. Tekrar deneyin.</string>
+    <string name="account_integrations_summary">Discord, Last.fm, Libre.fm, ListenBrainz</string>
+    <string name="lastfm_provider_lastfm">Last.fm</string>
+    <string name="lastfm_provider_librefm">Libre.fm</string>
+    <string name="duration_seconds_short">%1$ds</string>
+    <string name="percent_format">%1$d%%</string>
+    <string name="discord_platform_samsung">Samsung</string>
+    <string name="discord_platform_ios">iOS</string>
+    <string name="discord_platform_android">Android</string>
 </resources>
