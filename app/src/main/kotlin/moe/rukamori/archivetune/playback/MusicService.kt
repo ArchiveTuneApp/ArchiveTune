@@ -4833,6 +4833,11 @@ class MusicService :
         }
     }
 
+    private fun shouldKeepAudioEffectSessionOpen(): Boolean {
+        val playbackState = player.playbackState
+        return playbackState == Player.STATE_BUFFERING || playbackState == Player.STATE_READY
+    }
+
     private fun openAudioEffectSession() {
         if (isAudioEffectSessionOpened) return
         val sessionId = player.audioSessionId
@@ -4840,13 +4845,7 @@ class MusicService :
         isAudioEffectSessionOpened = true
         openedAudioSessionId = sessionId
         ensureAudioEffects(sessionId)
-        sendBroadcast(
-            Intent(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION).apply {
-                putExtra(AudioEffect.EXTRA_AUDIO_SESSION, sessionId)
-                putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
-                putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
-            },
-        )
+        sendOpenAudioEffectSessionBroadcast(sessionId)
     }
 
     private fun closeAudioEffectSession() {
@@ -4856,6 +4855,40 @@ class MusicService :
         openedAudioSessionId = null
         releaseAudioEffects()
         if (sessionId <= 0) return
+        sendCloseAudioEffectSessionBroadcast(sessionId)
+    }
+
+    private fun rebindAudioEffectSession(newSessionId: Int) {
+        if (newSessionId <= 0 || !shouldKeepAudioEffectSessionOpen()) return
+        val oldSessionId = openedAudioSessionId
+        if (!isAudioEffectSessionOpened) {
+            openAudioEffectSession()
+            return
+        }
+        if (oldSessionId == newSessionId) {
+            ensureAudioEffects(newSessionId)
+            return
+        }
+
+        if (oldSessionId != null && oldSessionId > 0) {
+            sendCloseAudioEffectSessionBroadcast(oldSessionId)
+        }
+        openedAudioSessionId = newSessionId
+        ensureAudioEffects(newSessionId)
+        sendOpenAudioEffectSessionBroadcast(newSessionId)
+    }
+
+    private fun sendOpenAudioEffectSessionBroadcast(sessionId: Int) {
+        sendBroadcast(
+            Intent(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION).apply {
+                putExtra(AudioEffect.EXTRA_AUDIO_SESSION, sessionId)
+                putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
+                putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+            },
+        )
+    }
+
+    private fun sendCloseAudioEffectSessionBroadcast(sessionId: Int) {
         sendBroadcast(
             Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION).apply {
                 putExtra(AudioEffect.EXTRA_AUDIO_SESSION, sessionId)
@@ -5542,36 +5575,14 @@ class MusicService :
             handleDeviceMuteStateChanged(playbackRequestedWhileMuted = true)
         }
         if (events.contains(Player.EVENT_AUDIO_SESSION_ID)) {
-            val newSessionId = this.player.audioSessionId
-            val oldSessionId = openedAudioSessionId
-            if (isAudioEffectSessionOpened && newSessionId > 0 && oldSessionId != null && oldSessionId > 0 &&
-                oldSessionId != newSessionId
-            ) {
-                sendBroadcast(
-                    Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION).apply {
-                        putExtra(AudioEffect.EXTRA_AUDIO_SESSION, oldSessionId)
-                        putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
-                    },
-                )
-                openedAudioSessionId = newSessionId
-                ensureAudioEffects(newSessionId)
-                sendBroadcast(
-                    Intent(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION).apply {
-                        putExtra(AudioEffect.EXTRA_AUDIO_SESSION, newSessionId)
-                        putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
-                        putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
-                    },
-                )
-            }
+            rebindAudioEffectSession(this.player.audioSessionId)
         }
         if (events.containsAny(
                 Player.EVENT_PLAYBACK_STATE_CHANGED,
                 Player.EVENT_PLAY_WHEN_READY_CHANGED,
             )
         ) {
-            val playbackState = player.playbackState
-            val keepAudioEffectSessionOpen =
-                playbackState == Player.STATE_BUFFERING || playbackState == Player.STATE_READY
+            val keepAudioEffectSessionOpen = shouldKeepAudioEffectSessionOpen()
             if (player.playWhenReady && keepAudioEffectSessionOpen) {
                 ensureAudioFocusForActivePlayback()
             }
