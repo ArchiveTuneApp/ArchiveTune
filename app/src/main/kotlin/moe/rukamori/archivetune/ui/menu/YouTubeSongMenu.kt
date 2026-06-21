@@ -90,7 +90,6 @@ import moe.rukamori.archivetune.innertube.models.SongItem
 import moe.rukamori.archivetune.models.MediaMetadata
 import moe.rukamori.archivetune.models.toMediaMetadata
 import moe.rukamori.archivetune.playback.ExoDownloadService
-import moe.rukamori.archivetune.playback.queues.YouTubeQueue
 import moe.rukamori.archivetune.ui.component.ListDialog
 import moe.rukamori.archivetune.ui.component.LocalBottomSheetPageState
 import moe.rukamori.archivetune.ui.component.MenuSurfaceSection
@@ -324,7 +323,6 @@ fun YouTubeSongMenu(
 
     val bottomSheetPageState = LocalBottomSheetPageState.current
     val dividerModifier = Modifier.padding(start = 56.dp)
-    val startRadioText = stringResource(R.string.start_radio)
     val playNextText = stringResource(R.string.play_next)
     val addToQueueText = stringResource(R.string.add_to_queue)
     val addToPlaylistText = stringResource(R.string.add_to_playlist)
@@ -333,7 +331,6 @@ fun YouTubeSongMenu(
     val primaryActions =
         remember(
             song,
-            startRadioText,
             playNextText,
             addToQueueText,
             addToPlaylistText,
@@ -342,21 +339,6 @@ fun YouTubeSongMenu(
             playerConnection,
         ) {
             listOf(
-                NewAction(
-                    icon = {
-                        Icon(
-                            painter = painterResource(R.drawable.radio),
-                            contentDescription = null,
-                            modifier = Modifier.size(28.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    },
-                    text = startRadioText,
-                    onClick = {
-                        onDismiss()
-                        playerConnection.playQueue(YouTubeQueue.radio(song.toMediaMetadata()))
-                    },
-                ),
                 NewAction(
                     icon = {
                         Icon(
