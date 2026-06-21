@@ -260,31 +260,6 @@ jobs:
             distributionName: Foss
             deviceName: Mobile
             abi: universal
-          - device: mobile
-            distribution: izzy
-            distributionName: Izzy
-            deviceName: Mobile
-            abi: universal
-          - device: mobile
-            distribution: izzy
-            distributionName: Izzy
-            deviceName: Mobile
-            abi: arm64
-          - device: mobile
-            distribution: izzy
-            distributionName: Izzy
-            deviceName: Mobile
-            abi: armeabi
-          - device: mobile
-            distribution: izzy
-            distributionName: Izzy
-            deviceName: Mobile
-            abi: x86
-          - device: mobile
-            distribution: izzy
-            distributionName: Izzy
-            deviceName: Mobile
-            abi: x86_64
 
     steps:
       - uses: actions/checkout@v6

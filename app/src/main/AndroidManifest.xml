@@ -323,6 +323,21 @@
             android:name=".ui.screens.settings.PoTokenExtractionActivity"
             android:exported="false"
             android:theme="@style/Theme.ArchiveTune" />
+
+        <activity
+            android:name=".discord.DiscordOAuthCallbackActivity"
+            android:exported="true"
+            android:noHistory="true"
+            android:theme="@style/Theme.ArchiveTune">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="${discordRedirectScheme}" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

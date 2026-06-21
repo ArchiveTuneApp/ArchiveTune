@@ -88,12 +88,11 @@ android {
         create("foss") {
             dimension = "distribution"
             buildConfigField("String", "DISTRIBUTION", "\"foss\"")
-            buildConfigField("boolean", "UPDATER_AVAILABLE", "true")
-        }
-        create("izzy") {
-            dimension = "distribution"
-            buildConfigField("String", "DISTRIBUTION", "\"izzy\"")
             buildConfigField("boolean", "UPDATER_AVAILABLE", "false")
+            buildConfigField("String", "DISCORD_APPLICATION_ID", "\"$discordApplicationId\"")
+            buildConfigField("long", "DISCORD_APPLICATION_ID_LONG", "${discordApplicationIdLong}L")
+            buildConfigField("String", "DISCORD_REDIRECT_SCHEME", "\"$discordRedirectScheme\"")
+            manifestPlaceholders["discordRedirectScheme"] = discordRedirectScheme
         }
         create("mobile") {
             dimension = "device"
