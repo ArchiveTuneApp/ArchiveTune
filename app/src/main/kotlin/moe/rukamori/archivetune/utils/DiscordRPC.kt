@@ -379,11 +379,7 @@ class DiscordRPC(
             }
 
             "artisturl" -> {
-                song.artists
-                    .firstOrNull()
-                    ?.id
-                    ?.takeUnless { song.song.isLocal || it.startsWith("LOCAL_ARTIST_") || it.isLocalMediaId() }
-                    ?.let { "https://music.youtube.com/channel/$it" }
+                song.discordArtistMusicUrl()
             }
 
             "albumurl" -> {
@@ -455,4 +451,19 @@ class DiscordRPC(
         song.id
             .takeUnless { song.isLocal || it.isLocalMediaId() }
             ?.let { "https://music.youtube.com/watch?v=$it" }
+
+    private fun Song.discordArtistMusicUrl(): String? {
+        if (song.isLocal || song.id.isLocalMediaId()) return null
+
+        return artists.firstNotNullOfOrNull { artist ->
+            (artist.channelId ?: artist.id)
+                .takeUnless { it.isBlank() || it.isLocalArtistId() || it.isLocalMediaId() }
+                ?.let { "https://music.youtube.com/channel/$it" }
+        }
+    }
+
+    private fun String.isLocalArtistId(): Boolean =
+        startsWith("LOCAL_ARTIST_") ||
+            startsWith("LA") ||
+            contains("privately_owned_artist", ignoreCase = true)
 }

@@ -134,7 +134,6 @@ import moe.rukamori.archivetune.playback.EqProfile
 import moe.rukamori.archivetune.playback.EqProfilesPayload
 import moe.rukamori.archivetune.playback.EqualizerJson
 import moe.rukamori.archivetune.playback.ExoDownloadService
-import moe.rukamori.archivetune.playback.queues.YouTubeQueue
 import moe.rukamori.archivetune.ui.component.BottomSheetState
 import moe.rukamori.archivetune.ui.component.ListDialog
 import moe.rukamori.archivetune.ui.component.MenuSurfaceSection
@@ -463,26 +462,6 @@ fun PlayerMenu(
                 NewActionGrid(
                     actions =
                         buildList {
-                            if (!isLocalMedia) {
-                                add(
-                                    NewAction(
-                                        icon = {
-                                            Icon(
-                                                painter = painterResource(R.drawable.radio),
-                                                contentDescription = null,
-                                                modifier = Modifier.size(28.dp),
-                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            )
-                                        },
-                                        text = stringResource(R.string.start_radio),
-                                        onClick = {
-                                            Toast.makeText(context, context.getString(R.string.starting_radio), Toast.LENGTH_SHORT).show()
-                                            playerConnection.startRadioSeamlessly()
-                                            onDismiss()
-                                        },
-                                    ),
-                                )
-                            }
                             add(
                                 NewAction(
                                     icon = {

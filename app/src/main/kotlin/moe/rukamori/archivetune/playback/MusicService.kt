@@ -159,7 +159,6 @@ import moe.rukamori.archivetune.constants.MaxSongCacheSizeKey
 import moe.rukamori.archivetune.constants.MediaSessionConstants.CommandToggleLike
 import moe.rukamori.archivetune.constants.MediaSessionConstants.CommandToggleRepeatMode
 import moe.rukamori.archivetune.constants.MediaSessionConstants.CommandToggleShuffle
-import moe.rukamori.archivetune.constants.MediaSessionConstants.CommandToggleStartRadio
 import moe.rukamori.archivetune.constants.PauseListenHistoryKey
 import moe.rukamori.archivetune.constants.PauseOnDeviceMuteKey
 import moe.rukamori.archivetune.constants.PermanentShuffleKey
@@ -211,6 +210,7 @@ import moe.rukamori.archivetune.lastfm.LastFM
 import moe.rukamori.archivetune.lyrics.LyricsHelper
 import moe.rukamori.archivetune.lyrics.LyricsPreloadManager
 import moe.rukamori.archivetune.lyrics.LyricsUtils.displayLyricsText
+import moe.rukamori.archivetune.models.MediaMetadata
 import moe.rukamori.archivetune.models.PersistPlayerState
 import moe.rukamori.archivetune.models.PersistQueue
 import moe.rukamori.archivetune.models.QueueData
@@ -225,6 +225,7 @@ import moe.rukamori.archivetune.playback.queues.filterVideo
 import moe.rukamori.archivetune.scrobbling.LastFmServiceConfig
 import moe.rukamori.archivetune.storage.StorageFolderKind
 import moe.rukamori.archivetune.storage.StorageLocationRepository
+import moe.rukamori.archivetune.together.TogetherPlaybackSync
 import moe.rukamori.archivetune.ui.screens.settings.DiscordPresenceManager
 import moe.rukamori.archivetune.ui.screens.settings.ListenBrainzManager
 import moe.rukamori.archivetune.utils.AuthScopedCacheValue
@@ -2631,13 +2632,6 @@ class MusicService :
                         ).setIconResId(if (player.shuffleModeEnabled) R.drawable.shuffle_on else R.drawable.shuffle)
                         .setSessionCommand(CommandToggleShuffle)
                         .build(),
-                    CommandButton
-                        .Builder()
-                        .setDisplayName(getString(R.string.start_radio))
-                        .setIconResId(R.drawable.radio)
-                        .setSessionCommand(CommandToggleStartRadio)
-                        .setEnabled(currentSong.value != null)
-                        .build(),
                 )
             mediaSession.setCustomLayout(customLayout)
         } catch (e: Exception) {
@@ -3200,7 +3194,7 @@ class MusicService :
                                     )
                             }
                         }
-                        kotlinx.coroutines.delay(750)
+                        kotlinx.coroutines.delay(TogetherPlaybackSync.BroadcastIntervalMs)
                     }
                 }
         }
@@ -3368,7 +3362,7 @@ class MusicService :
                                     )
                             }
                         }
-                        kotlinx.coroutines.delay(750)
+                        kotlinx.coroutines.delay(TogetherPlaybackSync.BroadcastIntervalMs)
                     }
                 }
         }
@@ -3488,7 +3482,7 @@ class MusicService :
                                         if (joined?.role is moe.rukamori.archivetune.together.TogetherRole.Guest) {
                                             togetherPendingGuestControl = null
                                             togetherLastSentControlAction = null
-                                            scope.launch(SilentHandler) { applyRemoteRoomState(joined.roomState) }
+                                            scope.launch(SilentHandler) { applyRemoteRoomState(joined.roomState, force = true) }
                                         }
                                     }
 
@@ -3721,7 +3715,7 @@ class MusicService :
                                         if (joined?.role is moe.rukamori.archivetune.together.TogetherRole.Guest) {
                                             togetherPendingGuestControl = null
                                             togetherLastSentControlAction = null
-                                            scope.launch(SilentHandler) { applyRemoteRoomState(joined.roomState) }
+                                            scope.launch(SilentHandler) { applyRemoteRoomState(joined.roomState, force = true) }
                                         }
                                     }
 
@@ -4097,12 +4091,17 @@ class MusicService :
             )
         }
 
-    private suspend fun applyRemoteRoomState(state: moe.rukamori.archivetune.together.TogetherRoomState) {
+    private suspend fun applyRemoteRoomState(
+        state: moe.rukamori.archivetune.together.TogetherRoomState,
+        force: Boolean = false,
+    ) {
         val pid = togetherSelfParticipantId ?: return
         val now = android.os.SystemClock.elapsedRealtime()
 
         val pending = togetherPendingGuestControl
-        if (pending != null) {
+        if (force) {
+            togetherPendingGuestControl = null
+        } else if (pending != null) {
             val currentTrackId = state.queue.getOrNull(state.currentIndex.coerceAtLeast(0))?.id
             val mismatch =
                 (pending.desiredIsPlaying != null && state.isPlaying != pending.desiredIsPlaying) ||
@@ -4122,20 +4121,30 @@ class MusicService :
             }
         }
 
-        val lastSentAt = togetherLastAppliedRoomStateSentAtElapsedMs
         val sentAt = state.sentAtElapsedRealtimeMs
-        if (sentAt > 0L && lastSentAt > 0L && sentAt <= lastSentAt) return
+        if (TogetherPlaybackSync.isStaleRoomState(
+                sentAtElapsedRealtimeMs = sentAt,
+                lastAppliedSentAtElapsedRealtimeMs = togetherLastAppliedRoomStateSentAtElapsedMs,
+                force = force,
+            )
+        ) {
+            return
+        }
 
-        val offset = if (togetherIsOnlineSession) 0L else (togetherClock?.snapshot()?.estimatedOffsetMs ?: 0L)
-        val correctedSentAt = sentAt + offset
-        val estimatedOnlineLatency = if (togetherIsOnlineSession) 1200L else 0L
-        val delta = if (togetherIsOnlineSession) estimatedOnlineLatency else (now - correctedSentAt).coerceAtLeast(0L)
         val targetPos =
-            if (state.isPlaying) (state.positionMs + delta).coerceAtLeast(0L) else state.positionMs.coerceAtLeast(0L)
+            TogetherPlaybackSync.targetPositionMs(
+                state = state,
+                isOnlineSession = togetherIsOnlineSession,
+                clockSnapshot = if (togetherIsOnlineSession) null else togetherClock?.snapshot(),
+                nowElapsedRealtimeMs = now,
+            )
 
         withContext(Dispatchers.Main) {
             togetherApplyingRemote = true
-            togetherSuppressEchoUntilElapsedMs = android.os.SystemClock.elapsedRealtime() + 450L
+            togetherSuppressEchoUntilElapsedMs =
+                TogetherPlaybackSync.echoSuppressionUntil(
+                    android.os.SystemClock.elapsedRealtime(),
+                )
             try {
                 val desiredItems = state.queue.map { it.toMediaMetadata().toMediaItem() }
                 val desiredIds = state.queue.map { it.id }
@@ -4149,11 +4158,12 @@ class MusicService :
                             .md5(localIds.joinToString(separator = "|"))
                     }
                 val needsRebuild =
-                    desiredItems.isNotEmpty() &&
-                        (
-                            (desiredHash.isNotBlank() && desiredHash != localHash) ||
-                                (desiredHash.isBlank() && desiredIds != localIds)
-                        )
+                    TogetherPlaybackSync.needsQueueRebuild(
+                        desiredHash = desiredHash,
+                        desiredIds = desiredIds,
+                        localHash = localHash,
+                        localIds = localIds,
+                    )
 
                 if (desiredItems.isNotEmpty() && needsRebuild) {
                     togetherLastAppliedQueueHash = desiredHash.ifBlank { localHash }
@@ -4174,34 +4184,33 @@ class MusicService :
                     player.playWhenReady = state.isPlaying
                     togetherLastRemoteAppliedIndex = startIndex
                 } else {
-                    val index = state.currentIndex.coerceAtLeast(0)
+                    val index =
+                        if (player.mediaItemCount > 0) {
+                            state.currentIndex.coerceIn(0, player.mediaItemCount - 1)
+                        } else {
+                            0
+                        }
                     val indexChanged = player.mediaItemCount > 0 && index != player.currentMediaItemIndex
-                    val stateChanged =
-                        player.repeatMode != state.repeatMode ||
-                            player.shuffleModeEnabled != state.shuffleEnabled ||
-                            player.playWhenReady != state.isPlaying
 
                     if (indexChanged) {
-                        player.seekTo(index.coerceAtMost(player.mediaItemCount - 1), targetPos)
-                        player.prepare()
-                        player.playWhenReady = state.isPlaying
-                    } else if (stateChanged) {
                         if (player.repeatMode != state.repeatMode) player.repeatMode = state.repeatMode
                         if (player.shuffleModeEnabled != state.shuffleEnabled) player.shuffleModeEnabled = state.shuffleEnabled
-                        if (player.playWhenReady != state.isPlaying) {
-                            player.playWhenReady = state.isPlaying
-                            val drift = kotlin.math.abs(player.currentPosition - targetPos)
-                            if (drift > 100) {
-                                player.seekTo(targetPos)
-                                player.prepare()
-                            }
-                        }
+                        player.seekTo(index, targetPos)
+                        player.prepare()
+                        player.playWhenReady = state.isPlaying
                     } else {
-                        val drift = kotlin.math.abs(player.currentPosition - targetPos)
-                        val seekThreshold = if (togetherIsOnlineSession) 4000L else 2000L
-                        val threshold = if (state.isPlaying) seekThreshold else 200L
-
-                        if (drift > threshold) {
+                        val playbackStateChanged = player.playWhenReady != state.isPlaying
+                        if (player.repeatMode != state.repeatMode) player.repeatMode = state.repeatMode
+                        if (player.shuffleModeEnabled != state.shuffleEnabled) player.shuffleModeEnabled = state.shuffleEnabled
+                        if (playbackStateChanged) player.playWhenReady = state.isPlaying
+                        val shouldSeekForDrift =
+                            TogetherPlaybackSync.shouldSeekForDrift(
+                                currentPositionMs = player.currentPosition,
+                                targetPositionMs = targetPos,
+                                isPlaying = state.isPlaying,
+                                isOnlineSession = togetherIsOnlineSession,
+                            )
+                        if (shouldSeekForDrift || (playbackStateChanged && !state.isPlaying)) {
                             player.seekTo(targetPos)
                             player.prepare()
                         }
@@ -4918,7 +4927,7 @@ class MusicService :
             reason == Player.MEDIA_ITEM_TRANSITION_REASON_SEEK
         ) {
             if (!joined.roomState.settings.allowGuestsToControlPlayback) {
-                scope.launch(SilentHandler) { applyRemoteRoomState(joined.roomState) }
+                scope.launch(SilentHandler) { applyRemoteRoomState(joined.roomState, force = true) }
                 return
             }
             val now = android.os.SystemClock.elapsedRealtime()
@@ -5139,10 +5148,13 @@ class MusicService :
                 if (token.isNotBlank() && DiscordPresenceManager.isRunning()) {
                     // Obtain the freshest Song from DB using current media item id to avoid stale currentSong.value
                     val mediaId = player.currentMediaItem?.mediaId
-                    val song = if (mediaId != null) withContext(Dispatchers.IO) { database.song(mediaId).first() } else null
+                    val dbSong = if (mediaId != null) withContext(Dispatchers.IO) { database.song(mediaId).first() } else null
                     val finalSong =
-                        (song ?: player.currentMetadata?.let { createTransientSongFromMedia(it) })
-                            .withResolvedPresenceDuration(player.duration)
+                        resolvePresenceSong(
+                            dbSong = dbSong,
+                            mediaMetadata = player.currentMetadata,
+                            durationMs = player.duration,
+                        )
 
                     val success =
                         withContext(Dispatchers.IO) {
@@ -5232,7 +5244,7 @@ class MusicService :
             events.contains(Player.EVENT_PLAY_WHEN_READY_CHANGED)
         ) {
             if (!joined.roomState.settings.allowGuestsToControlPlayback) {
-                scope.launch(SilentHandler) { applyRemoteRoomState(joined.roomState) }
+                scope.launch(SilentHandler) { applyRemoteRoomState(joined.roomState, force = true) }
             } else {
                 val now = android.os.SystemClock.elapsedRealtime()
                 val playWhenReady = this.player.playWhenReady
@@ -5330,10 +5342,13 @@ class MusicService :
                     val token = dataStore.get(DiscordTokenKey, "")
                     if (token.isNotBlank() && DiscordPresenceManager.isRunning()) {
                         val mediaId = player.currentMediaItem?.mediaId
-                        val song = if (mediaId != null) withContext(Dispatchers.IO) { database.song(mediaId).first() } else null
+                        val dbSong = if (mediaId != null) withContext(Dispatchers.IO) { database.song(mediaId).first() } else null
                         val finalSong =
-                            (song ?: player.currentMetadata?.let { createTransientSongFromMedia(it) })
-                                .withResolvedPresenceDuration(player.duration)
+                            resolvePresenceSong(
+                                dbSong = dbSong,
+                                mediaMetadata = player.currentMetadata,
+                                durationMs = player.duration,
+                            )
 
                         val success =
                             DiscordPresenceManager.updateNow(
@@ -5390,13 +5405,14 @@ class MusicService :
             val currentMediaId = player.currentMediaItem?.mediaId
             val currentMetadata = player.currentMetadata
             val currentPosition = player.currentPosition
+            val currentDuration = player.duration
             val isPlaying = player.isPlaying
 
             scope.launch {
                 try {
                     val token = withContext(Dispatchers.IO) { dataStore.get(DiscordTokenKey, "") }
                     if (token.isNotBlank() && DiscordPresenceManager.isRunning()) {
-                        val song =
+                        val dbSong =
                             if (currentMediaId !=
                                 null
                             ) {
@@ -5405,8 +5421,11 @@ class MusicService :
                                 null
                             }
                         val finalSong =
-                            (song ?: currentMetadata?.let { createTransientSongFromMedia(it) })
-                                .withResolvedPresenceDuration(player.duration)
+                            resolvePresenceSong(
+                                dbSong = dbSong,
+                                mediaMetadata = currentMetadata,
+                                durationMs = currentDuration,
+                            )
 
                         val success =
                             withContext(Dispatchers.IO) {
@@ -5500,7 +5519,7 @@ class MusicService :
         if (joined?.role is moe.rukamori.archivetune.together.TogetherRole.Guest) {
             if (!isTogetherApplyingRemote()) {
                 if (!joined.roomState.settings.allowGuestsToControlPlayback) {
-                    scope.launch(SilentHandler) { applyRemoteRoomState(joined.roomState) }
+                    scope.launch(SilentHandler) { applyRemoteRoomState(joined.roomState, force = true) }
                     return
                 }
                 requestTogetherControl(
@@ -5532,7 +5551,7 @@ class MusicService :
         if (joined?.role is moe.rukamori.archivetune.together.TogetherRole.Guest) {
             if (!isTogetherApplyingRemote()) {
                 if (!joined.roomState.settings.allowGuestsToControlPlayback) {
-                    scope.launch(SilentHandler) { applyRemoteRoomState(joined.roomState) }
+                    scope.launch(SilentHandler) { applyRemoteRoomState(joined.roomState, force = true) }
                     return
                 }
                 requestTogetherControl(
@@ -6458,8 +6477,49 @@ class MusicService :
     }
 
     private fun currentPresenceSong(): Song? {
-        val metadataSong = player.currentMetadata?.let { createTransientSongFromMedia(it) }
-        return (metadataSong ?: currentSong.value).withResolvedPresenceDuration(player.duration)
+        return resolvePresenceSong(
+            dbSong = currentSong.value,
+            mediaMetadata = player.currentMetadata,
+            durationMs = player.duration,
+        )
+    }
+
+    private fun resolvePresenceSong(
+        dbSong: Song?,
+        mediaMetadata: MediaMetadata?,
+        durationMs: Long,
+    ): Song? {
+        val metadataSong = mediaMetadata?.let { createTransientSongFromMedia(it) }
+        val song =
+            when {
+                dbSong == null -> metadataSong
+                metadataSong == null -> dbSong
+                else -> dbSong.withPresenceMetadata(metadataSong)
+            }
+
+        return song.withResolvedPresenceDuration(durationMs)
+    }
+
+    private fun Song.withPresenceMetadata(metadataSong: Song): Song {
+        val resolvedArtists =
+            if (artists.any { it.hasRemotePresenceId() }) {
+                artists
+            } else {
+                metadataSong.artists.takeIf { metadataArtists ->
+                    metadataArtists.any { it.hasRemotePresenceId() }
+                } ?: artists
+            }
+
+        return copy(
+            song =
+                song.copy(
+                    thumbnailUrl = song.thumbnailUrl ?: metadataSong.song.thumbnailUrl,
+                    albumId = song.albumId ?: metadataSong.song.albumId,
+                    albumName = song.albumName ?: metadataSong.song.albumName,
+                ),
+            artists = resolvedArtists,
+            album = album ?: metadataSong.album,
+        )
     }
 
     private fun Song?.withResolvedPresenceDuration(durationMs: Long): Song? {
@@ -6473,8 +6533,19 @@ class MusicService :
         return song.copy(song = song.song.copy(duration = durationSeconds))
     }
 
+    private fun ArtistEntity.hasRemotePresenceId(): Boolean =
+        channelId.isRemotePresenceId() || id.isRemotePresenceId()
+
+    private fun String?.isRemotePresenceId(): Boolean {
+        val id = this?.trim()?.takeIf { it.isNotBlank() } ?: return false
+        return !id.isLocalMediaId() &&
+            !id.startsWith("LOCAL_ARTIST_") &&
+            !id.startsWith("LA") &&
+            !id.contains("privately_owned_artist", ignoreCase = true)
+    }
+
     // Create a transient Song object from current Player MediaMetadata when the DB doesn't have it.
-    private fun createTransientSongFromMedia(media: moe.rukamori.archivetune.models.MediaMetadata): Song {
+    private fun createTransientSongFromMedia(media: MediaMetadata): Song {
         val songEntity =
             SongEntity(
                 id = media.id,
@@ -6484,6 +6555,7 @@ class MusicService :
                 albumId = media.album?.id,
                 albumName = media.album?.title,
                 explicit = media.explicit,
+                isLocal = media.id.isLocalMediaId(),
             )
 
         val artists =
@@ -6492,6 +6564,7 @@ class MusicService :
                     id = artist.id ?: "LA_unknown_${artist.name}",
                     name = artist.name,
                     thumbnailUrl = if (!artist.thumbnailUrl.isNullOrBlank()) artist.thumbnailUrl else media.thumbnailUrl,
+                    isLocal = artist.id == null || artist.id.isLocalMediaId(),
                 )
             }
 
@@ -6506,6 +6579,7 @@ class MusicService :
                     themeColor = null,
                     songCount = 1,
                     duration = media.duration,
+                    isLocal = media.id.isLocalMediaId(),
                 )
             }
 

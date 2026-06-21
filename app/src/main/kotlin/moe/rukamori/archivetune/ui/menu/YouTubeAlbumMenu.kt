@@ -80,7 +80,7 @@ import moe.rukamori.archivetune.extensions.toMediaItem
 import moe.rukamori.archivetune.innertube.YouTube
 import moe.rukamori.archivetune.innertube.models.AlbumItem
 import moe.rukamori.archivetune.playback.ExoDownloadService
-import moe.rukamori.archivetune.playback.queues.YouTubeAlbumRadio
+import moe.rukamori.archivetune.playback.queues.ListQueue
 import moe.rukamori.archivetune.ui.component.ListDialog
 import moe.rukamori.archivetune.ui.component.MenuSurfaceSection
 import moe.rukamori.archivetune.ui.component.NewAction
@@ -366,7 +366,12 @@ fun YouTubeAlbumMenu(
                                     onDismiss()
                                     album?.songs?.let { songs ->
                                         if (songs.isNotEmpty()) {
-                                            playerConnection.playQueue(YouTubeAlbumRadio(albumItem.playlistId))
+                                            playerConnection.playQueue(
+                                                ListQueue(
+                                                    title = albumItem.title,
+                                                    items = songs.map(Song::toMediaItem),
+                                                ),
+                                            )
                                         }
                                     }
                                 },
@@ -385,7 +390,12 @@ fun YouTubeAlbumMenu(
                                     onDismiss()
                                     album?.songs?.let { songs ->
                                         if (songs.isNotEmpty()) {
-                                            playerConnection.playQueue(YouTubeAlbumRadio(albumItem.playlistId))
+                                            playerConnection.playQueue(
+                                                ListQueue(
+                                                    title = albumItem.title,
+                                                    items = songs.shuffled().map(Song::toMediaItem),
+                                                ),
+                                            )
                                         }
                                     }
                                 },
