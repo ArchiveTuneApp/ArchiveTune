@@ -3032,6 +3032,7 @@ class MusicService :
 
     fun onInfiniteQueueEnabled() {
         val currentMeta = player.currentMetadata ?: return
+        if (isCurrentPlaybackItemLocal(currentMeta)) return
         if (infiniteQueueLoading.value) return
         infiniteQueueLoading.value = true
 
@@ -5297,6 +5298,7 @@ class MusicService :
 
                 val currentMediaMetadata = player.currentMetadata ?: return@launch
                 val currentMediaId = currentMediaMetadata.id.trim().ifBlank { return@launch }
+                if (isCurrentPlaybackItemLocal(currentMediaMetadata)) return@launch
 
                 try {
                     val radioQueue = YouTubeQueue(WatchEndpoint(videoId = currentMediaId), followAutomixPreview = true)
@@ -5331,6 +5333,14 @@ class MusicService :
             scheduleCrossfade()
         }
     }
+
+    private fun isCurrentPlaybackItemLocal(currentMediaMetadata: MediaMetadata): Boolean =
+        currentSong.value?.song?.isLocal == true ||
+            currentMediaMetadata.id.trim().isLocalMediaId() ||
+            player.currentMediaItem
+                ?.localConfiguration
+                ?.uri
+                ?.shouldBypassPlayerCache() == true
 
     override fun onPlaybackStateChanged(
         @Player.State playbackState: Int,

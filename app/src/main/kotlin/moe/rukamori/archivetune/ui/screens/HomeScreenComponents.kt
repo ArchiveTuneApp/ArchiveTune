@@ -181,7 +181,13 @@ fun QuickPicksSection(
                                     if (isActive) {
                                         playerConnection.player.togglePlayPause()
                                     } else {
-                                        playerConnection.playQueue(YouTubeQueue.radio(song.toMediaMetadata()))
+                                        playerConnection.playQueue(
+                                            if (song.song.isLocal) {
+                                                ListQueue(items = listOf(song.toMediaItem()))
+                                            } else {
+                                                YouTubeQueue.radio(song.toMediaMetadata())
+                                            },
+                                        )
                                     }
                                 },
                                 onLongClick = {
@@ -337,7 +343,13 @@ fun QuickPicksSection(
                                             if (song.id == mediaMetadata?.id) {
                                                 playerConnection.player.togglePlayPause()
                                             } else {
-                                                playerConnection.playQueue(YouTubeQueue.radio(song.toMediaMetadata()))
+                                                playerConnection.playQueue(
+                                                    if (song.song.isLocal) {
+                                                        ListQueue(items = listOf(song.toMediaItem()))
+                                                    } else {
+                                                        YouTubeQueue.radio(song.toMediaMetadata())
+                                                    },
+                                                )
                                             }
                                         },
                                         onLongClick = {
@@ -862,7 +874,13 @@ fun ForgottenFavoritesSection(
                                 if (song.id == mediaMetadata?.id) {
                                     playerConnection.player.togglePlayPause()
                                 } else {
-                                    playerConnection.playQueue(YouTubeQueue.radio(song.toMediaMetadata()))
+                                    playerConnection.playQueue(
+                                        if (song.song.isLocal) {
+                                            ListQueue(items = listOf(song.toMediaItem()))
+                                        } else {
+                                            YouTubeQueue.radio(song.toMediaMetadata())
+                                        },
+                                    )
                                 }
                             },
                             onLongClick = {

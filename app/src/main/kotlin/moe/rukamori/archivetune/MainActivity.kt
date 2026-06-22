@@ -1995,7 +1995,11 @@ class MainActivity : ComponentActivity() {
                                                                     when (val luckyItem = allLocalItems.random()) {
                                                                         is Song -> {
                                                                             playerConnection?.playQueue(
-                                                                                YouTubeQueue.radio(luckyItem.toMediaMetadata()),
+                                                                                if (luckyItem.song.isLocal) {
+                                                                                    ListQueue(items = listOf(luckyItem.toMediaItem()))
+                                                                                } else {
+                                                                                    YouTubeQueue.radio(luckyItem.toMediaMetadata())
+                                                                                },
                                                                             )
                                                                         }
 
