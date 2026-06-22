@@ -68,6 +68,9 @@ object Updater {
                     else -> false
                 }
 
+    private val canDownloadUpdatesDirectly: Boolean
+        get() = BuildConfig.DISTRIBUTION == "gms"
+
     private val releaseArtifactPrefix: String
         get() =
             when (BuildConfig.DISTRIBUTION) {
@@ -88,7 +91,7 @@ object Updater {
         "app-$releaseArtifactPrefix${BuildConfig.DEVICE}-${BuildConfig.ARCHITECTURE}-release.apk"
 
     private fun dailyNightlyReleaseArtifactName(): String =
-        "app-${BuildConfig.DEVICE}-${BuildConfig.ARCHITECTURE}-nightly.apk"
+        "app-$releaseArtifactPrefix${BuildConfig.DEVICE}-${BuildConfig.ARCHITECTURE}-nightly.apk"
 
     private data class SemVer(
         val major: Int,
@@ -371,6 +374,10 @@ object Updater {
             return ""
         }
 
+        if (!canDownloadUpdatesDirectly) {
+            return "$StableReleaseBaseUrl/latest"
+        }
+
         val artifactName = stableReleaseArtifactName()
         val tag = latestReleaseTag
         if (tag != null) {
@@ -384,7 +391,13 @@ object Updater {
             return ""
         }
 
-        return "https://nightly.link/ArchiveTuneApp/ArchiveTune/workflows/build/dev/app-$workflowArtifactPrefix${BuildConfig.DEVICE}-${BuildConfig.ARCHITECTURE}-release"
+        val artifactName = "app-$workflowArtifactPrefix${BuildConfig.DEVICE}-${BuildConfig.ARCHITECTURE}-release"
+        val artifactUrl = "https://nightly.link/ArchiveTuneApp/ArchiveTune/workflows/build/dev/$artifactName"
+        return if (canDownloadUpdatesDirectly) {
+            "$artifactUrl.zip"
+        } else {
+            artifactUrl
+        }
     }
 
     suspend fun getLatestDailyNightlyVersionName(): Result<String> =
@@ -555,6 +568,10 @@ object Updater {
     fun getLatestDailyNightlyDownloadUrl(): String {
         if (!isUpdaterDistribution) {
             return ""
+        }
+
+        if (!canDownloadUpdatesDirectly) {
+            return "$DailyNightlyReleaseBaseUrl/latest"
         }
 
         val artifactName = dailyNightlyReleaseArtifactName()
