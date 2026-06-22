@@ -70,7 +70,7 @@ object Updater {
     private val distributionArtifactPrefix: String
         get() =
             when (BuildConfig.DISTRIBUTION) {
-                "gms" -> ""
+                "gms" -> "gms-"
                 "foss" -> "foss-"
                 else -> ""
             }

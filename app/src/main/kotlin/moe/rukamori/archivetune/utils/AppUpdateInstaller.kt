@@ -143,7 +143,7 @@ object AppUpdateInstaller {
                         entry.name.endsWith(".apk", ignoreCase = true) &&
                         !entry.name.substringAfterLast('/').contains("foss-", ignoreCase = true)
                 }
-                val preferredArtifactName = "app-${BuildConfig.DEVICE}-${BuildConfig.ARCHITECTURE}-"
+                val preferredArtifactName = "app-gms-${BuildConfig.DEVICE}-${BuildConfig.ARCHITECTURE}-"
                 val selectedEntry =
                     entries
                         .sortedByDescending { entry ->
