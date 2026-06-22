@@ -1,3 +1,6 @@
 [submodule "core"]
 	path = core
 	url = https://github.com/ArchiveTuneApp/core.git
+[submodule "lyrics"]
+	path = lyrics
+	url = https://github.com/ArchiveTuneApp/lyrics.git
