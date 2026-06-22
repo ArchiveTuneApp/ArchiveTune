@@ -84,9 +84,6 @@ fun FloatingNavigationToolbar(
     items: List<Screens>,
     pureBlack: Boolean,
     modifier: Modifier = Modifier,
-    onFabClick: (() -> Unit)? = null,
-    fabIconRes: Int? = null,
-    fabContentDescription: String = "",
     onShuffleClick: (() -> Unit)? = null,
     shuffleIconRes: Int? = null,
     shuffleContentDescription: String = "",
@@ -103,7 +100,6 @@ fun FloatingNavigationToolbar(
             toolbarContainerColor = toolbarContainerColor,
         )
     val hasOverflowAction = onShuffleClick != null && shuffleIconRes != null
-    val hasFabAction = onFabClick != null && fabIconRes != null
 
     BoxWithConstraints(
         modifier = modifier.fillMaxWidth(),
@@ -123,29 +119,6 @@ fun FloatingNavigationToolbar(
                         onMusicRecognitionClick = onMusicRecognitionClick,
                         musicRecognitionContentDescription = musicRecognitionContentDescription,
                         onMusicTogetherClick = onMusicTogetherClick,
-                    )
-                },
-                modifier = Modifier.widthIn(max = 480.dp),
-                colors = toolbarColors,
-                scrollBehavior = scrollBehavior,
-                animationSpec = FloatingToolbarDefaults.animationSpec(),
-            ) {
-                ToolbarItemsContainer(
-                    items = items,
-                    pureBlack = pureBlack,
-                    showSelectedLabels = showSelectedLabels,
-                    isSelected = isSelected,
-                    onItemClick = onItemClick,
-                )
-            }
-        } else if (hasFabAction) {
-            HorizontalFloatingToolbar(
-                expanded = true,
-                floatingActionButton = {
-                    FloatingToolbarFabAction(
-                        onClick = onFabClick,
-                        iconRes = fabIconRes,
-                        contentDescription = fabContentDescription,
                     )
                 },
                 modifier = Modifier.widthIn(max = 480.dp),
@@ -418,29 +391,6 @@ private fun FloatingToolbarOverflowAction(
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun FloatingToolbarFabAction(
-    onClick: (() -> Unit)?,
-    iconRes: Int?,
-    contentDescription: String,
-) {
-    if (onClick == null || iconRes == null) return
-
-    FloatingToolbarDefaults.VibrantFloatingActionButton(
-        onClick = onClick,
-        containerColor = floatingToolbarFabContainerColor(),
-        contentColor = floatingToolbarFabContentColor(),
-    ) {
-        Icon(
-            painter = painterResource(iconRes),
-            contentDescription =
-                contentDescription.ifEmpty {
-                    stringResource(R.string.create_playlist)
-                },
-        )
     }
 }
 

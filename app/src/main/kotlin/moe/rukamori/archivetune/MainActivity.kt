@@ -245,7 +245,6 @@ import moe.rukamori.archivetune.playback.queues.YouTubeQueue
 import moe.rukamori.archivetune.ui.component.BottomSheetMenu
 import moe.rukamori.archivetune.ui.component.BottomSheetPage
 import moe.rukamori.archivetune.ui.component.COLLAPSED_ANCHOR
-import moe.rukamori.archivetune.ui.component.CreatePlaylistDialog
 import moe.rukamori.archivetune.ui.component.DISMISSED_ANCHOR
 import moe.rukamori.archivetune.ui.component.EXPANDED_ANCHOR
 import moe.rukamori.archivetune.ui.component.FloatingNavigationToolbar
@@ -962,8 +961,6 @@ class MainActivity : ComponentActivity() {
                     val shouldShowHomeShuffleButton =
                         currentRoute == Screens.Home.route &&
                             (allLocalItems.isNotEmpty() || allYtItems.isNotEmpty())
-                    val shouldShowLibraryCreatePlaylistButton =
-                        currentRoute == Screens.Library.route
 
                     fun getBottomNavPadding(): Dp =
                         if (shouldShowNavigationBar && !useRail) {
@@ -1433,8 +1430,6 @@ class MainActivity : ComponentActivity() {
                                 else -> null
                             }
                         }
-                    var showCreatePlaylistDialog by rememberSaveable { mutableStateOf(false) }
-
                     val haptic = LocalHapticFeedback.current
                     val (enableHapticFeedback) = rememberPreference(EnableHapticFeedbackKey, true)
                     val customHaptic =
@@ -1461,12 +1456,6 @@ class MainActivity : ComponentActivity() {
                         moe.rukamori.archivetune.ui.component.LocalBottomSheetPageState provides bottomSheetPageState,
                         moe.rukamori.archivetune.ui.component.LocalMenuState provides menuState,
                     ) {
-                        if (showCreatePlaylistDialog) {
-                            CreatePlaylistDialog(
-                                onDismiss = { showCreatePlaylistDialog = false },
-                            )
-                        }
-
                         Row {
                             AnimatedVisibility(
                                 visible = useRail && shouldShowNavigationBar,
@@ -1982,19 +1971,6 @@ class MainActivity : ComponentActivity() {
                                                             end = FloatingToolbarHorizontalPadding,
                                                             bottom = bottomInset + floatingBarsBottomPadding,
                                                         ).height(navVisibleHeight),
-                                                onFabClick =
-                                                    if (shouldShowLibraryCreatePlaylistButton) {
-                                                        { showCreatePlaylistDialog = true }
-                                                    } else {
-                                                        null
-                                                    },
-                                                fabIconRes = if (shouldShowLibraryCreatePlaylistButton) R.drawable.add else null,
-                                                fabContentDescription =
-                                                    if (shouldShowLibraryCreatePlaylistButton) {
-                                                        stringResource(R.string.create_playlist)
-                                                    } else {
-                                                        ""
-                                                    },
                                                 onShuffleClick =
                                                     if (shouldShowHomeShuffleButton) {
                                                         {
