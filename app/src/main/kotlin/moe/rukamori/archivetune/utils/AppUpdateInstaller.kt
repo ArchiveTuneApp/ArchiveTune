@@ -139,19 +139,26 @@ object AppUpdateInstaller {
         runCatching {
             ZipFile(sourceFile).use { zip ->
                 val entries = zip.entries().asSequence().filter { entry ->
+                    val fileName = entry.name.substringAfterLast('/')
                     !entry.isDirectory &&
                         entry.name.endsWith(".apk", ignoreCase = true) &&
-                        !entry.name.substringAfterLast('/').contains("foss-", ignoreCase = true)
+                        !fileName.contains("foss-", ignoreCase = true) &&
+                        !fileName.contains("izzy-", ignoreCase = true)
                 }
-                val preferredArtifactName = "app-gms-${BuildConfig.DEVICE}-${BuildConfig.ARCHITECTURE}-"
+                val preferredArtifactNames =
+                    listOf(
+                        "app-gms-${BuildConfig.DEVICE}-${BuildConfig.ARCHITECTURE}-",
+                        "app-${BuildConfig.DEVICE}-${BuildConfig.ARCHITECTURE}-",
+                    )
                 val selectedEntry =
                     entries
-                        .sortedByDescending { entry ->
-                            if (entry.name.substringAfterLast('/').contains(preferredArtifactName, ignoreCase = true)) {
-                                1
-                            } else {
-                                0
-                            }
+                        .sortedBy { entry ->
+                            val fileName = entry.name.substringAfterLast('/')
+                            val preferredIndex =
+                                preferredArtifactNames.indexOfFirst { preferredArtifactName ->
+                                    fileName.contains(preferredArtifactName, ignoreCase = true)
+                                }
+                            if (preferredIndex >= 0) preferredIndex else preferredArtifactNames.size
                         }.firstOrNull()
                         ?: return@runCatching null
 

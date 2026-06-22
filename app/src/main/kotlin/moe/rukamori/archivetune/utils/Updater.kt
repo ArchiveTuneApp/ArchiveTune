@@ -52,9 +52,9 @@ private data class ReleasesNetworkResult(
 object Updater {
     private val client = HttpClient()
     private const val ReleaseCacheCheckIntervalMs: Long = 6 * 60 * 60 * 1000L
-    private const val StableDownloadUrl = "https://github.com/ArchiveTuneApp/ArchiveTune/releases/latest"
-    private const val DailyNightlyDownloadUrl =
-        "https://github.com/ArchiveTuneApp/daily-nightly/releases/latest"
+    private const val StableReleaseBaseUrl = "https://github.com/ArchiveTuneApp/ArchiveTune/releases"
+    private const val DailyNightlyReleaseBaseUrl =
+        "https://github.com/ArchiveTuneApp/daily-nightly/releases"
     var lastCheckTime = -1L
         private set
     private var latestReleaseTag: String? = null
@@ -68,13 +68,27 @@ object Updater {
                     else -> false
                 }
 
-    private val distributionArtifactPrefix: String
+    private val releaseArtifactPrefix: String
         get() =
             when (BuildConfig.DISTRIBUTION) {
                 "gms" -> "gms-"
                 "foss" -> "foss-"
                 else -> ""
             }
+
+    private val workflowArtifactPrefix: String
+        get() =
+            when (BuildConfig.DISTRIBUTION) {
+                "gms" -> "gms-"
+                "foss" -> "foss-"
+                else -> ""
+            }
+
+    private fun stableReleaseArtifactName(): String =
+        "app-$releaseArtifactPrefix${BuildConfig.DEVICE}-${BuildConfig.ARCHITECTURE}-release.apk"
+
+    private fun dailyNightlyReleaseArtifactName(): String =
+        "app-${BuildConfig.DEVICE}-${BuildConfig.ARCHITECTURE}-nightly.apk"
 
     private data class SemVer(
         val major: Int,
@@ -357,11 +371,12 @@ object Updater {
             return ""
         }
 
+        val artifactName = stableReleaseArtifactName()
         val tag = latestReleaseTag
         if (tag != null) {
-            return "https://github.com/ArchiveTuneApp/ArchiveTune/releases/download/$tag/app-$distributionArtifactPrefix${BuildConfig.DEVICE}-${BuildConfig.ARCHITECTURE}-release.apk"
+            return "$StableReleaseBaseUrl/download/$tag/$artifactName"
         }
-        return StableDownloadUrl
+        return "$StableReleaseBaseUrl/latest/download/$artifactName"
     }
 
     fun getLatestNightlyDownloadUrl(): String {
@@ -369,7 +384,7 @@ object Updater {
             return ""
         }
 
-        return "https://nightly.link/ArchiveTuneApp/ArchiveTune/workflows/build/dev/app-$distributionArtifactPrefix${BuildConfig.DEVICE}-${BuildConfig.ARCHITECTURE}-release"
+        return "https://nightly.link/ArchiveTuneApp/ArchiveTune/workflows/build/dev/app-$workflowArtifactPrefix${BuildConfig.DEVICE}-${BuildConfig.ARCHITECTURE}-release"
     }
 
     suspend fun getLatestDailyNightlyVersionName(): Result<String> =
@@ -542,11 +557,12 @@ object Updater {
             return ""
         }
 
+        val artifactName = dailyNightlyReleaseArtifactName()
         val tag = latestDailyNightlyReleaseTag
         if (tag != null) {
-            return "https://github.com/ArchiveTuneApp/daily-nightly/releases/download/$tag/app-$distributionArtifactPrefix${BuildConfig.DEVICE}-${BuildConfig.ARCHITECTURE}-nightly.apk"
+            return "$DailyNightlyReleaseBaseUrl/download/$tag/$artifactName"
         }
-        return DailyNightlyDownloadUrl
+        return "$DailyNightlyReleaseBaseUrl/latest/download/$artifactName"
     }
 
     suspend fun getAllReleases(
