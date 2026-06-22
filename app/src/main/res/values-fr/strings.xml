@@ -63,7 +63,7 @@
     <!-- Album screen -->
     <string name="other_versions">Autres versions</string>
     <!-- Playlist -->
-    <string name="liked_songs">Titres favoris</string>
+    <string name="liked_songs">Titres Favoris</string>
     <string name="downloaded_songs">Titres téléchargés</string>
     <string name="playlist_is_empty">La playlist est vide</string>
     <string name="remove_download_playlist_confirm">Voulez-vous vraiment supprimer tous les titres de la playlist « %s » du stockage des titres téléchargés ?</string>
@@ -448,7 +448,7 @@
     <string name="enable_discord_rpc">Activer la présence enrichie</string>
     <!-- Last.fm -->
     <string name="scrobbling">Scrobbling</string>
-    <string name="lastfm_integration">Intégration Last.fm</string>
+    <string name="lastfm_integration">Intégration de Last.fm / Libre.fm</string>
     <string name="enable_scrobbling">Activer le scrobbling</string>
     <string name="lastfm_now_playing">Mise à jour de la lecture en cours</string>
     <string name="scrobbling_configuration">Configuration de scrobbling</string>
@@ -888,8 +888,8 @@
     <string name="most_played_badge">LES PLUS JOUÉS</string>
     <string name="favorite_songs_title">Titres Préférés</string>
     <string name="play_all">Tout lire</string>
-    <string name="offline_shortcut">Hors ligne</string>
-    <string name="cached">En cache</string>
+    <string name="offline_shortcut">Hors Ligne</string>
+    <string name="cached">En Cache</string>
     <string name="local_files">Fichiers Locaux</string>
     <string name="downloaded_desc">Téléchargé</string>
     <string name="instant_playback">Lecture immédiate</string>
@@ -997,7 +997,7 @@
     <string name="total_label">total</string>
     <string name="list_view">Affichage sous forme de liste</string>
     <string name="player_background_style_v8_v9_desc">Non disponible avec les styles de lecteur V8 et V9</string>
-    <string name="account_integrations_summary">Discord, Last.fm, ListenBrainz</string>
+    <string name="account_integrations_summary">Discord, Last.fm, Libre.fm, ListenBrainz</string>
     <string name="lyrics_mode">Mode paroles</string>
     <string name="all_artists_filter">Tous les artistes</string>
     <string name="sort_artist">Artiste</string>
@@ -1010,7 +1010,7 @@
     <string name="discord_waiting_for_authorization">En attente de l\'autorisation Discord...</string>
     <string name="recently_added">Ajoutés récemment</string>
     <string name="discord_platform_xbox">Xbox</string>
-    <string name="top_mixes">Les Meilleurs Mix pour Vous</string>
+    <string name="top_mixes">Les Meilleurs Mixages pour Vous</string>
     <string name="discord_platform_android">Android</string>
     <string name="sort_a_to_z">A → Z</string>
     <string name="discord_platform_desktop">Bureau</string>
@@ -1036,4 +1036,48 @@
     <string name="updates_nightly_hosting_description">Les versions de développement générées automatiquement sont disponibles à l\'issue d\'exécutions réussies de GitHub Actions.</string>
     <string name="lyrics_word_sync">Synchronisation des mots</string>
     <string name="duration_sort">Durée</string>
+    <string name="library_top_mixes_loading">Préparation de vos mixages IA…</string>
+    <string name="library_top_mixes_refresh">Actualiser les mixages</string>
+    <string name="library_top_mixes_configure_ai">Configurer l\'IA</string>
+    <string name="library_top_mixes_ai_not_configured_title">Configurer l\'IA pour créer des mixages</string>
+    <string name="library_top_mixes_ai_not_configured_desc">L\'intégration de l\'IA est nécessaire pour qu\'ArchiveTune puisse créer des playlists personnalisées.</string>
+    <string name="library_top_mixes_no_recent_history_title">Pas encore de compilation récente</string>
+    <string name="library_top_mixes_no_recent_history">Écoutez d\'autres titres, puis actualisez la page pour créer des playlists générées par l\'IA à partir de votre historique récent.</string>
+    <string name="library_top_mixes_no_valid_mixes">L\'IA n\'a trouvé aucun mix écoutable dans votre historique récent.</string>
+    <string name="library_top_mixes_failed">Échec de la création des meilleurs mixages</string>
+    <string name="lyrics_search_plain_badge">Simple</string>
+    <string name="lyrics_searching_providers">Recherche de fournisseurs</string>
+    <string name="lyrics_search_still_searching">Poursuite de la recherche</string>
+    <string name="lyrics_search_results_count">%1$d résultats</string>
+    <string name="lyrics_search_result_stats">%1$d lignes, %2$d caractères</string>
+    <string name="unsupported_language">Langue non prise en charge : %1$s</string>
+    <string name="lastfm_service">Service de scrobbling</string>
+    <string name="lastfm_service_provider">Prestataire de services</string>
+    <string name="lastfm_provider_lastfm">Last.fm</string>
+    <string name="lastfm_provider_librefm">Libre.fm</string>
+    <string name="lastfm_provider_custom">Personnalisé</string>
+    <string name="lastfm_custom_endpoint">Point de terminaison personnalisé</string>
+    <string name="lastfm_api_credentials">Identifiants API</string>
+    <string name="lastfm_api_credentials_default">Utilisation des identifiants par défaut</string>
+    <string name="lastfm_api_credentials_custom">Utilisation d\'identifiants personnalisés</string>
+    <string name="lastfm_api_credentials_hint">Ne renseignez pas les informations d\'identification pour les services compatibles qui acceptent des clés API et des secrets partagés arbitraires.</string>
+    <string name="lastfm_api_key_override">Clé API</string>
+    <string name="lastfm_secret_override">Secret partagé</string>
+    <string name="lastfm_endpoint_invalid">Saisissez un point de terminaison HTTP ou HTTPS valide.</string>
+    <string name="lastfm_service_not_configured">Configurez le service de scrobbling avant de vous connecter.</string>
+    <string name="lastfm_login_missing_credentials">Saisissez votre nom d\'utilisateur et votre mot de passe.</string>
+    <string name="lastfm_login_invalid_credentials">Nom d\'utilisateur ou mot de passe incorrect.</string>
+    <string name="lastfm_login_invalid_api_key">Clé API non valide.</string>
+    <string name="lastfm_login_authentication_error">Échec de l\'authentification. Veuillez réessayer.</string>
+    <string name="lastfm_login_api_key_suspended">Clé API suspendue.</string>
+    <string name="lastfm_login_network_error">Erreur réseau. Vérifiez votre connexion.</string>
+    <string name="lastfm_login_failed">Échec de la connexion. Veuillez réessayer.</string>
+    <string name="duration_seconds_short">%1$ds</string>
+    <string name="percent_format">%1$d%%</string>
+    <string name="add_another_account">Ajouter un autre compte</string>
+    <string name="unsaved_account_dialog_title">Compte non enregistré</string>
+    <string name="unsaved_account_dialog_text">Votre compte courant n\'a pas encore été enregistré. Souhaitez-vous l\'enregistrer avant d\'ajouter un autre compte ?</string>
+    <string name="unsaved_account_dialog_cancel">Annuler la connexion</string>
+    <string name="unsaved_account_dialog_no_thanks">Non, merci</string>
+    <string name="unsaved_account_dialog_save_yes">Oui, enregistrer le compte courant</string>
 </resources>

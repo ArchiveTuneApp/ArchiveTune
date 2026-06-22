@@ -590,4 +590,18 @@
     <string name="backdrop_blur_amount">Stärke der Hintergrundunschärfe</string>
     <string name="backdrop_blur_amount_value">%1$d%%</string>
     <string name="search_try_different">Versuche einen anderen Suchbegriff</string>
+    <string name="library_subtitle">Deine Musik, für dich organisiert</string>
+    <string name="library_playlists_subtitle">All deine Playlisten, für dich organisiert</string>
+    <string name="library_songs_subtitle">All deine Songs, für dich organisiert</string>
+    <string name="library_artists_subtitle">All deine Künstler an einem Platz</string>
+    <string name="most_played_badge">MEIST GESPIELT</string>
+    <string name="favorite_songs_title">Lieblingssongs</string>
+    <string name="play_all">Spiele alle</string>
+    <string name="offline_shortcut">Offline</string>
+    <string name="local_files">Lokale Dateien</string>
+    <string name="downloaded_desc">Heruntergeladen</string>
+    <string name="on_device">Auf dem Gerät</string>
+    <string name="recently_played">Kürzlich gespielt</string>
+    <string name="library_top_mixes_loading">Bereite deine KI-Mixe vor…</string>
+    <string name="library_top_mixes_configure_ai">Konfiguriere KI</string>
 </resources>

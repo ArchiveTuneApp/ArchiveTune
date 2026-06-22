@@ -227,7 +227,7 @@
     <string name="app_language">앱 언어</string>
     <string name="configure_app_language">앱 언어 설정</string>
     <string name="intent_app_language_not_found">앱 언어 설정을 열 수 없습니다. 휴대폰 시스템 설정에서 수동으로 앱 언어를 구성해 주세요.</string>
-    <string name="open_supported_links">지원되는 링크 기본값으로 열기</string>
+    <string name="open_supported_links">지원되는 링크를 이 앱으로 열기</string>
     <string name="configure_supported_links">지원되는 링크 설정</string>
     <string name="intent_supported_links_not_found">지원되는 링크 설정을 열 수 없습니다. 휴대폰 시스템 설정에서 기본적으로 열리도록 수동으로 구성해 주세요.</string>
     <string name="set_first_lyrics_provider">선호하는 가사 제공처 설정</string>
@@ -332,7 +332,7 @@
     <string name="settings_updates_subtitle">버전 확인, 업데이트 노트 및 릴리즈 채널 관리</string>
     <string name="settings_about_subtitle">앱 정보, 라이선스 및 기여자 목록 보기</string>
     <string name="settings_account_subtitle">로그인 및 계정 동기화 설정</string>
-    <string name="settings_stats_title">음악 감상 통계</string>
+    <string name="settings_stats_title">감상 통계</string>
     <string name="settings_stats_subtitle">가장 많이 들은 곡, 아티스트 및 재생 기록 요약</string>
     <string name="similar_content">유사한 콘텐츠</string>
     <string name="error_no_song_playing">현재 재생 중인 노래가 없습니다.</string>

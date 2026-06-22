@@ -20,7 +20,7 @@
     <string name="liked">Favoris</string>
     <string name="offline">Téléchargés</string>
     <string name="my_top">Mon Top</string>
-    <string name="cached_playlist">En cache</string>
+    <string name="cached_playlist">En Cache</string>
     <string name="sync_playlist">Synchroniser la Playlist</string>
     <string name="sync_disabled">Synchronisation désactivée</string>
     <string name="elements_selected">%1$d éléments sélectionnés</string>
@@ -100,7 +100,7 @@
     <string name="show_liked_playlist">Afficher la playlist « Favoris »</string>
     <string name="show_downloaded_playlist">Afficher la playlist « Téléchargés »</string>
     <string name="show_top_playlist">Afficher la playlist « Top »</string>
-    <string name="show_cached_playlist">Afficher la playlist « Mise en cache »</string>
+    <string name="show_cached_playlist">Afficher la playlist « En Cache »</string>
     <string name="google">Google</string>
     <string name="discord">Discord</string>
     <string name="advanced_login">Connexion avec un jeton</string>
@@ -368,7 +368,7 @@
     <string name="backup_category_settings">Paramètres de l\'application</string>
     <string name="backup_category_settings_desc">Apparence, lecture &amp; préférences</string>
     <string name="backup_category_account">Détails du compte</string>
-    <string name="backup_category_account_desc">YouTube, Last.fm, Discord &amp; identifiants de proxy</string>
+    <string name="backup_category_account_desc">YouTube, Spotify, Last.fm, Libre.fm, Discord et identifiants de proxy</string>
     <string name="aod_customize_thumbnail_size">Taille des miniatures</string>
     <string name="aod_control_filled">Rempli</string>
     <string name="music_recognition_history">Historique de reconnaissance</string>
@@ -430,7 +430,7 @@
     <string name="lyrics_share_style_deep_blur">Flou profond</string>
     <string name="aod_shape_pentagon">Pentagone</string>
     <string name="news_no_results_title">Aucun article correspondant</string>
-    <string name="about_archive_tune_team">L\'équipe d\'ArchiveTune</string>
+    <string name="about_archive_tune_team">L\'équipe</string>
     <string name="storage_migration_cache_progress">Transfert du cache... %1$d%%</string>
     <string name="ai_api_testing">Test de connexion…</string>
     <string name="aod_customize_horizontal_padding">Remplissage horizontal</string>
@@ -586,7 +586,7 @@
     <string name="settings_updates_subtitle">Version, notes de version et canal de mise à jour</string>
     <string name="storage_migration_warning">Avertissement : Ne fermez pas l\'application et n\'éteignez pas votre appareil pendant cette opération. Cela pourrait entraîner une perte de données.</string>
     <string name="aod_customize_title_max_lines">Nombre maximal de lignes pour le titre</string>
-    <string name="settings_integration_subtitle">Discord, Last.fm et ListenBrainz</string>
+    <string name="settings_integration_subtitle">Discord, Last.fm, Libre.fm et ListenBrainz</string>
     <string name="aod_alignment_start">Début</string>
     <string name="aod_shape_pixel_circle">Cercle de pixels</string>
     <string name="year_in_music_empty_subtitle">Écoutez davantage de musique pendant %d et votre récapitulatif s\'affichera ici.</string>
@@ -629,4 +629,10 @@
     <string name="storage_migration_downloads_progress">Transfert des téléchargements... %1$d%%</string>
     <string name="aod_customize_content_position">Position du contenu</string>
     <string name="about_position_wttexe">Synchronisation des paroles avec le texte, dégradés et améliorations de l\'interface utilisateur !</string>
+    <string name="history_duration_desc">Durée minimale d\'écoute pour qu\'un titre soit considéré comme écouté</string>
+    <string name="history_duration_seconds">%1$s s</string>
+    <string name="about_contributors_read_more">En savoir plus</string>
+    <string name="about_contributor_translation">Traduction par un contributeur</string>
+    <string name="about_license">LICENCE</string>
+    <string name="about_license_unknown">Licence inconnue</string>
 </resources>

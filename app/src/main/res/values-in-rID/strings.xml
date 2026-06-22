@@ -630,9 +630,9 @@
     <string name="password">Kata sandi</string>
     <string name="logging_in">Sedang Masuk…</string>
     <!-- ListenBrainz -->
-    <string name="listenbrainz_scrobbling">Scrobbling ListenBrainz</string>
+    <string name="listenbrainz_scrobbling">Scrobble ListenBrainz</string>
     <string name="listenbrainz_scrobbling_description">Aktifkan pengiriman lagu yang sedang diputar dan yang sudah selesai ke ListenBrainz</string>
-    <string name="set_listenbrainz_token">Setel token ListenBrainz</string>
+    <string name="set_listenbrainz_token">Atur token ListenBrainz</string>
     <string name="edit_listenbrainz_token">Sunting token ListenBrainz</string>
     <!-- Discord activity customization -->
     <string name="discord_activity_name">Nama aktivitas</string>
@@ -971,4 +971,18 @@
     <string name="your_artists">Artis Anda</string>
     <string name="font_preference_system">Sistem</string>
     <string name="duration_sort">Durasi</string>
+    <string name="offline_shortcut">Luring</string>
+    <string name="cached">Disimpan</string>
+    <string name="account_integrations_summary">Discord, Last.fm. Libre.fm, ListenBrainz</string>
+    <string name="instant_playback">Pemutaran Instan</string>
+    <string name="on_device">Di perangkat ini</string>
+    <string name="recently_played">Baru saja Diputar</string>
+    <string name="top_mixes">Mix Teratas untuk Anda</string>
+    <string name="library_top_mixes_loading">Menyiapkan mix AI anda…</string>
+    <string name="library_top_mixes_refresh">Segarkan mix</string>
+    <string name="library_top_mixes_configure_ai">Konfigurasikan AI</string>
+    <string name="library_top_mixes_ai_not_configured_title">Konfigurasikan AI untuk membuat mix</string>
+    <string name="library_top_mixes_ai_not_configured_desc">Integrasi AI diperlukan sebelum ArchiveTune dapat membuat mix teratas pribadi.</string>
+    <string name="library_top_mixes_no_recent_history_title">Tidak ada riwayat mix mendengarkan saat ini</string>
+    <string name="library_top_mixes_no_recent_history">Dengarkan lagu lainnya, kemudian segarkan untuk membuat mix AI dari riwayat mendengarkan anda.</string>
 </resources>
