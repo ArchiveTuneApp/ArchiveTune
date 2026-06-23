@@ -121,6 +121,7 @@
     <string name="change_playlist_cover">Change playlist cover</string>
     <string name="retry">Retry</string>
     <string name="radio">Radio</string>
+    <string name="cast">Cast</string>
     <string name="shuffle">Shuffle</string>
     <string name="music_recognition">Music Recognition</string>
     <string name="reset">Reset</string>
