@@ -583,6 +583,10 @@
     <string name="lyrics">歌詞</string>
     <string name="translation_success">翻訳が保存されました</string>
     <string name="translation_failed">翻訳に失敗しました</string>
+    <string name="translate_in_background">バックグラウンドで翻訳</string>
+    <string name="ai_translate_in_background_desc">翻訳はバックグラウンドで続行されます。完了時に通知されます。</string>
+    <string name="ai_translation_notification_channel_name">AI翻訳</string>
+    <string name="ai_translation_notification_title">AI翻訳</string>
     <string name="discord_button_options">ボタンのオプション</string>
     <string name="discord_image_options">画像オプション</string>
     <string name="refresh">リフレッシュ</string>
@@ -677,6 +681,7 @@
     <string name="update_notification_title">利用可能なアップデート</string>
     <string name="update_notification_text">ArchiveTune %s が利用可能になりました</string>
     <string name="download">ダウンロード</string>
+    <string name="download_complete">ダウンロード完了</string>
     <string name="permissions_title">ArchiveTune が最適に動作するようにします</string>
     <string name="permissions_subtitle">音楽を確実に再生および管理するために、いくつかの権限を使用します。これらはシステム設定でいつでも変更できます。</string>
     <string name="permission_storage_title">ストレージアクセス</string>

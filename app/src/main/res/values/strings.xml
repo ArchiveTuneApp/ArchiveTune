@@ -711,6 +711,10 @@
     <string name="lyrics">Lyrics</string>
     <string name="translation_success">Translation saved</string>
     <string name="translation_failed">Translation failed</string>
+    <string name="translate_in_background">Translate in background</string>
+    <string name="ai_translate_in_background_desc">The translation will continue in the background. You will be notified when it completes.</string>
+    <string name="ai_translation_notification_channel_name">AI Translation</string>
+    <string name="ai_translation_notification_title">AI Translation</string>
     <string name="discord_button_options">Button Options</string>
     <string name="discord_image_options">Image Options</string>
     <string name="refresh">Refresh</string>
