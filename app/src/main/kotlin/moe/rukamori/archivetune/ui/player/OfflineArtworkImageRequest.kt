@@ -7,6 +7,7 @@
 
 package moe.rukamori.archivetune.ui.player
 
+import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import androidx.compose.runtime.Composable
@@ -46,13 +47,14 @@ internal fun rememberOfflineArtworkImageRequest(
         )
     return remember(context, imageUrl, videoId, forceCpuRendering, wifiQuality, mobileQuality) {
         if (videoId != null) {
-            val cm = context.getSystemService<ConnectivityManager>()
-            val isWifi = cm?.activeNetwork?.let { cm.getNetworkCapabilities(it) }
-                ?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
+            val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+            val isWifi = cm?.activeNetwork?.let { network ->
+                cm.getNetworkCapabilities(network)
+                    ?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
+            } ?: false
             val quality = if (isWifi) wifiQuality else mobileQuality
             val ytUrls = videoIdToYouTubeThumbnails(videoId, quality)
             val primaryUrl = ytUrls.getOrNull(0) ?: return@remember null
-            val fallbackUrl = ytUrls.getOrNull(1)
 
             ImageRequest
                 .Builder(context)
@@ -62,7 +64,6 @@ internal fun rememberOfflineArtworkImageRequest(
                 .diskCachePolicy(CachePolicy.ENABLED)
                 .networkCachePolicy(CachePolicy.ENABLED)
                 .apply { if (forceCpuRendering) allowHardware(false) }
-                .apply { if (fallbackUrl != null) fallback(fallbackUrl) }
                 .build()
         } else {
             imageUrl
