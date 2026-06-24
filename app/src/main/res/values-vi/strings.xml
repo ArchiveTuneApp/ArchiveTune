@@ -537,6 +537,12 @@
     <string name="description_display_codec_on_player">Hiển thị thông tin codec âm thanh hiện tại trên trình phát</string>
     <string name="force_cpu_rendering">Ép kết xuất CPU</string>
     <string name="description_force_cpu_rendering">Sử dụng giải mã phần mềm cho ảnh thumbnail (sửa lỗi ảnh trắng trên Android cũ)</string>
+    <string name="wifi_thumbnail_quality">Chất lượng ảnh thumbnail trên Wi-Fi</string>
+    <string name="mobile_thumbnail_quality">Chất lượng ảnh thumbnail trên Di động</string>
+    <string name="thumbnail_quality_max">Tối đa (1920×1080)</string>
+    <string name="thumbnail_quality_hq">Cao (480×360)</string>
+    <string name="thumbnail_quality_mq">Trung bình (320×180)</string>
+    <string name="thumbnail_quality_default">Thấp (120×90)</string>
     <string name="nerd_stats">Nerd Stats</string>
     <string name="track_label">Bài hát</string>
     <string name="no_track_playing">Không có bài hát nào đang phát</string>

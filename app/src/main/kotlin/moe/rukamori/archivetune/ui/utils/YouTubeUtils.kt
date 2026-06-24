@@ -7,6 +7,8 @@
 
 package moe.rukamori.archivetune.ui.utils
 
+import moe.rukamori.archivetune.constants.ThumbnailQuality
+
 private const val PlayerArtworkHighResPx = 1080
 
 private val wHPathRegex = Regex("w\\d+-h\\d+")
@@ -53,13 +55,20 @@ fun String.resize(
 
 fun String.highRes(): String = resize(PlayerArtworkHighResPx, PlayerArtworkHighResPx)
 
+private val ytThumbnailChain: (String) -> List<String> = { videoId ->
+    listOf(
+        "https://i.ytimg.com/vi/$videoId/maxresdefault.jpg",
+        "https://i.ytimg.com/vi/$videoId/hqdefault.jpg",
+        "https://i.ytimg.com/vi/$videoId/mqdefault.jpg",
+        "https://i.ytimg.com/vi/$videoId/default.jpg",
+    )
+}
+
 /**
- * Returns YouTube video thumbnail URLs in quality order (best first).
- * Falls through from maxresdefault → hqdefault → mqdefault → default.
+ * Returns YouTube video thumbnail URLs at or above the given quality.
+ * Chain: maxresdefault → hqdefault → mqdefault → default.
  */
-fun videoIdToYouTubeThumbnails(videoId: String): List<String> = listOf(
-    "https://i.ytimg.com/vi/$videoId/maxresdefault.jpg",
-    "https://i.ytimg.com/vi/$videoId/hqdefault.jpg",
-    "https://i.ytimg.com/vi/$videoId/mqdefault.jpg",
-    "https://i.ytimg.com/vi/$videoId/default.jpg",
-)
+fun videoIdToYouTubeThumbnails(
+    videoId: String,
+    quality: ThumbnailQuality = ThumbnailQuality.MAX,
+): List<String> = ytThumbnailChain(videoId).drop(quality.ordinal.coerceIn(0, 3))

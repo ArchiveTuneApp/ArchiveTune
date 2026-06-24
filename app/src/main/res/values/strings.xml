@@ -763,6 +763,12 @@
     <string name="description_display_codec_on_player">Show current audio codec information on the player</string>
     <string name="force_cpu_rendering">Force CPU Rendering</string>
     <string name="description_force_cpu_rendering">Use software decoder for thumbnails (fixes blank images on older Android versions)</string>
+    <string name="wifi_thumbnail_quality">Wi-Fi Thumbnail Quality</string>
+    <string name="mobile_thumbnail_quality">Mobile Data Thumbnail Quality</string>
+    <string name="thumbnail_quality_max">Max (1920×1080)</string>
+    <string name="thumbnail_quality_hq">High (480×360)</string>
+    <string name="thumbnail_quality_mq">Medium (320×180)</string>
+    <string name="thumbnail_quality_default">Low (120×90)</string>
     <string name="nerd_stats">Nerd Stats</string>
     <string name="track_label">Track</string>
     <string name="no_track_playing">No track playing</string>

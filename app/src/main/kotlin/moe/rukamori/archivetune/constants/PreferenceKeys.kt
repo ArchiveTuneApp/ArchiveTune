@@ -849,3 +849,13 @@ enum class UpdateChannel {
     NIGHTLY,
     DAILY_NIGHTLY,
 }
+
+enum class ThumbnailQuality {
+    MAX,
+    HQ,
+    MQ,
+    DEFAULT,
+}
+
+val WifiThumbnailQualityKey = stringPreferencesKey("wifi_thumbnail_quality")
+val MobileThumbnailQualityKey = stringPreferencesKey("mobile_thumbnail_quality")

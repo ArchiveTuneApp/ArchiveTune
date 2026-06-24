@@ -95,8 +95,11 @@ import moe.rukamori.archivetune.constants.PlayerButtonsStyle
 import moe.rukamori.archivetune.constants.PlayerButtonsStyleKey
 import moe.rukamori.archivetune.constants.PlayerDesignStyle
 import moe.rukamori.archivetune.constants.PlayerDesignStyleKey
+import moe.rukamori.archivetune.constants.MobileThumbnailQualityKey
 import moe.rukamori.archivetune.constants.PureBlackKey
 import moe.rukamori.archivetune.constants.QuickPicksDisplayMode
+import moe.rukamori.archivetune.constants.ThumbnailQuality
+import moe.rukamori.archivetune.constants.WifiThumbnailQualityKey
 import moe.rukamori.archivetune.constants.QuickPicksDisplayModeKey
 import moe.rukamori.archivetune.constants.RandomThemeOnStartupKey
 import moe.rukamori.archivetune.constants.ShowHomeCategoryChipsKey
@@ -227,6 +230,18 @@ fun AppearanceSettings(
         rememberEnumPreference(
             GridItemsSizeKey,
             defaultValue = GridItemSize.SMALL,
+        )
+
+    val (wifiThumbnailQuality, onWifiThumbnailQualityChange) =
+        rememberEnumPreference(
+            WifiThumbnailQualityKey,
+            defaultValue = ThumbnailQuality.MAX,
+        )
+
+    val (mobileThumbnailQuality, onMobileThumbnailQualityChange) =
+        rememberEnumPreference(
+            MobileThumbnailQualityKey,
+            defaultValue = ThumbnailQuality.HQ,
         )
 
     val (swipeToSong, onSwipeToSongChange) =
@@ -788,6 +803,40 @@ fun AppearanceSettings(
                     description = stringResource(R.string.sensitivity_percentage, (swipeSensitivity * 100).roundToInt()),
                     icon = { Icon(painterResource(R.drawable.tune), null) },
                     onClick = { showSensitivityDialog = true },
+                )
+            }
+
+            item {
+                EnumListPreference(
+                    title = { Text(stringResource(R.string.wifi_thumbnail_quality)) },
+                    icon = { Icon(painterResource(R.drawable.wifi_proxy), null) },
+                    selectedValue = wifiThumbnailQuality,
+                    onValueSelected = onWifiThumbnailQualityChange,
+                    valueText = {
+                        when (it) {
+                            ThumbnailQuality.MAX -> stringResource(R.string.thumbnail_quality_max)
+                            ThumbnailQuality.HQ -> stringResource(R.string.thumbnail_quality_hq)
+                            ThumbnailQuality.MQ -> stringResource(R.string.thumbnail_quality_mq)
+                            ThumbnailQuality.DEFAULT -> stringResource(R.string.thumbnail_quality_default)
+                        }
+                    },
+                )
+            }
+
+            item {
+                EnumListPreference(
+                    title = { Text(stringResource(R.string.mobile_thumbnail_quality)) },
+                    icon = { Icon(painterResource(R.drawable.radio), null) },
+                    selectedValue = mobileThumbnailQuality,
+                    onValueSelected = onMobileThumbnailQualityChange,
+                    valueText = {
+                        when (it) {
+                            ThumbnailQuality.MAX -> stringResource(R.string.thumbnail_quality_max)
+                            ThumbnailQuality.HQ -> stringResource(R.string.thumbnail_quality_hq)
+                            ThumbnailQuality.MQ -> stringResource(R.string.thumbnail_quality_mq)
+                            ThumbnailQuality.DEFAULT -> stringResource(R.string.thumbnail_quality_default)
+                        }
+                    },
                 )
             }
         }

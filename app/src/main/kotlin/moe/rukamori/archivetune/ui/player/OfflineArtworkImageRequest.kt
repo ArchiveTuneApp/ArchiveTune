@@ -7,6 +7,8 @@
 
 package moe.rukamori.archivetune.ui.player
 
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -14,7 +16,11 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
+import moe.rukamori.archivetune.constants.MobileThumbnailQualityKey
+import moe.rukamori.archivetune.constants.ThumbnailQuality
+import moe.rukamori.archivetune.constants.WifiThumbnailQualityKey
 import moe.rukamori.archivetune.ui.utils.videoIdToYouTubeThumbnails
+import moe.rukamori.archivetune.utils.rememberEnumPreference
 import moe.rukamori.archivetune.utils.rememberPreference
 
 @Composable
@@ -28,12 +34,26 @@ internal fun rememberOfflineArtworkImageRequest(
             key = booleanPreferencesKey("force_cpu_rendering"),
             defaultValue = true,
         )
-    return remember(context, imageUrl, videoId, forceCpuRendering) {
-        val ytUrls = videoId?.let { videoIdToYouTubeThumbnails(it) }
-        val primaryUrl = ytUrls?.getOrNull(0)
-        val fallbackUrl = ytUrls?.getOrNull(1)
+    val (wifiQuality) =
+        rememberEnumPreference(
+            WifiThumbnailQualityKey,
+            defaultValue = ThumbnailQuality.MAX,
+        )
+    val (mobileQuality) =
+        rememberEnumPreference(
+            MobileThumbnailQualityKey,
+            defaultValue = ThumbnailQuality.HQ,
+        )
+    return remember(context, imageUrl, videoId, forceCpuRendering, wifiQuality, mobileQuality) {
+        if (videoId != null) {
+            val cm = context.getSystemService<ConnectivityManager>()
+            val isWifi = cm?.activeNetwork?.let { cm.getNetworkCapabilities(it) }
+                ?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
+            val quality = if (isWifi) wifiQuality else mobileQuality
+            val ytUrls = videoIdToYouTubeThumbnails(videoId, quality)
+            val primaryUrl = ytUrls.getOrNull(0) ?: return@remember null
+            val fallbackUrl = ytUrls.getOrNull(1)
 
-        if (primaryUrl != null) {
             ImageRequest
                 .Builder(context)
                 .data(primaryUrl)
