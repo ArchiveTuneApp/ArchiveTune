@@ -361,7 +361,7 @@ private fun SunnyIdentityPanel(
         Surface(
             modifier =
                 Modifier
-                    .fillMaxWidth(0.72f)
+                    .fillMaxWidth(0.80f)
                     .aspectRatio(1f),
             shape = MaterialShapes.Sunny.toShape(0),
             color = MaterialTheme.colorScheme.primary,
@@ -373,8 +373,7 @@ private fun SunnyIdentityPanel(
                 Icon(
                     painter = painterResource(iconResId),
                     contentDescription = null,
-                    modifier = Modifier.size(120.dp),
-                    tint = Color.Unspecified,
+                    modifier = Modifier.size(150.dp),
                 )
             }
         }
@@ -655,7 +654,6 @@ private fun ExpressivePageHeader(
                     painter = painterResource(iconResId),
                     contentDescription = null,
                     modifier = Modifier.size(34.dp),
-                    tint = Color.Unspecified,
                 )
             }
         }

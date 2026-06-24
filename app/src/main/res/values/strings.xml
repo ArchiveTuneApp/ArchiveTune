@@ -725,7 +725,7 @@
     <string name="close_dialog">Close</string>
     <string name="support_development_title">Support development</string>
     <string name="support_development_message">Hey there! I\'m rukamori, the developer of ArchiveTune. If ArchiveTune has earned a place in your daily listening, you can help keep it moving forward by donating or starring the project on GitHub. Thanks for supporting the work behind the app.</string>
-    <string name="support_development_donate">Donate to support development</string>
+    <string name="support_development_donate">Donate</string>
     <string name="support_development_star">Star on GitHub</string>
     <string name="later">Later</string>
     <string name="new_update_available">New update available</string>
