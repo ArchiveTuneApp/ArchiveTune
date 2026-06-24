@@ -1898,7 +1898,7 @@ class MusicService :
                     context = this@MusicService,
                     token = key,
                 )
-                Timber.tag("MusicService").d("Presence manager started with token=$key")
+                Timber.tag("MusicService").d("Presence manager started")
                 lastPresenceToken = key
                 requestDiscordSync(
                     reason = "presence_manager_started",
