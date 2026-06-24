@@ -1370,6 +1370,13 @@ class MusicService :
         }
     }
 
+    fun forceDiscordSync(reason: String) {
+        requestDiscordSync(
+            reason = reason,
+            force = true,
+        )
+    }
+
     private fun ensureDiscordSyncFresh(epoch: Long) {
         if (epoch != discordSyncEpoch.get()) {
             throw StaleDiscordSyncException()
