@@ -1882,13 +1882,6 @@ class MusicService :
             }
 
             if (DiscordPresenceManager.isRunning() && lastPresenceToken == key) {
-                // try {
-                //     if (DiscordPresenceManager.restart()) {
-                //         Timber.tag("MusicService").d("Presence manager restarted with same token")
-                //     }
-                // } catch (ex: Exception) {
-                //     Timber.tag("MusicService").e(ex, "Failed to restart presence manager")
-                // }
                 return@launch
             }
 
