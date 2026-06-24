@@ -404,6 +404,14 @@ class MusicService :
     @Volatile
     private var discordServiceStopping = false
 
+    @Volatile
+    private var activeDiscordHoldState: ActiveHoldState? = null
+
+    private var activeDiscordHoldTimeoutJob: Job? = null
+
+    @Volatile
+    private var lastAppliedVisiblePresence: LastAppliedVisiblePresence? = null
+
     private val discordSyncEpoch = AtomicLong(0L)
     private val discordSyncRequests = Channel<DiscordSyncRequest>(Channel.CONFLATED)
     private var discordSyncWorkerJob: Job? = null
@@ -1359,6 +1367,74 @@ class MusicService :
         }
     }
 
+    private fun updateActiveDiscordHoldState(nextHoldState: ActiveHoldState?) {
+        val previousHoldState = activeDiscordHoldState
+        activeDiscordHoldState = nextHoldState
+        Timber.tag(DISCORD_SYNC_TAG).d(
+            "hold state transition previous=%s next=%s",
+            previousHoldState,
+            nextHoldState,
+        )
+        reconcileDiscordHoldTimeoutJob(previousHoldState, nextHoldState)
+    }
+
+    private fun reconcileDiscordHoldTimeoutJob(
+        previousHoldState: ActiveHoldState?,
+        nextHoldState: ActiveHoldState?,
+    ) {
+        if (previousHoldState === nextHoldState) {
+            Timber.tag(DISCORD_SYNC_TAG).v("hold timeout job unchanged for holdState=%s", nextHoldState)
+            return
+        }
+
+        activeDiscordHoldTimeoutJob?.cancel()
+        activeDiscordHoldTimeoutJob = null
+
+        if (nextHoldState == null) {
+            Timber.tag(DISCORD_SYNC_TAG).d("no active hold state, no timeout job scheduled")
+            return
+        }
+
+        Timber.tag(DISCORD_SYNC_TAG).d(
+            "scheduling hold timeout job state=%s timeoutMs=%d",
+            nextHoldState,
+            DISCORD_HOLD_TIMEOUT_MS,
+        )
+        activeDiscordHoldTimeoutJob =
+            scope.launch {
+                delay(DISCORD_HOLD_TIMEOUT_MS)
+                Timber.tag(DISCORD_SYNC_TAG).d(
+                    "hold timeout fired state=%s -> enqueue resync",
+                    nextHoldState,
+                )
+                requestDiscordSync(
+                    reason = "hold_timeout_check",
+                    force = true,
+                )
+            }
+    }
+
+    private fun clearDiscordHoldState() {
+        if (activeDiscordHoldState != null) {
+            Timber.tag(DISCORD_SYNC_TAG).d("clearing active hold state=%s", activeDiscordHoldState)
+        }
+        updateActiveDiscordHoldState(null)
+    }
+
+    private fun markLastAppliedVisiblePresence(visibleDecision: DiscordPresenceDecision.Visible) {
+        lastAppliedVisiblePresence =
+            LastAppliedVisiblePresence(
+                songId = visibleDecision.songId,
+                mode = visibleDecision.mode,
+                appliedAtMs = System.currentTimeMillis(),
+            )
+        Timber.tag(DISCORD_SYNC_TAG).d(
+            "marked last applied visible presence songId=%s mode=%s",
+            visibleDecision.songId,
+            visibleDecision.mode,
+        )
+    }
+
     private suspend fun syncDiscordStateInternal(request: DiscordSyncRequest) {
         ensureDiscordSyncFresh(request.epoch)
 
@@ -1397,12 +1473,21 @@ class MusicService :
                 playWhenReady = playWhenReady,
                 playbackState = playbackState,
             )
+        val holdContext =
+            DiscordHoldContext(
+                nowMs = System.currentTimeMillis(),
+                activeHoldState = activeDiscordHoldState,
+                lastAppliedVisiblePresence = lastAppliedVisiblePresence,
+                holdTimeoutMs = DISCORD_HOLD_TIMEOUT_MS,
+            )
         val semanticState = derivePlaybackSemanticState(inputs)
-        val decision = deriveRawDiscordPresenceDecision(inputs, semanticState)
+        val rawDecision = deriveRawDiscordPresenceDecision(inputs, semanticState)
+        val resolution = resolveDiscordPresenceDecision(rawDecision, holdContext)
+        val decision = resolution.decision
 
         ensureDiscordSyncFresh(request.epoch)
         Timber.tag(DISCORD_SYNC_TAG).d(
-            "sync epoch=%d reason=%s force=%s songId=%s playWhenReady=%s playbackState=%d isPlaying=%s semantic=%s decision=%s",
+            "sync epoch=%d reason=%s force=%s songId=%s playWhenReady=%s playbackState=%d isPlaying=%s semantic=%s raw=%s decision=%s holdState=%s lastAppliedVisible=%s",
             request.epoch,
             request.reason,
             request.force,
@@ -1411,7 +1496,10 @@ class MusicService :
             playbackState,
             isPlaying,
             semanticState,
+            rawDecision,
             decision,
+            resolution.nextHoldState,
+            lastAppliedVisiblePresence,
         )
 
         when (decision) {
@@ -1426,12 +1514,7 @@ class MusicService :
                 )
             }
             is DiscordPresenceDecision.Hold -> {
-                Timber.tag(DISCORD_SYNC_TAG).v(
-                    "sync epoch=%d reason=%s hold decision deferred until hold-aware wave decision=%s",
-                    request.epoch,
-                    request.reason,
-                    decision,
-                )
+                updateActiveDiscordHoldState(resolution.nextHoldState)
             }
         }
     }
@@ -1443,6 +1526,7 @@ class MusicService :
         song: Song?,
         isPlaying: Boolean,
     ) {
+        clearDiscordHoldState()
         ensureDiscordSyncFresh(request.epoch)
         val snapshot = buildDiscordPresenceSnapshot(song, isPlaying)
         if (snapshot == null) {
@@ -1467,8 +1551,11 @@ class MusicService :
             decision.songId,
             decision.isPaused,
         )
-        if (updated && token.isNotBlank()) {
-            lastPresenceToken = token
+        if (updated) {
+            if (token.isNotBlank()) {
+                lastPresenceToken = token
+            }
+            markLastAppliedVisiblePresence(decision)
         }
     }
 
@@ -1490,6 +1577,7 @@ class MusicService :
         decision: DiscordPresenceDecision.Hidden,
         token: String,
     ) {
+        clearDiscordHoldState()
         ensureDiscordSyncFresh(request.epoch)
 
         when (decision.reason) {
@@ -1508,6 +1596,8 @@ class MusicService :
             HiddenReason.NoSong,
             HiddenReason.PausedByPreference,
             HiddenReason.PausedByNotificationDismiss,
+            HiddenReason.NoStablePlaybackYet,
+            HiddenReason.PlaybackStalled,
             -> {
                 val clearToken = token.takeIf { it.isNotBlank() } ?: lastPresenceToken
                 if (clearToken.isNullOrBlank()) {
@@ -1536,15 +1626,6 @@ class MusicService :
                 Timber.tag(DISCORD_SYNC_TAG).d(
                     "hidden clear result=%s reason=%s",
                     cleared,
-                    decision.reason,
-                )
-            }
-
-            HiddenReason.NoStablePlaybackYet,
-            HiddenReason.PlaybackStalled,
-            -> {
-                Timber.tag(DISCORD_SYNC_TAG).v(
-                    "deferring hidden reason=%s until hold-aware wave",
                     decision.reason,
                 )
             }
@@ -7582,6 +7663,7 @@ class MusicService :
 
         private const val TAG = "MusicService"
         private const val DISCORD_SYNC_TAG = "DiscordSync"
+        private const val DISCORD_HOLD_TIMEOUT_MS = 7_000L
         const val CHANNEL_ID = "music_channel_01"
         const val ACTION_MEDIA_NOTIFICATION_DISMISSED =
             "moe.rukamori.archivetune.action.MEDIA_NOTIFICATION_DISMISSED"
