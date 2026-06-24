@@ -211,11 +211,8 @@ object DiscordPresenceManager {
             ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleObserver!!)
         }
 
-        runCatching {
-            val activeToken = DiscordOAuthRepository.getValidAccessToken(context.applicationContext) ?: token
-            if (activeToken.isNotBlank()) {
-                rpcToken = activeToken
-            }
+        if (token.isNotBlank()) {
+            rpcToken = token
         }
         Timber.tag(LOG_TAG).d("started manager runtime; awaiting external sync trigger")
     }
