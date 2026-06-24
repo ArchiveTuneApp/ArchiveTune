@@ -213,9 +213,51 @@ fun LyricsMenu(
             (aiProvider != AiProvider.CUSTOM || aiCustomEndpoint.isNotBlank()) &&
             aiValidationStatus != AiApiValidationStatus.FAILED
 
+    var showAiTranslateDialog by rememberSaveable { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         viewModel.aiTranslationEvents.collect { message ->
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    if (showAiTranslateDialog) {
+        DefaultDialog(
+            onDismiss = { showAiTranslateDialog = false },
+            icon = {
+                Icon(painter = painterResource(R.drawable.auto_awesome), contentDescription = null)
+            },
+            title = { Text(stringResource(R.string.ai_translation_menu)) },
+            buttons = {
+                TextButton(
+                    onClick = {
+                        showAiTranslateDialog = false
+                    },
+                    shapes = ButtonDefaults.shapes(),
+                ) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+                Spacer(Modifier.width(8.dp))
+                TextButton(
+                    onClick = {
+                        showAiTranslateDialog = false
+                        viewModel.translateLyricsWithAi(
+                            mediaMetadata = mediaMetadataProvider(),
+                            lyrics = lyricsProvider()?.lyrics.orEmpty(),
+                        )
+                        onDismiss()
+                    },
+                    shapes = ButtonDefaults.shapes(),
+                ) {
+                    Text(stringResource(R.string.translate_in_background))
+                }
+            },
+        ) {
+            Text(
+                text = stringResource(R.string.ai_translate_in_background_desc),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 
@@ -692,10 +734,7 @@ fun LyricsMenu(
                                 text = stringResource(R.string.ai_translation_menu),
                                 onClick = {
                                     if (isAiProviderConfigured) {
-                                        viewModel.translateLyricsWithAi(
-                                            mediaMetadata = mediaMetadataProvider(),
-                                            lyrics = lyricsProvider()?.lyrics.orEmpty(),
-                                        )
+                                        showAiTranslateDialog = true
                                     }
                                 },
                                 enabled = isAiProviderConfigured && isAiTranslationEnabled && !isAiTranslating,
