@@ -258,9 +258,6 @@
     <string name="player_slider_style">Player-Slider-Stil</string>
     <string name="misc">Sonstiges</string>
     <string name="default_open_tab">Standardmäßig geöffnete Registerkarte</string>
-    <string name="grid_cell_size">Größe der Rasterzelle</string>
-    <string name="small">Klein</string>
-    <string name="big">Groß</string>
     <string name="lyrics_animation_style">Songtext-Animationsstil</string>
     <string name="content">Inhalt</string>
     <string name="action_logout">Abmelden</string>

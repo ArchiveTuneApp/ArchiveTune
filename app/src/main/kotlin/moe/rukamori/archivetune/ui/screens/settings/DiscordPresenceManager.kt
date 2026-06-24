@@ -14,7 +14,6 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,8 +35,6 @@ object DiscordPresenceManager {
     private const val LOG_TAG = "DiscordPresenceManager"
     private const val IMAGE_RESOLUTION_TIMEOUT_MS = 8_000L
     private const val STOP_TIMEOUT_MS = 5_000L
-    private const val MAX_CONSECUTIVE_FAILURES = 3
-    private const val FAILED_REFRESH_LOCKOUT_MS = 60_000L
 
     private val started = AtomicBoolean(false)
     private val updateGeneration = AtomicLong(0L)
@@ -45,18 +42,11 @@ object DiscordPresenceManager {
     private val cleanupScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private var scope: CoroutineScope? = null
-    private var refreshJob: Job? = null
     private var lifecycleObserver: LifecycleEventObserver? = null
     private var rpcInstance: DiscordRPC? = null
     private var rpcToken: String? = null
 
-    private var lastStartContext: Context? = null
-    private var lastToken: String? = null
-    private var lastSongProvider: (() -> Song?)? = null
-    private var lastPositionProvider: (() -> Long)? = null
-    private var lastIsPausedProvider: (() -> Boolean)? = null
     private var consecutiveFailures = 0
-    private var lastFailedRefreshDueToParams = 0L
 
     private val lastRpcStartTimeState = MutableStateFlow<Long?>(null)
     val lastRpcStartTimeFlow = lastRpcStartTimeState.asStateFlow()
@@ -106,6 +96,29 @@ object DiscordPresenceManager {
             isPaused = isPaused,
             generation = updateGeneration.incrementAndGet(),
         )
+
+    suspend fun clearNow(
+        context: Context,
+        token: String? = null,
+    ): Boolean =
+        withContext(Dispatchers.IO) {
+            val appContext = context.applicationContext
+            rpcMutex.withLock {
+                try {
+                    Timber.tag(LOG_TAG).d(
+                        "clearNow tokenProvided=%s hasRpcInstance=%s",
+                        !token.isNullOrBlank(),
+                        rpcInstance != null,
+                    )
+                    clearPresenceLocked(appContext, token)
+                } catch (error: CancellationException) {
+                    throw error
+                } catch (error: Exception) {
+                    Timber.tag(LOG_TAG).e(error, "clearNow failed")
+                    false
+                }
+            }
+        }
 
     private suspend fun updatePresence(
         context: Context,
@@ -185,16 +198,7 @@ object DiscordPresenceManager {
     fun start(
         context: Context,
         token: String,
-        songProvider: () -> Song?,
-        positionProvider: () -> Long,
-        isPausedProvider: () -> Boolean,
     ) {
-        lastStartContext = context.applicationContext
-        lastToken = token
-        lastSongProvider = songProvider
-        lastPositionProvider = positionProvider
-        lastIsPausedProvider = isPausedProvider
-
         if (!started.getAndSet(true)) {
             consecutiveFailures = 0
             scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -207,19 +211,10 @@ object DiscordPresenceManager {
             ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleObserver!!)
         }
 
-        requestProviderUpdate()
-    }
-
-    fun restart(): Boolean {
-        if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
-            Timber.tag(LOG_TAG).w("presence refresh skipped after repeated failures")
-            return false
+        if (token.isNotBlank()) {
+            rpcToken = token
         }
-        return requestProviderUpdate()
-    }
-
-    fun resetFailureCount() {
-        consecutiveFailures = 0
+        Timber.tag(LOG_TAG).d("started manager runtime; awaiting external sync trigger")
     }
 
     suspend fun updateNow(
@@ -237,12 +232,37 @@ object DiscordPresenceManager {
             isPaused = isPaused,
         )
 
+    private suspend fun clearPresenceLocked(
+        context: Context,
+        token: String? = null,
+    ): Boolean {
+        val existingRpc = rpcInstance
+        if (existingRpc != null) {
+            Timber.tag(LOG_TAG).d("clearPresenceLocked using existing RPC instance")
+            existingRpc.stopActivity()
+            setLastRpcTimestamps(null, null)
+            consecutiveFailures = 0
+            return true
+        }
+
+        val activeToken = DiscordOAuthRepository.getValidAccessToken(context) ?: token.orEmpty()
+        if (activeToken.isBlank()) {
+            Timber.tag(LOG_TAG).w("clearPresenceLocked skipped because token is missing")
+            return false
+        }
+
+        Timber.tag(LOG_TAG).d("clearPresenceLocked creating RPC instance for clear")
+        val rpc = getOrCreateRpc(context, activeToken)
+        rpc.stopActivity()
+        setLastRpcTimestamps(null, null)
+        consecutiveFailures = 0
+        return true
+    }
+
     fun stop() {
         if (!started.getAndSet(false)) return
 
         updateGeneration.incrementAndGet()
-        refreshJob?.cancel()
-        refreshJob = null
         scope?.cancel()
         scope = null
 
@@ -275,52 +295,6 @@ object DiscordPresenceManager {
     }
 
     fun isRunning(): Boolean = started.get()
-
-    private fun requestProviderUpdate(): Boolean {
-        val now = System.currentTimeMillis()
-        val context = lastStartContext
-        val token = lastToken
-        val songProvider = lastSongProvider
-        val positionProvider = lastPositionProvider
-        val isPausedProvider = lastIsPausedProvider
-
-        if (context == null || token == null || songProvider == null || positionProvider == null || isPausedProvider == null) {
-            if (now - lastFailedRefreshDueToParams < FAILED_REFRESH_LOCKOUT_MS) {
-                Timber.tag(LOG_TAG).w("presence refresh skipped during missing-params lockout")
-                return false
-            }
-            lastFailedRefreshDueToParams = now
-            Timber.tag(LOG_TAG).w("presence refresh skipped because start parameters are missing")
-            return false
-        }
-
-        val activeScope = scope ?: return false
-        val generation = updateGeneration.incrementAndGet()
-        refreshJob?.cancel()
-        refreshJob =
-            activeScope.launch {
-                try {
-                    val (song, positionMs, isPaused) =
-                        withContext(Dispatchers.Main.immediate) {
-                            Triple(songProvider(), positionProvider(), isPausedProvider())
-                        }
-                    updatePresence(
-                        context = context,
-                        token = token,
-                        song = song,
-                        positionMs = positionMs,
-                        isPaused = isPaused,
-                        generation = generation,
-                    )
-                } catch (error: CancellationException) {
-                    throw error
-                } catch (error: Exception) {
-                    consecutiveFailures++
-                    Timber.tag(LOG_TAG).e(error, "provider presence refresh failed")
-                }
-            }
-        return true
-    }
 
     private fun updateLastTimestamps(
         song: Song,

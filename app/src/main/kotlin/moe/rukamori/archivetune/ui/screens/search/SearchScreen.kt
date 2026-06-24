@@ -213,8 +213,8 @@ fun SearchScreen(
                             key = "search_suggestions_songs",
                             contentType = "suggestion_songs",
                         ) {
-                            TrendingSongsSection(
-                                songs = currentState.data.trendingSongs,
+                            SuggestedSongsSection(
+                                songs = currentState.data.suggestedSongs,
                                 navController = navController,
                                 modifier = Modifier.animateItem(),
                             )
@@ -224,8 +224,8 @@ fun SearchScreen(
                             key = "search_suggestions_artists",
                             contentType = "suggestion_artists",
                         ) {
-                            TrendingArtistsSection(
-                                artists = currentState.data.trendingArtists,
+                            SuggestedArtistsSection(
+                                artists = currentState.data.suggestedArtists,
                                 navController = navController,
                                 modifier = Modifier.animateItem(),
                             )
@@ -376,18 +376,18 @@ private fun SearchMoodAndGenresGrid(
 
 private val MoodAndGenresMinCellWidth = 180.dp
 
-private val TopSongGroupHorizontalPadding = 12.dp
-private val TopSongGroupVerticalPadding = 2.dp
-private val TopSongGroupItemSpacing = 2.dp
-private val TopSongGroupLargeCorner = 28.dp
-private val TopSongGroupSmallCorner = 6.dp
+private val SuggestedSongGroupHorizontalPadding = 12.dp
+private val SuggestedSongGroupVerticalPadding = 2.dp
+private val SuggestedSongGroupItemSpacing = 2.dp
+private val SuggestedSongGroupLargeCorner = 28.dp
+private val SuggestedSongGroupSmallCorner = 6.dp
 
-private fun segmentedTopSongShape(
+private fun segmentedSuggestedSongShape(
     index: Int,
     count: Int,
 ): Shape {
-    val large = TopSongGroupLargeCorner
-    val small = TopSongGroupSmallCorner
+    val large = SuggestedSongGroupLargeCorner
+    val small = SuggestedSongGroupSmallCorner
     return when {
         count <= 1 -> RoundedCornerShape(large)
         index == 0 ->
@@ -410,7 +410,7 @@ private fun segmentedTopSongShape(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun TrendingSongsSection(
+private fun SuggestedSongsSection(
     songs: List<SongItem>,
     navController: NavController,
     modifier: Modifier = Modifier,
@@ -424,24 +424,24 @@ private fun TrendingSongsSection(
     val mediaMetadata by playerConnection.mediaMetadata.collectAsStateWithLifecycle()
 
     SectionContainer(
-        title = stringResource(R.string.top_songs),
+        title = stringResource(R.string.stats_unique_songs),
         modifier = modifier,
     ) {
         val visibleSongs = remember(songs) { songs.take(6) }
 
         Column(
-            verticalArrangement = Arrangement.spacedBy(TopSongGroupItemSpacing),
+            verticalArrangement = Arrangement.spacedBy(SuggestedSongGroupItemSpacing),
             modifier =
                 Modifier
                     .fillMaxWidth()
                     .padding(
-                        horizontal = TopSongGroupHorizontalPadding,
-                        vertical = TopSongGroupVerticalPadding,
+                        horizontal = SuggestedSongGroupHorizontalPadding,
+                        vertical = SuggestedSongGroupVerticalPadding,
                     ),
         ) {
             visibleSongs.forEachIndexed { index, song ->
                 Card(
-                    shape = segmentedTopSongShape(index = index, count = visibleSongs.size),
+                    shape = segmentedSuggestedSongShape(index = index, count = visibleSongs.size),
                     colors =
                         CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -550,7 +550,7 @@ private fun TrendingAlbumsSection(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun TrendingArtistsSection(
+private fun SuggestedArtistsSection(
     artists: List<ArtistItem>,
     navController: NavController,
     modifier: Modifier = Modifier,
@@ -561,7 +561,7 @@ private fun TrendingArtistsSection(
     val haptic = LocalHapticFeedback.current
 
     NavigationTitle(
-        title = stringResource(R.string.top_artists),
+        title = stringResource(R.string.stats_unique_artists),
         modifier = modifier,
     )
     LazyRow(

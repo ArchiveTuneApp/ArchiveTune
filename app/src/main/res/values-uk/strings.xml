@@ -320,9 +320,6 @@
     <string name="slider_style_simple">Простий</string>
     <string name="misc">Різне</string>
     <string name="default_open_tab">Стандартна вкладка</string>
-    <string name="grid_cell_size">Розмір клітин сітки</string>
-    <string name="small">Малий</string>
-    <string name="big">Великий</string>
     <string name="lyrics_animation_style">Стиль анімації текстів пісень</string>
     <string name="lyrics_line_spacing">Міжрядковий інтервал у тексті пісні</string>
     <string name="content">Контент</string>

@@ -69,6 +69,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -98,6 +99,8 @@ import moe.rukamori.archivetune.viewmodels.LibraryMixViewModel
 import moe.rukamori.archivetune.viewmodels.LibraryTopMixEmptyReason
 import moe.rukamori.archivetune.viewmodels.LibraryTopMixUiModel
 import moe.rukamori.archivetune.viewmodels.LibraryTopMixesUiState
+import moe.rukamori.archivetune.viewmodels.MostPlayedAlbumUiModel
+import moe.rukamori.archivetune.viewmodels.MostPlayedAlbumUiState
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -122,6 +125,7 @@ fun LibraryMixScreen(
     val artists by viewModel.artists.collectAsStateWithLifecycle()
     val playlists by viewModel.playlists.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val mostPlayedAlbumUiState by viewModel.mostPlayedAlbumUiState.collectAsStateWithLifecycle()
     val topMixesUiState by viewModel.topMixesUiState.collectAsStateWithLifecycle()
     val spotifyPlaylists by spotifyLibraryViewModel.playlists.collectAsStateWithLifecycle()
     val (showSpotifyPlaylists) = rememberPreference(ShowSpotifyPlaylistsKey, false)
@@ -172,175 +176,33 @@ fun LibraryMixScreen(
             contentPadding = PaddingValues(bottom = playerAwareBottomPadding),
             modifier = Modifier.fillMaxSize(),
         ) {
-            // 1. Favorite Songs Spotlight Card
-            item(key = "spotlight_card") {
-                val isDark =
-                    MaterialTheme.colorScheme.surface.let {
-                        ColorUtils.calculateLuminance(it.toArgb()) < 0.5
-                    }
-                val primaryColor = MaterialTheme.colorScheme.primary
-                val surfaceContainer = MaterialTheme.colorScheme.surfaceContainer
-                val spotlightBg =
-                    remember(surfaceContainer, primaryColor, isDark) {
-                        if (isDark) {
-                            Color(ColorUtils.blendARGB(surfaceContainer.toArgb(), primaryColor.toArgb(), 0.12f))
-                        } else {
-                            Color(ColorUtils.blendARGB(surfaceContainer.toArgb(), primaryColor.toArgb(), 0.08f))
-                        }
-                    }
-
-                Box(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp)
-                            .clip(RoundedCornerShape(32.dp))
-                            .background(
-                                Brush.verticalGradient(
-                                    colors =
-                                        listOf(
-                                            spotlightBg,
-                                            spotlightBg.copy(alpha = 0.9f),
-                                        ),
-                                ),
-                            ).clickable {
-                                navController.navigate("auto_playlist/liked")
-                            }.padding(16.dp),
-                ) {
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            // Left collage or standard cover
-                            Box(
-                                modifier =
-                                    Modifier
-                                        .size(64.dp)
-                                        .clip(RoundedCornerShape(20.dp))
-                                        .background(primaryColor.copy(alpha = 0.16f)),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.favorite),
-                                    contentDescription = null,
-                                    tint = primaryColor,
-                                    modifier = Modifier.size(28.dp),
+            item(key = "most_played_album_spotlight", contentType = "spotlight") {
+                val state = mostPlayedAlbumUiState
+                if (state is MostPlayedAlbumUiState.Success) {
+                    val album = state.album
+                    val playAlbum =
+                        remember(album.tracks, playerConnection) {
+                            {
+                                playerConnection.playQueue(
+                                    ListQueue(items = album.tracks.map { it.toMediaItem() }),
                                 )
                             }
-
-                            Spacer(modifier = Modifier.width(16.dp))
-
-                            // Right text content
-                            Column(modifier = Modifier.weight(1f)) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier =
-                                        Modifier
-                                            .clip(CircleShape)
-                                            .background(primaryColor.copy(alpha = 0.16f))
-                                            .padding(horizontal = 8.dp, vertical = 2.dp),
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.star),
-                                        contentDescription = null,
-                                        tint = primaryColor,
-                                        modifier = Modifier.size(10.dp),
-                                    )
-                                    Spacer(modifier = Modifier.width(3.dp))
-                                    Text(
-                                        text = stringResource(R.string.most_played_badge),
-                                        style =
-                                            MaterialTheme.typography.labelSmall.copy(
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 9.sp,
-                                                letterSpacing = 0.5.sp,
-                                            ),
-                                        color = primaryColor,
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = stringResource(R.string.favorite_songs_title),
-                                    style =
-                                        MaterialTheme.typography.titleMedium.copy(
-                                            fontWeight = FontWeight.Bold,
-                                        ),
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = "$likedSongsCount ${stringResource(R.string.tracks_label)}",
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        }
+                    val shuffleAlbum =
+                        remember(album.tracks, playerConnection) {
+                            {
+                                playerConnection.playQueue(
+                                    ListQueue(items = album.tracks.shuffled().map { it.toMediaItem() }),
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(14.dp))
-
-                        // Bottom actions
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Button(
-                                onClick = {
-                                    coroutineScope.launch {
-                                        database.likedSongsByCreateDateAsc().firstOrNull()?.let { list ->
-                                            if (list.isNotEmpty()) {
-                                                playerConnection.playQueue(ListQueue(items = list.map { it.toMediaItem() }))
-                                            }
-                                        }
-                                    }
-                                },
-                                shape = CircleShape,
-                                colors =
-                                    ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.primary,
-                                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                                    ),
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                                modifier = Modifier.height(36.dp),
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.play),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(14.dp),
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = stringResource(R.string.play_all),
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                                )
-                            }
-
-                            IconButton(
-                                onClick = {
-                                    coroutineScope.launch {
-                                        database.likedSongsByCreateDateAsc().firstOrNull()?.let { list ->
-                                            if (list.isNotEmpty()) {
-                                                playerConnection.playQueue(ListQueue(items = list.shuffled().map { it.toMediaItem() }))
-                                            }
-                                        }
-                                    }
-                                },
-                                colors =
-                                    IconButtonDefaults.iconButtonColors(
-                                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                        contentColor = MaterialTheme.colorScheme.primary,
-                                    ),
-                                modifier = Modifier.size(36.dp),
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.shuffle),
-                                    contentDescription = stringResource(R.string.shuffle),
-                                    modifier = Modifier.size(16.dp),
-                                )
-                            }
-                        }
-                    }
+                    MostPlayedAlbumSpotlightCard(
+                        album = album,
+                        onOpenAlbum = { navController.navigate("album/${album.id}") },
+                        onPlayAll = playAlbum,
+                        onShuffle = shuffleAlbum,
+                    )
                 }
             }
 
@@ -1217,6 +1079,180 @@ private fun LibraryTopMixCard(
                         painter = painterResource(id = R.drawable.play),
                         contentDescription = null,
                         modifier = Modifier.size(18.dp),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MostPlayedAlbumSpotlightCard(
+    album: MostPlayedAlbumUiModel,
+    onOpenAlbum: () -> Unit,
+    onPlayAll: () -> Unit,
+    onShuffle: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val isDark =
+        MaterialTheme.colorScheme.surface.let {
+            ColorUtils.calculateLuminance(it.toArgb()) < 0.5
+        }
+    val surfaceContainer = MaterialTheme.colorScheme.surfaceContainer
+    val spotlightBg =
+        remember(surfaceContainer, primaryColor, isDark) {
+            if (isDark) {
+                Color(ColorUtils.blendARGB(surfaceContainer.toArgb(), primaryColor.toArgb(), 0.12f))
+            } else {
+                Color(ColorUtils.blendARGB(surfaceContainer.toArgb(), primaryColor.toArgb(), 0.08f))
+            }
+        }
+    val trackCountText = pluralStringResource(R.plurals.n_song, album.trackCount, album.trackCount)
+    val backgroundBrush =
+        remember(spotlightBg) {
+            Brush.verticalGradient(
+                colors =
+                    listOf(
+                        spotlightBg,
+                        spotlightBg.copy(alpha = 0.9f),
+                    ),
+            )
+        }
+
+    Box(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .clip(RoundedCornerShape(32.dp))
+                .background(backgroundBrush)
+                .clickable(onClick = onOpenAlbum)
+                .padding(16.dp),
+    ) {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier =
+                        Modifier
+                            .size(64.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(primaryColor.copy(alpha = 0.16f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    val thumbnailUrl = album.thumbnailUrl
+                    if (thumbnailUrl != null) {
+                        AsyncImage(
+                            model = thumbnailUrl,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(id = R.drawable.album),
+                            contentDescription = null,
+                            tint = primaryColor,
+                            modifier = Modifier.size(28.dp),
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier =
+                            Modifier
+                                .clip(CircleShape)
+                                .background(primaryColor.copy(alpha = 0.16f))
+                                .padding(horizontal = 8.dp, vertical = 2.dp),
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.star),
+                            contentDescription = null,
+                            tint = primaryColor,
+                            modifier = Modifier.size(10.dp),
+                        )
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text(
+                            text = stringResource(R.string.most_played_badge),
+                            style =
+                                MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 9.sp,
+                                    letterSpacing = 0.5.sp,
+                                ),
+                            color = primaryColor,
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = album.title,
+                        style =
+                            MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                            ),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = trackCountText,
+                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Button(
+                    onClick = onPlayAll,
+                    shape = CircleShape,
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                        ),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = Modifier.height(36.dp),
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.play),
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = stringResource(R.string.play_all),
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                    )
+                }
+
+                IconButton(
+                    onClick = onShuffle,
+                    colors =
+                        IconButtonDefaults.iconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            contentColor = MaterialTheme.colorScheme.primary,
+                        ),
+                    modifier = Modifier.size(36.dp),
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.shuffle),
+                        contentDescription = stringResource(R.string.shuffle),
+                        modifier = Modifier.size(16.dp),
                     )
                 }
             }

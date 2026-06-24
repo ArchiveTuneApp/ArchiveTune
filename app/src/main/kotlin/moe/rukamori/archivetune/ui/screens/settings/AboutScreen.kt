@@ -617,7 +617,6 @@ private fun TranslationContributorListItem(
                         text = contributorNames,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }

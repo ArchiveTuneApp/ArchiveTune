@@ -144,6 +144,7 @@ import moe.rukamori.archivetune.lyrics.LyricsUtils.isTtml
 import moe.rukamori.archivetune.lyrics.LyricsUtils.parseLyrics
 import moe.rukamori.archivetune.lyrics.LyricsUtils.parseTtml
 import moe.rukamori.archivetune.lyrics.LyricsUtils.providedRomanizedTextForEntry
+import moe.rukamori.archivetune.lyrics.LyricsUtils.providedTranslationTextForEntry
 import moe.rukamori.archivetune.lyrics.LyricsUtils.romanizeLyricsLine
 import moe.rukamori.archivetune.lyrics.LyricsUtils.shouldRomanizeLyricsLine
 import moe.rukamori.archivetune.lyrics.WordTimestamp
@@ -321,6 +322,13 @@ fun LyricsV2(
         }
 
         entriesWithWords.forEach { entry ->
+            if (providedTranslationTextForEntry(entry) != null) {
+                if (entry.romanizedTextFlow.value != null) {
+                    entry.romanizedTextFlow.value = null
+                }
+                return@forEach
+            }
+
             val providerRomanized = providedRomanizedTextForEntry(entry, romanizationPreferences)
             if (providerRomanized != null) {
                 if (entry.romanizedTextFlow.value != providerRomanized) {
@@ -888,17 +896,20 @@ fun LyricsV2(
                             )
                         }
 
-                        val romanizedText =
-                            if (romanizationPreferences.isEnabled) {
+                        val translationText = remember(item.providerTranslationText, item.text) { providedTranslationTextForEntry(item) }
+                        val secondaryText =
+                            if (translationText != null) {
+                                translationText
+                            } else if (romanizationPreferences.isEnabled) {
                                 val value by item.romanizedTextFlow.collectAsState()
                                 value
                             } else {
                                 null
                             }
 
-                        if (romanizedText != null) {
+                        if (secondaryText != null) {
                             Text(
-                                text = romanizedText!!,
+                                text = secondaryText,
                                 style =
                                     MaterialTheme.typography.bodyMedium.copy(
                                         fontSize = (lyricsTextSize * 0.55f).sp,

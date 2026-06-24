@@ -735,6 +735,7 @@ val LanguageCodeToName =
     mapOf(
         "en" to "English (US)",
         "en-GB" to "English (UK)",
+        "en-NG" to "English (Nigeria)",
         "ja" to "日本語",
         "ko" to "한국어",
         "vi" to "Tiếng Việt",
@@ -800,6 +801,7 @@ val CountryCodeToName =
         "ID" to "Indonesia",
         "TH" to "Thailand",
         "VN" to "Vietnam",
+        "NG" to "Nigeria",
         "PH" to "Philippines",
         "MY" to "Malaysia",
         "SG" to "Singapore",

@@ -383,7 +383,6 @@ jobs:
           exit 1
 
       - name: Sign APK
-        if: matrix.distribution == 'gms'
         uses: ilharp/sign-android-release@v2.0.0
         with:
           releaseDir: ${{ steps.release_dir.outputs.release_dir }}/

@@ -287,7 +287,7 @@
     <string name="settings_updates_subtitle">버전 확인, 업데이트 노트 및 릴리즈 채널 관리</string>
     <string name="settings_about_subtitle">앱 정보, 라이선스 및 기여자 목록 보기</string>
     <string name="settings_account_subtitle">로그인 및 계정 동기화 설정</string>
-    <string name="settings_stats_title">음악 감상 통계</string>
+    <string name="settings_stats_title">감상 통계</string>
     <string name="settings_stats_subtitle">가장 많이 들은 곡, 아티스트 및 재생 기록 요약</string>
     <string name="similar_content">유사한 콘텐츠</string>
     <string name="year_in_music">Year in Music</string>
@@ -494,7 +494,6 @@
     <string name="year_in_music_recap">음악 요약 (Recap)</string>
     <string name="about_content_desc_github">GitHub</string>
     <string name="player_design_v9">머티리얼 익스텐디드</string>
-    <string name="about_position_sang765">기여 팀</string>
     <string name="aod_customize_show_time_labels">시간 정보 표시</string>
     <string name="aod_customize_sample_title">Midnight Archive</string>
     <string name="aod_shape_cookie_6">쿠키 6</string>
@@ -532,7 +531,6 @@
     <string name="storage_folder_pick">대상 폴더 선택</string>
     <string name="spotify_no_tracks">Spotify 노래를 찾을 수 없습니다.</string>
     <string name="android_auto_sort_playlist">재생목록 정렬</string>
-    <string name="about_position_miko">기여 팀</string>
     <string name="year_in_music_intro_details">가장 많이 들은 노래, 아티스트, 앨범 및 총 감상 시간을 한눈에 확인해 보세요.</string>
     <string name="player_stream_client_hi_res_lossless_desc">수신 가능한 경우 무손실(Lossless) 스트림을 우선 사용합니다.</string>
     <string name="spotify_no_sources">Spotify 재생목록을 찾을 수 없습니다.</string>
@@ -549,5 +547,4 @@
     <string name="aod_customize_show_exit_button">나가기 버튼 표시</string>
     <string name="storage_migration_downloads_progress">다운로드한 파일 이동 중… %1$d%%</string>
     <string name="aod_customize_content_position">콘텐츠 위치</string>
-    <string name="about_position_wttexe">실시간 싱크 가사, 그라데이션 및 디자인 개선!</string>
 </resources>

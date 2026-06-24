@@ -523,17 +523,7 @@ private fun AppleMusicGrabber(
                     role = Role.Button,
                     onClick = onClick,
                 ),
-        contentAlignment = Alignment.Center,
-    ) {
-        Box(
-            modifier =
-                Modifier
-                    .width(42.dp)
-                    .height(5.dp)
-                    .clip(RoundedCornerShape(50))
-                    .background(AppleMusicForeground.copy(alpha = 0.34f)),
-        )
-    }
+    )
 }
 
 @Composable

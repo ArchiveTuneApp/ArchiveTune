@@ -128,6 +128,7 @@ import moe.rukamori.archivetune.lyrics.LyricsUtils.parseLyrics
 import moe.rukamori.archivetune.lyrics.LyricsUtils.parseTtml
 import moe.rukamori.archivetune.lyrics.LyricsUtils.providedRomanizedTextForEntry
 import moe.rukamori.archivetune.lyrics.LyricsUtils.providedRomanizedWordsForEntry
+import moe.rukamori.archivetune.lyrics.LyricsUtils.providedTranslationTextForEntry
 import moe.rukamori.archivetune.lyrics.LyricsUtils.romanizeLyricsLine
 import moe.rukamori.archivetune.lyrics.LyricsUtils.romanizeLyricsWordWithLineContext
 import moe.rukamori.archivetune.lyrics.LyricsUtils.shouldRomanizeLyricsLine
@@ -271,6 +272,10 @@ fun LyricsEnhanced(
 
         val toRomanize =
             lyricsEntries.mapIndexedNotNull { index, entry ->
+                if (providedTranslationTextForEntry(entry) != null && (!isTtmlFormat || entry.words == null)) {
+                    return@mapIndexedNotNull null
+                }
+
                 val hasProviderRomanization =
                     providedRomanizedTextForEntry(entry, romanizationPreferences) != null
                 if (hasProviderRomanization || shouldRomanizeLyricsLine(entry.text, romanizationPreferences)) {
@@ -1237,6 +1242,7 @@ private fun buildSyncedLyrics(
         if (entry.text.isBlank() && entry.words.isNullOrEmpty()) return@forEachIndexed
 
         if (isTtml && entry.words != null) {
+            val translation = providedTranslationTextForEntry(entry)
             val mainWords = entry.words!!.filter { !it.isBackground }
             val bgWords = entry.words!!.filter { it.isBackground }
             val alignment =
@@ -1279,7 +1285,7 @@ private fun buildSyncedLyrics(
             lines.add(
                 KaraokeLine.MainKaraokeLine(
                     syllables = mainSyllables,
-                    translation = null,
+                    translation = translation,
                     alignment = alignment,
                     start = lineStart,
                     end = lineEnd,
@@ -1304,7 +1310,7 @@ private fun buildSyncedLyrics(
             lines.add(
                 SyncedLine(
                     content = entry.text,
-                    translation = romanizationMap[index]?.firstOrNull(),
+                    translation = providedTranslationTextForEntry(entry) ?: romanizationMap[index]?.firstOrNull(),
                     start = entry.time.toInt(),
                     end = lineEnd,
                 ),

@@ -265,9 +265,6 @@
     <string name="player_slider_style">Oyuncu kaydırıcı stili</string>
     <string name="misc">Çeşitli</string>
     <string name="default_open_tab">Varsayılan açık sekme</string>
-    <string name="grid_cell_size">Izgara hücresi boyutu</string>
-    <string name="small">Küçük</string>
-    <string name="big">Büyük</string>
     <string name="lyrics_animation_style">Şarkı sözü animasyon stili</string>
     <string name="lyrics_line_spacing">Şarkı sözleri satır aralığı</string>
     <string name="content">İçerik</string>
@@ -364,7 +361,7 @@
     <string name="preview">Önizleme</string>
     <string name="enable_discord_rpc">Zengin Durumu Etkinleştir</string>
     <string name="scrobbling">Skrobling</string>
-    <string name="lastfm_integration">Last.fm Entegrasyonu</string>
+    <string name="lastfm_integration">Last.fm / Libre.fm Entegrasyonu</string>
     <string name="enable_scrobbling">Scrobbling\'i Etkinleştir</string>
     <string name="lastfm_now_playing">Şimdi Oynatılıyor Güncellemesi</string>
     <string name="scrobbling_configuration">Scrobbling Yapılandırması</string>

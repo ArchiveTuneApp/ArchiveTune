@@ -23,8 +23,12 @@ internal suspend fun resolveCanvasArtworkForPlayback(
     requireVertical: Boolean,
     allowNetwork: Boolean,
 ): CanvasArtwork? {
-    CanvasArtworkPlaybackCache
-        .get(mediaId)
+    withContext(Dispatchers.IO) {
+        CanvasArtworkPlaybackCache.get(
+            mediaId = mediaId,
+            preferCachedOnly = !allowNetwork,
+        )
+    }
         ?.takeIf { artwork -> artwork.hasRequiredCanvasVariant(requireVertical) }
         ?.let { return it }
 
@@ -53,9 +57,7 @@ internal suspend fun resolveCanvasArtworkForPlayback(
             return@withContext null
         }
 
-        CanvasArtworkPlaybackCache
-            .put(mediaId, fetched)
-            .takeIf { artwork -> artwork.hasRequiredCanvasVariant(requireVertical) }
+        CanvasArtworkPlaybackCache.put(mediaId, fetched)
     }
 }
 

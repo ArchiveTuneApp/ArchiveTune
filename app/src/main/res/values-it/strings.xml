@@ -263,9 +263,6 @@
     <string name="player_slider_style">Stile del dispositivo di scorrimento del giocatore</string>
     <string name="misc">Varie</string>
     <string name="default_open_tab">Scheda aperta predefinita</string>
-    <string name="grid_cell_size">Dimensione delle celle della griglia</string>
-    <string name="small">Piccolo</string>
-    <string name="big">Grande</string>
     <string name="lyrics_animation_style">Stile di animazione dei testi</string>
     <string name="lyrics_line_spacing">Interlinea del testo</string>
     <string name="content">Contenuto</string>

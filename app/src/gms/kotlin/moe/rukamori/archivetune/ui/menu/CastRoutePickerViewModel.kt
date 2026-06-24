@@ -124,14 +124,16 @@ internal class CastRoutePickerViewModel(
         _screenState.value = CastRoutePickerScreenState.Loading
     }
 
-    fun selectRoute(routeId: String) {
-        val castSelector = selector ?: return
+    fun selectRoute(routeId: String): Boolean {
+        val castSelector = selector ?: return false
         val route =
             router.routes.firstOrNull {
-                it.id == routeId && it.isEnabled && it.matchesSelector(castSelector)
-            } ?: return
+                it.id == routeId && it.isSelectableCastRoute(castSelector)
+            } ?: return false
+        if (route == router.selectedRoute || route.isSelected) return false
         router.selectRoute(route)
         refreshRoutes()
+        return true
     }
 
     override fun onCleared() {
@@ -144,8 +146,8 @@ internal class CastRoutePickerViewModel(
         val routes =
             router.routes
                 .asSequence()
-                .filter { it.isEnabled && !it.isDefault && !it.isBluetooth && it.matchesSelector(castSelector) }
-                .map { it.toUiModel(router.selectedRoute == it) }
+                .filter { it.isSelectableCastRoute(castSelector) }
+                .map { it.toUiModel(router.selectedRoute == it || it.isSelected) }
                 .sortedWith(compareByDescending<CastRouteUiModel> { it.selected }.thenBy { it.name.lowercase() })
                 .toList()
 
@@ -167,10 +169,21 @@ internal class CastRoutePickerViewModel(
             viewModelScope.launch {
                 delay(3_500)
                 val castSelector = selector ?: return@launch
-                if (router.routes.none { it.isEnabled && !it.isDefault && !it.isBluetooth && it.matchesSelector(castSelector) }) {
+                if (router.routes.none { it.isSelectableCastRoute(castSelector) }) {
                     _screenState.value = CastRoutePickerScreenState.Empty
                 }
             }
+    }
+
+    private fun MediaRouter.RouteInfo.isSelectableCastRoute(selector: MediaRouteSelector): Boolean {
+        val defaultRoute = router.defaultRoute
+        return isEnabled &&
+            this != defaultRoute &&
+            id != defaultRoute.id &&
+            !isDefault &&
+            !isBluetooth &&
+            !isSystemRoute &&
+            matchesSelector(selector)
     }
 
     private fun MediaRouter.RouteInfo.toUiModel(selected: Boolean) =

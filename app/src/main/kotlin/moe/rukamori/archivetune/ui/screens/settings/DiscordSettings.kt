@@ -162,8 +162,7 @@ fun DiscordSettings(
         if (discordRPC && discordToken.isNotBlank()) {
             Timber.tag("DiscordSettings").d("Discord Rich Presence enabled, MusicService will handle start")
         } else {
-            Timber.tag("DiscordSettings").d("Discord Rich Presence disabled or not authorized, stopping manager")
-            DiscordPresenceManager.stop()
+            Timber.tag("DiscordSettings").d("Discord Rich Presence disabled or not authorized, MusicService will handle stop")
         }
     }
 
@@ -504,13 +503,7 @@ fun DiscordSettings(
                                             coroutineScope.launch {
                                                 isRefreshing = true
                                                 val success =
-                                                    DiscordPresenceManager.updatePresence(
-                                                        context = context,
-                                                        token = discordToken,
-                                                        song = song,
-                                                        positionMs = playerConnection.player.currentPosition,
-                                                        isPaused = !playerConnection.player.isPlaying,
-                                                    )
+                                                    playerConnection.service.refreshDiscordNow()
                                                 isRefreshing = false
                                                 snackbarHostState.showSnackbar(
                                                     message =
@@ -721,7 +714,6 @@ fun DiscordSettings(
                             authorizedUsername = ""
                             authorizedName = ""
                             authorizedAvatarUrl = ""
-                            DiscordPresenceManager.stop()
                             authorizationUiModeName = DiscordAuthorizationUiMode.Idle.name
                             authorizationMessage = null
                             authorizationSession = DiscordOAuthRepository.createAuthorizationSession()
@@ -1351,7 +1343,7 @@ fun RichPresence(
                                 when (largeImageType.lowercase()) {
                                     "thumbnail" -> song?.song?.thumbnailUrl
                                     "artist" -> song?.artists?.firstOrNull()?.thumbnailUrl
-                                    "appicon" -> "https://raw.githubusercontent.com/koiverse/ArchiveTune/main/fastlane/metadata/android/en-US/images/icon.png"
+                                    "appicon" -> "https://raw.githubusercontent.com/ArchiveTuneApp/ArchiveTune/main/fastlane/metadata/android/en-US/images/icon.png"
                                     "custom" -> largeImageCustomUrl.ifBlank { song?.song?.thumbnailUrl }
                                     else -> song?.song?.thumbnailUrl
                                 }
@@ -1381,7 +1373,7 @@ fun RichPresence(
                                 when (smallImageType.lowercase()) {
                                     "thumbnail" -> songThumb
                                     "artist" -> artistThumb
-                                    "appicon" -> "https://raw.githubusercontent.com/koiverse/ArchiveTune/main/fastlane/metadata/android/en-US/images/icon.png"
+                                    "appicon" -> "https://raw.githubusercontent.com/ArchiveTuneApp/ArchiveTune/main/fastlane/metadata/android/en-US/images/icon.png"
                                     "custom" -> smallImageCustomUrl.takeIf { it.isNotBlank() } ?: songThumb
                                     "dontshow", "none" -> null
                                     else -> artistThumb

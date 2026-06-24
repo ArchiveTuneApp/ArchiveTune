@@ -308,7 +308,7 @@
     <string name="backup_category_settings">Configuración de la aplicación</string>
     <string name="backup_category_settings_desc">Apariencia, reproducción y preferencias</string>
     <string name="backup_category_account">Detalles de la cuenta</string>
-    <string name="backup_category_account_desc">YouTube, Last.fm, Discord y credenciales del proxy</string>
+    <string name="backup_category_account_desc">YouTube, Spotify, Last.fm, Libre.fm, Discord y credenciales de proxy</string>
     <string name="news">Noticias de los desarrolladores</string>
     <string name="news_loading">Cargando noticias…</string>
     <string name="news_empty_title">Aquí aún no hay nada</string>
@@ -363,7 +363,7 @@
     <string name="settings_playback_subtitle">Comportamiento del audio, fundido cruzado y reproducción en segundo plano</string>
     <string name="settings_behavior_title">Comportamiento</string>
     <string name="settings_behavior_subtitle">Historial, ajustes predeterminados y configuración de privacidad</string>
-    <string name="settings_integration_subtitle">Discord, Last.fm, y ListenBrainz</string>
+    <string name="settings_integration_subtitle">Discord, Last.fm, Libre.fm, y ListenBrainz</string>
     <string name="settings_backup_restore_subtitle">Exporta y recupera los datos de tus aplicaciones personales</string>
     <string name="settings_developer_options_title">Opciones de desarrollador</string>
     <string name="settings_developer_options_subtitle">Funciones experimentales y depuración</string>
@@ -543,13 +543,10 @@
     <string name="ai_model_fetch_failed">No se pudieron obtener los modelos disponibles.</string>
     <string name="ai_fetch_models">Obtener modelos</string>
     <string name="about_lead_developer">Desarrollador principal</string>
-    <string name="about_archive_tune_team">Equipo de ArchiveTune</string>
+    <string name="about_archive_tune_team">Equipo</string>
     <string name="about_respecter">Cumplir</string>
     <string name="about_contributors">Colaboradores</string>
     <string name="about_position_lead_dev">¿Eh?</string>
-    <string name="about_position_wttexe">¡Sincronización de letras, degradados y mejoras en la interfaz de usuario!</string>
-    <string name="about_position_miko">Equipo de colaboradores</string>
-    <string name="about_position_sang765">Equipo de colaboradores</string>
     <string name="about_position_mo_agamy">Estructura básica | Metrolist</string>
     <string name="about_position_zion_huang">Creador de InnerTune · Fundador de Metrolist, ArchiveTune y otras bifurcaciones</string>
     <string name="about_content_desc_github">GitHub</string>

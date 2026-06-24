@@ -48,7 +48,6 @@
     <string name="library_artists_subtitle">All your artists, in one place</string>
     <string name="library_albums_subtitle">All your albums, beautifully organized</string>
     <string name="most_played_badge">MOST PLAYED</string>
-    <string name="favorite_songs_title">Favorite Songs</string>
     <string name="play_all">Play all</string>
     <string name="offline_shortcut">Offline</string>
     <string name="cached">Cached</string>
@@ -86,7 +85,6 @@
     <string name="song_singular">Song</string>
     <string name="more_playlists_desc">More Playlists</string>
     <string name="more_label">More</string>
-    <string name="sort_a_z">A-Z</string>
     <string name="tracks_count_label">Tracks count</string>
     <string name="recently_updated">Recently updated</string>
     <string name="custom_order">Custom order</string>
@@ -123,12 +121,15 @@
     <string name="radio">Radio</string>
     <string name="cast">Cast</string>
     <string name="cast_devices">Cast devices</string>
+    <string name="cast_sheet_subtitle">Choose where ArchiveTune plays</string>
+    <string name="cast_available_devices">Available devices</string>
     <string name="cast_searching_devices">Searching for devices</string>
     <string name="cast_no_devices">No Cast devices found</string>
     <string name="cast_no_devices_desc">Make sure your device is on the same Wi-Fi network.</string>
     <string name="cast_connected_to">Connected to %1$s</string>
     <string name="cast_disconnect">Disconnect</string>
     <string name="cast_available_device">Available device</string>
+    <string name="cast_available_device_count">Devices found: %1$d</string>
     <string name="cast_route_picker_unavailable">Cast is unavailable right now.</string>
     <string name="shuffle">Shuffle</string>
     <string name="music_recognition">Music Recognition</string>
@@ -443,9 +444,6 @@
     <string name="haptics">Vibration</string>
     <string name="haptics_desc">Enable haptic feedback on interactive elements</string>
     <string name="default_open_tab">Default open tab</string>
-    <string name="grid_cell_size">Grid cell size</string>
-    <string name="small">Small</string>
-    <string name="big">Big</string>
     <string name="lyrics_animation_style">Lyrics animation style</string>
     <string name="lyrics_mode">Lyrics mode</string>
     <string name="lyrics_mode_v2">V2 Legacy</string>
@@ -721,7 +719,7 @@
     <string name="target_language">Target Language</string>
     <string name="close_dialog">Close</string>
     <string name="support_development_title">Support development</string>
-    <string name="support_development_message">Hey there! I\'m Koiverse, the developer of ArchiveTune. If ArchiveTune has earned a place in your daily listening, you can help keep it moving forward by donating or starring the project on GitHub. Thanks for supporting the work behind the app.</string>
+    <string name="support_development_message">Hey there! I\'m rukamori, the developer of ArchiveTune. If ArchiveTune has earned a place in your daily listening, you can help keep it moving forward by donating or starring the project on GitHub. Thanks for supporting the work behind the app.</string>
     <string name="support_development_donate">Donate to support development</string>
     <string name="support_development_star">Star on GitHub</string>
     <string name="later">Later</string>

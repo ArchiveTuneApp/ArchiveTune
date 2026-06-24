@@ -310,9 +310,6 @@
     <string name="palette_aurora">极光绿</string>
     <string name="palette_candy">糖果粉</string>
     <string name="palette_rainbow">七彩红</string>
-    <string name="grid_cell_size">网格单元大小</string>
-    <string name="small">小</string>
-    <string name="big">大</string>
     <string name="lyrics_line_spacing">歌词行距</string>
     <string name="content">内容</string>
     <string name="action_logout">登出</string>

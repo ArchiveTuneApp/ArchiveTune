@@ -7,7 +7,7 @@
     <application>
         <meta-data
             android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
-            android:value="androidx.media3.cast.DefaultCastOptionsProvider" />
+            android:value="moe.rukamori.archivetune.cast.ArchiveTuneCastOptionsProvider" />
     </application>
 
 </manifest>

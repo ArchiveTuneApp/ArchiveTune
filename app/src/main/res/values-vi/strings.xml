@@ -46,7 +46,6 @@
     <string name="library_artists_subtitle">Tất cả nghệ sĩ của bạn, tập trung một chỗ</string>
     <string name="library_albums_subtitle">Tất cả album của bạn, được sắp xếp đẹp mắt</string>
     <string name="most_played_badge">NGHE NHIỀU NHẤT</string>
-    <string name="favorite_songs_title">Bài hát yêu thích</string>
     <string name="play_all">Phát tất cả</string>
     <string name="offline_shortcut">Ngoại tuyến</string>
     <string name="cached">Đã lưu bộ nhớ đệm</string>
@@ -75,7 +74,6 @@
     <string name="song_singular">Bài hát</string>
     <string name="more_playlists_desc">Thêm Danh sách phát</string>
     <string name="more_label">Thêm</string>
-    <string name="sort_a_z">A-Z</string>
     <string name="tracks_count_label">Số lượng bài hát</string>
     <string name="recently_updated">Cập nhật gần đây</string>
     <string name="custom_order">Thứ tự tùy chỉnh</string>
@@ -336,9 +334,6 @@
     <string name="player_slider_style">Kiểu thanh trượt trình phát</string>
     <string name="misc">Khác</string>
     <string name="default_open_tab">Tab mặc định mở</string>
-    <string name="grid_cell_size">Kích thước ô lưới</string>
-    <string name="small">Nhỏ</string>
-    <string name="big">Lớn</string>
     <string name="lyrics_animation_style">Kiểu hoạt hình lời bài hát</string>
     <string name="lyrics_line_spacing">Khoảng cách dòng lời bài hát</string>
     <string name="content">Nội dung</string>
