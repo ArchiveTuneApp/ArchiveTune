@@ -123,12 +123,15 @@
     <string name="radio">Radio</string>
     <string name="cast">Cast</string>
     <string name="cast_devices">Cast devices</string>
+    <string name="cast_sheet_subtitle">Choose where ArchiveTune plays</string>
+    <string name="cast_available_devices">Available devices</string>
     <string name="cast_searching_devices">Searching for devices</string>
     <string name="cast_no_devices">No Cast devices found</string>
     <string name="cast_no_devices_desc">Make sure your device is on the same Wi-Fi network.</string>
     <string name="cast_connected_to">Connected to %1$s</string>
     <string name="cast_disconnect">Disconnect</string>
     <string name="cast_available_device">Available device</string>
+    <string name="cast_available_device_count">Devices found: %1$d</string>
     <string name="cast_route_picker_unavailable">Cast is unavailable right now.</string>
     <string name="shuffle">Shuffle</string>
     <string name="music_recognition">Music Recognition</string>
@@ -721,7 +724,7 @@
     <string name="target_language">Target Language</string>
     <string name="close_dialog">Close</string>
     <string name="support_development_title">Support development</string>
-    <string name="support_development_message">Hey there! I\'m Koiverse, the developer of ArchiveTune. If ArchiveTune has earned a place in your daily listening, you can help keep it moving forward by donating or starring the project on GitHub. Thanks for supporting the work behind the app.</string>
+    <string name="support_development_message">Hey there! I\'m rukamori, the developer of ArchiveTune. If ArchiveTune has earned a place in your daily listening, you can help keep it moving forward by donating or starring the project on GitHub. Thanks for supporting the work behind the app.</string>
     <string name="support_development_donate">Donate to support development</string>
     <string name="support_development_star">Star on GitHub</string>
     <string name="later">Later</string>
@@ -733,6 +736,10 @@
     <string name="lyrics">Lyrics</string>
     <string name="translation_success">Translation saved</string>
     <string name="translation_failed">Translation failed</string>
+    <string name="translate_in_background">Translate in background</string>
+    <string name="ai_translate_in_background_desc">The translation will continue in the background. You will be notified when it completes.</string>
+    <string name="ai_translation_notification_channel_name">AI Translation</string>
+    <string name="ai_translation_notification_title">AI Translation</string>
     <string name="discord_button_options">Button Options</string>
     <string name="discord_image_options">Image Options</string>
     <string name="refresh">Refresh</string>
@@ -839,6 +846,7 @@
     <string name="update_notification_title">Update Available</string>
     <string name="update_notification_text">ArchiveTune %s is now available</string>
     <string name="download">Download</string>
+    <string name="download_complete">Download complete</string>
     <string name="permissions_title">Allow ArchiveTune to work best</string>
     <string name="permissions_subtitle">We use a few permissions to play and manage your music reliably. You can change these anytime in system settings.</string>
     <string name="permission_storage_title">Storage access</string>

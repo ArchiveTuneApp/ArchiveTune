@@ -11,23 +11,29 @@ package moe.rukamori.archivetune.ui.menu
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SegmentedListItem
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -69,8 +75,9 @@ fun rememberCastPlayerMenuAction(): NewAction? {
             onStopDiscovery = routePickerViewModel::stopDiscovery,
             onRouteClick = remember(routePickerViewModel, viewModel) {
                 { routeId: String ->
-                    routePickerViewModel.selectRoute(routeId)
-                    viewModel.hideRoutePicker()
+                    if (routePickerViewModel.selectRoute(routeId)) {
+                        viewModel.hideRoutePicker()
+                    }
                 }
             },
             onDisconnect = remember(viewModel) {
@@ -116,28 +123,39 @@ private fun CastRoutePickerBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
+        sheetMaxWidth = 640.dp,
+        tonalElevation = 0.dp,
     ) {
         Column(
             modifier =
                 Modifier
                     .fillMaxWidth()
+                    .imePadding()
                     .navigationBarsPadding()
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(18.dp),
+                    .padding(horizontal = 20.dp)
+                    .padding(top = 4.dp, bottom = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            CastRoutePickerHeader(onDismissRequest = onDismissRequest)
+            Column(
+                modifier =
+                    Modifier
+                        .widthIn(max = 560.dp)
+                        .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(18.dp),
+            ) {
+                CastRoutePickerHeader(onDismissRequest = onDismissRequest)
 
-            castState.device?.takeIf { castState.isConnected }?.let { device ->
-                CastConnectedDeviceStatus(
-                    deviceName = device.name,
+                CastRoutePickerStatus(
+                    castState = castState,
+                    screenState = screenState,
                     onDisconnect = onDisconnect,
                 )
-            }
 
-            CastRoutePickerContent(
-                screenState = screenState,
-                onRouteClick = onRouteClick,
-            )
+                CastRoutePickerContent(
+                    screenState = screenState,
+                    onRouteClick = onRouteClick,
+                )
+            }
         }
     }
 }
@@ -146,24 +164,43 @@ private fun CastRoutePickerBottomSheet(
 private fun CastRoutePickerHeader(onDismissRequest: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(
-            painter = painterResource(androidx.media3.cast.R.drawable.media_route_button_disconnected),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(32.dp),
-        )
-        Text(
-            text = stringResource(R.string.cast_devices),
+        Surface(
+            shape = MaterialTheme.shapes.large,
+            color = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ) {
+            Icon(
+                painter = painterResource(androidx.media3.cast.R.drawable.media_route_button_disconnected),
+                contentDescription = null,
+                modifier =
+                    Modifier
+                        .padding(12.dp)
+                        .size(28.dp),
+            )
+        }
+        Column(
             modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        IconButton(onClick = onDismissRequest) {
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.cast_devices),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = stringResource(R.string.cast_sheet_subtitle),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        FilledTonalIconButton(onClick = onDismissRequest) {
             Icon(
                 painter = painterResource(R.drawable.close),
                 contentDescription = stringResource(R.string.close_dialog),
@@ -173,25 +210,56 @@ private fun CastRoutePickerHeader(onDismissRequest: () -> Unit) {
 }
 
 @Composable
-private fun CastConnectedDeviceStatus(
-    deviceName: String,
+private fun CastRoutePickerStatus(
+    castState: CastUiState,
+    screenState: CastRoutePickerScreenState,
     onDisconnect: () -> Unit,
 ) {
-    Row(
+    val connectedDeviceName = castState.device?.name
+
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
-        Text(
-            text = stringResource(R.string.cast_connected_to, deviceName),
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-        )
-        TextButton(onClick = onDisconnect) {
-            Text(text = stringResource(R.string.cast_disconnect))
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                painter = painterResource(androidx.media3.cast.R.drawable.media_route_button_disconnected),
+                contentDescription = null,
+                tint =
+                    if (castState.isConnected) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                modifier = Modifier.size(24.dp),
+            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    text =
+                        if (castState.isConnected && connectedDeviceName != null) {
+                            stringResource(R.string.cast_connected_to, connectedDeviceName)
+                        } else {
+                            screenState.statusText()
+                        },
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            if (castState.isConnected) {
+                TextButton(onClick = onDisconnect) {
+                    Text(text = stringResource(R.string.cast_disconnect))
+                }
+            }
         }
     }
 }
@@ -201,89 +269,154 @@ private fun CastRoutePickerContent(
     screenState: CastRoutePickerScreenState,
     onRouteClick: (String) -> Unit,
 ) {
-    when (screenState) {
-        CastRoutePickerScreenState.Loading -> CastRoutePickerLoading()
-        CastRoutePickerScreenState.Empty -> CastRoutePickerEmpty()
-        is CastRoutePickerScreenState.Error ->
-            Text(
-                text = stringResource(screenState.messageResId),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.error,
-            )
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.cast_available_devices),
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 4.dp),
+        )
 
-        is CastRoutePickerScreenState.Success ->
-            LazyColumn(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 420.dp),
-                verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
-            ) {
-                itemsIndexed(
-                    items = screenState.routes,
-                    key = { _, route -> route.id },
-                    contentType = { _, _ -> "cast_route_device" },
-                ) { index, route ->
-                    val routeClick = remember(route.id, onRouteClick) { { onRouteClick(route.id) } }
-                    CastRouteRow(
-                        route = route,
-                        index = index,
-                        count = screenState.routes.size,
-                        onClick = routeClick,
-                    )
-                }
-            }
+        when (screenState) {
+            CastRoutePickerScreenState.Loading -> CastRoutePickerLoading()
+            CastRoutePickerScreenState.Empty -> CastRoutePickerEmpty()
+            is CastRoutePickerScreenState.Error -> CastRoutePickerError(messageResId = screenState.messageResId)
+            is CastRoutePickerScreenState.Success -> CastRoutePickerRouteList(screenState.routes, onRouteClick)
+        }
+    }
+}
+
+@Composable
+private fun CastRoutePickerRouteList(
+    routes: List<CastRouteUiModel>,
+    onRouteClick: (String) -> Unit,
+) {
+    LazyColumn(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .heightIn(max = 420.dp)
+                .selectableGroup(),
+        verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
+    ) {
+        itemsIndexed(
+            items = routes,
+            key = { _, route -> route.id },
+            contentType = { _, _ -> "cast_route_device" },
+        ) { index, route ->
+            val routeClick = remember(route.id, onRouteClick) { { onRouteClick(route.id) } }
+            CastRouteRow(
+                route = route,
+                index = index,
+                count = routes.size,
+                onClick = routeClick,
+            )
+        }
+    }
+}
+
+@Composable
+private fun CastRoutePickerError(messageResId: Int) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.errorContainer,
+        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+    ) {
+        Row(
+            modifier = Modifier.padding(18.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                painter = painterResource(androidx.media3.cast.R.drawable.media_route_button_disconnected),
+                contentDescription = null,
+                modifier = Modifier.size(28.dp),
+            )
+            Text(
+                text = stringResource(messageResId),
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
     }
 }
 
 @Composable
 private fun CastRoutePickerLoading() {
-    Column(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .heightIn(min = 180.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
     ) {
-        CircularWavyProgressIndicator(modifier = Modifier.size(40.dp))
-        Text(
-            text = stringResource(R.string.cast_searching_devices),
-            modifier = Modifier.padding(top = 18.dp),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 156.dp)
+                    .padding(22.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            LoadingIndicator(modifier = Modifier.size(44.dp))
+            Text(
+                text = stringResource(R.string.cast_searching_devices),
+                modifier = Modifier.padding(top = 18.dp),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = stringResource(R.string.cast_no_devices_desc),
+                modifier = Modifier.padding(top = 6.dp),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 
 @Composable
 private fun CastRoutePickerEmpty() {
-    Column(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .heightIn(min = 180.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
     ) {
-        Icon(
-            painter = painterResource(androidx.media3.cast.R.drawable.media_route_button_disconnected),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(36.dp),
-        )
-        Text(
-            text = stringResource(R.string.cast_no_devices),
-            modifier = Modifier.padding(top = 16.dp),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Text(
-            text = stringResource(R.string.cast_no_devices_desc),
-            modifier = Modifier.padding(top = 6.dp),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 156.dp)
+                    .padding(22.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Icon(
+                painter = painterResource(androidx.media3.cast.R.drawable.media_route_button_disconnected),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(38.dp),
+            )
+            Text(
+                text = stringResource(R.string.cast_no_devices),
+                modifier = Modifier.padding(top = 16.dp),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = stringResource(R.string.cast_no_devices_desc),
+                modifier = Modifier.padding(top = 6.dp),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
     }
 }
 
@@ -301,22 +434,35 @@ private fun CastRouteRow(
         shapes = ListItemDefaults.segmentedShapes(index = index, count = count),
         colors =
             ListItemDefaults.segmentedColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                 selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
             ),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp),
         leadingContent = {
-            Icon(
-                painter =
-                    painterResource(androidx.media3.cast.R.drawable.media_route_button_disconnected),
-                contentDescription = null,
-                tint =
+            Surface(
+                shape = MaterialTheme.shapes.medium,
+                color =
                     if (route.selected) {
-                        MaterialTheme.colorScheme.onSecondaryContainer
+                        MaterialTheme.colorScheme.secondary
                     } else {
-                        MaterialTheme.colorScheme.primary
+                        MaterialTheme.colorScheme.surfaceContainerHighest
                     },
-                modifier = Modifier.size(26.dp),
-            )
+                contentColor =
+                    if (route.selected) {
+                        MaterialTheme.colorScheme.onSecondary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+            ) {
+                Icon(
+                    painter = painterResource(androidx.media3.cast.R.drawable.media_route_button_disconnected),
+                    contentDescription = null,
+                    modifier =
+                        Modifier
+                            .padding(10.dp)
+                            .size(22.dp),
+                )
+            }
         },
         trailingContent = {
             if (route.connecting) {
@@ -353,4 +499,13 @@ private fun CastRouteUiModel.supportingText(): String =
         connecting -> stringResource(R.string.connecting)
         description != null -> description
         else -> stringResource(R.string.cast_available_device)
+    }
+
+@Composable
+private fun CastRoutePickerScreenState.statusText(): String =
+    when (this) {
+        CastRoutePickerScreenState.Loading -> stringResource(R.string.cast_searching_devices)
+        CastRoutePickerScreenState.Empty -> stringResource(R.string.cast_no_devices)
+        is CastRoutePickerScreenState.Error -> stringResource(messageResId)
+        is CastRoutePickerScreenState.Success -> stringResource(R.string.cast_available_device_count, routes.size)
     }

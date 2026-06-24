@@ -107,6 +107,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -320,6 +321,7 @@ class MainActivity : ComponentActivity() {
     private var pendingVoiceSearchQuery: String? = null
     private var pendingAodModeRequest = false
     private var pendingAodModeJob: Job? = null
+    private var aodModeLaunchRequestCount by mutableIntStateOf(0)
     private var pendingTogetherJoinLink: String? = null
     private var pendingBackupRestoreUri by mutableStateOf<Uri?>(null)
     private var latestVersionName by mutableStateOf(BuildConfig.VERSION_NAME)
@@ -383,7 +385,7 @@ class MainActivity : ComponentActivity() {
             lifecycleScope.launch {
                 connection.queueRestoreCompleted.first { it }
                 if (awaitRestorablePlayback(connection)) {
-                    connection.aodModeEnabled.value = true
+                    aodModeLaunchRequestCount++
                 }
             }
     }
@@ -992,6 +994,20 @@ class MainActivity : ComponentActivity() {
                     val aodModeEnabled by remember(playerConnection) {
                         playerConnection?.aodModeEnabled ?: MutableStateFlow(false)
                     }.collectAsStateWithLifecycle()
+
+                    LaunchedEffect(aodModeLaunchRequestCount, playerConnection) {
+                        val launchRequestCount = aodModeLaunchRequestCount
+                        if (launchRequestCount == 0) return@LaunchedEffect
+                        val connection = playerConnection ?: return@LaunchedEffect
+                        if (!awaitRestorablePlayback(connection)) return@LaunchedEffect
+                        if (!playerBottomSheetState.isExpandedOrExpanding) {
+                            playerBottomSheetState.expandSoft()
+                        }
+                        connection.aodModeEnabled.value = true
+                        if (aodModeLaunchRequestCount == launchRequestCount) {
+                            aodModeLaunchRequestCount = 0
+                        }
+                    }
 
                     LaunchedEffect(aodModeEnabled) {
                         val controller = WindowCompat.getInsetsController(window, window.decorView)

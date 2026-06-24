@@ -7,9 +7,14 @@
 
 package moe.rukamori.archivetune.viewmodels
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
+import android.os.Build
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -103,7 +108,33 @@ class LyricsMenuViewModel
         private val _isNetworkAvailable = MutableStateFlow(false)
         val isNetworkAvailable: StateFlow<Boolean> = _isNetworkAvailable.asStateFlow()
 
+        private fun createNotificationChannel() {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val name = context.getString(R.string.ai_translation_notification_channel_name)
+                val importance = NotificationManager.IMPORTANCE_DEFAULT
+                val channel = NotificationChannel(AI_TRANSLATION_CHANNEL_ID, name, importance)
+                val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                manager.createNotificationChannel(channel)
+            }
+        }
+
+        private var notificationId = 1000
+
+        private fun postNotification(message: String) {
+            val notification =
+                NotificationCompat.Builder(context, AI_TRANSLATION_CHANNEL_ID)
+                    .setSmallIcon(android.R.drawable.ic_dialog_info)
+                    .setContentTitle(context.getString(R.string.ai_translation_notification_title))
+                    .setContentText(message)
+                    .setStyle(NotificationCompat.BigTextStyle().bigText(message))
+                    .setAutoCancel(true)
+                    .build()
+            NotificationManagerCompat.from(context).notify(notificationId++, notification)
+        }
+
         init {
+            createNotificationChannel()
+
             viewModelScope.launch {
                 networkConnectivity.networkStatus.collect { isConnected ->
                     _isNetworkAvailable.value = isConnected
@@ -253,18 +284,24 @@ class LyricsMenuViewModel
                     context.dataStore.edit { settings ->
                         settings[AiApiValidationStatusKey] = AiApiValidationStatus.SUCCESS.name
                     }
-                    _aiTranslationEvents.emit(context.getString(R.string.translation_success))
+                    val msg = context.getString(R.string.translation_success)
+                    _aiTranslationEvents.emit(msg)
+                    postNotification(msg)
                 } catch (e: Exception) {
                     context.dataStore.edit { settings ->
                         settings[AiApiValidationStatusKey] = AiApiValidationStatus.FAILED.name
                     }
-                    _aiTranslationEvents.emit(
-                        context.getString(R.string.translation_failed) + ": " + (e.localizedMessage ?: e.toString()),
-                    )
+                    val msg = context.getString(R.string.translation_failed) + ": " + (e.localizedMessage ?: e.toString())
+                    _aiTranslationEvents.emit(msg)
+                    postNotification(msg)
                 } finally {
                     isAiTranslating.value = false
                 }
             }
+        }
+
+        companion object {
+            private const val AI_TRANSLATION_CHANNEL_ID = "ai_translation_channel"
         }
 
         private fun LyricsResult.toUiModel(index: Int): LyricsSearchResultUiModel {

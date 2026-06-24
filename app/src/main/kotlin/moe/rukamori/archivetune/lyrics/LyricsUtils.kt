@@ -419,6 +419,7 @@ object LyricsUtils {
                     providerRomanizedText = line.providerRomanizedText,
                     providerRomanizedWords = line.providerRomanizedWords,
                     providerRomanizedLanguage = line.providerRomanizedLanguage,
+                    providerTranslationText = line.providerTranslationText,
                 )
             }.sorted()
     }
@@ -433,7 +434,7 @@ object LyricsUtils {
                 result.addAll(entries)
             }
         }
-        return result.sorted()
+        return mergeLineSyncedTranslations(result).sorted()
     }
 
     fun normalizeLyricsText(lyrics: String): String {
@@ -600,6 +601,28 @@ object LyricsUtils {
         val time = matchResult.groupValues[1].toLongOrNull() ?: return null
         val text = cleanInlineWordTimingText(matchResult.groupValues[2])
         return listOf(LyricsEntry(time, text))
+    }
+
+    private fun mergeLineSyncedTranslations(entries: List<LyricsEntry>): List<LyricsEntry> {
+        val mergedByTime = linkedMapOf<Long, LyricsEntry>()
+        entries.forEach { entry ->
+            val existing = mergedByTime[entry.time]
+            if (existing == null) {
+                mergedByTime[entry.time] = entry
+                return@forEach
+            }
+
+            val translatedText =
+                entry.text
+                    .replace(WHITESPACE_REGEX, " ")
+                    .trim()
+                    .takeIf { it.isNotEmpty() && !it.equals(existing.text.trim(), ignoreCase = true) }
+
+            if (translatedText != null && existing.providerTranslationText == null) {
+                mergedByTime[entry.time] = existing.copy(providerTranslationText = translatedText)
+            }
+        }
+        return mergedByTime.values.toList()
     }
 
     private fun cleanInlineWordTimingText(text: String): String =
@@ -940,6 +963,12 @@ object LyricsUtils {
                     preferences = preferences,
                 )
             }
+
+    fun providedTranslationTextForEntry(entry: LyricsEntry): String? =
+        entry.providerTranslationText
+            ?.replace(WHITESPACE_REGEX, " ")
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() && !it.equals(entry.text.trim(), ignoreCase = true) }
 
     fun providedRomanizedWordsForEntry(
         entry: LyricsEntry,

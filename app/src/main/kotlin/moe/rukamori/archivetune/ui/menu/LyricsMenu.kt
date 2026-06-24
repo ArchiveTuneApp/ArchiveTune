@@ -93,6 +93,8 @@ import kotlinx.coroutines.withContext
 import me.bush.translator.Language
 import me.bush.translator.Translator
 import moe.rukamori.archivetune.R
+import moe.rukamori.archivetune.ai.AiLyricsDocumentParser
+import moe.rukamori.archivetune.ai.AiLyricsSegment
 import moe.rukamori.archivetune.constants.AiApiKeyKey
 import moe.rukamori.archivetune.constants.AiApiValidationStatus
 import moe.rukamori.archivetune.constants.AiApiValidationStatusKey
@@ -100,7 +102,6 @@ import moe.rukamori.archivetune.constants.AiCustomEndpointKey
 import moe.rukamori.archivetune.constants.AiProvider
 import moe.rukamori.archivetune.constants.AiProviderKey
 import moe.rukamori.archivetune.db.entities.LyricsEntity
-import moe.rukamori.archivetune.lyrics.LyricsUtils.isTtml
 import moe.rukamori.archivetune.models.MediaMetadata
 import moe.rukamori.archivetune.ui.component.DefaultDialog
 import moe.rukamori.archivetune.ui.component.MenuSurfaceSection
@@ -196,14 +197,10 @@ fun LyricsMenu(
     val (aiCustomEndpoint) = rememberPreference(AiCustomEndpointKey, "")
     val (aiValidationStatus) = rememberEnumPreference(AiApiValidationStatusKey, AiApiValidationStatus.UNKNOWN)
     var expandedSearchResultId by rememberSaveable { mutableStateOf<String?>(null) }
-    val expandedSearchResult =
-        (lyricsSearchState as? LyricsSearchScreenState.Success)
-            ?.results
-            ?.firstOrNull { result -> result.id == expandedSearchResultId }
-    val isTranslateEnabled =
-        !isTtml(lyricsProvider()?.lyrics.orEmpty()) &&
-            (expandedSearchResult?.let { !it.isWordSynced } ?: true)
     val currentLyrics = lyricsProvider()?.lyrics.orEmpty()
+    val isTranslateEnabled =
+        currentLyrics.isNotBlank() &&
+            currentLyrics != LyricsEntity.LYRICS_NOT_FOUND
     val isAiProviderConfigured = aiProvider != AiProvider.NONE
     val isAiTranslationEnabled =
         currentLyrics.isNotBlank() &&
@@ -213,9 +210,51 @@ fun LyricsMenu(
             (aiProvider != AiProvider.CUSTOM || aiCustomEndpoint.isNotBlank()) &&
             aiValidationStatus != AiApiValidationStatus.FAILED
 
+    var showAiTranslateDialog by rememberSaveable { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         viewModel.aiTranslationEvents.collect { message ->
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    if (showAiTranslateDialog) {
+        DefaultDialog(
+            onDismiss = { showAiTranslateDialog = false },
+            icon = {
+                Icon(painter = painterResource(R.drawable.auto_awesome), contentDescription = null)
+            },
+            title = { Text(stringResource(R.string.ai_translation_menu)) },
+            buttons = {
+                TextButton(
+                    onClick = {
+                        showAiTranslateDialog = false
+                    },
+                    shapes = ButtonDefaults.shapes(),
+                ) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+                Spacer(Modifier.width(8.dp))
+                TextButton(
+                    onClick = {
+                        showAiTranslateDialog = false
+                        viewModel.translateLyricsWithAi(
+                            mediaMetadata = mediaMetadataProvider(),
+                            lyrics = lyricsProvider()?.lyrics.orEmpty(),
+                        )
+                        onDismiss()
+                    },
+                    shapes = ButtonDefaults.shapes(),
+                ) {
+                    Text(stringResource(R.string.translate_in_background))
+                }
+            },
+        ) {
+            Text(
+                text = stringResource(R.string.ai_translate_in_background_desc),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 
@@ -450,99 +489,7 @@ fun LyricsMenu(
                                     return@launch
                                 }
 
-                                val translatedLyrics =
-                                    withContext(Dispatchers.IO) {
-                                        val translator = Translator()
-
-                                        val lines = inputText.split("\n")
-                                        val tsRegex =
-                                            Regex("^((?:\\[[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?\\])+)")
-                                        val contents = mutableListOf<String?>()
-                                        val stampsFor = mutableListOf<String?>()
-
-                                        for (line in lines) {
-                                            val trimmed = line.trimEnd()
-                                            val m = tsRegex.find(trimmed)
-                                            if (m != null) {
-                                                val stamps = m.groupValues[1]
-                                                val content =
-                                                    trimmed.substring(m.range.last + 1).trimStart()
-                                                stampsFor.add(stamps)
-                                                contents.add(if (content.isBlank()) null else content)
-                                            } else {
-                                                stampsFor.add(null)
-                                                contents.add(if (trimmed.isBlank()) null else trimmed)
-                                            }
-                                        }
-
-                                        val translatableIndices =
-                                            contents.mapIndexedNotNull { idx, c -> if (c != null) idx else null }
-                                        val translatedMap = mutableMapOf<Int, String>()
-
-                                        if (translatableIndices.isNotEmpty()) {
-                                            var sep = "<<<SEP-${UUID.randomUUID()}>>>"
-                                            while (contents.any { it?.contains(sep) == true }) {
-                                                sep = "<<<SEP-${UUID.randomUUID()}>>>"
-                                            }
-
-                                            val maxCharsPerRequest = 4000
-                                            val maxItemsPerBatch = 50
-
-                                            var cursor = 0
-                                            while (cursor < translatableIndices.size) {
-                                                var currentChars = 0
-                                                val batchIndices = mutableListOf<Int>()
-                                                while (cursor < translatableIndices.size && batchIndices.size < maxItemsPerBatch) {
-                                                    val idx = translatableIndices[cursor]
-                                                    val pieceLen = contents[idx]!!.length
-                                                    if (batchIndices.isEmpty() ||
-                                                        currentChars + pieceLen + sep.length <= maxCharsPerRequest
-                                                    ) {
-                                                        batchIndices.add(idx)
-                                                        currentChars += pieceLen + sep.length
-                                                        cursor++
-                                                    } else {
-                                                        break
-                                                    }
-                                                }
-
-                                                val batchTexts = batchIndices.map { contents[it]!! }
-                                                val joined = batchTexts.joinToString(separator = sep)
-                                                val translatedJoined =
-                                                    translator.translateBlocking(joined, lang).translatedText
-
-                                                val parts = translatedJoined.split(sep)
-                                                if (parts.size == batchTexts.size) {
-                                                    for (i in batchIndices.indices) {
-                                                        translatedMap[batchIndices[i]] = parts[i]
-                                                    }
-                                                } else {
-                                                    for (idx in batchIndices) {
-                                                        val original = contents[idx]!!
-                                                        val singleTranslated =
-                                                            runCatching {
-                                                                translator.translateBlocking(original, lang).translatedText
-                                                            }.getOrNull() ?: original
-                                                        translatedMap[idx] = singleTranslated
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        val out = mutableListOf<String>()
-                                        for (i in contents.indices) {
-                                            val stamp = stampsFor[i]
-                                            val c = contents[i]
-                                            if (c == null) {
-                                                if (stamp != null) out.add(stamp) else out.add("")
-                                            } else {
-                                                val translatedText = translatedMap[i] ?: c
-                                                if (stamp != null) out.add("$stamp $translatedText") else out.add(translatedText)
-                                            }
-                                        }
-
-                                        out.joinToString("\n")
-                                    }
+                                val translatedLyrics = translateLyricsWithTranslator(inputText, lang)
                                 viewModel.updateLyrics(
                                     mediaMetadata = mediaMetadataProvider(),
                                     lyrics = translatedLyrics,
@@ -692,10 +639,7 @@ fun LyricsMenu(
                                 text = stringResource(R.string.ai_translation_menu),
                                 onClick = {
                                     if (isAiProviderConfigured) {
-                                        viewModel.translateLyricsWithAi(
-                                            mediaMetadata = mediaMetadataProvider(),
-                                            lyrics = lyricsProvider()?.lyrics.orEmpty(),
-                                        )
+                                        showAiTranslateDialog = true
                                     }
                                 },
                                 enabled = isAiProviderConfigured && isAiTranslationEnabled && !isAiTranslating,
@@ -1246,6 +1190,67 @@ private fun LyricsSearchMessageContent(
 }
 
 private fun formatLyricsSyncOffset(offsetMs: Int): String = if (offsetMs > 0) "+$offsetMs ms" else "$offsetMs ms"
+
+private suspend fun translateLyricsWithTranslator(
+    lyrics: String,
+    language: Language,
+): String =
+    withContext(Dispatchers.IO) {
+        val document = AiLyricsDocumentParser.parse(lyrics)
+        if (document.segments.isEmpty()) return@withContext lyrics
+
+        val translator = Translator()
+        val translatedSegments = mutableMapOf<Int, String>()
+        document.segments.chunkedForTranslator().forEach { batch ->
+            val separator = uniqueTranslationSeparator(batch)
+            val joined = batch.joinToString(separator = separator) { segment -> segment.text }
+            val translatedJoined = translator.translateBlocking(joined, language).translatedText
+            val parts = translatedJoined.split(separator)
+
+            if (parts.size == batch.size) {
+                batch.forEachIndexed { index, segment ->
+                    translatedSegments[segment.id] = parts[index]
+                }
+            } else {
+                batch.forEach { segment ->
+                    translatedSegments[segment.id] = translator.translateBlocking(segment.text, language).translatedText
+                }
+            }
+        }
+
+        document.rebuild(translatedSegments)
+    }
+
+private fun List<AiLyricsSegment>.chunkedForTranslator(): List<List<AiLyricsSegment>> {
+    val chunks = ArrayList<List<AiLyricsSegment>>()
+    val current = ArrayList<AiLyricsSegment>()
+    var currentChars = 0
+
+    forEach { segment ->
+        val nextSize = currentChars + segment.text.length
+        if (current.isNotEmpty() && (current.size >= MaxTranslatorItemsPerBatch || nextSize > MaxTranslatorCharsPerBatch)) {
+            chunks.add(current.toList())
+            current.clear()
+            currentChars = 0
+        }
+        current.add(segment)
+        currentChars += segment.text.length
+    }
+
+    if (current.isNotEmpty()) chunks.add(current.toList())
+    return chunks
+}
+
+private fun uniqueTranslationSeparator(segments: List<AiLyricsSegment>): String {
+    var separator = "<<<SEP-${UUID.randomUUID()}>>>"
+    while (segments.any { segment -> segment.text.contains(separator) }) {
+        separator = "<<<SEP-${UUID.randomUUID()}>>>"
+    }
+    return separator
+}
+
+private const val MaxTranslatorItemsPerBatch = 50
+private const val MaxTranslatorCharsPerBatch = 4000
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable

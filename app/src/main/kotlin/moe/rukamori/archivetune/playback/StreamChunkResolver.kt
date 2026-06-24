@@ -15,7 +15,7 @@ internal fun resolveStreamChunkLength(
     mimeType: String? = null,
 ): Long? {
     if (chunkLength <= 0L || position < 0L) return null
-    if (requestedLength <= 0L && mimeType.isMp4ContainerMimeType()) return null
+    if (requestedLength <= 0L && mimeType.requiresOpenEndedRead()) return null
 
     val remainingLength = knownContentLength?.minus(position)?.takeIf { it > 0L }
     val resolvedLength =
@@ -28,7 +28,7 @@ internal fun resolveStreamChunkLength(
     return resolvedLength?.takeIf { it > 0L }
 }
 
-private fun String?.isMp4ContainerMimeType(): Boolean {
+private fun String?.requiresOpenEndedRead(): Boolean {
     val normalizedMimeType =
         this
             ?.substringBefore(";")
@@ -38,5 +38,10 @@ private fun String?.isMp4ContainerMimeType(): Boolean {
     return normalizedMimeType == "audio/mp4" ||
         normalizedMimeType == "video/mp4" ||
         normalizedMimeType == "application/mp4" ||
-        normalizedMimeType == "audio/x-m4a"
+        normalizedMimeType == "audio/x-m4a" ||
+        normalizedMimeType == "audio/webm" ||
+        normalizedMimeType == "video/webm" ||
+        normalizedMimeType == "application/webm" ||
+        normalizedMimeType == "audio/ogg" ||
+        normalizedMimeType == "application/ogg"
 }
