@@ -538,7 +538,7 @@
     <string name="force_cpu_rendering">Ép kết xuất CPU</string>
     <string name="description_force_cpu_rendering">Sử dụng giải mã phần mềm cho ảnh thumbnail (sửa lỗi ảnh trắng trên Android cũ)</string>
     <string name="wifi_thumbnail_quality">Chất lượng ảnh thumbnail trên Wi-Fi</string>
-    <string name="mobile_thumbnail_quality">Chất lượng ảnh thumbnail trên Di động</string>
+    <string name="mobile_thumbnail_quality">Chất lượng ảnh thumbnail qua mạng dữ liệu</string>
     <string name="thumbnail_quality_max">Tối đa (1920×1080)</string>
     <string name="thumbnail_quality_hq">Cao (480×360)</string>
     <string name="thumbnail_quality_mq">Trung bình (320×180)</string>
