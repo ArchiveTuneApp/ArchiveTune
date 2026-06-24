@@ -10,6 +10,7 @@ package moe.rukamori.archivetune.ui.player
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -63,7 +64,7 @@ internal fun rememberOfflineArtworkImageRequest(
                 .diskCacheKey(primaryUrl)
                 .diskCachePolicy(CachePolicy.ENABLED)
                 .networkCachePolicy(CachePolicy.ENABLED)
-                .apply { if (forceCpuRendering) allowHardware(false) }
+                .apply { if (forceCpuRendering && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) allowHardware(false) }
                 .build()
         } else {
             imageUrl
@@ -77,7 +78,7 @@ internal fun rememberOfflineArtworkImageRequest(
                         .diskCacheKey(url)
                         .diskCachePolicy(CachePolicy.ENABLED)
                         .networkCachePolicy(CachePolicy.ENABLED)
-                        .apply { if (forceCpuRendering) allowHardware(false) }
+                        .apply { if (forceCpuRendering && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) allowHardware(false) }
                         .build()
                 }
         }

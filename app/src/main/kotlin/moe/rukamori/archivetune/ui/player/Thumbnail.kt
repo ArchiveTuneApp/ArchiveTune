@@ -558,7 +558,9 @@ fun Thumbnail(
                                                 playerDesignStyle != PlayerDesignStyle.V7 &&
                                                 playerDesignStyle != PlayerDesignStyle.V8
 
-                                        val videoId = item.metadata?.id
+                                        val videoId =
+                                            item.metadata?.id
+                                                ?: mediaMetadata?.id
                                         val thumbnailBgUrl =
                                             item.metadata?.thumbnailUrl?.highRes()
                                                 ?: item.mediaMetadata.artworkUri?.toString()
@@ -568,8 +570,9 @@ fun Thumbnail(
                                                 ?: item.mediaMetadata.artworkUri?.toString()
                                         val thumbnailArtworkRequest = rememberOfflineArtworkImageRequest(thumbnailArtworkUrl, videoId)
                                         val thumbnailBgBlurEnabled = backdropEnabled && !disableBlur && backdropBlurAmount > 0
+                                        val isSdk31plus = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
-                                        if (thumbnailBgBlurEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                        if (thumbnailBgBlurEnabled && isSdk31plus) {
                                             val blurRadiusPx = (backdropBlurAmount * 60 / 100f).coerceAtMost(60f)
                                             AsyncImage(
                                                 model = thumbnailBgRequest,
@@ -586,7 +589,7 @@ fun Thumbnail(
                                             )
                                         } else if (thumbnailBgBlurEnabled) {
                                             ThumbnailBgBlurApi30(
-                                                imageUrl = thumbnailBgUrl,
+                                                imageRequest = thumbnailBgRequest,
                                                 blurAmount = backdropBlurAmount,
                                                 shouldCropArtwork = shouldCropArtwork,
                                             )
@@ -664,30 +667,31 @@ fun Thumbnail(
 @Suppress("DEPRECATION")
 @Composable
 private fun ThumbnailBgBlurApi30(
-    imageUrl: String?,
+    imageRequest: ImageRequest?,
     blurAmount: Int,
     shouldCropArtwork: Boolean,
 ) {
     val context = LocalContext.current
     val imageLoader = context.imageLoader
+    val imageUrl = imageRequest?.data?.toString()
 
     val blurredBitmap by produceState<Bitmap?>(null, imageUrl, blurAmount) {
-        if (imageUrl == null) return@produceState
+        val url = imageUrl ?: return@produceState
         value =
             withContext(Dispatchers.IO) {
                 try {
-                    val request =
+                    val bitmapRequest =
                         ImageRequest
                             .Builder(context)
-                            .data(imageUrl)
-                            .memoryCacheKey(imageUrl)
-                            .diskCacheKey(imageUrl)
+                            .data(url)
+                            .memoryCacheKey(url)
+                            .diskCacheKey(url)
                             .diskCachePolicy(CachePolicy.ENABLED)
                             .networkCachePolicy(CachePolicy.ENABLED)
                             .allowHardware(false)
                             .size(500)
                             .build()
-                    val result = imageLoader.execute(request)
+                    val result = imageLoader.execute(bitmapRequest)
                     when (result) {
                         is SuccessResult -> {
                             val bitmap = result.image.toBitmap().copy(Bitmap.Config.ARGB_8888, true)
@@ -715,9 +719,7 @@ private fun ThumbnailBgBlurApi30(
                             scaled
                         }
 
-                        else -> {
-                            null
-                        }
+                        else -> null
                     }
                 } catch (_: Exception) {
                     null
@@ -741,7 +743,7 @@ private fun ThumbnailBgBlurApi30(
         )
     } else {
         AsyncImage(
-            model = rememberOfflineArtworkImageRequest(imageUrl),
+            model = imageRequest,
             contentDescription = null,
             contentScale = ContentScale.FillBounds,
             modifier = modifier,
