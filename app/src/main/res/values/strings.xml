@@ -733,6 +733,10 @@
     <string name="lyrics">Lyrics</string>
     <string name="translation_success">Translation saved</string>
     <string name="translation_failed">Translation failed</string>
+    <string name="translate_in_background">Translate in background</string>
+    <string name="ai_translate_in_background_desc">The translation will continue in the background. You will be notified when it completes.</string>
+    <string name="ai_translation_notification_channel_name">AI Translation</string>
+    <string name="ai_translation_notification_title">AI Translation</string>
     <string name="discord_button_options">Button Options</string>
     <string name="discord_image_options">Image Options</string>
     <string name="refresh">Refresh</string>
@@ -839,6 +843,7 @@
     <string name="update_notification_title">Update Available</string>
     <string name="update_notification_text">ArchiveTune %s is now available</string>
     <string name="download">Download</string>
+    <string name="download_complete">Download complete</string>
     <string name="permissions_title">Allow ArchiveTune to work best</string>
     <string name="permissions_subtitle">We use a few permissions to play and manage your music reliably. You can change these anytime in system settings.</string>
     <string name="permission_storage_title">Storage access</string>
