@@ -39,7 +39,7 @@ internal fun rememberOfflineArtworkImageRequest(
     val (wifiQuality) =
         rememberEnumPreference(
             WifiThumbnailQualityKey,
-            defaultValue = ThumbnailQuality.MAX,
+            defaultValue = ThumbnailQuality.HQ,
         )
     val (mobileQuality) =
         rememberEnumPreference(

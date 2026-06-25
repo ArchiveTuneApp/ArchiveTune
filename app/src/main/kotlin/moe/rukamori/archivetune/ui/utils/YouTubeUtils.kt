@@ -55,9 +55,8 @@ fun String.resize(
 
 fun String.highRes(): String = resize(PlayerArtworkHighResPx, PlayerArtworkHighResPx)
 
-private val ytThumbnailChain: (String) -> List<String> = { videoId ->
+private val ytQualityChain = { videoId: String ->
     listOf(
-        "https://i.ytimg.com/vi/$videoId/maxresdefault.jpg",
         "https://i.ytimg.com/vi/$videoId/hqdefault.jpg",
         "https://i.ytimg.com/vi/$videoId/mqdefault.jpg",
         "https://i.ytimg.com/vi/$videoId/default.jpg",
@@ -65,10 +64,20 @@ private val ytThumbnailChain: (String) -> List<String> = { videoId ->
 }
 
 /**
- * Returns YouTube video thumbnail URLs at or above the given quality.
- * Chain: maxresdefault → hqdefault → mqdefault → default.
+ * Returns YouTube video thumbnail URLs for the given quality.
+ * MAX quality prepends maxresdefault.jpg (best resolution but may not exist for all videos),
+ * then falls through hqdefault → mqdefault → default.
+ * Other qualities start directly at their level: HQ→hqdefault, MQ→mqdefault, DEFAULT→default.
  */
 fun videoIdToYouTubeThumbnails(
     videoId: String,
-    quality: ThumbnailQuality = ThumbnailQuality.MAX,
-): List<String> = ytThumbnailChain(videoId).drop(quality.ordinal.coerceIn(0, 3))
+    quality: ThumbnailQuality = ThumbnailQuality.HQ,
+): List<String> {
+    val chain = ytQualityChain(videoId)
+    return when (quality) {
+        ThumbnailQuality.MAX -> listOf("https://i.ytimg.com/vi/$videoId/maxresdefault.jpg") + chain
+        ThumbnailQuality.HQ -> chain
+        ThumbnailQuality.MQ -> chain.drop(1)
+        ThumbnailQuality.DEFAULT -> chain.drop(2)
+    }
+}
