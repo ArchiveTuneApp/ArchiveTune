@@ -15,7 +15,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -25,6 +24,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import moe.rukamori.archivetune.db.entities.Song
 import moe.rukamori.archivetune.discord.DiscordOAuthRepository
+import moe.rukamori.archivetune.discord.DiscordSocialPresenceClient
 import moe.rukamori.archivetune.utils.DiscordImageResolver
 import moe.rukamori.archivetune.utils.DiscordRPC
 import timber.log.Timber
@@ -41,7 +41,6 @@ object DiscordPresenceManager {
     private val rpcMutex = Mutex()
     private val cleanupScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    private var scope: CoroutineScope? = null
     private var lifecycleObserver: LifecycleEventObserver? = null
     private var rpcInstance: DiscordRPC? = null
     private var rpcToken: String? = null
@@ -196,12 +195,23 @@ object DiscordPresenceManager {
         }
 
     fun start(
-        context: Context,
         token: String,
+        onTransportInvalidated: ((String) -> Unit)? = null,
     ) {
+        val transportListener = onTransportInvalidated
+        DiscordSocialPresenceClient.setOnTransportInvalidated(
+            if (transportListener == null) {
+                null
+            } else {
+                { reason ->
+                    Timber.tag(LOG_TAG).w("transport invalidated: %s", reason)
+                    transportListener(reason)
+                }
+            },
+        )
+
         if (!started.getAndSet(true)) {
             consecutiveFailures = 0
-            scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
             lifecycleObserver =
                 LifecycleEventObserver { _, event ->
                     if (event == Lifecycle.Event.ON_DESTROY) {
@@ -263,8 +273,7 @@ object DiscordPresenceManager {
         if (!started.getAndSet(false)) return
 
         updateGeneration.incrementAndGet()
-        scope?.cancel()
-        scope = null
+        DiscordSocialPresenceClient.setOnTransportInvalidated(null)
 
         lifecycleObserver?.let { observer ->
             ProcessLifecycleOwner.get().lifecycle.removeObserver(observer)
