@@ -1895,8 +1895,17 @@ class MusicService :
             try {
                 DiscordPresenceManager.stop()
                 DiscordPresenceManager.start(
-                    context = this@MusicService,
                     token = key,
+                    onTransportInvalidated = { reason ->
+                        Timber.tag(DISCORD_SYNC_TAG).w(
+                            "transport invalidated reason=%s; requesting forced sync",
+                            reason,
+                        )
+                        requestDiscordSync(
+                            reason = "transport_invalidated:$reason",
+                            force = true,
+                        )
+                    },
                 )
                 Timber.tag("MusicService").d("Presence manager started")
                 lastPresenceToken = key
