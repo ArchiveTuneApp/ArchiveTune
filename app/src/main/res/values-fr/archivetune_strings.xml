@@ -188,6 +188,10 @@
     <string name="player_stream_client_web_remix_desc">Prise en charge étendue des formats au détriment de la vitesse. Le décryptage des signatures JavaScript entraîne un délai de démarrage d\'environ 5 à 10 secondes.</string>
     <string name="crop_thumbnail_to_square">Recadrer les miniatures au format 1:1</string>
     <string name="crop_thumbnail_to_square_desc">Afficher les miniatures YouTube au format carré au lieu du format 16:9</string>
+    <string name="crop_thumbnail_center">Recadrage central</string>
+    <string name="crop_thumbnail_smart">Recadrage intelligent</string>
+    <string name="crop_thumbnail_smart_no_zoom">Recadrage intelligent (sans zoom)</string>
+    <string name="off">Désactivé</string>
     <string name="backup_in_progress">Sauvegarde en cours</string>
     <string name="restore_in_progress">Restauration en cours</string>
     <string name="backup_step_checkpoint_database">Préparation de la base de données</string>

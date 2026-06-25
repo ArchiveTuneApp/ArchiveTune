@@ -151,6 +151,10 @@
     <string name="manage_playlist_tags_desc">Erstelle und verwalten Tags zum organisieren von Playlists</string>
     <string name="crop_thumbnail_to_square">Vorschaubilder auf 1:1 zuschneiden</string>
     <string name="crop_thumbnail_to_square_desc">YouTube Vorschaubilder quadratisch anstelle von 16:9 anzeigen</string>
+    <string name="crop_thumbnail_center">Mittiger Zuschnitt</string>
+    <string name="crop_thumbnail_smart">Intelligenter Zuschnitt</string>
+    <string name="crop_thumbnail_smart_no_zoom">Intelligenter Zuschnitt (ohne Zoom)</string>
+    <string name="off">Aus</string>
     <string name="show_tags_in_library">Zeige Tags in Bibliothek</string>
     <string name="show_tags_in_library_desc">Zeige Tag Filter Kärtchen in der Bibliothek</string>
     <string name="player_design_v5">Klein</string>

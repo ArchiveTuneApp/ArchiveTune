@@ -35,7 +35,7 @@ val PlayerDesignStyleKey = stringPreferencesKey("playerDesignStyle")
 val HidePlayerThumbnailKey = booleanPreferencesKey("hidePlayerThumbnail")
 val ArchiveTuneCanvasKey = booleanPreferencesKey("archiveTuneCanvas")
 val ThumbnailCornerRadiusKey = floatPreferencesKey("thumbnailCornerRadius")
-val CropThumbnailToSquareKey = booleanPreferencesKey("cropThumbnailToSquare")
+val CropThumbnailStyleKey = stringPreferencesKey("cropThumbnailStyle")
 
 val AodThumbnailShapeKey = stringPreferencesKey("aodThumbnailShape")
 val AodThumbnailSizeKey = floatPreferencesKey("aodThumbnailSize")

@@ -74,7 +74,7 @@ import moe.rukamori.archivetune.constants.BackdropBlurAmountKey
 import moe.rukamori.archivetune.constants.BackdropEnabledKey
 import moe.rukamori.archivetune.constants.BlurRadiusKey
 import moe.rukamori.archivetune.constants.ChipSortTypeKey
-import moe.rukamori.archivetune.constants.CropThumbnailToSquareKey
+import moe.rukamori.archivetune.constants.CropThumbnailStyleKey
 import moe.rukamori.archivetune.constants.CustomFontNameKey
 import moe.rukamori.archivetune.constants.CustomFontUriKey
 import moe.rukamori.archivetune.constants.DarkModeKey
@@ -114,6 +114,7 @@ import moe.rukamori.archivetune.ui.component.ListPreference
 import moe.rukamori.archivetune.ui.component.PreferenceEntry
 import moe.rukamori.archivetune.ui.component.PreferenceGroup
 import moe.rukamori.archivetune.ui.component.SwitchPreference
+import moe.rukamori.archivetune.smartcrop.CropThumbnailStyle
 import moe.rukamori.archivetune.ui.component.ThumbnailCornerRadiusSelectorButton
 import moe.rukamori.archivetune.ui.player.StyledPlaybackSlider
 import moe.rukamori.archivetune.ui.theme.CustomFontLoader
@@ -166,10 +167,10 @@ fun AppearanceSettings(
             key = ThumbnailCornerRadiusKey,
             defaultValue = 16f, // default dp
         )
-    val (cropThumbnailToSquare, onCropThumbnailToSquareChange) =
-        rememberPreference(
-            CropThumbnailToSquareKey,
-            defaultValue = false,
+    val (cropThumbnailStyle, onCropThumbnailStyleChange) =
+        rememberEnumPreference(
+            CropThumbnailStyleKey,
+            defaultValue = CropThumbnailStyle.OFF,
         )
     val (playerBackground, onPlayerBackgroundChange) =
         rememberEnumPreference(
@@ -653,12 +654,19 @@ fun AppearanceSettings(
             }
 
             item {
-                SwitchPreference(
+                EnumListPreference(
                     title = { Text(stringResource(R.string.crop_thumbnail_to_square)) },
-                    description = stringResource(R.string.crop_thumbnail_to_square_desc),
                     icon = { Icon(painterResource(R.drawable.image), null) },
-                    checked = cropThumbnailToSquare,
-                    onCheckedChange = onCropThumbnailToSquareChange,
+                    selectedValue = cropThumbnailStyle,
+                    onValueSelected = onCropThumbnailStyleChange,
+                    valueText = {
+                        when (it) {
+                            CropThumbnailStyle.OFF -> stringResource(R.string.off)
+                            CropThumbnailStyle.CENTER_CROP -> stringResource(R.string.crop_thumbnail_center)
+                            CropThumbnailStyle.SMART_CROP -> stringResource(R.string.crop_thumbnail_smart)
+                            CropThumbnailStyle.SMART_CROP_NO_ZOOM -> stringResource(R.string.crop_thumbnail_smart_no_zoom)
+                        }
+                    },
                 )
             }
 

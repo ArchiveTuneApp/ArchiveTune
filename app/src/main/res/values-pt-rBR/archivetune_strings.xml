@@ -229,6 +229,10 @@
     <string name="hide_player_thumbnail_desc">Substituir a capa do álbum pelo logotipo do app no player</string>
     <string name="crop_thumbnail_to_square">Cortar miniaturas para 1:1</string>
     <string name="crop_thumbnail_to_square_desc">Exibir miniaturas do YouTube em formato quadrado em vez de 16:9</string>
+    <string name="crop_thumbnail_center">Cortar ao centro</string>
+    <string name="crop_thumbnail_smart">Corte inteligente</string>
+    <string name="crop_thumbnail_smart_no_zoom">Corte inteligente (sem zoom)</string>
+    <string name="off">Desligado</string>
     <string name="show_home_category_chips">Mostrar chips de categoria na tela inicial</string>
     <string name="show_home_category_chips_desc">Mostrar chips de filtro de categoria na tela inicial</string>
     <string name="show_tags_in_library">Mostrar tags na biblioteca</string>

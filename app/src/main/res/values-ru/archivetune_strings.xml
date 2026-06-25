@@ -122,6 +122,10 @@
     </plurals>
     <string name="crop_thumbnail_to_square">Обрезать миниатюры до соотношения 1:1</string>
     <string name="crop_thumbnail_to_square_desc">Отображать миниатюры YouTube в квадратном формате вместо 16:9</string>
+    <string name="crop_thumbnail_center">Центральная обрезка</string>
+    <string name="crop_thumbnail_smart">Умная обрезка</string>
+    <string name="crop_thumbnail_smart_no_zoom">Умная обрезка (без масштабирования)</string>
+    <string name="off">Выкл</string>
     <string name="player_design_v5">Маленький</string>
     <string name="percentage_format">%d%%</string>
     <string name="import_online">Импорт плейлистов m3u</string>

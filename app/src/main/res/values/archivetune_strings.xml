@@ -229,6 +229,10 @@
     <string name="hide_player_thumbnail_desc">Replace album artwork with app logo in player</string>
     <string name="crop_thumbnail_to_square">Crop thumbnails to 1:1</string>
     <string name="crop_thumbnail_to_square_desc">Display YouTube thumbnails in square format instead of 16:9</string>
+    <string name="crop_thumbnail_center">Center crop</string>
+    <string name="crop_thumbnail_smart">Smart crop</string>
+    <string name="crop_thumbnail_smart_no_zoom">Smart crop (no zoom)</string>
+    <string name="off">Off</string>
     <string name="show_home_category_chips">Show home category chips</string>
     <string name="show_home_category_chips_desc">Show category filter chips on the home screen</string>
     <string name="show_tags_in_library">Show tags in library</string>

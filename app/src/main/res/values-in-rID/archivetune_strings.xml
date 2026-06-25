@@ -207,6 +207,10 @@
     <string name="hide_player_thumbnail_desc">Ganti sampul album dengan logo aplikasi di pemutar</string>
     <string name="crop_thumbnail_to_square">Pangkas thumbnail menjadi 1:1</string>
     <string name="crop_thumbnail_to_square_desc">Tampilkan thumbnail YouTube dalam format persegi, bukan 16:9</string>
+    <string name="crop_thumbnail_center">Potong tengah</string>
+    <string name="crop_thumbnail_smart">Potong cerdas</string>
+    <string name="crop_thumbnail_smart_no_zoom">Potong cerdas (tanpa zoom)</string>
+    <string name="off">Mati</string>
     <string name="show_home_category_chips">Tampilkan chip kategori beranda</string>
     <string name="show_home_category_chips_desc">Tampilkan chip filter kategori di layar beranda</string>
     <string name="show_tags_in_library">Tampilkan tag di pustaka</string>

@@ -96,7 +96,9 @@ import moe.rukamori.archivetune.canvas.models.CanvasArtwork
 import moe.rukamori.archivetune.constants.ArchiveTuneCanvasKey
 import moe.rukamori.archivetune.constants.BackdropBlurAmountKey
 import moe.rukamori.archivetune.constants.BackdropEnabledKey
-import moe.rukamori.archivetune.constants.CropThumbnailToSquareKey
+import moe.rukamori.archivetune.constants.CropThumbnailStyleKey
+import moe.rukamori.archivetune.smartcrop.CropThumbnailStyle
+import moe.rukamori.archivetune.smartcrop.smartCropRect
 import moe.rukamori.archivetune.constants.DisableBlurKey
 import moe.rukamori.archivetune.constants.EnableHapticFeedbackKey
 import moe.rukamori.archivetune.constants.HidePlayerThumbnailKey
@@ -162,7 +164,7 @@ fun Thumbnail(
             key = ThumbnailCornerRadiusKey,
             defaultValue = 16f,
         )
-    val cropThumbnailToSquare by rememberPreference(CropThumbnailToSquareKey, false)
+    val cropThumbnailStyle by rememberEnumPreference(CropThumbnailStyleKey, CropThumbnailStyle.OFF)
     val (disableBlur) = rememberPreference(DisableBlurKey, false)
     val (backdropEnabled) = rememberPreference(BackdropEnabledKey, defaultValue = true)
     val (backdropBlurAmount) = rememberPreference(BackdropBlurAmountKey, defaultValue = 60)
@@ -554,9 +556,16 @@ fun Thumbnail(
                                         val fallbackCanvasUrl = canvasArtwork?.videoUrl
 
                                         val shouldCropArtwork =
-                                            cropThumbnailToSquare &&
+                                            cropThumbnailStyle != CropThumbnailStyle.OFF &&
                                                 playerDesignStyle != PlayerDesignStyle.V7 &&
                                                 playerDesignStyle != PlayerDesignStyle.V8
+
+                                        val isSmartCrop = shouldCropArtwork &&
+                                            (cropThumbnailStyle == CropThumbnailStyle.SMART_CROP ||
+                                                cropThumbnailStyle == CropThumbnailStyle.SMART_CROP_NO_ZOOM)
+
+                                        val smartCropAllowZoom = shouldCropArtwork &&
+                                            cropThumbnailStyle == CropThumbnailStyle.SMART_CROP
 
                                         val thumbnailBgUrl =
                                             item.metadata?.thumbnailUrl?.highRes()
@@ -602,15 +611,23 @@ fun Thumbnail(
                                             )
                                         }
 
-                                        AsyncImage(
-                                            model = thumbnailArtworkRequest,
-                                            contentDescription = null,
-                                            contentScale = if (shouldCropArtwork) ContentScale.Crop else ContentScale.Fit,
-                                            modifier =
-                                                Modifier
-                                                    .fillMaxSize()
-                                                    .let { if (shouldCropArtwork) it.aspectRatio(1f) else it },
-                                        )
+                                        if (isSmartCrop) {
+                                            SmartCropImage(
+                                                imageUrl = thumbnailArtworkUrl,
+                                                allowZoom = smartCropAllowZoom,
+                                                modifier = Modifier.fillMaxSize().aspectRatio(1f),
+                                            )
+                                        } else {
+                                            AsyncImage(
+                                                model = thumbnailArtworkRequest,
+                                                contentDescription = null,
+                                                contentScale = if (shouldCropArtwork) ContentScale.Crop else ContentScale.Fit,
+                                                modifier =
+                                                    Modifier
+                                                        .fillMaxSize()
+                                                        .let { if (shouldCropArtwork) it.aspectRatio(1f) else it },
+                                            )
+                                        }
 
                                         if (shouldUseCanvas &&
                                             (!primaryCanvasUrl.isNullOrBlank() || !fallbackCanvasUrl.isNullOrBlank())
@@ -828,3 +845,45 @@ fun calculateDistanceToDesiredSnapPosition(
 
 private val LazyGridLayoutInfo.singleAxisViewportSize: Int
     get() = if (orientation == Orientation.Vertical) viewportSize.height else viewportSize.width
+
+@Composable
+private fun SmartCropImage(
+    imageUrl: String?,
+    allowZoom: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    val imageLoader = context.imageLoader
+
+    val bitmapState by produceState<Bitmap?>(null, imageUrl, allowZoom) {
+        if (imageUrl == null) return@produceState
+        value = withContext(Dispatchers.IO) {
+            runCatching {
+                val request =
+                    ImageRequest
+                        .Builder(context)
+                        .data(imageUrl)
+                        .allowHardware(false)
+                        .build()
+                val result = imageLoader.execute(request)
+                if (result is SuccessResult) {
+                    val bitmap = result.image.toBitmap()
+                    val rect = bitmap.smartCropRect(allowZoom)
+                    Bitmap.createBitmap(bitmap, rect.left, rect.top, rect.width(), rect.height())
+                } else {
+                    null
+                }
+            }.getOrNull()
+        }
+    }
+
+    val bitmap = bitmapState
+    if (bitmap != null) {
+        Image(
+            painter = BitmapPainter(bitmap.asImageBitmap()),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = modifier,
+        )
+    }
+}

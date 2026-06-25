@@ -248,6 +248,10 @@
     <string name="lyrics_share_export_not_supported">La condivisione immagine richiese Android 6.0 o superiore</string>
     <string name="crop_thumbnail_to_square">Ritaglia thumbnails a 1:1</string>
     <string name="crop_thumbnail_to_square_desc">Mostra le thumbnails di YouTube in formato quadrato invece di 16:9</string>
+    <string name="crop_thumbnail_center">Ritaglio centrale</string>
+    <string name="crop_thumbnail_smart">Ritaglio intelligente</string>
+    <string name="crop_thumbnail_smart_no_zoom">Ritaglio intelligente (senza zoom)</string>
+    <string name="off">Spento</string>
     <string name="show_home_category_chips">Mostra chip categorie nella home</string>
     <string name="show_home_category_chips_desc">Mostra i chip delle categorie nella schermata principale</string>
     <string name="player_design_v6">Espressivo</string>

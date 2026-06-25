@@ -229,6 +229,10 @@
     <string name="hide_player_thumbnail_desc">החלפת עטיפת האלבום בלוגו של האפליקציה בנגן</string>
     <string name="crop_thumbnail_to_square">חיתוך תמונות ממוזערות לגודל 1:1</string>
     <string name="crop_thumbnail_to_square_desc">הצג תמונות ממוזערות של יוטיוב בפורמט ריבועי במקום בפורמט 16:9</string>
+    <string name="crop_thumbnail_center">חיתוך מרכזי</string>
+    <string name="crop_thumbnail_smart">חיתוך חכם</string>
+    <string name="crop_thumbnail_smart_no_zoom">חיתוך חכם (ללא הגדלה)</string>
+    <string name="off">כבוי</string>
     <string name="show_home_category_chips">הצג שבבים בקטגוריית הבית</string>
     <string name="show_home_category_chips_desc">הצג שבבי סינון קטגוריות במסך הבית</string>
     <string name="show_tags_in_library">הצג תגיות בספרייה</string>

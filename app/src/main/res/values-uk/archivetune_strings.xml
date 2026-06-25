@@ -58,6 +58,10 @@
     <string name="hide_player_thumbnail_desc">Замінити обкладинку альбому на логотип програми в програвачі</string>
     <string name="crop_thumbnail_to_square">Обрізати мініатюри до формату 1:1</string>
     <string name="crop_thumbnail_to_square_desc">Відображати мініатюри YouTube у квадратному форматі замість 16:9</string>
+    <string name="crop_thumbnail_center">Центральне обрізання</string>
+    <string name="crop_thumbnail_smart">Розумне обрізання</string>
+    <string name="crop_thumbnail_smart_no_zoom">Розумне обрізання (без масштабування)</string>
+    <string name="off">Вимк</string>
     <string name="show_home_category_chips">Показати вкладки домашньої категорії</string>
     <string name="show_home_category_chips_desc">Показати фільтри категорій на головному екрані</string>
     <string name="show_tags_in_library">Показати теги в бібліотеці</string>

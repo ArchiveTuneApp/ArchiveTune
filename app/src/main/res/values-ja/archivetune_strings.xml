@@ -229,6 +229,10 @@
     <string name="hide_player_thumbnail_desc">プレイヤーでアルバムアートワークをアプリロゴに置き換えます</string>
     <string name="crop_thumbnail_to_square">サムネイルを1:1に切り抜く</string>
     <string name="crop_thumbnail_to_square_desc">YouTubeサムネイルを16:9ではなく正方形で表示します</string>
+    <string name="crop_thumbnail_center">中央トリミング</string>
+    <string name="crop_thumbnail_smart">スマートトリミング</string>
+    <string name="crop_thumbnail_smart_no_zoom">スマートトリミング（拡大なし）</string>
+    <string name="off">オフ</string>
     <string name="show_home_category_chips">ホームカテゴリチップを表示</string>
     <string name="show_home_category_chips_desc">ホーム画面にカテゴリフィルターチップを表示します</string>
     <string name="show_tags_in_library">ライブラリにタグを表示</string>
