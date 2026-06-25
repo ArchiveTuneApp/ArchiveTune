@@ -564,9 +564,9 @@
     <string name="ai_translating_lyrics">Traduzindo as letras...</string>
     <string name="about_lead_developer">Desenvolvedor principal</string>
     <string name="about_archive_tune_team">Equipe</string>
-    <string name="about_respecter">Respeitador</string>
+    <string name="about_respecter">Respeito</string>
     <string name="about_contributors">Contribuidores</string>
-    <string name="about_contributor_translation">Tradução de contribuidores</string>
+    <string name="about_contributor_translation">Contribuidores da Tradução</string>
     <string name="about_license">LICENÇA</string>
     <string name="about_license_unknown">Licença desconhecida</string>
     <string name="about_position_lead_dev">Eh?</string>
