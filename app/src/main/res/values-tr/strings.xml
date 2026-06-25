@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="home">Ana sayfa</string>
     <string name="songs">Şarkılar</string>
@@ -16,7 +16,7 @@
     <string name="quick_picks">Hızlı seçimler</string>
     <string name="forgotten_favorites">Unutulan favoriler</string>
     <string name="keep_listening">Dinlemeye devam et</string>
-    <string name="your_youtube_playlists">YouTube oynatma listeleriniz</string>
+    <string name="your_youtube_playlists">YouTube çalma listeleriniz</string>
     <string name="similar_to">benzer</string>
     <string name="new_release_albums">Yeni çıkan albümler</string>
     <string name="integration">Entegrasyon</string>
@@ -37,15 +37,15 @@
     <string name="filter_albums">Albümler</string>
     <string name="filter_artists">Sanatçılar</string>
     <string name="filter_playlists">Çalma listeleri</string>
-    <string name="filter_community_playlists">Topluluk oynatma listeleri</string>
-    <string name="filter_featured_playlists">Öne çıkan oynatma listeleri</string>
+    <string name="filter_community_playlists">Topluluk çalma listeleri</string>
+    <string name="filter_featured_playlists">Öne çıkan çalma listeleri</string>
     <string name="no_results_found">Sonuç bulunamadı</string>
     <string name="other_versions">Diğer sürümler</string>
     <string name="liked_songs">Beğenilen şarkılar</string>
     <string name="downloaded_songs">İndirilen şarkılar</string>
     <string name="playlist_is_empty">Çalma listesi boş</string>
     <string name="remove_download_playlist_confirm">Gerçekten tüm \"%s\" çalma listesi şarkısını İndirilen Şarkılar deposundan kaldırmak istiyor musunuz?</string>
-    <string name="delete_playlist_confirm">Gerçekten \"%s\" oynatma listesini silmek istiyor musunuz?</string>
+    <string name="delete_playlist_confirm">Gerçekten \"%s\" çalma listesini silmek istiyor musunuz?</string>
     <string name="retry">Yeniden dene</string>
     <string name="radio">Radyo</string>
     <string name="shuffle">Karıştır</string>
