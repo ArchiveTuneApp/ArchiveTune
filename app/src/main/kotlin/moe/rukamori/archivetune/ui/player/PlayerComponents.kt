@@ -2259,6 +2259,7 @@ private fun V8PortraitContent(
                 canvasFallbackUrl = canvasFallbackUrl,
                 isPlaying = isPlaying,
                 size = artworkSize,
+                videoId = mediaMetadata.id,
             )
 
             Spacer(Modifier.height(artworkToMetadata))
@@ -2369,6 +2370,7 @@ private fun V8LandscapeContent(
                 canvasFallbackUrl = canvasFallbackUrl,
                 isPlaying = isPlaying,
                 size = artworkSize,
+                videoId = mediaMetadata.id,
             )
 
             Column(
@@ -2481,8 +2483,9 @@ private fun V8Artwork(
     canvasFallbackUrl: String?,
     isPlaying: Boolean,
     size: androidx.compose.ui.unit.Dp,
+    videoId: String? = null,
 ) {
-    val artworkRequest = rememberOfflineArtworkImageRequest(artworkUrl)
+    val artworkRequest = rememberOfflineArtworkImageRequest(artworkUrl, videoId)
     Box(
         modifier =
             Modifier
@@ -2978,6 +2981,7 @@ fun V9PlayerContent(
             onNextClick = playerConnection::seekToNext,
             onSliderValueChange = onSliderValueChange,
             onSliderValueChangeFinished = onSliderValueChangeFinished,
+            videoId = mediaMetadata.id,
             modifier = modifier,
         )
     } else {
@@ -3008,6 +3012,7 @@ fun V9PlayerContent(
             onNextClick = playerConnection::seekToNext,
             onSliderValueChange = onSliderValueChange,
             onSliderValueChangeFinished = onSliderValueChangeFinished,
+            videoId = mediaMetadata.id,
             modifier = modifier,
         )
     }
@@ -3029,6 +3034,7 @@ private fun V9PortraitContent(
     position: Long,
     duration: Long,
     textBackgroundColor: Color,
+    videoId: String? = null,
     textButtonColor: Color,
     iconButtonColor: Color,
     onCollapseClick: () -> Unit,
@@ -3112,6 +3118,7 @@ private fun V9PortraitContent(
                 isPlaying = isPlaying,
                 size = artworkSize,
                 placeholderColor = textButtonColor.copy(alpha = 0.12f),
+                videoId = videoId,
             )
 
             Spacer(Modifier.height(metadataGap))
@@ -3178,6 +3185,7 @@ private fun V9LandscapeContent(
     textBackgroundColor: Color,
     textButtonColor: Color,
     iconButtonColor: Color,
+    videoId: String? = null,
     onCollapseClick: () -> Unit,
     onQueueClick: () -> Unit,
     onLyricsClick: () -> Unit,
@@ -3211,6 +3219,7 @@ private fun V9LandscapeContent(
                 isPlaying = isPlaying,
                 size = artworkSize,
                 placeholderColor = textButtonColor.copy(alpha = 0.12f),
+                videoId = videoId,
             )
 
             Column(
@@ -3371,8 +3380,9 @@ private fun V9Artwork(
     isPlaying: Boolean,
     size: Dp,
     placeholderColor: Color,
+    videoId: String? = null,
 ) {
-    val artworkRequest = rememberOfflineArtworkImageRequest(artworkUrl)
+    val artworkRequest = rememberOfflineArtworkImageRequest(artworkUrl, videoId)
     Box(
         modifier =
             Modifier

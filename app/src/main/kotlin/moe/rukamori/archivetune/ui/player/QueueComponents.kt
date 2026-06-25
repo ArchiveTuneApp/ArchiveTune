@@ -155,8 +155,9 @@ fun CurrentSongHeader(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
+            val queueThumbnailRequest = rememberOfflineArtworkImageRequest(mediaMetadata?.thumbnailUrl, mediaMetadata?.id)
             AsyncImage(
-                model = mediaMetadata?.thumbnailUrl,
+                model = queueThumbnailRequest,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier =

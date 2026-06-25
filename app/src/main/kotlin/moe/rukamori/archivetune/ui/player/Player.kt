@@ -1281,6 +1281,7 @@ fun BottomSheetPlayer(
                             disableBlur = disableBlur,
                             backdropBlurAmount = backdropBlurAmount,
                             label = "v7BackdropLandscape",
+                            videoId = mediaMetadata?.id,
                         )
 
                         Column(
@@ -1330,6 +1331,7 @@ fun BottomSheetPlayer(
                         V8PlayerBackdrop(
                             thumbnailUrl = mediaMetadata?.thumbnailUrl,
                             backdropBlurAmount = backdropBlurAmount,
+                            videoId = mediaMetadata?.id,
                         )
 
                         enrichedMetadata?.let { metadata ->
@@ -1542,6 +1544,7 @@ fun BottomSheetPlayer(
                             disableBlur = disableBlur,
                             backdropBlurAmount = backdropBlurAmount,
                             label = "v7BackdropPortrait",
+                            videoId = mediaMetadata?.id,
                         )
 
                         Column(
@@ -1589,6 +1592,7 @@ fun BottomSheetPlayer(
                         V8PlayerBackdrop(
                             thumbnailUrl = mediaMetadata?.thumbnailUrl,
                             backdropBlurAmount = backdropBlurAmount,
+                            videoId = mediaMetadata?.id,
                         )
 
                         enrichedMetadata?.let { metadata ->
@@ -1844,13 +1848,14 @@ private fun MikoLyricsTransition(
 private fun V8PlayerBackdrop(
     thumbnailUrl: String?,
     backdropBlurAmount: Int,
+    videoId: String? = null,
     modifier: Modifier = Modifier,
 ) {
     val backdropModel =
         remember(thumbnailUrl) {
             thumbnailUrl?.resize(V8BackdropArtworkSizePx, V8BackdropArtworkSizePx)
         }
-    val backdropRequest = rememberOfflineArtworkImageRequest(backdropModel)
+    val backdropRequest = rememberOfflineArtworkImageRequest(backdropModel, videoId)
     val blurRadiusDp = 44.dp * (backdropBlurAmount.toFloat() / 100f)
 
     Box(
@@ -1880,6 +1885,7 @@ private fun V8PlayerBackdrop(
                 BackdropBlurApi30(
                     model = backdropModel,
                     blurAmount = backdropBlurAmount,
+                    videoId = videoId,
                     modifier =
                         Modifier
                             .fillMaxSize()
@@ -1920,6 +1926,7 @@ private fun V8PlayerBackdrop(
 private fun BackdropBlurApi30(
     model: String?,
     blurAmount: Int,
+    videoId: String? = null,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -1989,7 +1996,7 @@ private fun BackdropBlurApi30(
         )
     } else {
         AsyncImage(
-            model = rememberOfflineArtworkImageRequest(model),
+            model = rememberOfflineArtworkImageRequest(model, videoId),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = modifier,
@@ -2007,6 +2014,7 @@ private fun V7PlayerBackdrop(
     disableBlur: Boolean,
     backdropBlurAmount: Int,
     label: String,
+    videoId: String? = null,
     modifier: Modifier = Modifier,
 ) {
     val configuration = LocalConfiguration.current
@@ -2115,7 +2123,7 @@ private fun V7PlayerBackdrop(
         remember(backdropArtworkUrl, backdropArtworkSizePx) {
             backdropArtworkUrl?.resize(backdropArtworkSizePx, backdropArtworkSizePx)
         }
-    val backdropArtworkRequest = rememberOfflineArtworkImageRequest(backdropArtworkModel)
+    val backdropArtworkRequest = rememberOfflineArtworkImageRequest(backdropArtworkModel, videoId)
     val sharpStageBottomScrim =
         remember(backdropPalette) {
             val blendColor = backdropPalette.bottom
@@ -2243,7 +2251,7 @@ private fun V7PlayerBackdrop(
                 remember(backdrop.artworkUrl, backdropArtworkSizePx) {
                     backdrop.artworkUrl?.resize(backdropArtworkSizePx, backdropArtworkSizePx)
                 }
-            val sharpArtworkRequest = rememberOfflineArtworkImageRequest(sharpArtworkModel)
+            val sharpArtworkRequest = rememberOfflineArtworkImageRequest(sharpArtworkModel, videoId)
 
             Box(
                 modifier =

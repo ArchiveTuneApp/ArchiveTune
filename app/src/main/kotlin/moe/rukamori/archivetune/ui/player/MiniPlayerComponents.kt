@@ -343,9 +343,10 @@ private fun MiniPlayerArtwork(
                     ),
         ) {
             val thumbnailUrl = mediaMetadata?.thumbnailUrl
+            val thumbnailRequest = rememberOfflineArtworkImageRequest(thumbnailUrl, mediaMetadata?.id)
             if (thumbnailUrl != null) {
                 AsyncImage(
-                    model = thumbnailUrl,
+                    model = thumbnailRequest,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
