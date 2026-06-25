@@ -6534,7 +6534,7 @@ class MusicService :
         return dataSpec.withUri(streamUrl.toUri())
     }
 
-    private fun String.toYouTubeWatchUrl(): String = "https://www.youtube.com/watch?v=$this"
+    private fun String.toYouTubeWatchUrl(): String = "https://music.youtube.com/watch?v=$this"
 
     private fun resolveCachedDataSpec(
         dataSpec: DataSpec,
