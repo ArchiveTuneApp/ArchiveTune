@@ -34,7 +34,7 @@ class GatewayClient {
 
     @Volatile private var httpClient: OkHttpClient? = null
     @Volatile private var wsSession: WebSocket? = null
-    private var processingJob: Job? = null
+    @Volatile private var processingJob: Job? = null
     private var heartbeatJob: Job? = null
     private var helloTimerJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
