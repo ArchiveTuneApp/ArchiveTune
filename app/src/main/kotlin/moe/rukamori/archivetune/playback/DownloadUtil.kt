@@ -127,7 +127,7 @@ class DownloadUtil
                             mediaOkHttpClient,
                         ),
                     ).setCacheWriteDataSinkFactory(
-                        CacheDataSink.Factory().setBufferSize(DOWNLOAD_WRITE_BUFFER_SIZE),
+                        CacheDataSink.Factory().setCache(playerCache).setBufferSize(DOWNLOAD_WRITE_BUFFER_SIZE),
                     ),
             ) { dataSpec ->
                 val mediaId = dataSpec.key ?: error("No media id")
