@@ -6590,7 +6590,8 @@ class MusicService :
 
     private fun isExtractorPlaybackUri(uri: Uri): Boolean {
         val url = uri.toString()
-        return extractorPlaybackUrlCache.values.any { it.url == url }
+        return extractorPlaybackUrlCache.values.any { it.url == url } ||
+            uri.path?.startsWith("/api/play/") == true
     }
 
     private fun resolveCachedDataSpec(
