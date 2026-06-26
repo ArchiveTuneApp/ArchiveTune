@@ -561,4 +561,9 @@
     <string name="theme_export_success">Đã xuất giao diện</string>
     <string name="theme_export_failed">Xuất thất bại</string>
     <string name="theme_import_failed_title">Không thể nhập giao diện</string>
+    <string name="player_stream_client_archivetune_extractor">ArchiveTune Extractor</string>
+    <string name="player_stream_client_archivetune_extractor_desc">Sử dụng trình trích xuất phụ trợ của ArchiveTune cho các luồng phát lại. Ưu tiên Âm thanh Chất lượng Cao Tự động.</string>
+    <string name="top_albums">Album hàng đầu</string>
+    <string name="about_position_developers">Nhà phát triển | Nhóm</string>
+    <string name="about_position_yuki">Chỉ để Trang trí 😂 | Quản trị viên</string>
 </resources>
