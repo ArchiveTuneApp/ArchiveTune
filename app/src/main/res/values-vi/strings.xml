@@ -864,7 +864,6 @@
     <string name="playback_error_http">HTTP</string>
     <string name="playback_error_message">Thông báo</string>
     <string name="playback_error_cause">Nguyên nhân</string>
-    <string name="top_albums">Album hàng đầu</string>
     <string name="library_top_mixes_loading">Đang chuẩn bị các AI mix của bạn…</string>
     <string name="library_top_mixes_refresh">Làm mới mix</string>
     <string name="library_top_mixes_configure_ai">Cấu hình AI</string>
