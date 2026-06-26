@@ -35,6 +35,7 @@ object DiscordPresenceManager {
     private const val LOG_TAG = "DiscordPresenceManager"
     private const val IMAGE_RESOLUTION_TIMEOUT_MS = 8_000L
     private const val STOP_TIMEOUT_MS = 5_000L
+    private const val MAX_CONSECUTIVE_FAILURES = 3
 
     private val started = AtomicBoolean(false)
     private val updateGeneration = AtomicLong(0L)
@@ -95,29 +96,6 @@ object DiscordPresenceManager {
             isPaused = isPaused,
             generation = updateGeneration.incrementAndGet(),
         )
-
-    suspend fun clearNow(
-        context: Context,
-        token: String? = null,
-    ): Boolean =
-        withContext(Dispatchers.IO) {
-            val appContext = context.applicationContext
-            rpcMutex.withLock {
-                try {
-                    Timber.tag(LOG_TAG).d(
-                        "clearNow tokenProvided=%s hasRpcInstance=%s",
-                        !token.isNullOrBlank(),
-                        rpcInstance != null,
-                    )
-                    clearPresenceLocked(appContext, token)
-                } catch (error: CancellationException) {
-                    throw error
-                } catch (error: Exception) {
-                    Timber.tag(LOG_TAG).e(error, "clearNow failed")
-                    false
-                }
-            }
-        }
 
     private suspend fun updatePresence(
         context: Context,
@@ -225,11 +203,18 @@ object DiscordPresenceManager {
                 }
             }
         }
+    }
 
-        if (token.isNotBlank()) {
-            rpcToken = token
+    fun restart(): Boolean {
+        if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+            Timber.tag(LOG_TAG).w("presence refresh skipped after repeated failures")
+            return false
         }
-        Timber.tag(LOG_TAG).d("started manager runtime; awaiting external sync trigger")
+        return true
+    }
+
+    fun resetFailureCount() {
+        consecutiveFailures = 0
     }
 
     suspend fun updateNow(
@@ -246,33 +231,6 @@ object DiscordPresenceManager {
             positionMs = positionMs,
             isPaused = isPaused,
         )
-
-    private suspend fun clearPresenceLocked(
-        context: Context,
-        token: String? = null,
-    ): Boolean {
-        val existingRpc = rpcInstance
-        if (existingRpc != null) {
-            Timber.tag(LOG_TAG).d("clearPresenceLocked using existing RPC instance")
-            existingRpc.stopActivity()
-            setLastRpcTimestamps(null, null)
-            consecutiveFailures = 0
-            return true
-        }
-
-        val activeToken = DiscordOAuthRepository.getValidAccessToken(context) ?: token.orEmpty()
-        if (activeToken.isBlank()) {
-            Timber.tag(LOG_TAG).w("clearPresenceLocked skipped because token is missing")
-            return false
-        }
-
-        Timber.tag(LOG_TAG).d("clearPresenceLocked creating RPC instance for clear")
-        val rpc = getOrCreateRpc(context, activeToken)
-        rpc.stopActivity()
-        setLastRpcTimestamps(null, null)
-        consecutiveFailures = 0
-        return true
-    }
 
     fun stop() {
         if (!started.getAndSet(false)) return

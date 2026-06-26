@@ -162,7 +162,8 @@ fun DiscordSettings(
         if (discordRPC && discordToken.isNotBlank()) {
             Timber.tag("DiscordSettings").d("Discord Rich Presence enabled, MusicService will handle start")
         } else {
-            Timber.tag("DiscordSettings").d("Discord Rich Presence disabled or not authorized, MusicService will handle stop")
+            Timber.tag("DiscordSettings").d("Discord Rich Presence disabled or not authorized, stopping manager")
+            DiscordPresenceManager.stop()
         }
     }
 
@@ -503,7 +504,13 @@ fun DiscordSettings(
                                             coroutineScope.launch {
                                                 isRefreshing = true
                                                 val success =
-                                                    playerConnection.service.refreshDiscordNow()
+                                                    DiscordPresenceManager.updatePresence(
+                                                        context = context,
+                                                        token = discordToken,
+                                                        song = song,
+                                                        positionMs = playerConnection.player.currentPosition,
+                                                        isPaused = !playerConnection.player.isPlaying,
+                                                    )
                                                 isRefreshing = false
                                                 snackbarHostState.showSnackbar(
                                                     message =
@@ -714,6 +721,7 @@ fun DiscordSettings(
                             authorizedUsername = ""
                             authorizedName = ""
                             authorizedAvatarUrl = ""
+                            DiscordPresenceManager.stop()
                             authorizationUiModeName = DiscordAuthorizationUiMode.Idle.name
                             authorizationMessage = null
                             authorizationSession = DiscordOAuthRepository.createAuthorizationSession()
