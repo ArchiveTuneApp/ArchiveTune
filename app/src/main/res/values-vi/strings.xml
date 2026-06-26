@@ -556,7 +556,7 @@
     <string name="update_channel">Kênh Cập nhật</string>
     <string name="channel_stable">Ổn định</string>
     <string name="channel_nightly">Hàng đêm</string>
-    <string name="recent_commits">Commits Gần đây</string>
+    <string name="recent_commits">Commit gần đây</string>
     <string name="changelog">Nhật ký thay đổi</string>
     <string name="view_changelog">Xem nhật ký thay đổi</string>
     <string name="check_for_update">Kiểm tra bản cập nhật</string>
@@ -736,7 +736,7 @@
     <string name="updates_nightly_description">Bản dựng nightly theo dõi các cam kết phát triển mới nhất và có thể bao gồm những thay đổi chưa hoàn thành.</string>
     <string name="updates_latest_commit">Commit mới nhất: %s</string>
     <string name="updates_loading_commits">Đang tải các commit gần nhất</string>
-    <string name="updates_recent_commits_count">%1$d các commit mới nhất</string>
+    <string name="updates_recent_commits_count">%1$d commit mới nhất</string>
     <string name="updates_no_commits">Không có commit mới gần đây</string>
     <string name="you_might_like_source">Bạn có thể thích nguồn</string>
     <string name="playlist_suggestion_source_title">Danh sách nhạc tiêu đề</string>
