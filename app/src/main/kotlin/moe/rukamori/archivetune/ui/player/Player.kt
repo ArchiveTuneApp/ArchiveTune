@@ -1275,7 +1275,6 @@ fun BottomSheetPlayer(
                         val v7SwapState = rememberThumbnailSwapState(
                             videoId = mediaMetadata?.id,
                             ytmUrl = mediaMetadata?.thumbnailUrl,
-                            isMusicVideo = mediaMetadata?.isMusicVideo ?: false,
                             lowDataMode = lowDataModeActive,
                         )
                         V7PlayerBackdrop(
@@ -1336,7 +1335,6 @@ fun BottomSheetPlayer(
                         val v8SwapState = rememberThumbnailSwapState(
                             videoId = mediaMetadata?.id,
                             ytmUrl = mediaMetadata?.thumbnailUrl,
-                            isMusicVideo = mediaMetadata?.isMusicVideo ?: false,
                             lowDataMode = lowDataModeActive,
                         )
                         V8PlayerBackdrop(
@@ -1548,7 +1546,6 @@ fun BottomSheetPlayer(
                         val v7SwapState = rememberThumbnailSwapState(
                             videoId = mediaMetadata?.id,
                             ytmUrl = mediaMetadata?.thumbnailUrl,
-                            isMusicVideo = mediaMetadata?.isMusicVideo ?: false,
                             lowDataMode = lowDataModeActive,
                         )
                         V7PlayerBackdrop(
@@ -1607,7 +1604,6 @@ fun BottomSheetPlayer(
                         val v8SwapState = rememberThumbnailSwapState(
                             videoId = mediaMetadata?.id,
                             ytmUrl = mediaMetadata?.thumbnailUrl,
-                            isMusicVideo = mediaMetadata?.isMusicVideo ?: false,
                             lowDataMode = lowDataModeActive,
                         )
                         V8PlayerBackdrop(

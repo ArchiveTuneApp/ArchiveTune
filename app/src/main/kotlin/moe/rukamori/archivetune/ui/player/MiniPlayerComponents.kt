@@ -348,7 +348,6 @@ private fun MiniPlayerArtwork(
                 val thumbnailSwapState = rememberThumbnailSwapState(
                     videoId = mediaMetadata?.id,
                     ytmUrl = baseThumbnailUrl,
-                    isMusicVideo = mediaMetadata?.isMusicVideo ?: false,
                     lowDataMode = rememberLowDataModeActive(),
                 )
                 AsyncImage(

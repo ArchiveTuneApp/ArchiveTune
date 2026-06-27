@@ -2059,7 +2059,6 @@ fun V8PlayerContent(
     val thumbnailSwapState = rememberThumbnailSwapState(
         videoId = mediaMetadata.id,
         ytmUrl = baseArtworkUrl,
-        isMusicVideo = mediaMetadata.isMusicVideo,
         lowDataMode = rememberLowDataModeActive(),
     )
     val artworkUrl = thumbnailSwapState.displayUrl
@@ -2949,7 +2948,6 @@ fun V9PlayerContent(
     val thumbnailSwapState = rememberThumbnailSwapState(
         videoId = mediaMetadata.id,
         ytmUrl = baseArtworkUrl,
-        isMusicVideo = mediaMetadata.isMusicVideo,
         lowDataMode = rememberLowDataModeActive(),
     )
     val artworkUrl = thumbnailSwapState.displayUrl
@@ -3690,7 +3688,6 @@ fun PlayerBackground(
     val backgroundSwapState = rememberThumbnailSwapState(
         videoId = mediaMetadata?.id,
         ytmUrl = mediaMetadata?.thumbnailUrl,
-        isMusicVideo = mediaMetadata?.isMusicVideo ?: false,
         lowDataMode = rememberLowDataModeActive(),
     )
     val backgroundThumbnailUrl = backgroundSwapState.displayUrl
