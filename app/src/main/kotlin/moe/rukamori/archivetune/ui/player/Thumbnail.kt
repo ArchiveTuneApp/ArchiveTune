@@ -563,7 +563,7 @@ fun Thumbnail(
                                             item.metadata?.thumbnailUrl?.highRes()
                                                 ?: item.mediaMetadata.artworkUri?.toString()
                                         val thumbnailArtworkRequest = rememberOfflineArtworkImageRequest(thumbnailArtworkUrl)
-                                        val thumbnailBgBlurEnabled = backdropEnabled && !disableBlur && backdropBlurAmount > 0
+                                        val thumbnailBgBlurEnabled = backdropEnabled && backdropBlurAmount > 0
 
                                         if (thumbnailBgBlurEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                                             val blurRadiusPx = (backdropBlurAmount * 60 / 100f).coerceAtMost(60f)
