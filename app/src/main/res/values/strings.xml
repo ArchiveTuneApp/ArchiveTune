@@ -1016,4 +1016,7 @@
     <string name="export_success">Exported successfully</string>
     <string name="export_failed">Export failed: %s</string>
     <string name="export_failed_not_cached">This song is not fully cached or downloaded yet</string>
+    <string name="export_all">Export all to storage</string>
+    <string name="export_success_all">Successfully exported %d songs</string>
+    <string name="export_success_partial">Exported %1$d songs (%2$d failed/skipped)</string>
 </resources>

@@ -96,6 +96,13 @@ import coil3.request.allowHardware
 import coil3.toBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import android.content.Intent
+import android.provider.DocumentsContract
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.rememberCoroutineScope
+import moe.rukamori.archivetune.db.entities.Song
 import moe.rukamori.archivetune.LocalDownloadUtil
 import moe.rukamori.archivetune.LocalPlayerAwareWindowInsets
 import moe.rukamori.archivetune.LocalPlayerConnection
@@ -142,6 +149,99 @@ fun AutoPlaylistScreen(
     val haptic = LocalHapticFeedback.current
     val focusManager = LocalFocusManager.current
     val playerConnection = LocalPlayerConnection.current ?: return
+    val coroutineScope = rememberCoroutineScope()
+    val downloadUtil = LocalDownloadUtil.current
+
+    var isExportingAll by remember { mutableStateOf(false) }
+    var exportSongsList by remember { mutableStateOf<List<Song>>(emptyList()) }
+
+    val exportFolderLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { treeUri ->
+        if (treeUri != null) {
+            val songsToExport = if (isExportingAll) songs else exportSongsList
+            if (songsToExport.isNotEmpty()) {
+                coroutineScope.launch {
+                    val contentResolver = context.contentResolver
+                    try {
+                        contentResolver.takePersistableUriPermission(
+                            treeUri,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                        )
+                    } catch (e: Exception) {}
+
+                    Toast.makeText(context, R.string.export_started, Toast.LENGTH_SHORT).show()
+
+                    var successCount = 0
+                    var failCount = 0
+
+                    val parentDocumentUri = DocumentsContract.buildDocumentUriUsingTree(
+                        treeUri,
+                        DocumentsContract.getTreeDocumentId(treeUri)
+                    )
+
+                    withContext(Dispatchers.IO) {
+                        for (song in songsToExport) {
+                            if (!downloadUtil.isSongFullyCached(song.id)) {
+                                failCount++
+                                continue
+                            }
+
+                            val extension = when {
+                                song.format?.mimeType?.contains("webm") == true || song.format?.mimeType?.contains("opus") == true -> "opus"
+                                song.format?.mimeType?.contains("mp4") == true || song.format?.mimeType?.contains("m4a") == true -> "m4a"
+                                else -> "m4a"
+                            }
+                            val cleanTitle = song.title.replace(Regex("[\\\\/:*?\"<>|]"), "_")
+                            val artistName = song.artists.firstOrNull()?.name?.replace(Regex("[\\\\/:*?\"<>|]"), "_")
+                            val fileName = if (artistName != null) "$artistName - $cleanTitle.$extension" else "$cleanTitle.$extension"
+                            val mimeType = song.format?.mimeType ?: "audio/*"
+
+                            try {
+                                val fileUri = DocumentsContract.createDocument(
+                                    contentResolver,
+                                    parentDocumentUri,
+                                    mimeType,
+                                    fileName
+                                )
+                                if (fileUri != null) {
+                                    val result = downloadUtil.exportSong(context, song.id, fileUri)
+                                    if (result.isSuccess) {
+                                        successCount++
+                                    } else {
+                                        failCount++
+                                        try {
+                                            DocumentsContract.deleteDocument(contentResolver, fileUri)
+                                        } catch (e: Exception) {}
+                                    }
+                                } else {
+                                    failCount++
+                                }
+                            } catch (e: Exception) {
+                                failCount++
+                            }
+                        }
+                    }
+
+                    if (failCount == 0) {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.export_success_all, successCount),
+                            Toast.LENGTH_LONG
+                        ).show()
+                    } else {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.export_success_partial, successCount, failCount),
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+            }
+        }
+        isExportingAll = false
+        exportSongsList = emptyList()
+    }
     val isPlaying by playerConnection.isPlaying.collectAsStateWithLifecycle()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsStateWithLifecycle()
     val playlist =
@@ -993,6 +1093,19 @@ fun AutoPlaylistScreen(
                         )
                     }
                 } else if (!isSearching) {
+                    if (viewModel.playlist == "downloaded") {
+                        androidx.compose.material3.IconButton(
+                            onClick = {
+                                isExportingAll = true
+                                exportFolderLauncher.launch(null)
+                            },
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_download),
+                                contentDescription = stringResource(R.string.export_all),
+                            )
+                        }
+                    }
                     androidx.compose.material3.IconButton(
                         onClick = { isSearching = true },
                     ) {
