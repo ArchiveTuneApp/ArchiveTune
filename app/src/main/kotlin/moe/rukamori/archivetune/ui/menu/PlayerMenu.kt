@@ -180,6 +180,29 @@ fun PlayerMenu(
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
     val librarySong by database.song(mediaMetadata.id).collectAsState(initial = null)
     val coroutineScope = rememberCoroutineScope()
+    var pendingExportSongId by remember { mutableStateOf<String?>(null) }
+    val exportLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.CreateDocument("audio/*")
+    ) { uri ->
+        val songId = pendingExportSongId
+        pendingExportSongId = null
+        if (uri != null && songId != null) {
+            coroutineScope.launch {
+                android.widget.Toast.makeText(context, R.string.export_started, android.widget.Toast.LENGTH_SHORT).show()
+                val result = LocalDownloadUtil.current.exportSong(context, songId, uri)
+                if (result.isSuccess) {
+                    android.widget.Toast.makeText(context, R.string.export_success, android.widget.Toast.LENGTH_SHORT).show()
+                } else {
+                    android.widget.Toast.makeText(
+                        context,
+                        context.getString(R.string.export_failed, result.exceptionOrNull()?.message ?: "Unknown error"),
+                        android.widget.Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+            onDismiss()
+        }
+    }
 
     val download by LocalDownloadUtil.current
         .getDownload(mediaMetadata.id)
@@ -574,8 +597,36 @@ fun PlayerMenu(
                                             onDismiss()
                                         },
                                     )
-                                },
+                                }
                             )
+                            if (!isLocalMedia) {
+                                add(
+                                    NewAction(
+                                        icon = {
+                                            Icon(
+                                                painter = painterResource(R.drawable.ic_download),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(28.dp),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                        },
+                                        text = stringResource(R.string.export_song),
+                                        onClick = {
+                                            val extension = when {
+                                                librarySong?.format?.mimeType?.contains("webm") == true || librarySong?.format?.mimeType?.contains("opus") == true -> "opus"
+                                                librarySong?.format?.mimeType?.contains("mp4") == true || librarySong?.format?.mimeType?.contains("m4a") == true -> "m4a"
+                                                else -> "m4a"
+                                            }
+                                            val cleanTitle = mediaMetadata.title.ifBlank { "Untitled" }.replace(Regex("[\\\\/:*?\"<>|]"), "_")
+                                            val artistName = mediaMetadata.artists.firstOrNull()?.name?.replace(Regex("[\\\\/:*?\"<>|]"), "_")
+                                            val defaultFileName = if (artistName != null) "$artistName - $cleanTitle.$extension" else "$cleanTitle.$extension"
+
+                                            pendingExportSongId = mediaMetadata.id
+                                            exportLauncher.launch(defaultFileName)
+                                        },
+                                    )
+                                )
+                            }
                             if (!isLocalMedia) {
                                 add(
                                     NewAction(

@@ -1011,4 +1011,8 @@
     <string name="hidden_playlists_description">Playlists hidden from library appear here</string>
     <string name="no_hidden_playlists">No hidden playlists</string>
     <string name="unhide">Unhide</string>
+    <string name="export_song">Export to storage</string>
+    <string name="export_started">Export started…</string>
+    <string name="export_success">Exported successfully</string>
+    <string name="export_failed">Export failed: %s</string>
 </resources>

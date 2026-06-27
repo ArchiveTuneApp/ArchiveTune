@@ -31,6 +31,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import okhttp3.Request
 import moe.rukamori.archivetune.constants.AudioQuality
 import moe.rukamori.archivetune.constants.AudioQualityKey
 import moe.rukamori.archivetune.db.MusicDatabase
@@ -220,6 +222,101 @@ class DownloadUtil
         }
 
         fun getDownload(songId: String): Flow<Download?> = downloads.map { it[songId] }
+
+        suspend fun exportSong(
+            context: Context,
+            songId: String,
+            destUri: android.net.Uri,
+        ): Result<Unit> =
+            withContext(Dispatchers.IO) {
+                runCatching {
+                    val contentResolver = context.contentResolver
+                    val outputStream =
+                        contentResolver.openOutputStream(destUri)
+                            ?: throw IllegalStateException("Failed to open output stream")
+
+                    outputStream.use { os ->
+                        // 1. Try to read from downloadCache
+                        if (downloadCache.keys.contains(songId)) {
+                            val success = readFromCache(songId, downloadCache, os)
+                            if (success) return@runCatching
+                        }
+
+                        // 2. Try to read from playerCache
+                        if (playerCache.keys.contains(songId)) {
+                            val success = readFromCache(songId, playerCache, os)
+                            if (success) return@runCatching
+                        }
+
+                        // 3. Fallback: Fetch stream and download it on-the-fly
+                        val lowDataModeActive = context.isLowDataModeActive()
+                        val requestedAudioQuality = resolveDownloadAudioQuality(lowDataModeActive)
+                        val playbackData =
+                            context.retryWithoutPlaybackLoginContext {
+                                YTPlayerUtils.playerResponseForDownload(
+                                    songId,
+                                    audioQuality = requestedAudioQuality,
+                                    connectivityManager = connectivityManager,
+                                    networkMetered = lowDataModeActive,
+                                )
+                            }.getOrThrow()
+
+                        val request =
+                            Request
+                                .Builder()
+                                .url(playbackData.streamUrl)
+                                .build()
+
+                        mediaOkHttpClient.newCall(request).execute().use { response ->
+                            if (!response.isSuccessful) {
+                                throw IllegalStateException("HTTP ${response.code}")
+                            }
+                            val body = response.body ?: throw IllegalStateException("Empty response body")
+                            body.byteStream().use { inputStream ->
+                                val buffer = ByteArray(8192)
+                                var bytesRead: Int
+                                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                                    os.write(buffer, 0, bytesRead)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        private fun readFromCache(
+            songId: String,
+            cache: Cache,
+            os: java.io.OutputStream,
+        ): Boolean {
+            val dataSource =
+                CacheDataSource
+                    .Factory()
+                    .setCache(cache)
+                    .setUpstreamDataSourceFactory(null)
+                    .createDataSource()
+
+            val dataSpec =
+                androidx.media3.datasource.DataSpec
+                    .Builder()
+                    .setUri(songId.toUri())
+                    .setKey(songId)
+                    .build()
+
+            return try {
+                dataSource.open(dataSpec)
+                val buffer = ByteArray(8192)
+                var bytesRead: Int
+                while (dataSource.read(buffer, 0, buffer.size).also { bytesRead = it } > 0) {
+                    os.write(buffer, 0, bytesRead)
+                }
+                true
+            } catch (e: Exception) {
+                false
+            } finally {
+                runCatching { dataSource.close() }
+            }
+        }
 
         private fun resolveDownloadAudioQuality(lowDataModeActive: Boolean): AudioQuality =
             if (lowDataModeActive) AudioQuality.LOW else audioQuality

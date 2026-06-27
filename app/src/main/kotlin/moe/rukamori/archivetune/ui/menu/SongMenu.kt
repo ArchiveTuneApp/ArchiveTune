@@ -141,6 +141,29 @@ fun SongMenu(
         .getDownload(originalSong.id)
         .collectAsState(initial = null)
     val coroutineScope = rememberCoroutineScope()
+    var pendingExportSong by remember { mutableStateOf<Song?>(null) }
+    val exportLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.CreateDocument("audio/*")
+    ) { uri ->
+        val songToExport = pendingExportSong
+        pendingExportSong = null
+        if (uri != null && songToExport != null) {
+            coroutineScope.launch {
+                android.widget.Toast.makeText(context, R.string.export_started, android.widget.Toast.LENGTH_SHORT).show()
+                val result = LocalDownloadUtil.current.exportSong(context, songToExport.id, uri)
+                if (result.isSuccess) {
+                    android.widget.Toast.makeText(context, R.string.export_success, android.widget.Toast.LENGTH_SHORT).show()
+                } else {
+                    android.widget.Toast.makeText(
+                        context,
+                        context.getString(R.string.export_failed, result.exceptionOrNull()?.message ?: "Unknown error"),
+                        android.widget.Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+            onDismiss()
+        }
+    }
     val syncUtils = LocalSyncUtils.current
     var refetchIconDegree by remember { mutableFloatStateOf(0f) }
 
@@ -525,6 +548,34 @@ fun SongMenu(
                         },
                     ),
                 )
+                if (!isLocalSong) {
+                    add(
+                        NewAction(
+                            icon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_download),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(28.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            },
+                            text = stringResource(R.string.export_song),
+                            onClick = {
+                                val extension = when {
+                                    song.format?.mimeType?.contains("webm") == true || song.format?.mimeType?.contains("opus") == true -> "opus"
+                                    song.format?.mimeType?.contains("mp4") == true || song.format?.mimeType?.contains("m4a") == true -> "m4a"
+                                    else -> "m4a"
+                                }
+                                val cleanTitle = song.title.replace(Regex("[\\\\/:*?\"<>|]"), "_")
+                                val artistName = song.artists.firstOrNull()?.name?.replace(Regex("[\\\\/:*?\"<>|]"), "_")
+                                val defaultFileName = if (artistName != null) "$artistName - $cleanTitle.$extension" else "$cleanTitle.$extension"
+
+                                pendingExportSong = song
+                                exportLauncher.launch(defaultFileName)
+                            },
+                        ),
+                    )
+                }
                 add(
                     NewAction(
                         icon = {
