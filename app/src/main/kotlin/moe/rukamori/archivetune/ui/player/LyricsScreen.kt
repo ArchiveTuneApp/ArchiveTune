@@ -308,6 +308,13 @@ fun LyricsScreen(
             gradientColors = gradientColors,
         )
 
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .consumeUnhandledPointerInput(),
+        )
+
         Column(
             modifier =
                 Modifier
@@ -523,17 +530,7 @@ private fun AppleMusicGrabber(
                     role = Role.Button,
                     onClick = onClick,
                 ),
-        contentAlignment = Alignment.Center,
-    ) {
-        Box(
-            modifier =
-                Modifier
-                    .width(42.dp)
-                    .height(5.dp)
-                    .clip(RoundedCornerShape(50))
-                    .background(AppleMusicForeground.copy(alpha = 0.34f)),
-        )
-    }
+    )
 }
 
 @Composable
@@ -695,7 +692,7 @@ private fun AppleMusicControls(
     val remainingPosition = (safeDuration - currentPosition).coerceAtLeast(0L)
 
     Column(
-        modifier = modifier.consumeUnhandledPointerInput(),
+        modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         AppleMusicSlider(

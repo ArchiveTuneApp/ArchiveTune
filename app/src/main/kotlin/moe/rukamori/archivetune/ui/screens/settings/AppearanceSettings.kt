@@ -880,21 +880,6 @@ fun AppearanceSettings(
                     onCheckedChange = onSwipeToSongChange,
                 )
             }
-
-            item {
-                EnumListPreference(
-                    title = { Text(stringResource(R.string.grid_cell_size)) },
-                    icon = { Icon(painterResource(R.drawable.grid_view), null) },
-                    selectedValue = gridItemSize,
-                    onValueSelected = onGridItemSizeChange,
-                    valueText = {
-                        when (it) {
-                            GridItemSize.BIG -> stringResource(R.string.big)
-                            GridItemSize.SMALL -> stringResource(R.string.small)
-                        }
-                    },
-                )
-            }
         }
     }
 

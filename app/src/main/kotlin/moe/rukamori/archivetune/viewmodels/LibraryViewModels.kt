@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -93,6 +94,8 @@ import java.time.LocalDateTime
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
+
+private const val MOST_PLAYED_ALBUM_WINDOW_MILLIS = 14L * 24L * 60L * 60L * 1000L
 
 @HiltViewModel
 class LibrarySongsViewModel
@@ -552,6 +555,49 @@ class LibraryMixViewModel
                 }
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LibraryTopMixesUiState.Loading)
 
+        val mostPlayedAlbumUiState =
+            context.dataStore.data
+                .map { it[HideExplicitKey] ?: false }
+                .distinctUntilChanged()
+                .flatMapLatest { hideExplicit ->
+                    database
+                        .mostPlayedAlbums(
+                            fromTimeStamp = System.currentTimeMillis() - MOST_PLAYED_ALBUM_WINDOW_MILLIS,
+                            limit = 10,
+                        ).flatMapLatest { albums ->
+                            val album =
+                                albums
+                                    .filterExplicitAlbums(hideExplicit)
+                                    .firstOrNull()
+                            if (album == null) {
+                                flowOf(MostPlayedAlbumUiState.Empty)
+                            } else {
+                                database.albumWithSongs(album.id).map { albumWithSongs ->
+                                    val songs = albumWithSongs?.songs.orEmpty()
+                                    if (songs.isEmpty()) {
+                                        MostPlayedAlbumUiState.Empty
+                                    } else {
+                                        MostPlayedAlbumUiState.Success(
+                                            album =
+                                                MostPlayedAlbumUiModel(
+                                                    id = album.id,
+                                                    title = album.title,
+                                                    thumbnailUrl = album.thumbnailUrl,
+                                                    trackCount = songs.size,
+                                                    tracks = ImmutableList.copyOf(songs.map { it.toMediaMetadata() }),
+                                                ),
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                }.flowOn(Dispatchers.IO)
+                .catch { throwable ->
+                    if (throwable is CancellationException) throw throwable
+                    reportException(throwable)
+                    emit(MostPlayedAlbumUiState.Error(context.getString(R.string.error_unknown)))
+                }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MostPlayedAlbumUiState.Loading)
+
         init {
             viewModelScope.launch {
                 combine(observedTopMixes, isTopMixAiAvailable) { mixes, isAiAvailable ->
@@ -762,6 +808,32 @@ private fun LibraryTopMix.toUiModel() =
         description = description,
         tracks = ImmutableList.copyOf(tracks),
     )
+
+@Immutable
+sealed interface MostPlayedAlbumUiState {
+    data object Loading : MostPlayedAlbumUiState
+
+    @Immutable
+    data class Success(
+        val album: MostPlayedAlbumUiModel,
+    ) : MostPlayedAlbumUiState
+
+    data object Empty : MostPlayedAlbumUiState
+
+    @Immutable
+    data class Error(
+        val message: String,
+    ) : MostPlayedAlbumUiState
+}
+
+@Immutable
+data class MostPlayedAlbumUiModel(
+    val id: String,
+    val title: String,
+    val thumbnailUrl: String?,
+    val trackCount: Int,
+    val tracks: ImmutableList<MediaMetadata>,
+)
 
 @HiltViewModel
 class LibraryViewModel

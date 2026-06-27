@@ -308,7 +308,7 @@
     <string name="backup_category_settings">Configuración de la aplicación</string>
     <string name="backup_category_settings_desc">Apariencia, reproducción y preferencias</string>
     <string name="backup_category_account">Detalles de la cuenta</string>
-    <string name="backup_category_account_desc">YouTube, Last.fm, Discord y credenciales del proxy</string>
+    <string name="backup_category_account_desc">YouTube, Spotify, Last.fm, Libre.fm, Discord y credenciales de proxy</string>
     <string name="news">Noticias de los desarrolladores</string>
     <string name="news_loading">Cargando noticias…</string>
     <string name="news_empty_title">Aquí aún no hay nada</string>
@@ -322,13 +322,10 @@
     <string name="news_no_results_desc">Prueba con otro término de búsqueda.</string>
     <string name="news_important_badge">Importante</string>
     <string name="news_tooltip_title">Novedades</string>
-    <string name="ai_translating_lyrics">Traduciendo la letra...</string>
     <string name="ai_translation_menu">Traducción con IA</string>
     <string name="ai_api_test_failed">La prueba de la API falló.</string>
-    <string name="ai_translation_target">Texto de destino</string>
     <string name="ai_api_connected">Conectado a la API</string>
     <string name="ai_model_no_results">No hay modelos que coincidan con tu búsqueda</string>
-    <string name="ai_translation">Traducción automática</string>
     <string name="ai_model_search">Modelos de búsqueda</string>
     <string name="news_tooltip_body">Tienes mensajes no leídos de los desarrolladores.</string>
     <string name="news_author_on_date">%1$s · %2$s</string>
@@ -363,7 +360,7 @@
     <string name="settings_playback_subtitle">Comportamiento del audio, fundido cruzado y reproducción en segundo plano</string>
     <string name="settings_behavior_title">Comportamiento</string>
     <string name="settings_behavior_subtitle">Historial, ajustes predeterminados y configuración de privacidad</string>
-    <string name="settings_integration_subtitle">Discord, Last.fm, y ListenBrainz</string>
+    <string name="settings_integration_subtitle">Discord, Last.fm, Libre.fm, y ListenBrainz</string>
     <string name="settings_backup_restore_subtitle">Exporta y recupera los datos de tus aplicaciones personales</string>
     <string name="settings_developer_options_title">Opciones de desarrollador</string>
     <string name="settings_developer_options_subtitle">Funciones experimentales y depuración</string>
@@ -487,8 +484,6 @@
     <string name="android_auto_mixes_and_radios">Mezclas y radios</string>
     <string name="android_auto_sort_playlist">Ordenar lista de reproducción</string>
     <string name="android_auto_sort_option_format">%1$s - %2$s</string>
-    <string name="player_stream_client_hi_res_lossless">Alta resolución y sin pérdidas</string>
-    <string name="player_stream_client_hi_res_lossless_desc">Prioriza las transmisiones de audio sin pérdida cuando estén disponibles.</string>
     <string name="settings_stats_title">Estadísticas</string>
     <string name="settings_stats_subtitle">Tus canciones, artistas y historial de reproducción más populares</string>
     <string name="year_in_music_recap">Resumen musical</string>
@@ -543,13 +538,10 @@
     <string name="ai_model_fetch_failed">No se pudieron obtener los modelos disponibles.</string>
     <string name="ai_fetch_models">Obtener modelos</string>
     <string name="about_lead_developer">Desarrollador principal</string>
-    <string name="about_archive_tune_team">Equipo de ArchiveTune</string>
+    <string name="about_archive_tune_team">Equipo</string>
     <string name="about_respecter">Cumplir</string>
     <string name="about_contributors">Colaboradores</string>
     <string name="about_position_lead_dev">¿Eh?</string>
-    <string name="about_position_wttexe">¡Sincronización de letras, degradados y mejoras en la interfaz de usuario!</string>
-    <string name="about_position_miko">Equipo de colaboradores</string>
-    <string name="about_position_sang765">Equipo de colaboradores</string>
     <string name="about_position_mo_agamy">Estructura básica | Metrolist</string>
     <string name="about_position_zion_huang">Creador de InnerTune · Fundador de Metrolist, ArchiveTune y otras bifurcaciones</string>
     <string name="about_content_desc_github">GitHub</string>

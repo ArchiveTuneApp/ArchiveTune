@@ -268,9 +268,6 @@
     <string name="player_slider_style">Style de curseur du lecteur</string>
     <string name="misc">Divers</string>
     <string name="default_open_tab">Onglet ouvert par défaut</string>
-    <string name="grid_cell_size">Taille des cellules de la grille</string>
-    <string name="small">Petite</string>
-    <string name="big">Grande</string>
     <string name="lyrics_animation_style">Style d\'animation des paroles</string>
     <string name="lyrics_line_spacing">Espacement des lignes des paroles</string>
     <string name="content">Contenu</string>
@@ -339,7 +336,7 @@
     <string name="preview">Aperçu</string>
     <string name="enable_discord_rpc">Activer la présence enrichie</string>
     <string name="scrobbling">Scrobbling</string>
-    <string name="lastfm_integration">Intégration Last.fm</string>
+    <string name="lastfm_integration">Intégration de Last.fm / Libre.fm</string>
     <string name="enable_scrobbling">Activer le scrobbling</string>
     <string name="lastfm_now_playing">Mise à jour de la lecture en cours</string>
     <string name="scrobbling_configuration">Configuration de scrobbling</string>
@@ -715,10 +712,9 @@
     <string name="library_artists_subtitle">Tous vos artistes, réunis au même endroit</string>
     <string name="library_albums_subtitle">Tous vos albums, parfaitement classés</string>
     <string name="most_played_badge">LES PLUS JOUÉS</string>
-    <string name="favorite_songs_title">Titres Préférés</string>
     <string name="play_all">Tout lire</string>
-    <string name="offline_shortcut">Hors ligne</string>
-    <string name="cached">En cache</string>
+    <string name="offline_shortcut">Hors Ligne</string>
+    <string name="cached">En Cache</string>
     <string name="local_files">Fichiers Locaux</string>
     <string name="downloaded_desc">Téléchargé</string>
     <string name="instant_playback">Lecture immédiate</string>
@@ -743,7 +739,6 @@
     <string name="discord_platform_samsung">Samsung</string>
     <string name="check_for_update">Rechercher les mises à jour</string>
     <string name="shortest_duration">Durée la plus courte</string>
-    <string name="sort_a_z">A-Z</string>
     <string name="discord_activity_type_listening_label">Écouter</string>
     <string name="year_sort">Année</string>
     <string name="discord_activity_type_watching_label">Regarder</string>
@@ -822,7 +817,7 @@
     <string name="total_label">total</string>
     <string name="list_view">Affichage sous forme de liste</string>
     <string name="player_background_style_v8_v9_desc">Non disponible avec les styles de lecteur V8 et V9</string>
-    <string name="account_integrations_summary">Discord, Last.fm, ListenBrainz</string>
+    <string name="account_integrations_summary">Discord, Last.fm, Libre.fm, ListenBrainz</string>
     <string name="lyrics_mode">Mode paroles</string>
     <string name="all_artists_filter">Tous les artistes</string>
     <string name="sort_artist">Artiste</string>
@@ -834,7 +829,7 @@
     <string name="discord_waiting_for_authorization">En attente de l\'autorisation Discord...</string>
     <string name="recently_added">Ajoutés récemment</string>
     <string name="discord_platform_xbox">Xbox</string>
-    <string name="top_mixes">Les Meilleurs Mix pour Vous</string>
+    <string name="top_mixes">Les Meilleurs Mixages pour Vous</string>
     <string name="discord_platform_android">Android</string>
     <string name="sort_a_to_z">A → Z</string>
     <string name="discord_platform_desktop">Bureau</string>

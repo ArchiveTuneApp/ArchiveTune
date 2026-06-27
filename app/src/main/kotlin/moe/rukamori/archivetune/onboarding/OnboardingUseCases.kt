@@ -155,7 +155,7 @@ class BuildOnboardingUiStateUseCase
                     ),
                     OnboardingCommunityActionUiModel(
                         id = "donate",
-                        titleResId = R.string.support_development_donate,
+                        titleResId = R.string.about_content_desc_donate,
                         descriptionResId = R.string.onboarding_community_donate_desc,
                         iconResId = R.drawable.coffee,
                         url = "https://koiiverse.cloud/donate",

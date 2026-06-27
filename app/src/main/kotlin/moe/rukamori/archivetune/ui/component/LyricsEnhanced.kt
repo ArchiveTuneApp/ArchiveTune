@@ -128,6 +128,7 @@ import moe.rukamori.archivetune.lyrics.LyricsUtils.parseLyrics
 import moe.rukamori.archivetune.lyrics.LyricsUtils.parseTtml
 import moe.rukamori.archivetune.lyrics.LyricsUtils.providedRomanizedTextForEntry
 import moe.rukamori.archivetune.lyrics.LyricsUtils.providedRomanizedWordsForEntry
+import moe.rukamori.archivetune.lyrics.LyricsUtils.providedTranslationTextForEntry
 import moe.rukamori.archivetune.lyrics.LyricsUtils.romanizeLyricsLine
 import moe.rukamori.archivetune.lyrics.LyricsUtils.romanizeLyricsWordWithLineContext
 import moe.rukamori.archivetune.lyrics.LyricsUtils.shouldRomanizeLyricsLine
@@ -1237,6 +1238,7 @@ private fun buildSyncedLyrics(
         if (entry.text.isBlank() && entry.words.isNullOrEmpty()) return@forEachIndexed
 
         if (isTtml && entry.words != null) {
+            val translation = providedTranslationTextForEntry(entry)
             val mainWords = entry.words!!.filter { !it.isBackground }
             val bgWords = entry.words!!.filter { it.isBackground }
             val alignment =
@@ -1279,7 +1281,7 @@ private fun buildSyncedLyrics(
             lines.add(
                 KaraokeLine.MainKaraokeLine(
                     syllables = mainSyllables,
-                    translation = null,
+                    translation = translation,
                     alignment = alignment,
                     start = lineStart,
                     end = lineEnd,
@@ -1302,9 +1304,9 @@ private fun buildSyncedLyrics(
                     (entry.time + 4000L).toInt()
                 }
             lines.add(
-                SyncedLine(
-                    content = entry.text,
-                    translation = romanizationMap[index]?.firstOrNull(),
+                buildLineSyncedLrcLine(
+                    entry = entry,
+                    romanizedText = romanizationMap[index]?.firstOrNull(),
                     start = entry.time.toInt(),
                     end = lineEnd,
                 ),
@@ -1313,4 +1315,39 @@ private fun buildSyncedLyrics(
     }
 
     return SyncedLyrics(lines = lines)
+}
+
+private fun buildLineSyncedLrcLine(
+    entry: LyricsEntry,
+    romanizedText: String?,
+    start: Int,
+    end: Int,
+): ISyncedLine {
+    val translation = providedTranslationTextForEntry(entry)
+    val normalizedRomanizedText = romanizedText?.trim()?.takeIf { it.isNotEmpty() }
+
+    if (normalizedRomanizedText == null) {
+        return SyncedLine(
+            content = entry.text,
+            translation = translation,
+            start = start,
+            end = end,
+        )
+    }
+
+    return KaraokeLine.MainKaraokeLine(
+        syllables =
+            listOf(
+                KaraokeSyllable(
+                    content = entry.text,
+                    start = start,
+                    end = end,
+                    phonetic = normalizedRomanizedText,
+                ),
+            ),
+        translation = translation,
+        alignment = KaraokeAlignment.Start,
+        start = start,
+        end = end,
+    )
 }

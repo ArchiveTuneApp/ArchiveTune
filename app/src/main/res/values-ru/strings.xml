@@ -305,9 +305,6 @@
     <string name="player_slider_style">Стиль ползунка плеера</string>
     <string name="misc">Разное</string>
     <string name="default_open_tab">Вкладка по умолчанию</string>
-    <string name="grid_cell_size">Размер ячейки сетки</string>
-    <string name="small">Маленький</string>
-    <string name="big">Большой</string>
     <string name="lyrics_animation_style">Стиль анимации текста песни</string>
     <string name="lyrics_line_spacing">Интервал между строк</string>
     <string name="content">Контент</string>

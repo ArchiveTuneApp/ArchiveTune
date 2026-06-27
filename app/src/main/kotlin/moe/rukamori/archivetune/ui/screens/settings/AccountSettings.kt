@@ -240,7 +240,7 @@ fun AccountSettings(
 
     val saveCurrentAccount: () -> Unit = {
         val existing = decodeSavedAccounts(savedAccountsJson)
-        if (isLoggedIn && existing.none { it.innerTubeCookie == innerTubeCookie }) {
+        if (isLoggedIn && dataSyncId.isNotBlank() && existing.none { it.innerTubeCookie == innerTubeCookie }) {
             val newAccount =
                 SavedAccount(
                     id = UUID.randomUUID().toString(),

@@ -18,7 +18,7 @@
     <string name="liked">Favoris</string>
     <string name="offline">Téléchargés</string>
     <string name="my_top">Mon Top</string>
-    <string name="cached_playlist">En cache</string>
+    <string name="cached_playlist">En Cache</string>
     <string name="sync_playlist">Synchroniser la Playlist</string>
     <string name="sync_disabled">Synchronisation désactivée</string>
     <string name="allows_for_sync_witch_youtube">Remarque : Ceci permet la synchronisation avec YouTube Music. Ce paramètre ne peut pas être modifié ultérieurement.</string>
@@ -308,7 +308,7 @@
     <string name="backup_category_settings">Paramètres de l\'application</string>
     <string name="backup_category_settings_desc">Apparence, lecture &amp; préférences</string>
     <string name="backup_category_account">Détails du compte</string>
-    <string name="backup_category_account_desc">YouTube, Last.fm, Discord &amp; identifiants de proxy</string>
+    <string name="backup_category_account_desc">YouTube, Spotify, Last.fm, Libre.fm, Discord et identifiants de proxy</string>
     <string name="aod_customize_thumbnail_size">Taille des miniatures</string>
     <string name="aod_control_filled">Rempli</string>
     <string name="music_recognition_history">Historique de reconnaissance</string>
@@ -318,7 +318,6 @@
     <string name="ai_model">Modèle</string>
     <string name="spotify_reload_playlist">Actualiser la playlist</string>
     <string name="aod_customize_scale_and_spacing">Échelle et espacement</string>
-    <string name="ai_translation">Traduction par IA</string>
     <string name="storage_location_apply">Utiliser cet espace de stockage</string>
     <string name="aod_customize_show_progress">Afficher la progression</string>
     <string name="ai_model_loading">Récupération des modèles disponibles…</string>
@@ -328,7 +327,6 @@
     <string name="ai_provider_settings">Fournisseur</string>
     <string name="ai_model_fetch_hint">Appuyez sur « Actualiser » pour charger les modèles disponibles</string>
     <string name="import_csv_format">Fichier de playlist CSV</string>
-    <string name="ai_translating_lyrics">Traduire les paroles...</string>
     <string name="year_in_music_recap_word">RÉSUMÉ</string>
     <string name="ai_api_key">Clé API</string>
     <string name="music_recognition_history_no_results_body">Essayez un autre morceau, un autre artiste, un autre album ou un autre code.</string>
@@ -368,7 +366,7 @@
     <string name="lyrics_share_style_deep_blur">Flou profond</string>
     <string name="aod_shape_pentagon">Pentagone</string>
     <string name="news_no_results_title">Aucun article correspondant</string>
-    <string name="about_archive_tune_team">L\'équipe d\'ArchiveTune</string>
+    <string name="about_archive_tune_team">L\'équipe</string>
     <string name="storage_migration_cache_progress">Transfert du cache... %1$d%%</string>
     <string name="ai_api_testing">Test de connexion…</string>
     <string name="aod_customize_horizontal_padding">Remplissage horizontal</string>
@@ -478,7 +476,6 @@
     <string name="ai_translation_menu">Traduction par IA</string>
     <string name="ep">EP</string>
     <string name="player_design_v9">Contenu étendu</string>
-    <string name="about_position_sang765">Équipe de Contributeurs</string>
     <string name="aod_customize_show_time_labels">Afficher les horaires</string>
     <string name="aod_customize_sample_title">Archives de Minuit</string>
     <string name="aod_shape_cookie_6">Cookie 6</string>
@@ -495,7 +492,6 @@
     <string name="ai_model_not_selected">Non sélectionné</string>
     <string name="spotify_reload_playlist_desc">Actualisez les playlists Spotify depuis votre compte.</string>
     <string name="ai_api_key_missing">Condition préalable à l\'exécution des fonctionnalités d\'IA.</string>
-    <string name="ai_translation_target">Texte cible</string>
     <string name="lyrics_share_style_vivid_glow">Éclat éclatant</string>
     <string name="ai_api_status_success">API prête</string>
     <string name="aod_shape_pill">Comprimé</string>
@@ -516,7 +512,7 @@
     <string name="settings_updates_subtitle">Version, notes de version et canal de mise à jour</string>
     <string name="storage_migration_warning">Avertissement : Ne fermez pas l\'application et n\'éteignez pas votre appareil pendant cette opération. Cela pourrait entraîner une perte de données.</string>
     <string name="aod_customize_title_max_lines">Nombre maximal de lignes pour le titre</string>
-    <string name="settings_integration_subtitle">Discord, Last.fm et ListenBrainz</string>
+    <string name="settings_integration_subtitle">Discord, Last.fm, Libre.fm et ListenBrainz</string>
     <string name="aod_alignment_start">Début</string>
     <string name="aod_shape_pixel_circle">Cercle de pixels</string>
     <string name="year_in_music_empty_subtitle">Écoutez davantage de musique pendant %d et votre récapitulatif s\'affichera ici.</string>
@@ -536,9 +532,7 @@
     <string name="force_sync_on_switch_account_desc">Resynchroniser les playlists, les titres favoris, les artistes et les albums du compte sélectionné après le changement de compte</string>
     <string name="spotify_no_tracks">Aucun titre Spotify trouvé.</string>
     <string name="android_auto_sort_playlist">Trier la playlist</string>
-    <string name="about_position_miko">Équipe de Contributeurs</string>
     <string name="year_in_music_intro_details">Découvrez vos titres, artistes et albums préférés, ainsi que le temps que vous passez à les écouter.</string>
-    <string name="player_stream_client_hi_res_lossless_desc">Préfère les flux audio sans perte lorsqu\'ils sont disponibles.</string>
     <string name="spotify_no_sources">Aucune playlist Spotify trouvée</string>
     <string name="storage_location_removable">Carte SD</string>
     <string name="aod_control_tonal">Tonale</string>
@@ -550,12 +544,10 @@
     <string name="external_service">Service externe</string>
     <string name="aod_customize_percent_value">%1$d%%</string>
     <string name="storage_cache_clear_failed">Impossible de vider le cache. Vérifiez l\'accès à la carte SD.</string>
-    <string name="player_stream_client_hi_res_lossless">Haute résolution &amp; Sans perte</string>
     <string name="news_tooltip_title">Nouvelles annonces</string>
     <string name="settings_backup_restore_subtitle">Exporter et récupérer les données personnelles de vos applications</string>
     <string name="aod_customize_show_album">Afficher l\'album</string>
     <string name="aod_customize_show_exit_button">Afficher le bouton « Quitter »</string>
     <string name="storage_migration_downloads_progress">Transfert des téléchargements... %1$d%%</string>
     <string name="aod_customize_content_position">Position du contenu</string>
-    <string name="about_position_wttexe">Synchronisation des paroles avec le texte, dégradés et améliorations de l\'interface utilisateur !</string>
 </resources>
