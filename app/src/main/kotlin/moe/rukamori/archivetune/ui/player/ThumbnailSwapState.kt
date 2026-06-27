@@ -20,6 +20,7 @@ import coil3.request.ImageRequest
 import coil3.request.SuccessResult
 import moe.rukamori.archivetune.ui.utils.YTThumbQuality
 import moe.rukamori.archivetune.ui.utils.buildYTThumbnailUrl
+import timber.log.Timber
 
 data class ThumbnailSwapState(
     val displayUrl: String?,
@@ -69,7 +70,8 @@ fun rememberThumbnailSwapState(
                     isYTReady = true
                     return@LaunchedEffect
                 }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Timber.tag("ThumbnailSwap").e(e, "YT thumbnail quality=%s failed for videoId=%s", quality.value, videoId)
                 continue
             }
         }

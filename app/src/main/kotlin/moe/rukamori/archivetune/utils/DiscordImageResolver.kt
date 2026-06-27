@@ -56,6 +56,9 @@ object DiscordImageResolver {
 
         val thumbnailUrl = song.song.thumbnailUrl?.asHttpUrl()
         val ytThumbnailUrl = getMusicVideoYTThumbnail(songId, thumbnailUrl, isMusicVideo)
+        if (isMusicVideo && ytThumbnailUrl != thumbnailUrl) {
+            Timber.tag(TAG).d("Using YT thumbnail for music video songId=%s ytUrl=%s", songId, ytThumbnailUrl)
+        }
         val artistUrl =
             song.artists
                 .firstOrNull()
@@ -86,7 +89,7 @@ object DiscordImageResolver {
                         ),
                 )
             }.onFailure {
-                Timber.tag(TAG).v(it, "Failed to persist Discord artwork URLs")
+                Timber.tag(TAG).e(it, "Failed to persist Discord artwork URLs")
             }
         }
 

@@ -183,7 +183,7 @@ object DiscordPresenceManager {
                             DiscordImageResolver.resolveImagesForSong(appContext, song, isMusicVideo)
                         }
                     }.onFailure {
-                        Timber.tag(LOG_TAG).v(it, "image resolution for presence failed or timed out")
+                        Timber.tag(LOG_TAG).e(it, "image resolution for presence failed or timed out")
                     }
 
                     if (generation != updateGeneration.get()) {
