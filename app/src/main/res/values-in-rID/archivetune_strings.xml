@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+﻿<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="explore">Jelajahi</string>
     <string name="music_recognition_tap_to_listen">Ketuk untuk mendengarkan</string>
@@ -52,7 +52,7 @@
     <string name="remote_history">Online</string>
     <string name="charts">Grafik</string>
     <string name="back_button_desc">Kembali</string>
-    <string name="news">Berita dari Pengembang</string>
+    <string name="news">Berita Dari Pengembang</string>
     <string name="news_loading">Memuat berita…</string>
     <string name="news_empty_title">Belum ada apa pun di sini</string>
     <string name="news_empty_desc">Tidak ada pengumuman saat ini. Segera periksa kembali.</string>
