@@ -399,7 +399,7 @@ fun NavGraphBuilder.navigationBuilder(
         AppearanceSettings(navController, scrollBehavior)
     }
     composable("settings/appearance/aod_customized") {
-        AodCustomizedScreen(navController, scrollBehavior)
+        AodCustomizedScreen(navController)
     }
     composable("settings/appearance/palette_picker") {
         PalettePickerScreen(navController)
@@ -432,7 +432,7 @@ fun NavGraphBuilder.navigationBuilder(
         BackupAndRestore(navController, scrollBehavior)
     }
     composable("settings/discord") {
-        DiscordSettings(navController, scrollBehavior)
+        DiscordSettings(navController)
     }
     composable("settings/integration") {
         IntegrationScreen(navController, scrollBehavior)
