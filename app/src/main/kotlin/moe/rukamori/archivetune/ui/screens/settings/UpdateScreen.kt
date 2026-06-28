@@ -71,7 +71,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.WavyProgressIndicatorDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -114,6 +113,7 @@ import moe.rukamori.archivetune.ui.component.BottomSheetPage
 import moe.rukamori.archivetune.ui.component.BottomSheetPageState
 import moe.rukamori.archivetune.ui.component.IconButton
 import moe.rukamori.archivetune.ui.component.MarkdownText
+import moe.rukamori.archivetune.ui.utils.appBarScrollBehavior
 import moe.rukamori.archivetune.ui.utils.backToMain
 import moe.rukamori.archivetune.utils.AppUpdateInstaller
 import moe.rukamori.archivetune.utils.GitCommit
@@ -130,11 +130,11 @@ import kotlin.math.roundToInt
 @Composable
 fun UpdateScreen(
     navController: NavController,
-    scrollBehavior: TopAppBarScrollBehavior,
     onUpToDate: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
+    val scrollBehavior = appBarScrollBehavior()
     val coroutineScope = rememberCoroutineScope()
     val nightlyInstallUrl = remember { Updater.getLatestNightlyDownloadUrl() }
 

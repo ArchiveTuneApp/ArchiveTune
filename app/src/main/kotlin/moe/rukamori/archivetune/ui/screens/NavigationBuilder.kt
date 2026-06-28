@@ -387,10 +387,10 @@ fun NavGraphBuilder.navigationBuilder(
         YouTubeBrowseScreen(navController)
     }
     composable("settings") {
-        SettingsScreen(navController, scrollBehavior, latestVersionName())
+        SettingsScreen(navController, latestVersionName())
     }
     composable("settings/account") {
-        AccountSettings(navController, scrollBehavior, latestVersionName())
+        AccountSettings(navController, latestVersionName())
     }
     composable("settings/hidden_playlists") {
         HiddenPlaylistsScreen(navController, scrollBehavior)
@@ -441,7 +441,7 @@ fun NavGraphBuilder.navigationBuilder(
         AiIntegrationSettings(navController)
     }
     composable("settings/music_together") {
-        MusicTogetherScreen(navController, scrollBehavior)
+        MusicTogetherScreen(navController)
     }
     composable("settings/lastfm") {
         LastFMSettings(navController, scrollBehavior)
@@ -455,7 +455,7 @@ fun NavGraphBuilder.navigationBuilder(
     }
     if (BuildConfig.UPDATER_AVAILABLE) {
         composable("settings/update") {
-            UpdateScreen(navController, scrollBehavior, onUpToDate = onClearUpdateBadge)
+            UpdateScreen(navController, onUpToDate = onClearUpdateBadge)
         }
     }
     composable(

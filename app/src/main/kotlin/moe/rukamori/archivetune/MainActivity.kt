@@ -1136,14 +1136,6 @@ class MainActivity : ComponentActivity() {
                                 ).add(WindowInsets(top = AppBarHeight, bottom = bottom))
                         }
 
-                    appBarScrollBehavior(
-                        canScroll = {
-                            navBackStackEntry?.destination?.route?.startsWith(OnlineSearchResultRoutePrefix) == false &&
-                                navBackStackEntry?.destination?.route != Screens.Library.route &&
-                                (playerBottomSheetState.isCollapsed || playerBottomSheetState.isDismissed)
-                        },
-                    )
-
                     val searchBarScrollBehavior =
                         appBarScrollBehavior(
                             canScroll = {

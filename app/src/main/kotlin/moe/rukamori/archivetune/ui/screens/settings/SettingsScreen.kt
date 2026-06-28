@@ -33,7 +33,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,6 +51,7 @@ import moe.rukamori.archivetune.BuildConfig
 import moe.rukamori.archivetune.LocalPlayerAwareWindowInsets
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.ui.component.IconButton
+import moe.rukamori.archivetune.ui.utils.appBarScrollBehavior
 import moe.rukamori.archivetune.ui.utils.backToMain
 import moe.rukamori.archivetune.utils.Updater
 
@@ -59,7 +59,6 @@ import moe.rukamori.archivetune.utils.Updater
 @Composable
 fun SettingsScreen(
     navController: NavController,
-    scrollBehavior: TopAppBarScrollBehavior,
     latestVersionName: String,
     onClearUpdateBadge: () -> Unit = {},
 ) {
@@ -104,6 +103,7 @@ fun SettingsScreen(
             }
         }
 
+    val scrollBehavior = appBarScrollBehavior()
     val shouldShowPermissionHint = !isStorageGranted || !isNotificationGranted
     val hasUpdate =
         BuildConfig.UPDATER_AVAILABLE &&
