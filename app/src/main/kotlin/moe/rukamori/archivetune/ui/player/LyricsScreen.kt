@@ -545,17 +545,17 @@ private fun AppleMusicBackground(
                 when (playerBackgroundStyle) {
                     PlayerBackgroundStyle.BLUR -> {
                         val stops = PlayerBackgroundColorUtils.buildBlurOverlayStops(colors)
-                        Brush.verticalGradient(stops.map { it.first to it.second })
+                        Brush.verticalGradient(*stops)
                     }
 
                     PlayerBackgroundStyle.BLUR_GRADIENT -> {
                         val stops = PlayerBackgroundColorUtils.buildBlurGradientStops(colors)
-                        Brush.verticalGradient(stops.map { it.first to it.second })
+                        Brush.verticalGradient(*stops)
                     }
 
                     else -> {
                         val stops = PlayerBackgroundColorUtils.buildBlurGradientStops(colors)
-                        Brush.verticalGradient(stops.map { it.first to it.second })
+                        Brush.verticalGradient(*stops)
                     }
                 }
             }
