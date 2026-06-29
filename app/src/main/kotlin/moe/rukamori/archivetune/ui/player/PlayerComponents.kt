@@ -3691,7 +3691,8 @@ fun PlayerBackground(
         lowDataMode = rememberLowDataModeActive(),
     )
     val backgroundThumbnailUrl = backgroundSwapState.displayUrl
-
+    val styleAppliesBlur =
+        effectiveBlurRadius > 0f && effectiveBlurRadius >= 0.5f
     Box(modifier = Modifier.fillMaxSize()) {
         when (playerBackground) {
             PlayerBackgroundStyle.BLUR -> {
@@ -3710,7 +3711,7 @@ fun PlayerBackground(
                                 contentScale = ContentScale.Crop,
                                 modifier =
                                     Modifier.fillMaxSize().let {
-                                        if (shouldApplyBlur) it.blur(radius = effectiveBlurRadius.dp) else it
+                                        if (styleAppliesBlur) it.blur(radius = effectiveBlurRadius.dp) else it
                                     },
                             )
                             val overlayStops = PlayerBackgroundColorUtils.buildBlurOverlayStops(gradientColors)
@@ -3819,7 +3820,7 @@ fun PlayerBackground(
                                 contentScale = ContentScale.Crop,
                                 modifier =
                                     Modifier.fillMaxSize().let {
-                                        if (shouldApplyBlur) it.blur(radius = effectiveBlurRadius.dp) else it
+                                        if (styleAppliesBlur) it.blur(radius = effectiveBlurRadius.dp) else it
                                     },
                             )
                             val gradientColorStops =
