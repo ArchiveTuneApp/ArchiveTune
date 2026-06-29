@@ -109,10 +109,6 @@ fun AboutScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val uriHandler = LocalUriHandler.current
-
-    // Scroll behavior dimiliki secara lokal oleh screen ini (pola HistoryScreen),
-    // bukan diwarisi dari MainActivity. Ini memastikan state collapse tidak carry-over
-    // antar-route dan menghindari double-attach nested scroll (lihat scroll-qa-analysis.md H).
     val scrollBehavior = appBarScrollBehavior()
 
     LaunchedEffect(viewModel, uriHandler) {
