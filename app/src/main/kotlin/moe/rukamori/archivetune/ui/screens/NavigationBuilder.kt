@@ -387,25 +387,25 @@ fun NavGraphBuilder.navigationBuilder(
         YouTubeBrowseScreen(navController)
     }
     composable("settings") {
-        SettingsScreen(navController, scrollBehavior, latestVersionName())
+        SettingsScreen(navController, latestVersionName())
     }
     composable("settings/account") {
-        AccountSettings(navController, scrollBehavior, latestVersionName())
+        AccountSettings(navController, latestVersionName())
     }
     composable("settings/hidden_playlists") {
-        HiddenPlaylistsScreen(navController, scrollBehavior)
+        HiddenPlaylistsScreen(navController)
     }
     composable("settings/appearance") {
-        AppearanceSettings(navController, scrollBehavior)
+        AppearanceSettings(navController)
     }
     composable("settings/appearance/aod_customized") {
-        AodCustomizedScreen(navController, scrollBehavior)
+        AodCustomizedScreen(navController)
     }
     composable("settings/appearance/palette_picker") {
         PalettePickerScreen(navController)
     }
     composable("settings/appearance/lyrics_animations") {
-        LyricsAnimationSettings(navController, scrollBehavior)
+        LyricsAnimationSettings(navController)
     }
     composable("settings/appearance/theme_creator") {
         ThemeCreatorScreen(navController)
@@ -417,34 +417,34 @@ fun NavGraphBuilder.navigationBuilder(
         LyricsSettings(navController)
     }
     composable("settings/internet") {
-        InternetSettings(navController, scrollBehavior)
+        InternetSettings(navController)
     }
     composable("settings/player") {
-        PlayerSettings(navController, scrollBehavior)
+        PlayerSettings(navController)
     }
     composable("settings/storage") {
-        StorageSettings(navController, scrollBehavior)
+        StorageSettings(navController)
     }
     composable("settings/privacy") {
-        PrivacySettings(navController, scrollBehavior)
+        PrivacySettings(navController)
     }
     composable("settings/backup_restore") {
-        BackupAndRestore(navController, scrollBehavior)
+        BackupAndRestore(navController)
     }
     composable("settings/discord") {
-        DiscordSettings(navController, scrollBehavior)
+        DiscordSettings(navController)
     }
     composable("settings/integration") {
-        IntegrationScreen(navController, scrollBehavior)
+        IntegrationScreen(navController)
     }
     composable("settings/ai_integration") {
         AiIntegrationSettings(navController)
     }
     composable("settings/music_together") {
-        MusicTogetherScreen(navController, scrollBehavior)
+        MusicTogetherScreen(navController)
     }
     composable("settings/lastfm") {
-        LastFMSettings(navController, scrollBehavior)
+        LastFMSettings(navController)
     }
     composable("settings/discord/experimental") {
         moe.rukamori.archivetune.ui.screens.settings
@@ -455,7 +455,7 @@ fun NavGraphBuilder.navigationBuilder(
     }
     if (BuildConfig.UPDATER_AVAILABLE) {
         composable("settings/update") {
-            UpdateScreen(navController, scrollBehavior, onUpToDate = onClearUpdateBadge)
+            UpdateScreen(navController, onUpToDate = onClearUpdateBadge)
         }
     }
     composable(
@@ -474,13 +474,13 @@ fun NavGraphBuilder.navigationBuilder(
             channelName?.let {
                 runCatching { UpdateChannel.valueOf(it) }.getOrNull()
             } ?: defaultUpdateChannel
-        ChangelogScreen(navController, scrollBehavior, channel = channel)
+        ChangelogScreen(navController, channel = channel)
     }
     composable("settings/about") {
-        AboutScreen(navController, scrollBehavior)
+        AboutScreen(navController)
     }
     composable("settings/po_token") {
-        PoTokenScreen(navController, scrollBehavior)
+        PoTokenScreen(navController)
     }
     composable("customize_background") {
         CustomizeBackground(navController)

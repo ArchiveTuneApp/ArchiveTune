@@ -32,15 +32,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -61,7 +58,6 @@ import moe.rukamori.archivetune.ui.utils.backToMain
 @Composable
 fun HiddenPlaylistsScreen(
     navController: NavController,
-    scrollBehavior: TopAppBarScrollBehavior,
 ) {
     val database = LocalDatabase.current
     val allPlaylists by database.playlists(
@@ -72,23 +68,20 @@ fun HiddenPlaylistsScreen(
     val hiddenPlaylists = allPlaylists.filter { it.playlist.isHidden }
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.hidden_playlists)) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.backToMain() }, onLongClick = {}) {
+                    IconButton(
+                        onClick = navController::navigateUp,
+                        onLongClick = navController::backToMain,
+                    ) {
                         Icon(
                             painter = painterResource(R.drawable.arrow_back),
                             contentDescription = null,
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                ),
-                scrollBehavior = scrollBehavior,
             )
         },
     ) { innerPadding ->

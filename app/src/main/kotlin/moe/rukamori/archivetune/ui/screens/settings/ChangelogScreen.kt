@@ -38,7 +38,6 @@ import java.util.Locale
 @Composable
 fun ChangelogScreen(
     navController: NavController,
-    scrollBehavior: TopAppBarScrollBehavior,
     channel: UpdateChannel = UpdateChannel.STABLE,
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -92,7 +91,6 @@ fun ChangelogScreen(
                         )
                     }
                 },
-                scrollBehavior = scrollBehavior,
             )
         },
     ) { paddingValues ->
@@ -100,7 +98,7 @@ fun ChangelogScreen(
             modifier =
                 Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
+                    .padding(top = paddingValues.calculateTopPadding())
                     .windowInsetsPadding(
                         LocalPlayerAwareWindowInsets.current.only(
                             WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,

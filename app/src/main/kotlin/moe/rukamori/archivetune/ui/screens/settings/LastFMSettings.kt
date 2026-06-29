@@ -14,7 +14,6 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -35,11 +34,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -50,6 +49,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -76,56 +76,62 @@ import kotlin.math.roundToInt
 @Composable
 fun LastFMSettings(
     navController: NavController,
-    scrollBehavior: TopAppBarScrollBehavior,
     viewModel: LastFmSettingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    LastFmSettingsContent(
-        state = state,
-        onOpenServiceEditor = viewModel::openServiceEditor,
-        onDismissServiceEditor = viewModel::dismissServiceEditor,
-        onServiceProviderChange = viewModel::updateServiceProvider,
-        onCustomEndpointChange = viewModel::updateCustomEndpoint,
-        onApiKeyOverrideChange = viewModel::updateApiKeyOverride,
-        onSecretOverrideChange = viewModel::updateSecretOverride,
-        onSaveServiceEditor = viewModel::saveServiceEditor,
-        onOpenLoginDialog = viewModel::openLoginDialog,
-        onDismissLoginDialog = viewModel::dismissLoginDialog,
-        onLoginUsernameChange = viewModel::updateLoginUsername,
-        onLoginPasswordChange = viewModel::updateLoginPassword,
-        onLogin = viewModel::login,
-        onLogout = viewModel::logout,
-        onScrobblingChange = viewModel::setScrobblingEnabled,
-        onNowPlayingChange = viewModel::setNowPlayingEnabled,
-        onOpenTimingEditor = viewModel::openTimingEditor,
-        onDismissTimingEditor = viewModel::dismissTimingEditor,
-        onTimingMinTrackDurationChange = viewModel::updateTimingMinTrackDuration,
-        onTimingDelayPercentChange = viewModel::updateTimingDelayPercent,
-        onTimingDelaySecondsChange = viewModel::updateTimingDelaySeconds,
-        onSaveTimingEditor = viewModel::saveTimingEditor,
-    )
-
-    TopAppBar(
-        title = { Text(stringResource(R.string.lastfm_integration)) },
-        navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain,
-            ) {
-                Icon(
-                    painterResource(R.drawable.arrow_back),
-                    contentDescription = null,
-                )
-            }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.lastfm_integration)) },
+                navigationIcon = {
+                    IconButton(
+                        onClick = navController::navigateUp,
+                        onLongClick = navController::backToMain,
+                    ) {
+                        Icon(
+                            painterResource(R.drawable.arrow_back),
+                            contentDescription = null,
+                        )
+                    }
+                },
+            )
         },
-        scrollBehavior = scrollBehavior,
-    )
+    ) { innerPadding ->
+        val topPadding = innerPadding.calculateTopPadding()
+
+        LastFmSettingsContent(
+            state = state,
+            topPadding = topPadding,
+            onOpenServiceEditor = viewModel::openServiceEditor,
+            onDismissServiceEditor = viewModel::dismissServiceEditor,
+            onServiceProviderChange = viewModel::updateServiceProvider,
+            onCustomEndpointChange = viewModel::updateCustomEndpoint,
+            onApiKeyOverrideChange = viewModel::updateApiKeyOverride,
+            onSecretOverrideChange = viewModel::updateSecretOverride,
+            onSaveServiceEditor = viewModel::saveServiceEditor,
+            onOpenLoginDialog = viewModel::openLoginDialog,
+            onDismissLoginDialog = viewModel::dismissLoginDialog,
+            onLoginUsernameChange = viewModel::updateLoginUsername,
+            onLoginPasswordChange = viewModel::updateLoginPassword,
+            onLogin = viewModel::login,
+            onLogout = viewModel::logout,
+            onScrobblingChange = viewModel::setScrobblingEnabled,
+            onNowPlayingChange = viewModel::setNowPlayingEnabled,
+            onOpenTimingEditor = viewModel::openTimingEditor,
+            onDismissTimingEditor = viewModel::dismissTimingEditor,
+            onTimingMinTrackDurationChange = viewModel::updateTimingMinTrackDuration,
+            onTimingDelayPercentChange = viewModel::updateTimingDelayPercent,
+            onTimingDelaySecondsChange = viewModel::updateTimingDelaySeconds,
+            onSaveTimingEditor = viewModel::saveTimingEditor,
+        )
+    }
 }
 
 @Composable
 private fun LastFmSettingsContent(
     state: LastFmSettingsScreenState,
+    topPadding: Dp,
     onOpenServiceEditor: () -> Unit,
     onDismissServiceEditor: () -> Unit,
     onServiceProviderChange: (LastFmProvider) -> Unit,
@@ -150,16 +156,11 @@ private fun LastFmSettingsContent(
 ) {
     Column(
         Modifier
+            .padding(top = topPadding)
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
             .verticalScroll(rememberScrollState())
             .padding(bottom = SettingsDimensions.ScreenBottomPadding),
     ) {
-        Spacer(
-            Modifier.windowInsetsPadding(
-                LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top),
-            ),
-        )
-
         when (state) {
             LastFmSettingsScreenState.Loading -> {
                 LastFmSettingsLoading()
