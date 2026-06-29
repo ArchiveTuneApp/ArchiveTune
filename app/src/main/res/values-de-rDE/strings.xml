@@ -500,4 +500,5 @@
     <string name="library_songs_subtitle">All deine Songs, für dich organisiert</string>
     <string name="library_artists_subtitle">All deine Künstler an einem Platz</string>
     <string name="onboarding_permission_audio_settings_title">Audioeinstellungen und Vibration</string>
+    <string name="instant_playback">Sofortige Wiedergabe</string>
 </resources>
