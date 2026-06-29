@@ -326,6 +326,7 @@ class MainActivity : ComponentActivity() {
 
     private var playerConnection by mutableStateOf<PlayerConnection?>(null)
     private var isMusicServiceBound = false
+    private var immersiveStatusBarsHidden = false
 
     private val serviceConnection =
         object : ServiceConnection {
@@ -467,6 +468,13 @@ class MainActivity : ComponentActivity() {
             safeUnbindMusicService()
             stopService(Intent(this, MusicService::class.java))
             playerConnection = null
+        }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus && immersiveStatusBarsHidden) {
+            setStatusBarsHidden(true)
         }
     }
 
@@ -1062,14 +1070,7 @@ class MainActivity : ComponentActivity() {
 
                     LaunchedEffect(shouldHideStatusBars, aodModeEnabled) {
                         if (aodModeEnabled) return@LaunchedEffect
-                        val controller = WindowCompat.getInsetsController(window, window.decorView)
-                        if (shouldHideStatusBars) {
-                            controller.systemBarsBehavior =
-                                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                            controller.hide(WindowInsetsCompat.Type.statusBars())
-                        } else {
-                            controller.show(WindowInsetsCompat.Type.statusBars())
-                        }
+                        setStatusBarsHidden(shouldHideStatusBars)
                     }
 
                     LaunchedEffect(isYearInMusicScreen, playerConnection) {
@@ -2607,6 +2608,34 @@ class MainActivity : ComponentActivity() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             window.navigationBarColor =
                 (if (isDark) Color.Transparent else Color.Black.copy(alpha = 0.2f)).toArgb()
+        }
+    }
+
+    private fun setStatusBarsHidden(hidden: Boolean) {
+        immersiveStatusBarsHidden = hidden
+        val controller = WindowCompat.getInsetsController(window, window.decorView)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            window.attributes =
+                window.attributes.apply {
+                    layoutInDisplayCutoutMode =
+                        if (hidden) {
+                            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                        } else {
+                            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
+                        }
+                }
+        }
+
+        if (hidden) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+            controller.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller.hide(WindowInsetsCompat.Type.statusBars())
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
+            controller.show(WindowInsetsCompat.Type.statusBars())
         }
     }
 

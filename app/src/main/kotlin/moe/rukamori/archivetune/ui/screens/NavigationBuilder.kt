@@ -57,6 +57,7 @@ import moe.rukamori.archivetune.ui.screens.settings.CustomizeBackground
 import moe.rukamori.archivetune.ui.screens.settings.DebugSettings
 import moe.rukamori.archivetune.ui.screens.settings.DiscordSettings
 import moe.rukamori.archivetune.ui.screens.settings.HiddenPlaylistsScreen
+import moe.rukamori.archivetune.ui.screens.settings.IconScreen
 import moe.rukamori.archivetune.ui.screens.settings.IntegrationScreen
 import moe.rukamori.archivetune.ui.screens.settings.InternetSettings
 import moe.rukamori.archivetune.ui.screens.settings.LastFMSettings
@@ -364,6 +365,9 @@ fun NavGraphBuilder.navigationBuilder(
     }
     composable("settings/appearance") {
         AppearanceSettings(navController)
+    }
+    composable("settings/appearance/icon") {
+        IconScreen(navController)
     }
     composable("settings/appearance/aod_customized") {
         AodCustomizedScreen(navController)
