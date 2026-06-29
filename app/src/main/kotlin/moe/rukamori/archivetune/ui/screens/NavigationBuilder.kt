@@ -444,7 +444,7 @@ fun NavGraphBuilder.navigationBuilder(
         MusicTogetherScreen(navController)
     }
     composable("settings/lastfm") {
-        LastFMSettings(navController, scrollBehavior)
+        LastFMSettings(navController)
     }
     composable("settings/discord/experimental") {
         moe.rukamori.archivetune.ui.screens.settings
@@ -474,7 +474,7 @@ fun NavGraphBuilder.navigationBuilder(
             channelName?.let {
                 runCatching { UpdateChannel.valueOf(it) }.getOrNull()
             } ?: defaultUpdateChannel
-        ChangelogScreen(navController, scrollBehavior, channel = channel)
+        ChangelogScreen(navController, channel = channel)
     }
     composable("settings/about") {
         AboutScreen(navController)
