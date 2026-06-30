@@ -804,4 +804,6 @@
     <string name="library_top_mixes_ai_not_configured_desc">Integrasi AI diperlukan sebelum ArchiveTune dapat membuat mix teratas pribadi.</string>
     <string name="library_top_mixes_no_recent_history_title">Tidak ada riwayat mix mendengarkan saat ini</string>
     <string name="library_top_mixes_no_recent_history">Dengarkan lagu lainnya, kemudian segarkan untuk membuat mix AI dari riwayat mendengarkan anda.</string>
+    <string name="library_top_mixes_failed">Gagal membuat mix teratas</string>
+    <string name="playing_desc">Sedang memutar</string>
 </resources>
