@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,7 +28,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -65,8 +63,12 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -159,6 +161,7 @@ private fun IconScreenContent(
                     IconButton(
                         onClick = onNavigateUp,
                         onLongClick = onNavigateHome,
+                        modifier = Modifier.padding(start = 5.dp),
                         colors = IconButtonDefaults.filledTonalIconButtonColors(),
                     ) {
                         Icon(
@@ -433,7 +436,7 @@ private fun AppIconRow(
             Modifier
                 .widthIn(max = IconListMaxWidth)
                 .fillMaxWidth()
-                .heightIn(min = 112.dp)
+                .heightIn(min = 104.dp)
                 .then(selectedBorder),
         colors =
             ListItemDefaults.segmentedColors(
@@ -444,7 +447,7 @@ private fun AppIconRow(
                         MaterialTheme.colorScheme.surfaceContainerLow
                     },
             ),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
         leadingContent = {
             AppIconPreview(
                 icon = icon,
@@ -475,15 +478,10 @@ private fun AppIconRow(
                         )
                     }
                     if (author != null) {
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentAlignment = Alignment.CenterEnd,
-                        ) {
-                            AuthorAttribution(
-                                icon = icon,
-                                onOpenAuthorProfile = onOpenAuthorProfile,
-                            )
-                        }
+                        AuthorAttribution(
+                            icon = icon,
+                            onOpenAuthorProfile = onOpenAuthorProfile,
+                        )
                     }
                 }
             },
@@ -568,28 +566,36 @@ private fun AuthorAttribution(
     onOpenAuthorProfile: (String) -> Unit,
 ) {
     val author = icon.author ?: return
-    if (icon.githubAuthorUrl != null) {
+    val githubAuthorUrl = icon.githubAuthorUrl
+    if (githubAuthorUrl != null) {
         val openProfile =
             remember(icon.id, onOpenAuthorProfile) {
                 { onOpenAuthorProfile(icon.id) }
             }
-        FilledTonalButton(
-            onClick = openProfile,
-            modifier =
-                Modifier
-                    .heightIn(min = 48.dp)
-                    .widthIn(max = 220.dp),
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-            shapes = ButtonDefaults.shapes(),
+        val linkedAuthor =
+            remember(author, githubAuthorUrl, openProfile) {
+                buildAnnotatedString {
+                    withLink(
+                        LinkAnnotation.Clickable(githubAuthorUrl) { openProfile() },
+                    ) {
+                        append(author)
+                    }
+                }
+            }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Icon(
                 painter = painterResource(R.drawable.github),
                 contentDescription = null,
-                modifier = Modifier.size(18.dp),
+                modifier = Modifier.size(14.dp),
+                tint = MaterialTheme.colorScheme.primary,
             )
-            Spacer(modifier = Modifier.width(6.dp))
             Text(
-                text = author,
+                text = linkedAuthor,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -597,7 +603,7 @@ private fun AuthorAttribution(
     } else {
         Text(
             text = author,
-            style = MaterialTheme.typography.labelLarge,
+            style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
