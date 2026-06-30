@@ -9,6 +9,11 @@
 
 package moe.rukamori.archivetune.ui.screens.settings
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.DocumentsContract
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -51,6 +56,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,6 +65,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -67,10 +74,13 @@ import coil3.imageLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import moe.rukamori.archivetune.LocalPlayerAwareWindowInsets
 import moe.rukamori.archivetune.LocalPlayerConnection
 import moe.rukamori.archivetune.R
+import moe.rukamori.archivetune.constants.DownloadedSongsFolderDisplayNameKey
+import moe.rukamori.archivetune.constants.DownloadedSongsFolderTreeUriKey
 import moe.rukamori.archivetune.constants.MaxCanvasCacheSizeKey
 import moe.rukamori.archivetune.constants.MaxImageCacheSizeKey
 import moe.rukamori.archivetune.constants.MaxSongCacheSizeKey
@@ -112,6 +122,7 @@ fun StorageSettings(
     val downloadCache = LocalPlayerConnection.current?.service?.downloadCache ?: return
     val screenState by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
     val storagePickerSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LaunchedEffect(viewModel, context) {
@@ -131,6 +142,10 @@ fun StorageSettings(
     val downloadCacheDir =
         remember(context) {
             StorageLocationRepository.cacheDirectory(context, StorageFolderKind.DOWNLOADS)
+        }
+    val exportedDownloadsDir =
+        remember(context) {
+            StorageLocationRepository.exportedDownloadsDirectory(context)
         }
     val playerCacheDir =
         remember(context) {
@@ -169,6 +184,48 @@ fun StorageSettings(
             key = MaxCanvasCacheSizeKey,
             defaultValue = 256,
         )
+    val (downloadedSongsFolderTreeUri, onDownloadedSongsFolderTreeUriChange) =
+        rememberPreference(
+            key = DownloadedSongsFolderTreeUriKey,
+            defaultValue = "",
+        )
+    val (downloadedSongsFolderDisplayName, onDownloadedSongsFolderDisplayNameChange) =
+        rememberPreference(
+            key = DownloadedSongsFolderDisplayNameKey,
+            defaultValue = "",
+        )
+    val downloadedSongsFolderPicker =
+        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+            if (uri == null) return@rememberLauncherForActivityResult
+
+            val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            val permissionTaken =
+                runCatching {
+                    context.contentResolver.takePersistableUriPermission(uri, flags)
+                }.isSuccess
+            if (!permissionTaken) {
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        context.getString(R.string.downloaded_songs_location_permission_failed),
+                    )
+                }
+                return@rememberLauncherForActivityResult
+            }
+
+            val selectedUri = uri.toString()
+            downloadedSongsFolderTreeUri
+                .takeIf { previousUri -> previousUri.isNotBlank() && previousUri != selectedUri }
+                ?.let { previousUri ->
+                    runCatching {
+                        context.contentResolver.releasePersistableUriPermission(
+                            previousUri.toUri(),
+                            flags,
+                        )
+                    }
+                }
+            onDownloadedSongsFolderTreeUriChange(selectedUri)
+            onDownloadedSongsFolderDisplayNameChange(uri.downloadedSongsFolderDisplayName())
+        }
     var clearCacheDialog by remember { mutableStateOf(false) }
     var clearDownloads by remember { mutableStateOf(false) }
     var clearImageCacheDialog by remember { mutableStateOf(false) }
@@ -255,13 +312,15 @@ fun StorageSettings(
                 }
         }
     }
-    LaunchedEffect(downloadCache, downloadCacheDir) {
+    LaunchedEffect(downloadCache, downloadCacheDir, exportedDownloadsDir) {
         while (isActive) {
             delay(StorageRefreshIntervalMillis)
             downloadCacheSize =
                 withContext(Dispatchers.IO) {
                     val cacheSpace = tryOrNull { downloadCache.cacheSpace } ?: 0L
-                    if (cacheSpace == 0L) downloadCacheDir.directorySizeBytes() else cacheSpace
+                    val downloadCacheBytes =
+                        if (cacheSpace == 0L) downloadCacheDir.directorySizeBytes() else cacheSpace
+                    downloadCacheBytes + exportedDownloadsDir.directorySizeBytes()
                 }
         }
     }
@@ -325,6 +384,27 @@ fun StorageSettings(
             )
 
             PreferenceGroup(title = stringResource(R.string.downloaded_songs)) {
+                item {
+                    PreferenceEntry(
+                        title = { Text(stringResource(R.string.downloaded_songs_location)) },
+                        description =
+                            if (downloadedSongsFolderTreeUri.isBlank()) {
+                                stringResource(R.string.downloaded_songs_location_default)
+                            } else {
+                                stringResource(
+                                    R.string.downloaded_songs_location_selected,
+                                    downloadedSongsFolderDisplayName.ifBlank { downloadedSongsFolderTreeUri },
+                                )
+                            },
+                        icon = {
+                            Icon(
+                                painter = painterResource(R.drawable.snippet_folder),
+                                contentDescription = null,
+                            )
+                        },
+                        onClick = { downloadedSongsFolderPicker.launch(null) },
+                    )
+                }
                 item {
                     PreferenceEntry(
                         title = { Text(stringResource(R.string.clear_all_downloads)) },
@@ -923,3 +1003,14 @@ private const val StorageRefreshIntervalMillis = 500L
 private const val CacheSizeBytesPerMegabyte = 1024L * 1024L
 
 private fun cacheSizeMegabytesToBytes(sizeMegabytes: Int): Long = sizeMegabytes.toLong().coerceAtLeast(0L) * CacheSizeBytesPerMegabyte
+
+private fun Uri.downloadedSongsFolderDisplayName(): String =
+    runCatching {
+        val treeDocumentId = DocumentsContract.getTreeDocumentId(this)
+        val folderName =
+            treeDocumentId
+                .substringAfter(':', treeDocumentId)
+                .substringAfterLast('/')
+                .ifBlank { treeDocumentId.substringBefore(':') }
+        Uri.decode(folderName).takeIf(String::isNotBlank) ?: toString()
+    }.getOrDefault(toString())

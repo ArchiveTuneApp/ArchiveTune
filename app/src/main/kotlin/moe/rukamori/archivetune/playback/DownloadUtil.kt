@@ -40,6 +40,7 @@ import moe.rukamori.archivetune.db.entities.SongEntity
 import moe.rukamori.archivetune.di.DownloadCache
 import moe.rukamori.archivetune.di.PlayerCache
 import moe.rukamori.archivetune.innertube.YouTube
+import moe.rukamori.archivetune.storage.DownloadedSongExporter
 import moe.rukamori.archivetune.utils.AuthScopedCacheValue
 import moe.rukamori.archivetune.utils.StreamClientUtils
 import moe.rukamori.archivetune.utils.YTPlayerUtils
@@ -65,6 +66,7 @@ class DownloadUtil
         val databaseProvider: DatabaseProvider,
         @DownloadCache val downloadCache: Cache,
         @PlayerCache val playerCache: Cache,
+        private val downloadedSongExporter: DownloadedSongExporter,
     ) {
         private val connectivityManager = context.getSystemService<ConnectivityManager>()!!
         private val audioQuality by enumPreference(context, AudioQualityKey, AudioQuality.AUTO)
@@ -196,6 +198,25 @@ class DownloadUtil
                                     set(download.request.id, download)
                                 }
                             }
+                            if (download.state == Download.STATE_COMPLETED) {
+                                downloadScope.launch {
+                                    downloadedSongExporter.export(download)
+                                }
+                            }
+                        }
+
+                        override fun onDownloadRemoved(
+                            downloadManager: DownloadManager,
+                            download: Download,
+                        ) {
+                            downloads.update { map ->
+                                map.toMutableMap().apply {
+                                    remove(download.request.id)
+                                }
+                            }
+                            downloadScope.launch {
+                                downloadedSongExporter.remove(download.request.id)
+                            }
                         }
                     },
                 )
@@ -209,6 +230,10 @@ class DownloadUtil
                     result[cursor.download.request.id] = cursor.download
                 }
                 downloads.value = result
+                result
+                    .values
+                    .filter { download -> download.state == Download.STATE_COMPLETED }
+                    .forEach { download -> downloadedSongExporter.export(download) }
             }
             downloadScope.launch {
                 var previousFingerprint: String? = null
