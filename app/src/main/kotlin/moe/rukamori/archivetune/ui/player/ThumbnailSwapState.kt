@@ -44,7 +44,7 @@ fun rememberThumbnailSwapState(
     var isYTReady by remember { mutableStateOf(false) }
     var ytUrl by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(videoId, ytmUrl) {
+    LaunchedEffect(videoId, ytmUrl, hasVideoTracks) {
         displayUrl = ytmUrl
         isYTReady = false
         ytUrl = null
