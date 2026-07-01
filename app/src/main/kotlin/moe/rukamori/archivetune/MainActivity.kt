@@ -124,6 +124,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -297,6 +298,7 @@ import moe.rukamori.archivetune.viewmodels.OnlineSearchSort
 import moe.rukamori.archivetune.viewmodels.OnlineSearchViewModel
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.days
 
@@ -1591,14 +1593,42 @@ class MainActivity : ComponentActivity() {
                                             }
                                         val isLibraryRoute = navBackStackEntry?.destination?.route == Screens.Library.route
 
+                                        // Rigid slide (Step 3): the header translates as a block via
+                                        // Modifier.offset while the M3 TopAppBar itself gets
+                                        // scrollBehavior = null (below), so it never collapses or
+                                        // double-renders. The floating behavior only listens to
+                                        // scroll (non-consuming) and updates heightOffset.
+                                        //
+                                        // heightOffsetLimit must be set from the measured header
+                                        // height. The header Box is a single shared shell composable
+                                        // whose size is identical for Home/Search, so onSizeChanged
+                                        // fires only once (size doesn't change on tab switch).
+                                        // Therefore: measure once here, then apply the limit to the
+                                        // CURRENT route's state via LaunchedEffect so every route gets
+                                        // its limit on entry (not just the first-measured one).
+                                        var headerHeightPx by remember { mutableStateOf(0) }
+                                        LaunchedEffect(currentScrollBehavior, headerHeightPx) {
+                                            if (headerHeightPx > 0 && !isLibraryRoute) {
+                                                val limit = -headerHeightPx.toFloat()
+                                                val state = currentScrollBehavior.state
+                                                if (state.heightOffsetLimit != limit) {
+                                                    state.heightOffsetLimit = limit
+                                                    state.heightOffset = state.heightOffset.coerceIn(limit, 0f)
+                                                }
+                                            }
+                                        }
+
                                         Box(
                                             modifier =
-                                                Modifier.offset {
-                                                    IntOffset(
-                                                        x = 0,
-                                                        y = if (isLibraryRoute) 0 else currentScrollBehavior.state.heightOffset.toInt(),
-                                                    )
-                                                },
+                                                Modifier
+                                                    .onSizeChanged { size ->
+                                                        if (size.height > 0) headerHeightPx = size.height
+                                                    }.offset {
+                                                        IntOffset(
+                                                            x = 0,
+                                                            y = if (isLibraryRoute) 0 else currentScrollBehavior.state.heightOffset.roundToInt(),
+                                                        )
+                                                    },
                                         ) {
                                             // Gradient shadow background
                                             if (shouldShowBlurBackground) {
@@ -1730,16 +1760,18 @@ class MainActivity : ComponentActivity() {
                                                     }
                                                 },
                                                 scrollBehavior =
-                                                    if (navBackStackEntry?.destination?.route ==
-                                                        Screens.Library.route
+                                                    if (navBackStackEntry?.destination?.route == Screens.Library.route ||
+                                                        shouldUseFloatingTopBar
                                                     ) {
+                                                        // Library is fixed, and floating routes
+                                                        // (Home/Search) now slide rigidly via the
+                                                        // outer Box.offset — passing a behavior here
+                                                        // would make M3 collapse/co-render and
+                                                        // double-move the header. Only non-floating
+                                                        // sub-screens use M3's collapse behavior.
                                                         null
                                                     } else {
-                                                        // Floating routes (Home/Search) use their
-                                                        // per-route behavior; sub-screens use the
-                                                        // shared shell behavior. Both are captured
-                                                        // by currentScrollBehavior.
-                                                        currentScrollBehavior
+                                                        topAppBarScrollBehavior
                                                     },
                                                 colors =
                                                     TopAppBarDefaults.topAppBarColors(
