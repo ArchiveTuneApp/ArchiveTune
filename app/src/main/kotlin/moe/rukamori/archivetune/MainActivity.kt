@@ -1637,15 +1637,24 @@ class MainActivity : ComponentActivity() {
                                             // so it parks with its top band over the status bar instead
                                             // of sliding fully off — a legibility scrim once the header
                                             // is hidden.
-                                            if (shouldShowBlurBackground && !isLibraryRoute) {
+                                            if (shouldShowBlurBackground) {
                                                 val appBarHeightPx = with(LocalDensity.current) { AppBarHeight.toPx() }
                                                 Box(
                                                     modifier =
                                                         Modifier
                                                             .offset {
-                                                                val raw = currentScrollBehavior.state.heightOffset
-                                                                val clamped = raw.coerceAtLeast(-appBarHeightPx)
-                                                                IntOffset(x = 0, y = (clamped - raw).roundToInt())
+                                                                if (isLibraryRoute) {
+                                                                    // Library owns its scroll; the shell gradient
+                                                                    // stays static (mirrors the header Box above and
+                                                                    // matches upstream, which ships a static Library
+                                                                    // gradient). Keeping it rendered avoids the
+                                                                    // Library→Home predictive-back scrim pop.
+                                                                    IntOffset(x = 0, y = 0)
+                                                                } else {
+                                                                    val raw = currentScrollBehavior.state.heightOffset
+                                                                    val clamped = raw.coerceAtLeast(-appBarHeightPx)
+                                                                    IntOffset(x = 0, y = (clamped - raw).roundToInt())
+                                                                }
                                                             }.fillMaxWidth()
                                                             .height(
                                                                 AppBarHeight +
