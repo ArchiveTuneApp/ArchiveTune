@@ -68,7 +68,7 @@ import moe.rukamori.archivetune.ui.utils.SnapLayoutInfoProvider
 import moe.rukamori.archivetune.viewmodels.HomeViewModel
 
 private val HomeFeedMaxWidth = 1_200.dp
-private val HomeSectionSpacing = 28.dp
+private val HomeSectionSpacing = 18.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -300,7 +300,7 @@ private fun HomeContent(
                             .fillMaxWidth()
                             .align(Alignment.TopCenter),
                 ) {
-                    if (uiState.showCategoryChips && uiState.homePage?.chips?.isNotEmpty() == true) {
+                    if (uiState.showCategoryChips) {
                         item(
                             key = "home_category_chips",
                             contentType = "category_chips",

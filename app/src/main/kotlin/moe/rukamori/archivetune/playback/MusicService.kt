@@ -6991,6 +6991,7 @@ class MusicService :
         val authState = YouTube.currentPlaybackAuthState()
         val authFingerprint = ArchiveTuneExtractorCacheFingerprintPrefix + authState.fingerprint
         val userPoToken = authState.resolveExtractorPoToken()
+        val userGvsToken = authState.resolveExtractorGvsToken()
         val userCookies = authState.resolveExtractorCookies()
 
         extractorPlaybackUrlCache[mediaId]
@@ -7011,6 +7012,7 @@ class MusicService :
                         videoUrl = mediaId.toYouTubeWatchUrl(),
                         userPoToken = userPoToken,
                         cookies = userCookies,
+                        userGvsToken = userGvsToken,
                     )
                 }
             }.getOrElse { throwable ->
@@ -7064,10 +7066,13 @@ class MusicService :
     }
 
     private fun PlaybackAuthState.resolveExtractorPoToken(): String? =
+        resolveExtractorGvsToken()
+            ?: poTokenPlayer.normalizeExtractorRequestValue()
+
+    private fun PlaybackAuthState.resolveExtractorGvsToken(): String? =
         resolveGvsPoToken().normalizeExtractorRequestValue()
             ?: poTokenGvs.normalizeExtractorRequestValue()
             ?: poToken.normalizeExtractorRequestValue()
-            ?: poTokenPlayer.normalizeExtractorRequestValue()
 
     private fun PlaybackAuthState.resolveExtractorCookies(): String? = cookie.normalizeExtractorRequestValue()
 

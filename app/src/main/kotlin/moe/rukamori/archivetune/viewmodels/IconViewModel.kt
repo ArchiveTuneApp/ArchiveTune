@@ -15,7 +15,9 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -39,10 +41,18 @@ sealed interface IconScreenState {
     ) : IconScreenState
 }
 
+sealed interface IconScreenEffect {
+    data class OpenUri(
+        val uri: String,
+    ) : IconScreenEffect
+}
+
 @Immutable
 data class IconScreenUiModel(
     val icons: AppIconUiCollection,
+    val selectedIcon: AppIconUiModel,
     val selectionInProgressId: String?,
+    val hasCommunityIcons: Boolean,
 )
 
 @Immutable
@@ -51,8 +61,10 @@ data class AppIconUiModel(
     val name: String?,
     @StringRes val nameResId: Int?,
     val author: String?,
+    val githubAuthorUrl: String?,
     @DrawableRes val previewDrawableResId: Int,
     val isSelected: Boolean,
+    val isDefault: Boolean,
 )
 
 @Immutable
@@ -78,6 +90,9 @@ class IconViewModel
     ) : ViewModel() {
         private val _state = MutableStateFlow<IconScreenState>(IconScreenState.Loading)
         val state: StateFlow<IconScreenState> = _state.asStateFlow()
+
+        private val _effects = MutableSharedFlow<IconScreenEffect>(extraBufferCapacity = 1)
+        val effects = _effects.asSharedFlow()
 
         private var loadJob: Job? = null
         private var selectionJob: Job? = null
@@ -115,6 +130,17 @@ class IconViewModel
                 }
         }
 
+        fun openAuthorProfile(iconId: String) {
+            val icon =
+                (_state.value as? IconScreenState.Success)
+                    ?.model
+                    ?.icons
+                    ?.findById(iconId)
+                    ?: return
+            val githubAuthorUrl = icon.githubAuthorUrl?.takeIf(String::isNotBlank) ?: return
+            _effects.tryEmit(IconScreenEffect.OpenUri(githubAuthorUrl))
+        }
+
         private fun load() {
             if (loadJob?.isActive == true) return
             _state.value = IconScreenState.Loading
@@ -132,22 +158,25 @@ class IconViewModel
 
         private fun AppIconCatalog.toScreenState(): IconScreenState {
             if (icons.isEmpty()) return IconScreenState.Empty
+            val uiIcons =
+                icons.map { icon ->
+                    AppIconUiModel(
+                        id = icon.id,
+                        name = icon.name,
+                        nameResId = if (icon.isDefault) R.string.app_icon_default else null,
+                        author = icon.author,
+                        githubAuthorUrl = icon.githubAuthorUrl,
+                        previewDrawableResId = icon.previewDrawableResId,
+                        isSelected = icon.id == selectedIconId,
+                        isDefault = icon.isDefault,
+                    )
+                }
             return IconScreenState.Success(
                 IconScreenUiModel(
-                    icons =
-                        AppIconUiCollection.from(
-                            icons.map { icon ->
-                                AppIconUiModel(
-                                    id = icon.id,
-                                    name = icon.name,
-                                    nameResId = if (icon.isDefault) R.string.app_icon_default else null,
-                                    author = icon.author,
-                                    previewDrawableResId = icon.previewDrawableResId,
-                                    isSelected = icon.id == selectedIconId,
-                                )
-                            },
-                        ),
+                    icons = AppIconUiCollection.from(uiIcons),
+                    selectedIcon = uiIcons.firstOrNull(AppIconUiModel::isSelected) ?: uiIcons.first(),
                     selectionInProgressId = null,
+                    hasCommunityIcons = uiIcons.any { icon -> !icon.isDefault },
                 ),
             )
         }

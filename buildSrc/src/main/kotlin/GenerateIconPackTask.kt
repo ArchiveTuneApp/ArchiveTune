@@ -66,6 +66,7 @@ abstract class GenerateIconPackTask : DefaultTask() {
                 val author = entry.requiredString("Author", index)
                 val source = entry.requiredString("Source", index)
                 val link = entry.optionalString("Link")
+                val githubAuthorUrl = entry.optionalString("GitHubAuthorUrl")
 
                 if (id == DefaultIconId) {
                     throw GradleException("IconPack Id \"$DefaultIconId\" is reserved.")
@@ -80,7 +81,7 @@ abstract class GenerateIconPackTask : DefaultTask() {
                 }
 
                 val sourceFile = resolveSource(source)
-                validateVector(sourceFile)
+                val backgroundColor = validateVector(sourceFile)
 
                 val drawableName = "icon_pack_$hash"
                 val targetFile = File(resourcesDirectory, "drawable/$drawableName.xml")
@@ -92,15 +93,23 @@ abstract class GenerateIconPackTask : DefaultTask() {
                     "name" to name,
                     "author" to author,
                     "link" to link,
+                    "githubAuthorUrl" to githubAuthorUrl,
                     "source" to source,
                     "drawableResourceName" to drawableName,
+                    "adaptiveIconResourceName" to drawableName,
+                    "backgroundColor" to backgroundColor,
                     "aliasClassName" to "${applicationId.get()}.launcher.IconAlias$hash",
                 )
             }
 
+        writeAdaptiveIconResources(resourcesDirectory, catalog)
         File(assetsDirectory, "icon_pack/catalog.json").apply {
             parentFile.mkdirs()
-            writeText(JsonOutput.prettyPrint(JsonOutput.toJson(catalog)) + System.lineSeparator())
+            val runtimeCatalog =
+                catalog.map { entry ->
+                    entry - setOf("adaptiveIconResourceName", "backgroundColor")
+                }
+            writeText(JsonOutput.prettyPrint(JsonOutput.toJson(runtimeCatalog)) + System.lineSeparator())
         }
         manifestFile.writeText(buildManifest(catalog))
     }
@@ -132,7 +141,7 @@ abstract class GenerateIconPackTask : DefaultTask() {
         return sourceFile
     }
 
-    private fun validateVector(sourceFile: File) {
+    private fun validateVector(sourceFile: File): String {
         val factory =
             DocumentBuilderFactory.newInstance().apply {
                 isNamespaceAware = true
@@ -143,14 +152,69 @@ abstract class GenerateIconPackTask : DefaultTask() {
                 setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "")
                 setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "")
             }
-        val rootName =
+        val document =
             try {
-                factory.newDocumentBuilder().parse(sourceFile).documentElement.localName
+                factory.newDocumentBuilder().parse(sourceFile)
             } catch (error: Exception) {
                 throw GradleException("IconPack Source \"${sourceFile.name}\" is not valid XML.", error)
             }
-        if (rootName != "vector") {
+        if (document.documentElement.localName != "vector") {
             throw GradleException("IconPack Source \"${sourceFile.name}\" must have a <vector> root.")
+        }
+
+        val paths = document.getElementsByTagName("path")
+        for (index in 0 until paths.length) {
+            val fillColor =
+                paths
+                    .item(index)
+                    .attributes
+                    ?.getNamedItemNS(AndroidNamespace, "fillColor")
+                    ?.nodeValue
+                    ?.toOpaqueColor()
+            if (fillColor != null) {
+                return fillColor
+            }
+        }
+        throw GradleException(
+            "IconPack Source \"${sourceFile.name}\" must contain a path with a literal, non-transparent fillColor.",
+        )
+    }
+
+    private fun writeAdaptiveIconResources(
+        resourcesDirectory: File,
+        catalog: List<Map<String, String>>,
+    ) {
+        val valuesFile = File(resourcesDirectory, "values/icon_pack_colors.xml")
+        valuesFile.parentFile.mkdirs()
+        val colors =
+            catalog.joinToString(separator = System.lineSeparator()) { entry ->
+                val resourceName = entry.getValue("adaptiveIconResourceName")
+                val backgroundColor = entry.getValue("backgroundColor")
+                "    <color name=\"${resourceName}_background\">$backgroundColor</color>"
+            }
+        valuesFile.writeText(
+            """
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+$colors
+</resources>
+            """.trimIndent() + System.lineSeparator(),
+        )
+
+        catalog.forEach { entry ->
+            val resourceName = entry.getValue("adaptiveIconResourceName")
+            val drawableName = entry.getValue("drawableResourceName")
+            val adaptiveIconFile = File(resourcesDirectory, "mipmap-anydpi-v26/$resourceName.xml")
+            adaptiveIconFile.parentFile.mkdirs()
+            adaptiveIconFile.writeText(
+                """
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/${resourceName}_background" />
+    <foreground android:drawable="@drawable/$drawableName" />
+</adaptive-icon>
+                """.trimIndent() + System.lineSeparator(),
+            )
         }
     }
 
@@ -159,15 +223,15 @@ abstract class GenerateIconPackTask : DefaultTask() {
         val aliases =
             catalog.joinToString(separator = System.lineSeparator()) { entry ->
                 val aliasClassName = entry.getValue("aliasClassName")
-                val drawableName = entry.getValue("drawableResourceName")
+                val adaptiveIconResourceName = entry.getValue("adaptiveIconResourceName")
                 """
         <activity-alias
             android:name="$aliasClassName"
             android:enabled="false"
             android:exported="true"
-            android:icon="@drawable/$drawableName"
+            android:icon="@mipmap/$adaptiveIconResourceName"
             android:label="@string/app_name"
-            android:roundIcon="@drawable/$drawableName"
+            android:roundIcon="@mipmap/$adaptiveIconResourceName"
             android:targetActivity="${targetActivityClassName.get()}">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -231,7 +295,28 @@ ${aliases.prependIndent("        ")}
             .take(12)
             .joinToString(separator = "") { byte -> "%02x".format(byte) }
 
+    private fun String.toOpaqueColor(): String? {
+        val value = trim()
+        val argb =
+            when {
+                value.matches(ShortRgbColor) -> "FF${value.substring(1).map { "$it$it" }.joinToString("")}"
+                value.matches(ShortArgbColor) -> value.substring(1).map { "$it$it" }.joinToString("")
+                value.matches(RgbColor) -> "FF${value.substring(1)}"
+                value.matches(ArgbColor) -> value.substring(1)
+                else -> return null
+            }
+        if (argb.substring(0, 2).equals("00", ignoreCase = true)) {
+            return null
+        }
+        return "#FF${argb.substring(2).uppercase()}"
+    }
+
     private companion object {
+        const val AndroidNamespace = "http://schemas.android.com/apk/res/android"
         const val DefaultIconId = "default"
+        val ShortRgbColor = Regex("^#[0-9A-Fa-f]{3}$")
+        val ShortArgbColor = Regex("^#[0-9A-Fa-f]{4}$")
+        val RgbColor = Regex("^#[0-9A-Fa-f]{6}$")
+        val ArgbColor = Regex("^#[0-9A-Fa-f]{8}$")
     }
 }
