@@ -2103,10 +2103,7 @@ class MainActivity : ComponentActivity() {
                                         }
                                     }
                                 },
-                                modifier =
-                                    Modifier
-                                        .fillMaxSize()
-                                        .nestedScroll(searchBarScrollBehavior.nestedScrollConnection),
+                                modifier = Modifier.fillMaxSize(),
                             ) {
                                 var transitionDirection =
                                     AnimatedContentTransitionScope.SlideDirection.Left
