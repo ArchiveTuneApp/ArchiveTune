@@ -810,4 +810,14 @@
     <string name="unhide_playlist">Playlist einblenden</string>
     <string name="show_hidden_playlists">Zeige ausgeblendete</string>
     <string name="hide_playlist_confirm">\"%1$s\" von Bibliothek ausblenden?</string>
+    <string name="custom_font_invalid">Wähle eine .ttf Schriftartdatei</string>
+    <string name="force_high_refresh_rate">Erzwinge hohe Bildwiederholrate</string>
+    <string name="max_supported_refresh_rate">Max. unterstützt: %1$d Hz</string>
+    <string name="playback_error_http">HTTP</string>
+    <string name="playback_error_cause">Grund</string>
+    <string name="ip_rotation_refreshing">IP aktualisieren</string>
+    <string name="enable_youlyplus_lyrics">YouLyPlus Songtexte aktivieren</string>
+    <string name="device_mute_recovery_volume_disabled">Deaktiviert</string>
+    <string name="eq_waiting_for_audio_session">Warte auf Audiositzung</string>
+    <string name="account_integrations_summary">Discord, Last.fm, Libre.fm, ListenBrainz</string>
 </resources>
