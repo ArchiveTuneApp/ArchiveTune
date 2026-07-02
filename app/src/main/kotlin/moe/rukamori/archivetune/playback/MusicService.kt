@@ -1643,7 +1643,6 @@ class MusicService :
                     resolution = resolution,
                     token = token,
                     song = song,
-                    isPlaying = isPlaying,
                 )
 
             if (applied) {
@@ -1681,18 +1680,16 @@ class MusicService :
         resolution: DiscordPresenceResolution,
         token: String,
         song: Song?,
-        isPlaying: Boolean,
     ): Boolean {
         ensureDiscordSyncFresh(request.epoch)
 
         val decision = resolution.decision
         Timber.tag(DISCORD_SYNC_TAG).d(
-            "apply decision epoch=%d decision=%s tokenPresent=%s songId=%s isPlaying=%s",
+            "apply decision epoch=%d decision=%s tokenPresent=%s songId=%s",
             request.epoch,
             decision,
             token.isNotBlank() || !lastPresenceToken.isNullOrBlank(),
             song?.song?.id,
-            isPlaying,
         )
         return when (decision) {
             is DiscordPresenceDecision.Hidden -> {
@@ -1772,7 +1769,7 @@ class MusicService :
             is DiscordPresenceDecision.Visible -> {
                 clearDiscordHoldState()
                 ensureDiscordSyncFresh(request.epoch)
-                val snapshot = buildDiscordPresenceSnapshot(song, isPlaying) ?: return false
+                val snapshot = buildDiscordPresenceSnapshot(song, decision.isPaused) ?: return false
                 ensureDiscordSyncFresh(request.epoch)
                 val updated =
                     DiscordPresenceManager.updateNow(
@@ -1808,14 +1805,14 @@ class MusicService :
 
     private suspend fun buildDiscordPresenceSnapshot(
         song: Song?,
-        isPlaying: Boolean,
+        isPaused: Boolean,
     ): DiscordPresenceSnapshot? {
         val resolvedSong = song ?: return null
         val positionMs = withContext(Dispatchers.Main.immediate) { player.currentPosition }
         return DiscordPresenceSnapshot(
             song = resolvedSong,
             positionMs = positionMs,
-            isPaused = !isPlaying,
+            isPaused = isPaused,
         )
     }
 
@@ -6282,7 +6279,13 @@ class MusicService :
         }
 
         // Also handle immediate update for play state and media item transition events explicitly
-        if (events.containsAny(Player.EVENT_IS_PLAYING_CHANGED, Player.EVENT_MEDIA_ITEM_TRANSITION)) {
+        if (events.containsAny(
+                Player.EVENT_PLAYBACK_STATE_CHANGED,
+                Player.EVENT_PLAY_WHEN_READY_CHANGED,
+                Player.EVENT_IS_PLAYING_CHANGED,
+                Player.EVENT_MEDIA_ITEM_TRANSITION,
+            )
+        ) {
             if (events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION)) {
                 currentMediaMetadata.value = player.currentMetadata
             }
