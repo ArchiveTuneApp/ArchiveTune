@@ -1038,4 +1038,7 @@
     <string name="app_icon_empty">Aucune icône d\'application n\'est disponible</string>
     <string name="app_icon_load_failed">Impossible de charger les icônes des applications</string>
     <string name="app_icon_change_failed">Impossible de modifier l\'icône de l\'application</string>
+    <string name="force_high_refresh_rate">Forcer un taux de rafraîchissement élevé</string>
+    <string name="max_supported_refresh_rate">Fréquence maximale prise en charge : %1$d Hz</string>
+    <string name="export">Exporter</string>
 </resources>
