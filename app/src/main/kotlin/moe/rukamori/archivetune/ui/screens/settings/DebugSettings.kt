@@ -748,7 +748,11 @@ private fun LogViewerPanel() {
                     },
                     enabled = filtered.isNotEmpty(),
                     modifier = Modifier.weight(1f),
-                    shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
+                    shapes =
+                        ButtonDefaults.shapes(
+                            shape = ButtonGroupDefaults.connectedLeadingButtonShape,
+                            pressedShape = ButtonGroupDefaults.connectedLeadingButtonPressShape,
+                        ),
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                 ) {
                     Icon(
@@ -774,7 +778,11 @@ private fun LogViewerPanel() {
                     },
                     enabled = filtered.isNotEmpty(),
                     modifier = Modifier.weight(1f),
-                    shapes = ButtonGroupDefaults.connectedMiddleButtonShapes(),
+                    shapes =
+                        ButtonDefaults.shapes(
+                            shape = MaterialTheme.shapes.small,
+                            pressedShape = ButtonGroupDefaults.connectedMiddleButtonPressShape,
+                        ),
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                 ) {
                     Icon(
@@ -809,7 +817,11 @@ private fun LogViewerPanel() {
                     },
                     enabled = filtered.isNotEmpty(),
                     modifier = Modifier.weight(1f),
-                    shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
+                    shapes =
+                        ButtonDefaults.shapes(
+                            shape = ButtonGroupDefaults.connectedTrailingButtonShape,
+                            pressedShape = ButtonGroupDefaults.connectedTrailingButtonPressShape,
+                        ),
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                 ) {
                     Icon(
