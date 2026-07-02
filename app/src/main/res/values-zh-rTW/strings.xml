@@ -13,7 +13,7 @@
     <string name="account">帳戶</string>
     <string name="your_youtube_playlists">你的YouTube播放清單</string>
     <string name="mood_and_genres">曲風與情境</string>
-    <string name="quick_picks">立即聆聽</string>
+    <string name="quick_picks">推薦內容</string>
     <string name="speed_dial">快速存取</string>
     <string name="forgotten_favorites">舊愛重溫</string>
     <string name="keep_listening">繼續收聽</string>
@@ -896,7 +896,7 @@
     <string name="session_link">邀請連結</string>
     <string name="session_code">邀請碼</string>
     <string name="add_current_song">新增當前歌曲</string>
-    <string name="dismiss">拒絕</string>
+    <string name="dismiss">取消</string>
     <string name="enabled">已啟用</string>
     <string name="disabled">已停用</string>
     <string name="invalid_link">無效連結</string>
