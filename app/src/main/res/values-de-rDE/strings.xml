@@ -794,4 +794,20 @@
     <string name="cast_available_device_count">Geräte gefunden: %1$d</string>
     <string name="cast_route_picker_unavailable">Cast ist zur Zeit nicht verfügbar.</string>
     <string name="widget_recommendations">Empfehlungen</string>
+    <string name="widget_listening_time_empty">Noch keine Hörzeit bisher</string>
+    <string name="widget_listening_time_minutes">%1$d min</string>
+    <string name="widget_listening_time_hours_minutes">%1$d h %2$d min</string>
+    <plurals name="widget_total_plays">
+        <item quantity="one">1 Wiedergabe</item>
+        <item quantity="other">%d Wiedergaben</item>
+    </plurals>
+    <string name="widget_no_recent_songs">Noch keine kürzlichen Songs</string>
+    <string name="download_progress_percent">%1$d%%</string>
+    <string name="add">Hinzufügen</string>
+    <string name="add_to_n_playlists">Hinzufügen zu %1$d</string>
+    <string name="no_playlists_yet">Bisher keine Playlisten</string>
+    <string name="hide_playlist">Playlist ausblenden</string>
+    <string name="unhide_playlist">Playlist einblenden</string>
+    <string name="show_hidden_playlists">Zeige ausgeblendete</string>
+    <string name="hide_playlist_confirm">\"%1$s\" von Bibliothek ausblenden?</string>
 </resources>
