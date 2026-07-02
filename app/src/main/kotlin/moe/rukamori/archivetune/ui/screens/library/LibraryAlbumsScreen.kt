@@ -67,6 +67,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.Dispatchers
@@ -127,8 +128,9 @@ fun LibraryAlbumsScreen(
         }
     }
 
-    val albums by viewModel.allAlbums.collectAsState()
-    val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val albums by viewModel.allAlbums.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val downloadedAlbumIds by viewModel.downloadedAlbumIds.collectAsStateWithLifecycle()
 
     val featuredAlbum = albums.firstOrNull()
 
@@ -352,7 +354,11 @@ fun LibraryAlbumsScreen(
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     // Featured Album spotlight card span all 4 columns
-                    item(span = { GridItemSpan(4) }, key = "featured_album_card") {
+                    item(
+                        span = { GridItemSpan(4) },
+                        key = "featured_album_card",
+                        contentType = "featured_album",
+                    ) {
                         featuredAlbum?.let { album ->
                             Box(
                                 modifier =
@@ -406,6 +412,10 @@ fun LibraryAlbumsScreen(
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis,
                                             )
+                                            if (album.id in downloadedAlbumIds) {
+                                                Spacer(modifier = Modifier.height(8.dp))
+                                                DownloadedPill()
+                                            }
                                         }
                                     }
 
@@ -468,7 +478,11 @@ fun LibraryAlbumsScreen(
                     }
 
                     // 4-column albums list
-                    items(filteredAlbums, key = { it.id }) { album ->
+                    items(
+                        items = filteredAlbums,
+                        key = { it.id },
+                        contentType = { "album" },
+                    ) { album ->
                         Column(
                             modifier =
                                 Modifier
@@ -500,6 +514,14 @@ fun LibraryAlbumsScreen(
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier.fillMaxSize(),
                                 )
+                                if (album.id in downloadedAlbumIds) {
+                                    DownloadedPill(
+                                        modifier =
+                                            Modifier
+                                                .align(Alignment.TopStart)
+                                                .padding(6.dp),
+                                    )
+                                }
                                 // Play Overlay button on cover
                                 Box(
                                     modifier =
@@ -551,7 +573,11 @@ fun LibraryAlbumsScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.fillMaxSize(),
                 ) {
-                    items(filteredAlbums, key = { it.id }) { album ->
+                    items(
+                        items = filteredAlbums,
+                        key = { it.id },
+                        contentType = { "album" },
+                    ) { album ->
                         Row(
                             modifier =
                                 Modifier
@@ -598,6 +624,10 @@ fun LibraryAlbumsScreen(
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                 )
+                                if (album.id in downloadedAlbumIds) {
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    DownloadedPill()
+                                }
                             }
 
                             IconButton(
@@ -626,5 +656,31 @@ fun LibraryAlbumsScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun DownloadedPill(modifier: Modifier = Modifier) {
+    Row(
+        modifier =
+            modifier
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.secondaryContainer)
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.offline),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+            modifier = Modifier.size(12.dp),
+        )
+        Text(
+            text = stringResource(R.string.downloaded_desc),
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+            style = MaterialTheme.typography.labelSmall,
+            maxLines = 1,
+        )
     }
 }
