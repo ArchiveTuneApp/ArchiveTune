@@ -130,7 +130,6 @@ fun LibraryAlbumsScreen(
 
     val albums by viewModel.allAlbums.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
-    val downloadedAlbumIds by viewModel.downloadedAlbumIds.collectAsStateWithLifecycle()
 
     val featuredAlbum = albums.firstOrNull()
 
@@ -165,51 +164,55 @@ fun LibraryAlbumsScreen(
             ) {
                 var showSortMenu by remember { mutableStateOf(false) }
                 val currentSortLabel =
-                    when (sortType) {
-                        AlbumSortType.CREATE_DATE -> {
-                            if (sortDescending) {
-                                stringResource(
-                                    R.string.newest_first,
-                                )
-                            } else {
-                                stringResource(R.string.oldest_first)
+                    if (filter == AlbumFilter.DOWNLOADED_FULL) {
+                        stringResource(R.string.filter_downloaded)
+                    } else {
+                        when (sortType) {
+                            AlbumSortType.CREATE_DATE -> {
+                                if (sortDescending) {
+                                    stringResource(
+                                        R.string.newest_first,
+                                    )
+                                } else {
+                                    stringResource(R.string.oldest_first)
+                                }
                             }
-                        }
 
-                        AlbumSortType.NAME -> {
-                            if (sortDescending) stringResource(R.string.sort_z_to_a) else stringResource(R.string.sort_a_to_z)
-                        }
-
-                        AlbumSortType.ARTIST -> {
-                            stringResource(R.string.sort_artist)
-                        }
-
-                        AlbumSortType.YEAR -> {
-                            if (sortDescending) stringResource(R.string.newest_year) else stringResource(R.string.oldest_year)
-                        }
-
-                        AlbumSortType.SONG_COUNT -> {
-                            if (sortDescending) {
-                                stringResource(
-                                    R.string.most_tracks,
-                                )
-                            } else {
-                                stringResource(R.string.least_tracks)
+                            AlbumSortType.NAME -> {
+                                if (sortDescending) stringResource(R.string.sort_z_to_a) else stringResource(R.string.sort_a_to_z)
                             }
-                        }
 
-                        AlbumSortType.LENGTH -> {
-                            if (sortDescending) {
-                                stringResource(
-                                    R.string.longest_duration,
-                                )
-                            } else {
-                                stringResource(R.string.shortest_duration)
+                            AlbumSortType.ARTIST -> {
+                                stringResource(R.string.sort_artist)
                             }
-                        }
 
-                        AlbumSortType.PLAY_TIME -> {
-                            stringResource(R.string.most_played_sort)
+                            AlbumSortType.YEAR -> {
+                                if (sortDescending) stringResource(R.string.newest_year) else stringResource(R.string.oldest_year)
+                            }
+
+                            AlbumSortType.SONG_COUNT -> {
+                                if (sortDescending) {
+                                    stringResource(
+                                        R.string.most_tracks,
+                                    )
+                                } else {
+                                    stringResource(R.string.least_tracks)
+                                }
+                            }
+
+                            AlbumSortType.LENGTH -> {
+                                if (sortDescending) {
+                                    stringResource(
+                                        R.string.longest_duration,
+                                    )
+                                } else {
+                                    stringResource(R.string.shortest_duration)
+                                }
+                            }
+
+                            AlbumSortType.PLAY_TIME -> {
+                                stringResource(R.string.most_played_sort)
+                            }
                         }
                     }
 
@@ -259,6 +262,7 @@ fun LibraryAlbumsScreen(
                                 DropdownMenuItem(
                                     text = { Text(label) },
                                     onClick = {
+                                        filter = AlbumFilter.LIKED
                                         onSortTypeChange(type)
                                         // Issue 4: A-Z sort defaults to ascending
                                         if (type == AlbumSortType.NAME) onSortDescendingChange(false)
@@ -266,6 +270,19 @@ fun LibraryAlbumsScreen(
                                     },
                                 )
                             }
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.filter_downloaded)) },
+                                onClick = {
+                                    filter = AlbumFilter.DOWNLOADED_FULL
+                                    showSortMenu = false
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(R.drawable.offline),
+                                        contentDescription = null,
+                                    )
+                                },
+                            )
                         }
                     }
 
@@ -354,11 +371,7 @@ fun LibraryAlbumsScreen(
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     // Featured Album spotlight card span all 4 columns
-                    item(
-                        span = { GridItemSpan(4) },
-                        key = "featured_album_card",
-                        contentType = "featured_album",
-                    ) {
+                    item(span = { GridItemSpan(4) }, key = "featured_album_card") {
                         featuredAlbum?.let { album ->
                             Box(
                                 modifier =
@@ -412,10 +425,6 @@ fun LibraryAlbumsScreen(
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis,
                                             )
-                                            if (album.id in downloadedAlbumIds) {
-                                                Spacer(modifier = Modifier.height(8.dp))
-                                                DownloadedPill()
-                                            }
                                         }
                                     }
 
@@ -478,11 +487,7 @@ fun LibraryAlbumsScreen(
                     }
 
                     // 4-column albums list
-                    items(
-                        items = filteredAlbums,
-                        key = { it.id },
-                        contentType = { "album" },
-                    ) { album ->
+                    items(filteredAlbums, key = { it.id }) { album ->
                         Column(
                             modifier =
                                 Modifier
@@ -514,14 +519,6 @@ fun LibraryAlbumsScreen(
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier.fillMaxSize(),
                                 )
-                                if (album.id in downloadedAlbumIds) {
-                                    DownloadedPill(
-                                        modifier =
-                                            Modifier
-                                                .align(Alignment.TopStart)
-                                                .padding(6.dp),
-                                    )
-                                }
                                 // Play Overlay button on cover
                                 Box(
                                     modifier =
@@ -573,11 +570,7 @@ fun LibraryAlbumsScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.fillMaxSize(),
                 ) {
-                    items(
-                        items = filteredAlbums,
-                        key = { it.id },
-                        contentType = { "album" },
-                    ) { album ->
+                    items(filteredAlbums, key = { it.id }) { album ->
                         Row(
                             modifier =
                                 Modifier
@@ -624,10 +617,6 @@ fun LibraryAlbumsScreen(
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                 )
-                                if (album.id in downloadedAlbumIds) {
-                                    Spacer(modifier = Modifier.height(6.dp))
-                                    DownloadedPill()
-                                }
                             }
 
                             IconButton(
@@ -656,31 +645,5 @@ fun LibraryAlbumsScreen(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun DownloadedPill(modifier: Modifier = Modifier) {
-    Row(
-        modifier =
-            modifier
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.secondaryContainer)
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(
-            painter = painterResource(R.drawable.offline),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSecondaryContainer,
-            modifier = Modifier.size(12.dp),
-        )
-        Text(
-            text = stringResource(R.string.downloaded_desc),
-            color = MaterialTheme.colorScheme.onSecondaryContainer,
-            style = MaterialTheme.typography.labelSmall,
-            maxLines = 1,
-        )
     }
 }

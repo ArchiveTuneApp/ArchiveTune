@@ -914,12 +914,12 @@ fun Queue(
 
                     itemsIndexed(
                         items = mutableQueueWindows,
-                        key = { _, item -> item.uid },
+                        key = { _, item -> item.queueItemKey },
                         contentType = { _, _ -> "queue_item" },
                     ) { index, window ->
                         ReorderableItem(
                             state = reorderableState,
-                            key = window.uid,
+                            key = window.queueItemKey,
                         ) {
                             val currentItem by rememberUpdatedState(window)
                             val isActive = window.uid == currentPlayingUid
@@ -1165,6 +1165,11 @@ fun Queue(
         }
     }
 }
+
+private val Timeline.Window.queueItemKey: Long
+    get() =
+        (uid.hashCode().toLong() shl Int.SIZE_BITS) xor
+            (mediaItem.mediaId.hashCode().toLong() and UInt.MAX_VALUE.toLong())
 
 @Composable
 private fun QueueSelectionFloatingToolbar(

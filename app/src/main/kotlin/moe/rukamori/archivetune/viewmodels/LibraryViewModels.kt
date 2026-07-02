@@ -351,29 +351,6 @@ class LibraryAlbumsViewModel
                     }
                 }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-        val downloadedAlbumIds =
-            combine(
-                allAlbums,
-                database.allSongs().flowOn(Dispatchers.IO),
-                downloadUtil.downloads,
-            ) { albums, songs, downloads ->
-                val downloadedSongCountByAlbum =
-                    songs
-                        .asSequence()
-                        .filter { song -> downloads[song.id]?.state == Download.STATE_COMPLETED }
-                        .mapNotNull { song -> song.song.albumId }
-                        .groupingBy { albumId -> albumId }
-                        .eachCount()
-
-                albums
-                    .asSequence()
-                    .filter { album ->
-                        album.album.songCount > 0 &&
-                            (downloadedSongCountByAlbum[album.id] ?: 0) >= album.album.songCount
-                    }.map { album -> album.id }
-                    .toSet()
-            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
-
         fun refresh(filter: AlbumFilter) {
             if (filter != AlbumFilter.LIKED) return
             if (_isRefreshing.value) return

@@ -1,6 +1,9 @@
-import com.android.ide.common.vectordrawable.Svg2Vector
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
+import org.apache.batik.transcoder.SVGAbstractTranscoder
+import org.apache.batik.transcoder.TranscoderInput
+import org.apache.batik.transcoder.TranscoderOutput
+import org.apache.batik.transcoder.image.PNGTranscoder
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
@@ -20,7 +23,6 @@ import org.w3c.dom.Node
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.security.MessageDigest
-import javax.xml.XMLConstants
 import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.math.abs
 
@@ -124,9 +126,9 @@ abstract class GenerateIconPackTask : DefaultTask() {
                     }
 
                 val drawableName = "icon_pack_$hash"
-                val targetFile = File(resourcesDirectory, "drawable/$drawableName.xml")
+                val targetFile = File(resourcesDirectory, "drawable-nodpi/$drawableName.png")
                 targetFile.parentFile.mkdirs()
-                convertSvg(sourceFile, targetFile)
+                rasterizeSvg(sourceFile, targetFile)
 
                 mapOf(
                     "id" to id,
@@ -189,36 +191,40 @@ abstract class GenerateIconPackTask : DefaultTask() {
         return sourceFile
     }
 
-    private fun convertSvg(
+    private fun rasterizeSvg(
         sourceFile: File,
         targetFile: File,
     ) {
         val output = ByteArrayOutputStream()
-        val errors =
-            try {
-                Svg2Vector.parseSvgToXml(sourceFile.toPath(), output)
-            } catch (error: Exception) {
-                throw GradleException(
-                    "Unable to convert IconPack Source \"${sourceFile.name}\" to VectorDrawable.",
-                    error,
+        try {
+            val transcoder =
+                PNGTranscoder().apply {
+                    addTranscodingHint(SVGAbstractTranscoder.KEY_WIDTH, IconRasterSize.toFloat())
+                    addTranscodingHint(SVGAbstractTranscoder.KEY_HEIGHT, IconRasterSize.toFloat())
+                    addTranscodingHint(SVGAbstractTranscoder.KEY_EXECUTE_ONLOAD, false)
+                    addTranscodingHint(SVGAbstractTranscoder.KEY_ALLOW_EXTERNAL_RESOURCES, false)
+                }
+            sourceFile.inputStream().buffered().use { input ->
+                transcoder.transcode(
+                    TranscoderInput(input),
+                    TranscoderOutput(output),
                 )
             }
-        if (!errors.isNullOrBlank()) {
+        } catch (error: Exception) {
             throw GradleException(
-                "Unable to convert IconPack Source \"${sourceFile.name}\" to VectorDrawable:\n$errors",
+                "Unable to rasterize IconPack Source \"${sourceFile.name}\".",
+                error,
             )
         }
-        if (output.size() == 0) {
+        val png = output.toByteArray()
+        if (png.size < PngSignature.size ||
+            PngSignature.indices.any { index -> png[index] != PngSignature[index] }
+        ) {
             throw GradleException(
-                "IconPack Source \"${sourceFile.name}\" produced an empty VectorDrawable.",
+                "IconPack Source \"${sourceFile.name}\" produced an invalid PNG.",
             )
         }
-        val xmlContent =
-            output
-                .toString(Charsets.UTF_8.name())
-                .replace("android:fillColor=\"None\"", "android:fillColor=\"#00000000\"")
-                .replace("android:strokeColor=\"None\"", "android:strokeColor=\"#00000000\"")
-        targetFile.writeText(xmlContent, Charsets.UTF_8)
+        targetFile.writeBytes(png)
     }
 
     private fun analyzeSvg(sourceFile: File): SvgAnalysis {
@@ -283,8 +289,8 @@ abstract class GenerateIconPackTask : DefaultTask() {
                 setFeature("http://xml.org/sax/features/external-general-entities", false)
                 setFeature("http://xml.org/sax/features/external-parameter-entities", false)
                 setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
-                setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "")
-                setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "")
+                setAttribute(AccessExternalDtdProperty, "")
+                setAttribute(AccessExternalSchemaProperty, "")
             }
         return try {
             factory.newDocumentBuilder().parse(sourceFile)
@@ -603,6 +609,8 @@ ${aliases.prependIndent("        ")}
 
     private companion object {
         const val AdaptiveIconForegroundInset = "15dp"
+        const val AccessExternalDtdProperty = "http://javax.xml.XMLConstants/property/accessExternalDTD"
+        const val AccessExternalSchemaProperty = "http://javax.xml.XMLConstants/property/accessExternalSchema"
         const val AndroidNamespace = "http://schemas.android.com/apk/res/android"
         const val SvgNamespace = "http://www.w3.org/2000/svg"
         const val CatalogAssetPath = "icon_pack/catalog.json"
@@ -615,6 +623,7 @@ ${aliases.prependIndent("        ")}
         const val DarkContrastingBackground = "#FF202124"
         const val ComplexArtworkPathThreshold = 32
         const val ComplexArtworkColorThreshold = 4
+        const val IconRasterSize = 1024
         const val ViewBoxValueCount = 4
         const val FullCanvasCoordinateCount = 8
         const val FullCanvasToleranceRatio = 0.01
@@ -629,5 +638,16 @@ ${aliases.prependIndent("        ")}
         val ShortArgbColor = Regex("^#[0-9A-Fa-f]{4}$")
         val RgbColor = Regex("^#[0-9A-Fa-f]{6}$")
         val ArgbColor = Regex("^#[0-9A-Fa-f]{8}$")
+        val PngSignature =
+            byteArrayOf(
+                0x89.toByte(),
+                0x50,
+                0x4E,
+                0x47,
+                0x0D,
+                0x0A,
+                0x1A,
+                0x0A,
+            )
     }
 }
