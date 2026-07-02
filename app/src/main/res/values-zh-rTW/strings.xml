@@ -42,7 +42,7 @@
     <string name="no_results_found">未找到結果</string>
     <string name="top_results">最佳匹配</string>
     <string name="library_title">你的媒體庫</string>
-    <string name="library_subtitle">為你量身打造的音樂庫</string>
+    <string name="library_subtitle">為你量身打造的媒體庫</string>
     <string name="library_playlists_subtitle">為你量身打造的播放清單</string>
     <string name="library_songs_subtitle">為你量身打造的歌曲庫</string>
     <string name="library_artists_subtitle">你的所有藝人，在此一覽無遺</string>
@@ -206,7 +206,7 @@
     <string name="remove_from_queue">從佇列中移除</string>
     <string name="removed_song_from_queue">已從佇列中移除%s</string>
     <string name="removed_n_songs_from_queue">已從佇列中移除%d首歌曲</string>
-    <string name="search_online">線上搜索</string>
+    <string name="search_online">線上搜尋</string>
     <string name="tempo_and_pitch">速度與音高</string>
     <string name="aod_mode">AOD 模式</string>
     <string name="aod_mode_exit">退出 AOD</string>
@@ -517,7 +517,7 @@
     <string name="auto_skip_next_on_error_desc">確保您獲得連續的播放體驗</string>
     <string name="stop_music_on_task_clear">背景清除時停止播放</string>
     <string name="wakelock">播放期間保持 CPU 喚醒狀態</string>
-    <string name="wakelock_desc">透過持有 CPU 喚醒鎖定，防止系統中斷音樂播放</string>
+    <string name="wakelock_desc">透過持有 CPU 喚醒鎖定，防止系統中斷歌曲播放</string>
     <string name="auto_start_on_bluetooth">藍牙連線時自動播放</string>
     <string name="auto_start_on_bluetooth_desc">藍牙音訊裝置連線時自動恢復播放</string>
     <string name="artist_separators">藝人分隔符號</string>
@@ -851,7 +851,7 @@
     <string name="onboarding_empty_title">設定不可用</string>
     <string name="onboarding_empty_subtitle">繼續使用 ArchiveTune。</string>
     <string name="onboarding_error_generic">無法載入設定程式</string>
-    <string name="onboarding_permission_allowed_by_install">允許安裝</string>
+    <string name="onboarding_permission_allowed_by_install">已允許 (安裝)</string>
     <string name="onboarding_permission_unavailable">不可用</string>
     <string name="onboarding_permission_notifications_title">通知權限</string>
     <string name="onboarding_permission_notifications_desc">在通知欄中顯示播放控制和音樂活動。</string>

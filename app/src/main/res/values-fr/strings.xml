@@ -1020,4 +1020,22 @@
     <string name="unsaved_account_dialog_title">Compte non enregistré</string>
     <string name="source">Source</string>
     <string name="enable_youlyplus_lyrics">Activer les paroles de YouLyPlus</string>
+    <string name="app_icon_description">Sélectionnez l\'icône du lanceur</string>
+    <string name="app_icon_default">Par défaut</string>
+    <string name="app_icon_subtitle">Personnalisez votre lanceur d\'applications</string>
+    <string name="app_icon_current">Icône actuelle</string>
+    <string name="app_icon_available">Icônes disponibles</string>
+    <string name="app_icon_builtin">Intégré</string>
+    <string name="app_icon_community">Icône de la communauté</string>
+    <string name="app_icon_builtin_description">Icône ArchiveTune originale</string>
+    <string name="app_icon_identifier">ID %1$s</string>
+    <string name="app_icon_community_notice">Les icônes de la communauté sont créées par les utilisateurs et peuvent évoluer au fil du temps.</string>
+    <plurals name="app_icon_count">
+        <item quantity="one">%d icône</item>
+        <item quantity="many">%d icônes</item>
+        <item quantity="other">%d icônes</item>
+    </plurals>
+    <string name="app_icon_empty">Aucune icône d\'application n\'est disponible</string>
+    <string name="app_icon_load_failed">Impossible de charger les icônes des applications</string>
+    <string name="app_icon_change_failed">Impossible de modifier l\'icône de l\'application</string>
 </resources>

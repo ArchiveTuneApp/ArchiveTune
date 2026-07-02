@@ -574,4 +574,8 @@
     <string name="restore_invalid_file">Le fichier sélectionné n\'est pas une archive de sauvegarde valide.</string>
     <string name="about_contributor_translation">Traduction par un Contributeur</string>
     <string name="theme_creator_title">Créateur de thèmes</string>
+    <string name="block_artist">Bloquer l\'artiste</string>
+    <string name="unblock_artist">Débloquer l\'artiste</string>
+    <string name="player_stream_client_archivetune_extractor">Extracteur ArchiveTune</string>
+    <string name="player_stream_client_archivetune_extractor_desc">Utilise l\'extracteur ArchiveTune pour les flux de lecture. Privilégie l\'audio haute qualité automatique.</string>
 </resources>
