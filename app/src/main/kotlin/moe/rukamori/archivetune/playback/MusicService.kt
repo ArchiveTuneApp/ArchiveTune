@@ -210,6 +210,8 @@ import moe.rukamori.archivetune.innertube.PlaybackAuthState
 import moe.rukamori.archivetune.innertube.YouTube
 import moe.rukamori.archivetune.innertube.models.SongItem
 import moe.rukamori.archivetune.innertube.models.WatchEndpoint
+import moe.rukamori.archivetune.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.Companion.MUSIC_VIDEO_TYPE_OMV
+import moe.rukamori.archivetune.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.Companion.MUSIC_VIDEO_TYPE_UGC
 import moe.rukamori.archivetune.innertube.models.response.PlayerResponse
 import moe.rukamori.archivetune.lastfm.LastFM
 import moe.rukamori.archivetune.lyrics.LyricsHelper
@@ -3306,6 +3308,16 @@ class MusicService :
             withContext(Dispatchers.Main) {
                 player.findNextMediaItemById(mediaId)?.metadata
             } ?: return
+
+        playbackData?.videoDetails?.musicVideoType?.let { musicVideoType ->
+            val isVideo = musicVideoType == MUSIC_VIDEO_TYPE_OMV || musicVideoType == MUSIC_VIDEO_TYPE_UGC
+            if (isVideo && !mediaMetadata.isMusicVideo) {
+                withContext(Dispatchers.Main) {
+                    currentMediaMetadata.value = mediaMetadata.copy(isMusicVideo = true)
+                }
+            }
+        }
+
         val duration =
             song?.song?.duration?.takeIf { it != -1 }
                 ?: mediaMetadata.duration.takeIf { it != -1 }
