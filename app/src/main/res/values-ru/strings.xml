@@ -292,7 +292,7 @@
     <string name="brightness">Яркость</string>
     <string name="custom_value">Пользовательское</string>
     <string name="archivetune_canvas">ArchiveTune Canvas</string>
-    <string name="archivetune_canvas_desc">Анимировать обложку альбома при воспроизведении (С помощью BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">Анимировать обложку альбома при воспроизведении</string>
     <string name="show_button1_description">Включить видимость кнопки 1 в Discord Rich Presence</string>
     <string name="show_button2_description">Включить видимость кнопки 2 в Discord Rich Presence</string>
     <string name="discord_activity_type">Тип активности</string>

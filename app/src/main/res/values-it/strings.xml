@@ -492,7 +492,7 @@
     <string name="random_theme_on_startup">Tema random all\'avvio</string>
     <string name="random_theme_on_startup_desc">Applica una palette di colori randomica ad ogni avvio dell\'app</string>
     <string name="archivetune_canvas">Canvas ArchiveTune</string>
-    <string name="archivetune_canvas_desc">Anima la copertina dell\'album durante la riproduzione (Fornito da BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">Anima la copertina dell\'album durante la riproduzione</string>
     <string name="disable_animations">Disabilita animazioni</string>
     <string name="disable_animations_desc">Disabilita la maggior parte delle animazioni dell\'app. Raccomandato per dispositivi di fascia bassa</string>
     <string name="blur_intensity">Intensità sfocatura</string>

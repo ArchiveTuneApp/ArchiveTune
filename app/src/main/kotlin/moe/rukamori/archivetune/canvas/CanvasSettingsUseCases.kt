@@ -1,0 +1,119 @@
+package moe.rukamori.archivetune.canvas
+
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.retryWhen
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class StartCanvasPolicyUseCase @Inject constructor(
+    private val repository: CanvasSettingsRepository,
+) {
+    private var job: Job? = null
+
+    fun start(scope: CoroutineScope) {
+        if (job != null) return
+        CanvasNetworkAccess.connectivity = repository::currentConnectivity
+        CanvasRequestPolicy.check = { source -> CanvasNetworkAccess.check(source) }
+        job = scope.launch(Dispatchers.IO) {
+            var previous: CanvasPolicy? = null
+            flow {
+                repository.initializeCache()
+                emitAll(combine(repository.configuration, repository.connectivity) { configuration, connectivity ->
+                    CanvasPolicy(configuration, connectivity, ready = true)
+                })
+            }.onEach { policy ->
+                CanvasNetworkAccess.update(policy)
+                if (!policy.networkAllowed || previous?.configuration?.source != policy.configuration.source) {
+                    repository.cancelDownloads()
+                }
+                if (previous?.configuration?.cacheLimitMb != policy.configuration.cacheLimitMb) {
+                    repository.applyCacheLimit(policy.configuration.cacheLimitMb)
+                }
+                previous = policy
+            }.retryWhen { cause, _ ->
+                if (cause is CancellationException) throw cause
+                Timber.e(cause, "Canvas configuration observation failed")
+                CanvasNetworkAccess.update(CanvasPolicy(configurationError = true))
+                repository.cancelDownloads()
+                previous = null
+                delay(5_000)
+                true
+            }.collect {}
+        }
+    }
+}
+
+class CanvasSettingsUseCases @Inject constructor(
+    private val repository: CanvasSettingsRepository,
+) {
+    val policy = CanvasNetworkAccess.policy
+
+    suspend fun setEnabled(enabled: Boolean) = repository.setEnabled(enabled)
+    suspend fun setSource(source: CanvasSource) = repository.setSource(source)
+    suspend fun setWifiOnly(wifiOnly: Boolean) = repository.setWifiOnly(wifiOnly)
+
+    suspend fun setCacheLimit(limitMb: Int) {
+        require(limitMb in CACHE_LIMITS)
+        repository.setCacheLimit(limitMb)
+        repository.applyCacheLimit(limitMb)
+    }
+
+    suspend fun cacheBytes(): Long = repository.cacheBytes()
+    suspend fun clearCache() = repository.clearCache()
+
+    fun pendingHealth(policy: CanvasPolicy): CanvasHealthStatus = CanvasHealthStatus(
+        betterLyrics = healthAvailability(policy, CanvasSource.BETTER_LYRICS),
+        appleMusic = healthAvailability(policy, CanvasSource.APPLE_MUSIC),
+    )
+
+    suspend fun checkHealth(policy: CanvasPolicy): CanvasHealthStatus = coroutineScope {
+        val betterLyrics = async { checkProvider(policy, CanvasSource.BETTER_LYRICS) }
+        val appleMusic = async { checkProvider(policy, CanvasSource.APPLE_MUSIC) }
+        CanvasHealthStatus(betterLyrics.await(), appleMusic.await())
+    }
+
+    private suspend fun checkProvider(policy: CanvasPolicy, source: CanvasSource): CanvasHealth {
+        val availability = healthAvailability(policy, source)
+        if (availability != CanvasHealth.CHECKING) return availability
+        return try {
+            if (withTimeoutOrNull(20_000) { repository.isHealthy(source) } == true) {
+                CanvasHealth.AVAILABLE
+            } else {
+                CanvasHealth.UNAVAILABLE
+            }
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            Timber.w(error, "Canvas provider health check failed: %s", source)
+            CanvasHealth.UNAVAILABLE
+        }
+    }
+
+    private fun healthAvailability(policy: CanvasPolicy, source: CanvasSource): CanvasHealth = when {
+        !policy.ready -> CanvasHealth.NOT_CHECKED
+        !policy.configuration.source.accepts(source) -> CanvasHealth.NOT_SELECTED
+        !policy.configuration.enabled -> CanvasHealth.DISABLED
+        !policy.connectivity.online -> CanvasHealth.OFFLINE
+        policy.configuration.wifiOnly && !policy.connectivity.wifi -> CanvasHealth.WIFI_REQUIRED
+        policy.configuration.lowDataMode && policy.connectivity.metered -> CanvasHealth.LOW_DATA_MODE
+        else -> CanvasHealth.CHECKING
+    }
+
+    companion object {
+        val CACHE_LIMITS: List<Int> = listOf(0, 64, 128, 256, 512, 1024, 2048, 4096, 8192, -1)
+    }
+}

@@ -690,7 +690,7 @@
     <string name="custom_background_permission_error">تعذر على ArchiveTune الاحتفاظ بصلاحية الوصول لهذه الصورة.</string>
     <string name="custom_background_permission_cleanup_error">تعذر تحرير صلاحية الوصول للصورة السابقة.</string>
     <string name="archivetune_canvas">شاشة ArchiveTune التفاعلية</string>
-    <string name="archivetune_canvas_desc">تحريك غلاف الألبوم أثناء التشغيل (مدعوم بواسطة BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">تحريك غلاف الألبوم أثناء التشغيل</string>
     <string name="player_background_style_v8_v9_desc">غير متاح مع نمطي المشغل V8 و V9</string>
     <string name="disable_animations">تعطيل الرسوم المتحركة</string>
     <string name="disable_animations_desc">تعطيل معظم الرسوم المتحركة في التطبيق. موصى به للأجهزة ضعيفة الإمكانيات</string>

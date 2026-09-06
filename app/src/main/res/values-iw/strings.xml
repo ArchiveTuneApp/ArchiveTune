@@ -279,7 +279,7 @@
     </plurals>
     <string name="eq_profiles">פרופילים</string>
     <string name="retry">נסה שוב</string>
-    <string name="archivetune_canvas_desc">הנפשת גרפיקת אלבום בזמן נגינה (מופעל על ידי BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">הנפשת גרפיקת אלבום בזמן נגינה</string>
     <string name="queue">תור</string>
     <string name="dns_custom_url">כתובת URL מותאמת אישית של DNS DoH</string>
     <string name="together_waiting_approval">ממתין לאישור</string>

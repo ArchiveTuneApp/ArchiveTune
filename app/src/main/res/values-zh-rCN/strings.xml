@@ -381,7 +381,7 @@
     <string name="contrast">对比</string>
     <string name="brightness">亮度</string>
     <string name="archivetune_canvas">ArchiveTune画布</string>
-    <string name="archivetune_canvas_desc">播放时动画化专辑封面（由BetterLyrics提供）</string>
+    <string name="archivetune_canvas_desc">播放时动画化专辑封面</string>
     <string name="show_button1_description">在Discord Rich Presence中切换按钮1的可见性</string>
     <string name="show_button2_description">在Discord Rich Presence中切换按钮2的可见性</string>
     <string name="discord_activity_type">活动类型</string>

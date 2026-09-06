@@ -17,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
@@ -25,11 +26,15 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
+import moe.rukamori.archivetune.canvas.CanvasSource
+import moe.rukamori.archivetune.canvas.CanvasNetworkAccess
+import moe.rukamori.archivetune.canvas.models.matchesSongIdentity
 import moe.rukamori.archivetune.canvas.models.CanvasArtwork
 import moe.rukamori.archivetune.innertube.YouTube
 import moe.rukamori.archivetune.storage.StorageFolderKind
 import moe.rukamori.archivetune.storage.StorageLocationRepository
 import moe.rukamori.archivetune.utils.StreamClientUtils
+import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import timber.log.Timber
@@ -53,6 +58,8 @@ object CanvasArtworkPlaybackCache {
 
     private val map = LinkedHashMap<String, CanvasCacheEntry>(DEFAULT_MAX_SIZE_MEGABYTES, 0.75f, true)
     private val cacheJobs = LinkedHashMap<String, Job>()
+    private val activeCalls = LinkedHashMap<Call, Job>()
+    private val pendingFiles = LinkedHashMap<String, Job>()
 
     @Volatile private var maxSizeBytes = DEFAULT_MAX_SIZE_MEGABYTES.toLong() * CACHE_SIZE_BYTES_PER_MEGABYTE
 
@@ -87,6 +94,11 @@ object CanvasArtworkPlaybackCache {
             .readTimeout(45, TimeUnit.SECONDS)
             .callTimeout(3, TimeUnit.MINUTES)
             .addInterceptor { chain ->
+                val source = chain.request().tag(CanvasSource::class.java)
+                    ?: throw IOException("Canvas download has no provider identity")
+                CanvasNetworkAccess.intercept(chain, source)
+            }
+            .addInterceptor { chain ->
                 val request = chain.request()
                 if (!request.url.isYouTubeMediaHost()) {
                     return@addInterceptor chain.proceed(
@@ -107,11 +119,14 @@ object CanvasArtworkPlaybackCache {
             }.build()
     }
 
-    fun init(context: Context) {
+    @Synchronized
+    fun init(context: Context, limitMb: Int = DEFAULT_MAX_SIZE_MEGABYTES) {
+        maxSizeBytes = limitMb.toCanvasCacheLimitBytes()
         val directory = StorageLocationRepository.cacheDirectory(context, StorageFolderKind.CANVAS_CACHE)
         cacheDirectory = directory
         cacheFile = directory.resolve(PERSIST_FILE)
         loadFromDisk()
+        if (maxSizeBytes == 0L) clear()
     }
 
     @Synchronized
@@ -147,6 +162,11 @@ object CanvasArtworkPlaybackCache {
 
             val current =
                 synchronized(this@CanvasArtworkPlaybackCache) {
+                    val existing = map[mediaId]
+                    if (existing != null && (existing.artwork.source != artwork.source ||
+                            !existing.artwork.matchesSongIdentity(artwork.name.orEmpty(), artwork.artist.orEmpty()))) {
+                        remove(mediaId)
+                    }
                     map[mediaId]?.toPlayableArtwork(
                         directory = directory,
                         preferCachedOnly = false,
@@ -199,6 +219,8 @@ object CanvasArtworkPlaybackCache {
         artwork: CanvasArtwork,
     ) {
         synchronized(this@CanvasArtworkPlaybackCache) {
+            val source = artwork.source ?: throw IOException("Canvas artwork has no provider identity")
+            CanvasNetworkAccess.check(source)
             cacheJobs[mediaId]
                 ?.takeIf { job -> job.isActive }
                 ?.let { return }
@@ -210,9 +232,22 @@ object CanvasArtworkPlaybackCache {
                             mediaId = mediaId,
                             artwork = artwork,
                         )
+                    } catch (error: CancellationException) {
+                        throw error
+                    } catch (error: Exception) {
+                        Timber.w(error, "Canvas background download failed")
                     } finally {
+                        val completedJob = currentCoroutineContext()[Job]
                         synchronized(this@CanvasArtworkPlaybackCache) {
-                            cacheJobs.remove(mediaId)
+                            if (cacheJobs[mediaId] === completedJob) cacheJobs.remove(mediaId)
+                            val abandonedFiles = pendingFiles.filterValues { it === completedJob }.keys.toList()
+                            abandonedFiles.forEach { fileName ->
+                                pendingFiles.remove(fileName)
+                                if (map.values.none { it.regularFileName == fileName || it.verticalFileName == fileName }) {
+                                    val file = directory.resolve(fileName)
+                                    if (!file.delete() && file.exists()) Timber.w("Failed to remove unindexed canvas video")
+                                }
+                            }
                         }
                     }
                 }
@@ -224,12 +259,15 @@ object CanvasArtworkPlaybackCache {
         mediaId: String,
         artwork: CanvasArtwork,
     ) {
+        val source = artwork.source ?: throw IOException("Canvas artwork has no provider identity")
+        CanvasNetworkAccess.check(source)
         val current = synchronized(this@CanvasArtworkPlaybackCache) { map[mediaId] }
         val regularFileName =
             cacheCanvasVideo(
                 directory = directory,
                 mediaId = mediaId,
                 variant = CanvasVideoVariant.Regular,
+                source = source,
                 url = artwork.downloadableRegularUrl(),
                 currentFileName = current?.regularFileName,
             )
@@ -250,6 +288,7 @@ object CanvasArtworkPlaybackCache {
                 directory = directory,
                 mediaId = mediaId,
                 variant = CanvasVideoVariant.Vertical,
+                source = source,
                 url = artwork.downloadableVerticalUrl(),
                 currentFileName = current?.verticalFileName,
             )
@@ -275,7 +314,14 @@ object CanvasArtworkPlaybackCache {
     @Synchronized
     fun byteSize(): Long {
         val directory = cacheDirectory ?: return 0L
-        return map.values.sumOf { entry -> entry.byteSize(directory) }
+        val files = directory.listFiles() ?: if (directory.exists()) {
+            throw IOException("Cannot read the canvas cache directory")
+        } else {
+            return 0L
+        }
+        return files.sumOf { file ->
+            if (file.isFile && (file.name.endsWith(".mp4") || file.name.endsWith(".part"))) file.length() else 0L
+        }
     }
 
     @Synchronized
@@ -286,19 +332,29 @@ object CanvasArtworkPlaybackCache {
         schedulePersist()
     }
 
-    fun clearAndPersist(): Boolean {
-        synchronized(this) {
-            cancelCacheJobsLocked()
-            clearFilesLocked()
-            map.clear()
-            persistJob?.cancel()
-        }
-        return writeToDisk()
+    @Synchronized
+    fun clearAndPersist(): Boolean = try {
+        cancelCacheJobsLocked()
+        persistJob?.cancel()
+        clearFilesLocked()
+        map.clear()
+        writeToDisk()
+    } catch (error: Exception) {
+        Timber.e(error, "Failed to clear canvas cache")
+        false
+    }
+
+    @Synchronized
+    fun cancelDownloads() {
+        cancelCacheJobsLocked()
     }
 
     @Synchronized
     fun remove(mediaId: String) {
-        cacheJobs.remove(mediaId)?.cancel()
+        cacheJobs.remove(mediaId)?.let { job ->
+            job.cancel()
+            activeCalls.filterValues { it === job }.keys.forEach(Call::cancel)
+        }
         val entry = map.remove(mediaId) ?: return
         val directory = cacheDirectory
         if (directory != null) {
@@ -379,17 +435,23 @@ object CanvasArtworkPlaybackCache {
             }
     }
 
-    private fun persistEntry(
+    private suspend fun persistEntry(
         directory: File,
         entry: CanvasCacheEntry,
     ) {
+        val job = currentCoroutineContext()[Job]
         synchronized(this@CanvasArtworkPlaybackCache) {
+            if (job?.isActive != true || cacheJobs[entry.mediaId] !== job) return
+            CanvasNetworkAccess.check(entry.artwork.source)
             map[entry.mediaId] = entry
+            entry.regularFileName?.let { pendingFiles.remove(it) }
+            entry.verticalFileName?.let { pendingFiles.remove(it) }
             trimLocked(directory)
             schedulePersist()
         }
     }
 
+    @Synchronized
     private fun writeToDisk(): Boolean {
         val file = cacheFile ?: return true
         return try {
@@ -411,6 +473,7 @@ object CanvasArtworkPlaybackCache {
         directory: File,
         mediaId: String,
         variant: CanvasVideoVariant,
+        source: CanvasSource,
         url: String?,
         currentFileName: String?,
     ): String? {
@@ -429,18 +492,25 @@ object CanvasArtworkPlaybackCache {
             runCatching { target.delete() }
         }
 
-        val partial = directory.resolve("$fileName.part")
+        val partial = directory.resolve("$fileName.${java.util.UUID.randomUUID()}.part")
         return try {
-            downloadToFile(url = url, target = partial)
+            downloadToFile(url = url, target = partial, source = source)
             if (partial.length() <= 0L) throw IOException("Downloaded empty canvas video")
             if (!partial.isValidCanvasVideo()) throw IOException("Downloaded canvas is not a valid video")
-            if (target.exists() && !target.delete()) throw IOException("Failed to replace existing canvas video")
-            if (!partial.renameTo(target)) throw IOException("Failed to commit canvas video")
+            val job = currentCoroutineContext()[Job]
+            synchronized(this@CanvasArtworkPlaybackCache) {
+                if (job?.isActive != true || cacheJobs[mediaId] !== job) throw CancellationException("Canvas download superseded")
+                CanvasNetworkAccess.check(source)
+                if (partial.length() > maxSizeBytes) throw IOException("Canvas exceeds the cache limit")
+                if (target.exists() && !target.delete()) throw IOException("Failed to replace existing canvas video")
+                if (!partial.renameTo(target)) throw IOException("Failed to commit canvas video")
+                pendingFiles[fileName] = job
+            }
             fileName
-        } catch (error: Throwable) {
+        } catch (error: Exception) {
+            if (!partial.delete() && partial.exists()) Timber.w("Failed to remove partial canvas download")
             if (error is CancellationException) throw error
             Timber.w(error, "Failed to cache canvas video")
-            runCatching { partial.delete() }
             currentFileName
                 ?.takeIf { fileName ->
                     directory
@@ -454,6 +524,7 @@ object CanvasArtworkPlaybackCache {
     private suspend fun downloadToFile(
         url: String,
         target: File,
+        source: CanvasSource,
     ) {
         kotlinx.coroutines.currentCoroutineContext().ensureActive()
         target.parentFile?.mkdirs()
@@ -465,6 +536,7 @@ object CanvasArtworkPlaybackCache {
                 downloadToPartialFile(
                     url = url,
                     target = target,
+                    source = source,
                     existingBytes = target.takeIf { file -> file.isFile }?.length()?.coerceAtLeast(0L) ?: 0L,
                 )
                 return
@@ -483,52 +555,68 @@ object CanvasArtworkPlaybackCache {
     private suspend fun downloadToPartialFile(
         url: String,
         target: File,
+        source: CanvasSource,
         existingBytes: Long,
     ) {
+        CanvasNetworkAccess.check(source)
         val requestBuilder =
             Request
                 .Builder()
                 .url(url)
+                .tag(CanvasSource::class.java, source)
                 .header("Accept", "video/mp4,video/*;q=0.9,*/*;q=0.8")
         if (existingBytes > 0L) {
             requestBuilder.header("Range", "bytes=$existingBytes-")
         }
         val request = requestBuilder.build()
         val callClient = if (request.url.isYouTubeMediaHost()) streamClient else directClient
-        callClient.newCall(request).execute().use { response ->
-            if (existingBytes > 0L && response.code == 416) return
-            if (!response.isSuccessful) throw IOException("Canvas request failed: HTTP ${response.code}")
-            val append = existingBytes > 0L && response.code == 206
-            if (existingBytes > 0L && !append) {
-                if (target.exists() && !target.delete()) throw IOException("Failed to restart canvas video download")
-            }
-            val body = response.body ?: throw IOException("Canvas response body is empty")
-            val contentType =
-                body
-                    .contentType()
-                    ?.toString()
-                    ?.lowercase(Locale.ROOT)
-                    .orEmpty()
-            if (
-                contentType.contains("mpegurl") ||
-                contentType.contains("m3u8") ||
-                contentType.startsWith("text/") ||
-                contentType.startsWith("image/") ||
-                contentType.contains("json")
-            ) {
-                throw IOException("Canvas response is not a downloadable video: $contentType")
-            }
-            body.byteStream().use { input ->
-                FileOutputStream(target, append).use { output ->
-                    val buffer = ByteArray(DOWNLOAD_BUFFER_SIZE_BYTES)
-                    while (true) {
-                        kotlinx.coroutines.currentCoroutineContext().ensureActive()
-                        val read = input.read(buffer)
-                        if (read < 0) break
-                        output.write(buffer, 0, read)
+        val call = callClient.newCall(request)
+        val job = currentCoroutineContext()[Job] ?: error("Canvas download requires a coroutine job")
+        synchronized(this@CanvasArtworkPlaybackCache) {
+            job.ensureActive()
+            activeCalls[call] = job
+        }
+        try {
+            call.execute().use { response ->
+                if (existingBytes > 0L && response.code == 416) return
+                if (!response.isSuccessful) throw IOException("Canvas request failed: HTTP ${response.code}")
+                val append = existingBytes > 0L && response.code == 206
+                if (existingBytes > 0L && !append) {
+                    if (target.exists() && !target.delete()) throw IOException("Failed to restart canvas video download")
+                }
+                val body = response.body ?: throw IOException("Canvas response body is empty")
+                val contentType =
+                    body
+                        .contentType()
+                        ?.toString()
+                        ?.lowercase(Locale.ROOT)
+                        .orEmpty()
+                if (
+                    contentType.contains("mpegurl") ||
+                    contentType.contains("m3u8") ||
+                    contentType.startsWith("text/") ||
+                    contentType.startsWith("image/") ||
+                    contentType.contains("json")
+                ) {
+                    throw IOException("Canvas response is not a downloadable video: $contentType")
+                }
+                body.byteStream().use { input ->
+                    FileOutputStream(target, append).use { output ->
+                        val buffer = ByteArray(DOWNLOAD_BUFFER_SIZE_BYTES)
+                        while (true) {
+                            kotlinx.coroutines.currentCoroutineContext().ensureActive()
+                            CanvasNetworkAccess.checkTransfer(source)
+                            val read = input.read(buffer)
+                            if (read < 0) break
+                            if (target.length() + read > maxSizeBytes) throw IOException("Canvas exceeds the cache limit")
+                            output.write(buffer, 0, read)
+                        }
                     }
                 }
             }
+        } finally {
+            synchronized(this@CanvasArtworkPlaybackCache) { activeCalls.remove(call) }
+            call.cancel()
         }
     }
 
@@ -540,7 +628,7 @@ object CanvasArtworkPlaybackCache {
                 }.toSet()
         directory
             .listFiles()
-            ?.filter { file -> file.isFile && file.name.endsWith(".mp4") && file.name !in activeFiles }
+            ?.filter { file -> file.isFile && file.name.endsWith(".mp4") && file.name !in activeFiles && file.name !in pendingFiles }
             ?.forEach { file -> runCatching { file.delete() } }
         trimToByteLimitLocked(directory)
     }
@@ -562,18 +650,20 @@ object CanvasArtworkPlaybackCache {
 
     private fun clearFilesLocked() {
         val directory = cacheDirectory ?: return
-        map.values.forEach { entry ->
-            runCatching { entry.regularFileName?.let { directory.resolve(it).delete() } }
-            runCatching { entry.verticalFileName?.let { directory.resolve(it).delete() } }
+        val files = directory.listFiles() ?: if (directory.exists()) {
+            throw IOException("Cannot read the canvas cache directory")
+        } else {
+            return
         }
-        directory
-            .listFiles()
-            ?.filter { file -> file.isFile && (file.name.endsWith(".mp4") || file.name.endsWith(".part")) }
-            ?.forEach { file -> runCatching { file.delete() } }
+        var failed = false
+        files.filter { it.isFile && (it.name.endsWith(".mp4") || it.name.endsWith(".part")) }
+            .forEach { if (!it.delete() && it.exists()) failed = true }
+        if (failed) throw IOException("Some canvas cache files could not be deleted")
     }
 
     private fun cancelCacheJobsLocked() {
         cacheJobs.values.forEach { job -> job.cancel() }
+        activeCalls.keys.forEach(Call::cancel)
         cacheJobs.clear()
     }
 
@@ -641,6 +731,7 @@ object CanvasArtworkPlaybackCache {
                     ?.let { file -> Uri.fromFile(file).toString() }
             if (regularUri == null && verticalUri == null) return null
             return artwork.copy(
+                static = if (preferCachedOnly) null else artwork.static,
                 animated = if (preferCachedOnly) regularUri else artwork.animated.takeIfNotBlank() ?: regularUri,
                 videoUrl = regularUri,
                 animatedVertical =

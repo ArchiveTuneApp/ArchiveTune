@@ -484,7 +484,7 @@
     <string name="no_matching_playlists">Keine übereinstimmende Playlist</string>
     <string name="error_malformed_stream">Quellenfehler</string>
     <string name="archivetune_canvas">ArchiveTune-Canvas</string>
-    <string name="archivetune_canvas_desc">Albumcover animieren während des Abpielens (Unterstützt von BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">Albumcover animieren während des Abpielens</string>
     <string name="player_background_style_v8_v9_desc">Nicht verfügbar mit V8 und V9 Player-Stil</string>
     <string name="disable_animations">Animationen deaktivieren</string>
     <string name="disable_animations_desc">Die meisten Appanimationen deaktivieren. Für Low-end-Geräte empfohlen</string>

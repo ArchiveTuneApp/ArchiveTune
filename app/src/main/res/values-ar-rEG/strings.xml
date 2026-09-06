@@ -445,7 +445,7 @@
     <string name="adjust_radius">ظبط نص قطر الزاوية</string>
     <string name="custom_radius">تعديل نص قطر زاوية الصورة</string>
     <string name="archivetune_canvas">خلفية متحركة (ArchiveTune Canvas)</string>
-    <string name="archivetune_canvas_desc">تحريك غلاف الألبوم وقت التشغيل (بواسطة BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">تحريك غلاف الألبوم وقت التشغيل</string>
     <string name="player_background_style_v8_v9_desc">مش متاح مع تصميم المشغل V8 و V9</string>
     <string name="show_button1_description">تبديل رؤية الزر 1 في حالة حضور Discord</string>
     <string name="show_button2_description">تبديل رؤية الزر 2 في حالة حضور Discord</string>

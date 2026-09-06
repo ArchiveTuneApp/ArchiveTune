@@ -153,7 +153,7 @@
     <string name="added_n_songs_to_n_playlists">Додано %1$d пісень до %2$d плейлістів</string>
     <string name="playlist_synced">Плейліст синхронізовано</string>
     <string name="archivetune_canvas">ArchiveTune Canvas</string>
-    <string name="archivetune_canvas_desc">Анімувати обкладинку альбому під час відтворення (за технологією BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">Анімувати обкладинку альбому під час відтворення</string>
     <string name="tempo_and_pitch">Темп і висота звуку</string>
     <string name="tempo">Темп</string>
     <string name="pitch">Висота звуку</string>

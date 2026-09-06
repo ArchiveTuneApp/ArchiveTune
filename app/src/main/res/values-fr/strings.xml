@@ -492,7 +492,7 @@
     <string name="pitch">Pas</string>
     <string name="pitch_mode_semitones_short">dt</string>
     <string name="pitch_mode_multiplier_short">x</string>
-    <string name="archivetune_canvas_desc">Animer les pochettes d\'album pendant la lecture (technologie BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">Animer les pochettes d\'album pendant la lecture</string>
     <string name="restore_success">Sauvegarde restaurée avec succès</string>
     <string name="archivetune_canvas">ArchiveTune Canvas</string>
     <string name="change_playlist_cover">Changer la couverture de la playlist</string>

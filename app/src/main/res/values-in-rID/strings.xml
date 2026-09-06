@@ -282,7 +282,7 @@
     <string name="brightness">Kecerahan</string>
     <string name="custom_value">Nilai kustom</string>
     <string name="archivetune_canvas">Kanvas ArchiveTune</string>
-    <string name="archivetune_canvas_desc">Menganimasikan sampul album saat diputar (Didukung oleh BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">Menganimasikan sampul album saat diputar</string>
     <string name="show_button1_description">Alihkan visibilitas tombol 1 di Discord Rich Presence</string>
     <string name="show_button2_description">Alihkan visibilitas tombol 1 di Discord Rich Presence</string>
     <string name="discord_activity_type">Jenis aktivitas</string>
