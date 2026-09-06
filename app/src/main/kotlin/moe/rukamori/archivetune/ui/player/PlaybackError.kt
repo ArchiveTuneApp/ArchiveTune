@@ -69,8 +69,8 @@ fun PlaybackErrorDialog(
 ) {
     val clipboard = LocalClipboardManager.current
     val context = LocalContext.current
-    val fallbackUnknown = stringResource(R.string.error_unknown)
-    val fallbackNoInternet = stringResource(R.string.error_no_internet)
+    val fallbackUnknown = stringResource(R.string.playback_error_unknown)
+    val fallbackNoInternet = stringResource(R.string.playback_error_no_internet)
     val fallbackTimeout = stringResource(R.string.error_timeout)
     val fallbackNoStream = stringResource(R.string.error_no_stream)
     val fallbackMalformedStream = stringResource(R.string.error_malformed_stream)
@@ -79,7 +79,7 @@ fun PlaybackErrorDialog(
     val copyText = stringResource(R.string.copy)
     val copiedText = stringResource(R.string.copied)
     val loginText = stringResource(R.string.login)
-    val detailsText = stringResource(R.string.details)
+    val detailsText = stringResource(R.string.playback_error_details)
     val codeLabel = stringResource(R.string.playback_error_code)
     val httpLabel = stringResource(R.string.playback_error_http)
     val messageLabel = stringResource(R.string.playback_error_message)
