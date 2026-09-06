@@ -104,9 +104,7 @@
     <string name="lyrics_not_found">未找到歌词</string>
     <string name="sleep_timer">睡眠计时器</string>
     <string name="end_of_song">歌曲结束</string>
-    <string name="error_no_stream">没有可用的流媒体</string>
     <string name="error_no_internet">无网络连接</string>
-    <string name="error_timeout">超时</string>
     <string name="error_unknown">未知错误</string>
     <string name="action_like">喜爱</string>
     <string name="action_remove_like">移除喜爱</string>
@@ -699,7 +697,6 @@
     <string name="unsupported_language">不支持的语言：%1$s</string>
     <string name="source">歌词源</string>
     <string name="lyrics_word_sync">逐词对齐</string>
-    <string name="error_malformed_stream">源错误</string>
     <string name="app_icon_description">选择应用图标</string>
     <string name="app_icon_default">默认</string>
     <string name="app_icon_subtitle">自定义启动图标</string>
@@ -749,14 +746,6 @@
     <string name="lyrics_mode_v2">V2 经典模式</string>
     <string name="lyrics_mode_enhanced">增强模式</string>
     <string name="lyrics_animation_style_v2_only">仅在 V2 歌词模式下可用</string>
-    <string name="playback_confirmation_required">需要确认播放</string>
-    <string name="playback_requires_youtube_music_confirmation">请先在 YouTube Music 中确认播放，然后返回 ArchiveTune</string>
-    <string name="playback_login_refresh_required">刷新 YouTube Music 登录状态</string>
-    <string name="playback_requires_youtube_music_login_refresh">请重新登录 YouTube Music，然后返回 ArchiveTune</string>
-    <string name="playback_error_code">错误代码</string>
-    <string name="playback_error_http">HTTP 状态</string>
-    <string name="playback_error_message">错误信息</string>
-    <string name="playback_error_cause">错误原因</string>
     <string name="internet">网络</string>
     <string name="internet_warning_title">安全与使用警告</string>
     <string name="internet_warning_doh">DoH（基于 HTTPS 的 DNS）仅适用于你所在国家/地区封锁 YouTube 的情况。如果是 YouTube 主动限制了你所在区域，请考虑使用代理或 VPN</string>

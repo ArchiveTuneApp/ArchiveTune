@@ -182,9 +182,7 @@
         <item quantity="many">%d دقيقة</item>
         <item quantity="other">%d دقيقة</item>
     </plurals>
-    <string name="error_no_stream">لا يوجد بث متاح</string>
     <string name="error_no_internet">ليس هناك اتصال بالشبكة</string>
-    <string name="error_timeout">انتهت المهلة</string>
     <string name="error_unknown">خطأ غير معروف</string>
     <string name="action_like">أعجبني</string>
     <string name="action_remove_like">مسح الإعجاب</string>
@@ -476,7 +474,6 @@
     <string name="music_recognition">التعرف على الموسيقى</string>
     <string name="pin_to_speed_dial">التثبيت إلى قائمة الوصول السريع</string>
     <string name="remove_from_speed_dial">الإزالة من قائمة الوصول السريع</string>
-    <string name="playback_requires_youtube_music_confirmation">تأكد من تشغيل المقطع في YouTube Music ثم عد إلى ArchiveTune.</string>
     <string name="wakelock">إبقاء المعالج نشطًا أثناء التشغيل</string>
     <string name="wakelock_desc">يمنع النظام من مقاطعة تشغيل الموسيقى عبر إبقاء المعالج في حالة نشطة</string>
     <string name="external_downloader">برنامج تنزيل خارجي</string>
@@ -490,9 +487,6 @@
     <string name="no_matching_playlists">لم يتم العثور على قائمة تشغيل متطابقة</string>
     <string name="blur_intensity">مستوى التمويه</string>
     <string name="blur_intensity_value">%1$d dp</string>
-    <string name="playback_confirmation_required">يُلزم تأكيد المشغل</string>
-    <string name="playback_login_refresh_required">تحديث تسجيل الدخول إلى YouTube Music</string>
-    <string name="playback_requires_youtube_music_login_refresh">قم بتحديث بيانات تسجيل الدخول الخاصة بك على YouTube Music، ثم عد إلى ArchiveTune.</string>
     <string name="top_results">أفضل النتائج</string>
     <string name="most_played_badge">الأكثر تشغيلًا</string>
     <string name="play_all">تشغيل الكل</string>
@@ -645,7 +639,6 @@
     <string name="unsupported_language">اللغة غير مدعومة: %1$s</string>
     <string name="source">المصدر</string>
     <string name="lyrics_word_sync">مزامنة الكلمات</string>
-    <string name="error_malformed_stream">خطأ في المصدر</string>
     <string name="app_icon_description">اختر أيقونة المشغل</string>
     <string name="app_icon_default">الافتراضي</string>
     <string name="app_icon_subtitle">تخصيص المشغل الخاص بك</string>
@@ -707,10 +700,6 @@
     <string name="lyrics_mode_v2">V2 القديم</string>
     <string name="lyrics_mode_enhanced">محسّن</string>
     <string name="lyrics_animation_style_v2_only">متاح فقط في وضع الكلمات V2</string>
-    <string name="playback_error_code">الرمز</string>
-    <string name="playback_error_http">HTTP</string>
-    <string name="playback_error_message">الرسالة</string>
-    <string name="playback_error_cause">السبب</string>
     <string name="internet">الإنترنت</string>
     <string name="internet_warning_title">تحذير الأمان والاستخدام</string>
     <string name="internet_warning_doh">يعمل DNS over HTTPS فقط إذا كان بلدك يحظر YouTube. إذا كان YouTube يحظر منطقتك نشطًا، ففكر في استخدام بروكسي أو VPN.</string>

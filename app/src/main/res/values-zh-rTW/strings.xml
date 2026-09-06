@@ -280,10 +280,7 @@
     <plurals name="minute">
         <item quantity="other">%d分</item>
     </plurals>
-    <string name="error_no_stream">無法取得串流播放</string>
     <string name="error_no_internet">無網路連線</string>
-    <string name="error_timeout">連線逾時</string>
-    <string name="error_malformed_stream">來源錯誤</string>
     <string name="error_unknown">未知錯誤</string>
     <string name="action_like">喜歡</string>
     <string name="action_remove_like">取消喜歡</string>
@@ -438,14 +435,6 @@
     <string name="action_login">登入</string>
     <string name="login">登入</string>
     <string name="not_logged_in">未登入</string>
-    <string name="playback_confirmation_required">播放前需確認</string>
-    <string name="playback_requires_youtube_music_confirmation">請確認 YouTube Music 正在播放，然後返回 ArchiveTune。</string>
-    <string name="playback_login_refresh_required">刷新 YouTube Music 登入狀態</string>
-    <string name="playback_requires_youtube_music_login_refresh">刷新您的 YouTube Music 登入狀態，然後返回 ArchiveTune。</string>
-    <string name="playback_error_code">程式碼</string>
-    <string name="playback_error_http">HTTP</string>
-    <string name="playback_error_message">訊息</string>
-    <string name="playback_error_cause">造成</string>
     <string name="content_language">預設內容語言</string>
     <string name="content_country">預設內容地區</string>
     <string name="system_default">系統預設</string>

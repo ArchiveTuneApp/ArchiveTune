@@ -171,10 +171,7 @@
     <plurals name="minute">
         <item quantity="other">%d menit</item>
     </plurals>
-    <string name="error_no_stream">Tidak ada aliran yang tersedia</string>
     <string name="error_no_internet">Tidak ada koneksi jaringan</string>
-    <string name="error_timeout">Timeout</string>
-    <string name="error_malformed_stream">Kesalahan sumber</string>
     <string name="error_unknown">Kesalahan tidak diketahui</string>
     <string name="action_like">Suka</string>
     <string name="action_remove_like">Hapus suka</string>
@@ -315,10 +312,6 @@
     <string name="action_login">Masuk</string>
     <string name="login">Masuk</string>
     <string name="not_logged_in">Belum Masuk</string>
-    <string name="playback_confirmation_required">Konfirmasi pemutaran diperlukan</string>
-    <string name="playback_requires_youtube_music_confirmation">Konfirmasikan pemutaran di YouTube Music, lalu kembali ke ArchiveTune.</string>
-    <string name="playback_login_refresh_required">Segarkan login YouTube Music</string>
-    <string name="playback_requires_youtube_music_login_refresh">Segarkan login YouTube Music Anda, lalu kembali ke ArchiveTune.</string>
     <string name="content_language">Bahasa konten default</string>
     <string name="content_country">Negara konten default</string>
     <string name="system_default">Bawaan sistem</string>
@@ -854,8 +847,6 @@
     <string name="player_background_style_v8_v9_desc">Tidak tersedia untuk gaya pemutar V8 dan V9</string>
     <string name="force_high_refresh_rate">Paksa laju penyegaran tinggi</string>
     <string name="max_supported_refresh_rate">Dukungan maks: %1$d Hz</string>
-    <string name="playback_error_message">Pesan</string>
-    <string name="playback_error_cause">Penyebab</string>
     <string name="proxy_connection_invalid_configuration">Host atau port proksi tidak valid</string>
     <string name="device_mute_recovery_volume">Naikkan volume dari 0</string>
     <string name="device_mute_recovery_volume_disabled">Dinonaktifkan</string>
@@ -866,8 +857,6 @@
     <string name="sort_z_to_a">Z → A</string>
     <string name="custom_order">Urutan kustom</string>
     <string name="lyrics_mode_v2">V2 Legacy</string>
-    <string name="playback_error_code">Kode</string>
-    <string name="playback_error_http">HTTP</string>
     <string name="enable_youlyplus_lyrics">Aktifkan lirik YouLyPlus</string>
     <string name="enable_megalobiz_lyrics">Aktifkan lirik Megalobiz</string>
     <string name="eq_sound_shaping_off">Pembentukan suara nonaktif</string>

@@ -307,10 +307,10 @@
         <item quantity="one">1 minute</item>
         <item quantity="other">%d minutes</item>
     </plurals>
-    <string name="error_no_stream">No stream available</string>
+    <string name="error_no_stream" translatable="false">No stream available</string>
     <string name="error_no_internet">No network connection</string>
-    <string name="error_timeout">Timeout</string>
-    <string name="error_malformed_stream">Source error</string>
+    <string name="error_timeout" translatable="false">Timeout</string>
+    <string name="error_malformed_stream" translatable="false">Source error</string>
     <string name="error_unknown">Unknown error</string>
     <string name="action_like">Like</string>
     <string name="action_remove_like">Remove like</string>
@@ -498,15 +498,18 @@
     <string name="action_login">Log in</string>
     <string name="login">Login</string>
     <string name="not_logged_in">Not logged in</string>
-    <string name="playback_confirmation_required">Playback confirmation required</string>
-    <string name="playback_requires_youtube_music_confirmation">Confirm playback in YouTube Music, then return to ArchiveTune.</string>
-    <string name="playback_login_refresh_required">Refresh YouTube Music login</string>
-    <string name="playback_requires_youtube_music_login_refresh">Refresh your YouTube Music login, then return to ArchiveTune.</string>
-    <string name="playback_error_app_version">App version: %1$s (%2$d)</string>
-    <string name="playback_error_code">Code</string>
-    <string name="playback_error_http">HTTP</string>
-    <string name="playback_error_message">Message</string>
-    <string name="playback_error_cause">Cause</string>
+    <string name="playback_confirmation_required" translatable="false">Playback confirmation required</string>
+    <string name="playback_requires_youtube_music_confirmation" translatable="false">Confirm playback in YouTube Music, then return to ArchiveTune.</string>
+    <string name="playback_login_refresh_required" translatable="false">Refresh YouTube Music login</string>
+    <string name="playback_requires_youtube_music_login_refresh" translatable="false">Refresh your YouTube Music login, then return to ArchiveTune.</string>
+    <string name="playback_error_unknown" translatable="false">Unknown error</string>
+    <string name="playback_error_no_internet" translatable="false">No network connection</string>
+    <string name="playback_error_details" translatable="false">Details</string>
+    <string name="playback_error_app_version" translatable="false">App version: %1$s (%2$d)</string>
+    <string name="playback_error_code" translatable="false">Code</string>
+    <string name="playback_error_http" translatable="false">HTTP</string>
+    <string name="playback_error_message" translatable="false">Message</string>
+    <string name="playback_error_cause" translatable="false">Cause</string>
     <string name="content_language">Default content language</string>
     <string name="content_country">Default content country</string>
     <string name="system_default">System default</string>

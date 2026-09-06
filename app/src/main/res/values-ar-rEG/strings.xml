@@ -319,10 +319,7 @@
         <item quantity="one">ولا دقيقة</item>
         <item quantity="other">دقيقة واحدة</item>
     </plurals>
-    <string name="error_no_stream">مفيش أي بث متاح دلوقتي</string>
     <string name="error_no_internet">مفيش اتصال بالإنترنت</string>
-    <string name="error_timeout">الوقت خلص والاتصال قطع</string>
-    <string name="error_malformed_stream">في المشكلة أو خطأ في المصدر</string>
     <string name="error_unknown">حصل خطأ مش معروف</string>
     <string name="action_like">أعجبني</string>
     <string name="action_remove_like">شيل الإعجاب</string>
@@ -482,14 +479,6 @@
     <string name="action_login">تسجيل الدخول</string>
     <string name="login">تسجيل الدخول</string>
     <string name="not_logged_in">مش مسجل الدخول</string>
-    <string name="playback_confirmation_required">مطلوب تأكيد التشغيل</string>
-    <string name="playback_requires_youtube_music_confirmation">أكد التشغيل في يوتيوب ميوزك، وبعدين ارجع لـ ArchiveTune.</string>
-    <string name="playback_login_refresh_required">تحديث تسجيل دخول يوتيوب ميوزك</string>
-    <string name="playback_requires_youtube_music_login_refresh">جدد تسجيل الدخول في يوتيوب ميوزك، وبعدين ارجع لـ ArchiveTune.</string>
-    <string name="playback_error_code">الرمز</string>
-    <string name="playback_error_http">HTTP</string>
-    <string name="playback_error_message">الرسالة</string>
-    <string name="playback_error_cause">السبب</string>
     <string name="content_language">لغة المحتوى الافتراضية</string>
     <string name="content_country">بلد المحتوى الافتراضية</string>
     <string name="system_default">افتراضي النظام</string>

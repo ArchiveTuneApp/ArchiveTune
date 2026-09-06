@@ -151,9 +151,7 @@
         <item quantity="many">%d minutes</item>
         <item quantity="other">%d minutes</item>
     </plurals>
-    <string name="error_no_stream">Aucun flux disponible</string>
     <string name="error_no_internet">Aucune connexion réseau</string>
-    <string name="error_timeout">Temps mort</string>
     <string name="error_unknown">Erreur inconnue</string>
     <string name="action_like">J\'aime</string>
     <string name="action_remove_like">Je n\'aime plus</string>
@@ -591,10 +589,6 @@
     <string name="no_matching_playlists">Aucune playlist correspondante</string>
     <string name="blur_intensity">Intensité du flou</string>
     <string name="blur_intensity_value">%1$d dp</string>
-    <string name="playback_confirmation_required">Confirmation de lecture requise</string>
-    <string name="playback_requires_youtube_music_confirmation">Confirmez la lecture dans YouTube Music, puis retournez dans ArchiveTune.</string>
-    <string name="playback_login_refresh_required">Actualiser la connexion à YouTube Music</string>
-    <string name="playback_requires_youtube_music_login_refresh">Actualisez votre connexion YouTube Music, puis retournez sur ArchiveTune.</string>
     <string name="wakelock">Maintenir le processeur actif pendant la lecture</string>
     <string name="wakelock_desc">Empêche le système d\'interrompre la lecture musicale en maintenant un verrou de réveil du processeur</string>
     <string name="external_downloader">Téléchargeur Externe</string>
@@ -645,7 +639,6 @@
     <string name="total_requests">Nombre total de demandes</string>
     <string name="success_rate">Taux de réussite</string>
     <string name="providers">Fournisseurs</string>
-    <string name="error_malformed_stream">Erreur source</string>
     <string name="support_development_title">Soutenir le développement</string>
     <string name="support_development_message">Salut ! Je m\'appelle rukamori, je suis le développeur d\'ArchiveTune. Si ArchiveTune fait désormais partie de vos habitudes d\'écoute quotidiennes, vous pouvez contribuer à son développement en faisant un don ou en ajoutant le projet à vos favoris sur GitHub. Merci de soutenir le travail qui se cache derrière cette application.</string>
     <string name="support_development_donate">Faites un don pour soutenir le développement</string>
@@ -861,10 +854,6 @@
     <string name="onboarding_permission_allowed_by_install">Autorisé par l\'installation</string>
     <string name="lyrics_search_result_stats">%1$d lignes, %2$d caractères</string>
     <string name="unsupported_language">Langue non prise en charge : %1$s</string>
-    <string name="playback_error_code">Code</string>
-    <string name="playback_error_http">HTTP</string>
-    <string name="playback_error_message">Message</string>
-    <string name="playback_error_cause">Cause</string>
     <string name="discord_reauthorize_required_title">Expiration de la session Discord</string>
     <string name="discord_reauthorize_required_description">La fonctionnalité « Rich Presence » ne s\'affichera pas tant que vous n\'aurez pas autorisé Discord à nouveau.</string>
     <string name="discord_reauthorize_action">Renouveler l\'autorisation</string>

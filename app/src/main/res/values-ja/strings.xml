@@ -300,10 +300,7 @@
         <item quantity="one">1 minute</item>
         <item quantity="other">%d分</item>
     </plurals>
-    <string name="error_no_stream">利用可能なストリームがありません</string>
     <string name="error_no_internet">ネットワーク接続がありません</string>
-    <string name="error_timeout">タイムアウト</string>
-    <string name="error_malformed_stream">ソースエラー</string>
     <string name="error_unknown">不明なエラー</string>
     <string name="action_like">いいね</string>
     <string name="action_remove_like">いいねを削除</string>
@@ -489,14 +486,6 @@
     <string name="action_login">ログイン</string>
     <string name="login">ログイン</string>
     <string name="not_logged_in">ログインしていません</string>
-    <string name="playback_confirmation_required">再生確認が必要です</string>
-    <string name="playback_requires_youtube_music_confirmation">YouTube Music で再生を確認し、ArchiveTune に戻ります。</string>
-    <string name="playback_login_refresh_required">YouTube Music のログインを更新する</string>
-    <string name="playback_requires_youtube_music_login_refresh">YouTube Music のログインを更新してから、ArchiveTune に戻ります。</string>
-    <string name="playback_error_code">コード</string>
-    <string name="playback_error_http">HTTP</string>
-    <string name="playback_error_message">メッセージ</string>
-    <string name="playback_error_cause">原因</string>
     <string name="content_language">デフォルトのコンテンツ言語</string>
     <string name="content_country">デフォルトのコンテンツの国</string>
     <string name="system_default">システムのデフォルト</string>

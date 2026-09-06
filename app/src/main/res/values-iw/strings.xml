@@ -100,7 +100,6 @@
     <string name="remove_from_speed_dial">מחיקה מהפעלה מהירה</string>
     <string name="together_requesting_song_change">מבקש מהמארח לשנות את השיר…</string>
     <string name="palette_youtube_red">Youtube</string>
-    <string name="error_malformed_stream">שגיאת מקור</string>
     <string name="palette_mint_fresh">מנטה</string>
     <string name="storage">אחסון</string>
     <string name="disable_blur_desc">השבתת אפקטים של טשטוש בכל האפליקציה</string>
@@ -111,7 +110,6 @@
     <string name="palette_blush">סומק</string>
     <string name="save">שמירה</string>
     <string name="downloaded_songs">שירים שהורדו</string>
-    <string name="playback_login_refresh_required">רענון כניסה ל- YouTube Music</string>
     <string name="palette_ocean">אוקיינוס</string>
     <string name="view_album">ראה אלבום</string>
     <string name="repeat_mode_off">מצב חזרה כבוי</string>
@@ -143,7 +141,6 @@
     <string name="together_ban">חסימה</string>
     <string name="action_logout">התנתק</string>
     <string name="image_cache">מטמון תמונה</string>
-    <string name="error_timeout">פסק זמן</string>
     <string name="cancel_button">ביטול</string>
     <string name="lyrics_not_found">מילות השיר לא נמצאו</string>
     <string name="palette_mango">מנגו</string>
@@ -183,7 +180,6 @@
     <string name="disable_animations">השבתת הנפשות</string>
     <string name="palette_cyberpunk">סייברפאנק</string>
     <string name="added_n_songs_to_n_playlists">נוספו %1$d שירים ל%2$d פלייליסטים</string>
-    <string name="playback_requires_youtube_music_confirmation">אשר את ההפעלה ב- YouTube Music, ולאחר מכן חזור אל ArchiveTune.</string>
     <string name="proxy_connection_failed">חיבור הפרוקסי נכשל: %s</string>
     <string name="font_preference_default">ברירת מחדל</string>
     <string name="unknown">לא ידוע</string>
@@ -271,7 +267,6 @@
     <string name="together_connected_count">%1$d מחוברים</string>
     <string name="download_progress_percent">%1$d%%</string>
     <string name="widget_previous">קודם</string>
-    <string name="error_no_stream">אין סטרימינג זמין</string>
     <plurals name="n_album">
         <item quantity="one">אלבום אחד</item>
         <item quantity="two">שני אלבומים</item>
@@ -444,7 +439,6 @@
     <string name="palette_crimson_red">ארגמן</string>
     <string name="permanent_shuffle">מצב ערבוב קבוע</string>
     <string name="delete_playlist_confirm">האם אתה באמת רוצה למחוק את פלייליסט \"%s\"?</string>
-    <string name="playback_confirmation_required">נדרש אישור הפעלה</string>
     <string name="palette_royal_purple">סגול מלכותי</string>
     <string name="together_pending_approval">ממתין לאישור</string>
     <string name="audio_quality_low">נמוכה</string>
@@ -485,7 +479,6 @@
     <string name="palette_candy">סוכריה</string>
     <string name="eq_import_success">%1$d פרופילים מיובאים</string>
     <string name="error_unknown">שגיאה לא ידועה</string>
-    <string name="playback_requires_youtube_music_login_refresh">רענן את פרטי ההתחברות שלך ל- YouTube Music, ולאחר מכן חזור אל ArchiveTune.</string>
     <string name="removed_n_songs_from_queue">הוסרו \'\'%d\'\' שירים מהתור</string>
     <string name="remove_from_playlist">הסר מהפלייליסט</string>
     <string name="font_preference_system">מערכת</string>
@@ -872,10 +865,6 @@
     <string name="together_participant_joined_notification">%1$s הצטרף/ה לחדר</string>
     <string name="together_participant_left_notification">%1$s עזב/ה את החדר</string>
     <string name="together_unknown_participant">מישהו</string>
-    <string name="playback_error_code">קוד</string>
-    <string name="playback_error_http">HTTP</string>
-    <string name="playback_error_message">הודעה</string>
-    <string name="playback_error_cause">סיבה</string>
     <string name="discord_reauthorize_required_title">סשן Discord פג תוקפו</string>
     <string name="discord_reauthorize_required_description">לא ניתן להציג את Rich Presence עד שתאשר שוב את Discord.</string>
     <string name="discord_reauthorize_action">הרשאה מחדש</string>

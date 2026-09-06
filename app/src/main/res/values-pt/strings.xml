@@ -309,10 +309,7 @@
         <item quantity="many">%d minutos</item>
         <item quantity="other">%d minutos</item>
     </plurals>
-    <string name="error_no_stream">Nenhum stream disponível</string>
     <string name="error_no_internet">Sem ligação à rede</string>
-    <string name="error_timeout">Tempo esgotado</string>
-    <string name="error_malformed_stream">Erro na fonte</string>
     <string name="error_unknown">Erro desconhecido</string>
     <string name="action_like">Gostar</string>
     <string name="action_remove_like">Remover gosto</string>
@@ -499,14 +496,6 @@
     <string name="action_login">Entrar</string>
     <string name="login">Entrar</string>
     <string name="not_logged_in">Não conectado</string>
-    <string name="playback_confirmation_required">Confirmação de reprodução necessária</string>
-    <string name="playback_requires_youtube_music_confirmation">Confirma a reprodução no YouTube Music e volta ao ArchiveTune.</string>
-    <string name="playback_login_refresh_required">Atualizar ligação ao YouTube Music</string>
-    <string name="playback_requires_youtube_music_login_refresh">Atualiza a tua ligação ao YouTube Music e volta ao ArchiveTune.</string>
-    <string name="playback_error_code">Código</string>
-    <string name="playback_error_http">HTTP</string>
-    <string name="playback_error_message">Mensagem</string>
-    <string name="playback_error_cause">Causa</string>
     <string name="content_language">Idioma de conteúdo padrão</string>
     <string name="content_country">País de conteúdo padrão</string>
     <string name="system_default">Padrão do sistema</string>

@@ -181,9 +181,7 @@
         <item quantity="many">%d минут</item>
         <item quantity="other">%d минут</item>
     </plurals>
-    <string name="error_no_stream">Нет доступного потока</string>
     <string name="error_no_internet">Нет подключения к интернету</string>
-    <string name="error_timeout">Время ожидания истекло</string>
     <string name="error_unknown">Неизвестная ошибка</string>
     <string name="action_like">Нравится</string>
     <string name="action_remove_like">Убрать \"Нравится\"</string>
@@ -607,10 +605,6 @@
     <string name="disable_animations_desc">Отключить большинство анимаций в приложении. Рекомендовано для слабых устройств</string>
     <string name="blur_intensity">Сила размытия</string>
     <string name="blur_intensity_value">%1$d dp</string>
-    <string name="playback_confirmation_required">Необходимо подтверждение воспроизведения</string>
-    <string name="playback_requires_youtube_music_confirmation">Подтвердите воспроизведение в YouTube Music, потом вернитесь в ArchiveTune.</string>
-    <string name="playback_login_refresh_required">Обновить вход в YouTube Music</string>
-    <string name="playback_requires_youtube_music_login_refresh">Обновите ваш вход в YouTube Music, потом вернитесь в ArchiveTune.</string>
     <string name="internet">Интернет</string>
     <string name="internet_warning_title">Предупреждение об безопасности и использовании</string>
     <string name="internet_warning_doh">DNS через HTTPS работает только в том случае, если в вашей стране заблокирован YouTube. Если YouTube активно блокирует ваш регион, рассмотрите возможность использования прокси-сервера или VPN.</string>

@@ -144,9 +144,7 @@
         <item quantity="one">1 minute</item>
         <item quantity="other">%d minuti</item>
     </plurals>
-    <string name="error_no_stream">Nessun flusso disponibile</string>
     <string name="error_no_internet">Nessuna connessione di rete</string>
-    <string name="error_timeout">Timeout</string>
     <string name="error_unknown">Errore sconosciuto</string>
     <string name="action_like">Mi piace</string>
     <string name="action_remove_like">Rimuovi mi piace</string>
@@ -488,7 +486,6 @@
     <string name="sort_order_ascending">Crescente</string>
     <string name="sort_order_descending">Decrescente</string>
     <string name="no_matching_playlists">Nessuna playlist corrispondente</string>
-    <string name="error_malformed_stream">Errore fonte</string>
     <string name="random_theme_on_startup">Tema random all\'avvio</string>
     <string name="random_theme_on_startup_desc">Applica una palette di colori randomica ad ogni avvio dell\'app</string>
     <string name="archivetune_canvas">Canvas ArchiveTune</string>
@@ -502,10 +499,6 @@
     <string name="slider_style_thick">Spesso</string>
     <string name="slider_style_circular">Circolare</string>
     <string name="slider_style_simple">Semplice</string>
-    <string name="playback_confirmation_required">Richiesta conferma playback</string>
-    <string name="playback_requires_youtube_music_confirmation">Conferma il playback in YouTube Music, quindi ritorna su ArchiveTune.</string>
-    <string name="playback_login_refresh_required">Ricarica login YouTube Music</string>
-    <string name="playback_requires_youtube_music_login_refresh">Ricarica il login di YouTube Music, quindi ritorna su ArchiveTune.</string>
     <string name="internet">Internet</string>
     <string name="internet_warning_title">Sicurezza e Avvertenza Utilizzo</string>
     <string name="internet_warning_doh">DNS tramite HTTPS funziona solo se la tua nazione blocca YouTube. Se YouTube blocca attivamente la tua regione, considera l\'utilizzo di un Proxy o VPN.</string>

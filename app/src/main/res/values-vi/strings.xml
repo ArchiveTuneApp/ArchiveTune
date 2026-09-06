@@ -205,9 +205,7 @@
     <plurals name="minute">
         <item quantity="other">%d phút</item>
     </plurals>
-    <string name="error_no_stream">Không có luồng phát nào khả dụng</string>
     <string name="error_no_internet">Không có kết nối mạng</string>
-    <string name="error_timeout">Quá thời gian</string>
     <string name="error_unknown">Lỗi không xác định</string>
     <string name="action_like">Thích</string>
     <string name="action_remove_like">Bỏ thích</string>
@@ -653,10 +651,6 @@
     <string name="slider_style_thick">Dày</string>
     <string name="slider_style_circular">Circular</string>
     <string name="slider_style_simple">Đơn giản</string>
-    <string name="playback_confirmation_required">Cần xác nhận phát lại</string>
-    <string name="playback_requires_youtube_music_confirmation">Xác nhận phát lại trong YouTube Music, sau đó quay lại ArchiveTune.</string>
-    <string name="playback_login_refresh_required">Làm mới đăng nhập YouTube Music</string>
-    <string name="playback_requires_youtube_music_login_refresh">Làm mới trang đăng nhập YouTube Music của bạn, sau đó quay lại ArchiveTune.</string>
     <string name="pause_on_device_mute">Tạm dừng khi âm lượng thiết bị bằng 0</string>
     <string name="pause_on_device_mute_desc">Tự động tạm dừng nhạc khi tắt tiếng và tiếp tục phát khi bật tiếng trở lại</string>
     <string name="wakelock">Giữ cho CPU luôn hoạt động trong suốt quá trình phát lại</string>
@@ -685,7 +679,6 @@
     <string name="playlist_suggestion_source_content">Nội dung danh sách nhạc</string>
     <string name="playlist_suggestion_source_both">Danh sách phát tiêu đề và nội dung</string>
     <string name="aod_mode">Chế độ AOD</string>
-    <string name="error_malformed_stream">Lỗi nguồn</string>
     <string name="support_development_title">Hỗ trợ phát triển</string>
     <string name="support_development_message">Chào mọi người! Tôi là rukamori, nhà phát triển của ArchiveTune. Nếu ArchiveTune đã trở thành một phần trong danh sách nghe nhạc hàng ngày của bạn, bạn có thể giúp dự án tiếp tục phát triển bằng cách quyên góp hoặc đánh dấu sao trên GitHub. Cảm ơn vì đã ủng hộ công sức của chúng tôi trong việc phát triển ứng dụng.</string>
     <string name="support_development_donate">Quyên góp để hỗ trợ phát triển</string>
@@ -793,10 +786,6 @@
     <string name="unsupported_language">Ngôn ngữ không được hỗ trợ: %1$s</string>
     <string name="percent_format">%1$d%%</string>
     <string name="duration_seconds_short">%1$ds</string>
-    <string name="playback_error_code">Mã lỗi</string>
-    <string name="playback_error_http">HTTP</string>
-    <string name="playback_error_message">Thông báo</string>
-    <string name="playback_error_cause">Nguyên nhân</string>
     <string name="library_top_mixes_loading">Đang chuẩn bị các AI mix của bạn…</string>
     <string name="library_top_mixes_refresh">Làm mới mix</string>
     <string name="library_top_mixes_configure_ai">Cấu hình AI</string>

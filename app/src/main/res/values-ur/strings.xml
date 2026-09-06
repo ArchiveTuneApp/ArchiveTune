@@ -289,10 +289,7 @@
         <item quantity="one">ایک منٹ</item>
         <item quantity="other">%d منٹ</item>
     </plurals>
-    <string name="error_no_stream">نشر دستیاب نہیں</string>
     <string name="error_no_internet">کسی نیٹورک سے رابطہ نہیں</string>
-    <string name="error_timeout">وقت ختم</string>
-    <string name="error_malformed_stream">مصدر کی تحریف</string>
     <string name="error_unknown">نامعلوم تحریف</string>
     <string name="action_like">بسند</string>
     <string name="action_remove_like">پسند کردہ سے حزف کریں</string>
@@ -449,14 +446,6 @@
     <string name="action_login">لاگ ان</string>
     <string name="login">لاگن</string>
     <string name="not_logged_in">لاگ ان لردہ نہیں</string>
-    <string name="playback_confirmation_required">نشر کی تصدیق ضروری ہے</string>
-    <string name="playback_requires_youtube_music_confirmation">‫YouTube Music میں نشر کی تصدیق کریں، پھر ArchiveTune پر واپس آئیں۔</string>
-    <string name="playback_login_refresh_required">یوٹیوب میوسک کے لاگن کوتازہ کریں</string>
-    <string name="playback_requires_youtube_music_login_refresh">‫اپنے YouTube Music کے لاگن کوتازہ کریں، پھر ArchiveTune پر واپس آئیں۔</string>
-    <string name="playback_error_code">کوڈ</string>
-    <string name="playback_error_http">HTTP</string>
-    <string name="playback_error_message">پیغام</string>
-    <string name="playback_error_cause">وجہ</string>
     <string name="content_language">مواد کی ڈیفالٹ زبان</string>
     <string name="content_country">مواد کا ڈیفالٹ ملک</string>
     <string name="system_default">سسٹم کا ڈیفالٹ</string>

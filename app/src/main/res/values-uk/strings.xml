@@ -186,9 +186,7 @@
         <item quantity="many">%d хвилин</item>
         <item quantity="other">%d хвилин</item>
     </plurals>
-    <string name="error_no_stream">Трансляція недоступна</string>
     <string name="error_no_internet">Відсутнє підключення до мережі</string>
-    <string name="error_timeout">Тайм-аут</string>
     <string name="error_unknown">Невідома помилка</string>
     <string name="action_like">Подобається</string>
     <string name="action_remove_like">Прибрати позначку \"Подобається\"</string>
@@ -326,10 +324,6 @@
     <string name="action_login">Увійти</string>
     <string name="login">Логін</string>
     <string name="not_logged_in">Ви не увійшли в систему</string>
-    <string name="playback_confirmation_required">Потрібне підтвердження відтворення</string>
-    <string name="playback_requires_youtube_music_confirmation">Підтвердьте відтворення в YouTube Music, а потім поверніться до ArchiveTune.</string>
-    <string name="playback_login_refresh_required">Оновлення входу в YouTube Music</string>
-    <string name="playback_requires_youtube_music_login_refresh">Оновіть дані для входу в YouTube Music, а потім поверніться до ArchiveTune.</string>
     <string name="content_language">Стандартна мова контенту</string>
     <string name="content_country">Стандартна країна походження контенту</string>
     <string name="system_default">Налаштування системи</string>

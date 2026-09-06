@@ -171,10 +171,7 @@
     <plurals name="minute">
         <item quantity="other">%d menit</item>
     </plurals>
-    <string name="error_no_stream">Ora ana aliran yang tersedia</string>
     <string name="error_no_internet">Ora ana koneksi jaringan</string>
-    <string name="error_timeout">Timeout</string>
-    <string name="error_malformed_stream">Kesalahan sumber</string>
     <string name="error_unknown">Kesalahan tidak diketahui</string>
     <string name="action_like">Seneng</string>
     <string name="action_remove_like">Busak suka</string>
@@ -316,10 +313,6 @@
     <string name="action_login">Mlebu</string>
     <string name="login">Mlebu</string>
     <string name="not_logged_in">Belum Mlebu</string>
-    <string name="playback_confirmation_required">Konfirmasi pemutaran diperlukan</string>
-    <string name="playback_requires_youtube_music_confirmation">Konfirmasikan pemutaran di YouTube Music, lalu kembali ke ArchiveTune.</string>
-    <string name="playback_login_refresh_required">Segarkan login YouTube Music</string>
-    <string name="playback_requires_youtube_music_login_refresh">Segarkan login YouTube Music Kowe, lalu kembali ke ArchiveTune.</string>
     <string name="content_language">Bahasa konten default</string>
     <string name="content_country">Negara konten default</string>
     <string name="system_default">Bawaan sistem</string>
