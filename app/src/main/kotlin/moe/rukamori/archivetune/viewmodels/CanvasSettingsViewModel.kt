@@ -7,14 +7,11 @@
 
 package moe.rukamori.archivetune.viewmodels
 
-import android.content.Context
-import android.text.format.Formatter
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -39,6 +36,7 @@ import moe.rukamori.archivetune.canvas.CanvasHealth
 import moe.rukamori.archivetune.canvas.CanvasHealthStatus
 import moe.rukamori.archivetune.canvas.CanvasSettingsUseCases
 import moe.rukamori.archivetune.canvas.CanvasSource
+import moe.rukamori.archivetune.ui.utils.formatFileSize
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -87,7 +85,6 @@ sealed interface CanvasSettingsAction {
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class CanvasSettingsViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val useCases: CanvasSettingsUseCases,
 ) : ViewModel() {
     private data class Controls(
@@ -100,7 +97,7 @@ class CanvasSettingsViewModel @Inject constructor(
     private val refresh = MutableStateFlow(0L)
     private var actionJob: Job? = null
     private val options = CanvasCacheOptions(CanvasSettingsUseCases.CACHE_LIMITS.map { limit ->
-        CanvasCacheOption(limit, Formatter.formatShortFileSize(context, limit.coerceAtLeast(0) * 1024L * 1024L))
+        CanvasCacheOption(limit, formatFileSize(limit.coerceAtLeast(0) * 1024L * 1024L))
     })
     private val health = useCases.policy
         .map { it.copy(configuration = it.configuration.copy(cacheLimitMb = 0)) }
@@ -130,8 +127,8 @@ class CanvasSettingsViewModel @Inject constructor(
                             health = health,
                             canRefreshHealth = policy.networkAllowed &&
                                 health.betterLyrics != CanvasHealth.CHECKING && health.appleMusic != CanvasHealth.CHECKING,
-                            cacheSize = Formatter.formatShortFileSize(context, bytes),
-                            cacheLimit = Formatter.formatShortFileSize(context, limit.coerceAtLeast(0)),
+                            cacheSize = formatFileSize(bytes),
+                            cacheLimit = formatFileSize(limit.coerceAtLeast(0)),
                             cacheProgress = if (limit > 0) (bytes.toDouble() / limit).toFloat().coerceIn(0f, 1f) else 0f,
                             cacheOptions = options,
                             dialog = controls.dialog,
