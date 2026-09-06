@@ -680,6 +680,11 @@
     <string name="pause_listen_history">Pause listen history</string>
     <string name="clear_listen_history">Clear listen history</string>
     <string name="clear_listen_history_confirm">Are you sure you want to clear all listen history?</string>
+    <string name="reset_listening_stats">Reset listening stats</string>
+    <string name="reset_listening_stats_confirm">Reset all listening stats on this device? This deletes listening history, play counts, and listening time. Your library, playlists, and downloads will be kept. This cannot be undone.</string>
+    <string name="reset_listening_stats_progress">Resetting listening stats…</string>
+    <string name="reset_listening_stats_success">Listening stats reset</string>
+    <string name="reset_listening_stats_error">Could not reset listening stats. Try again.</string>
     <string name="search_history">Search history</string>
     <string name="pause_search_history">Pause search history</string>
     <string name="clear_search_history">Clear search history</string>
