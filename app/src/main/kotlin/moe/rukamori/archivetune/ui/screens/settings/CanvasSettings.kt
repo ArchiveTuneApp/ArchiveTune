@@ -9,8 +9,11 @@
 
 package moe.rukamori.archivetune.ui.screens.settings
 
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -30,13 +33,11 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -51,7 +52,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -174,68 +179,15 @@ private fun CanvasSettingsBody(
                 onCheckedChange = onWifiOnly,
             )
         }
-        CanvasSection(title = stringResource(R.string.canvas_provider_health)) {
-            CanvasHealthRow(stringResource(R.string.canvas_better_lyrics), model.health.betterLyrics)
-            CanvasHealthRow(stringResource(R.string.canvas_apple_music), model.health.appleMusic)
-            TextButton(
-                onClick = onRefresh,
-                enabled = model.canRefreshHealth && !model.busy,
-                modifier = remember { Modifier.align(Alignment.End).padding(horizontal = SettingsDimensions.RowHorizontalPadding) },
-            ) { Text(stringResource(R.string.refresh)) }
-        }
-        Card(remember { Modifier.fillMaxWidth() }) {
-            Column(
-                modifier = remember { Modifier.padding(SettingsDimensions.RowHorizontalPadding) },
-                verticalArrangement = remember { Arrangement.spacedBy(SettingsDimensions.SectionSpacing) },
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = remember { Arrangement.spacedBy(12.dp) }) {
-                    Icon(
-                        painterResource(R.drawable.storage),
-                        contentDescription = null,
-                        modifier = remember { Modifier.size(SettingsDimensions.RowIconInnerSize) },
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                    Text(stringResource(R.string.canvas_cache), style = MaterialTheme.typography.titleMedium)
-                }
-                Text(
-                    stringResource(R.string.size_used, model.cacheSize),
-                    style = MaterialTheme.typography.headlineSmall,
-                )
-                if (model.configuration.cacheLimitMb > 0) {
-                    val progress = remember(model.cacheProgress) { { model.cacheProgress } }
-                    LinearProgressIndicator(progress = progress, modifier = remember { Modifier.fillMaxWidth() })
-                }
-                Text(
-                    stringResource(R.string.canvas_cache_desc),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                OutlinedButton(onClick = onCacheLimit, enabled = !model.busy, modifier = remember { Modifier.fillMaxWidth() }) {
-                    Text(
-                        stringResource(
-                            R.string.canvas_cache_limit,
-                            when (model.configuration.cacheLimitMb) {
-                                0 -> stringResource(R.string.disable)
-                                -1 -> stringResource(R.string.unlimited)
-                                else -> model.cacheLimit
-                            },
-                        ),
-                    )
-                }
-                TextButton(
-                    onClick = onClear,
-                    enabled = !model.busy,
-                    modifier = remember { Modifier.align(Alignment.End) },
-                ) { Text(stringResource(R.string.clear_canvas_cache)) }
-                if (model.busy) LinearProgressIndicator(modifier = remember { Modifier.fillMaxWidth() })
-            }
-        }
+        CanvasHealthSection(model = model, onRefresh = onRefresh)
+        CanvasCacheSection(model = model, onCacheLimit = onCacheLimit, onClear = onClear)
+
     }
     CanvasSettingsDialogs(model, onAction)
 }
 
 @Composable
-private fun CanvasSection(title: String, content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit) {
+private fun CanvasSection(title: String, content: @Composable ColumnScope.() -> Unit) {
     Column(verticalArrangement = remember { Arrangement.spacedBy(SettingsDimensions.SectionHeaderBottomPadding) }) {
         Text(
             title,
@@ -294,27 +246,211 @@ private fun CanvasChoiceRow(
 }
 
 @Composable
-private fun CanvasHealthRow(title: String, health: CanvasHealth) {
-    Row(
-        modifier = remember { Modifier.fillMaxWidth().padding(SettingsDimensions.RowHorizontalPadding) },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = remember { Arrangement.spacedBy(16.dp) },
-    ) {
-        Text(title, modifier = remember { Modifier.weight(1f) }, style = MaterialTheme.typography.bodyLarge)
-        if (health == CanvasHealth.CHECKING) {
-            CircularProgressIndicator(modifier = remember { Modifier.size(20.dp) })
+private fun CanvasHealthSection(model: CanvasSettingsUiModel, onRefresh: () -> Unit) {
+    Column {
+        Row(
+            modifier = remember { Modifier.fillMaxWidth().padding(start = SettingsDimensions.RowHorizontalPadding) },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.canvas_provider_health),
+                modifier = remember { Modifier.weight(1f).semantics { heading() } },
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            TextButton(onClick = onRefresh, enabled = model.canRefreshHealth && !model.busy) {
+                Row(
+                    horizontalArrangement = remember { Arrangement.spacedBy(8.dp) },
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(painterResource(R.drawable.sync), null, modifier = remember { Modifier.size(18.dp) })
+                    Text(stringResource(R.string.refresh))
+                }
+            }
         }
-        Text(
-            stringResource(health.labelResource()),
-            modifier = remember { Modifier.weight(1f) },
-            style = MaterialTheme.typography.labelLarge,
-            color = when (health) {
-                CanvasHealth.AVAILABLE -> MaterialTheme.colorScheme.primary
-                CanvasHealth.UNAVAILABLE -> MaterialTheme.colorScheme.error
-                else -> MaterialTheme.colorScheme.onSurfaceVariant
-            },
-        )
+        Column(verticalArrangement = remember { Arrangement.spacedBy(SettingsDimensions.SegmentedItemGap) }) {
+            CanvasHealthRow(
+                title = stringResource(R.string.canvas_better_lyrics),
+                health = model.health.betterLyrics,
+                iconRes = R.drawable.motion_photos_on,
+                shape = CanvasSectionShapes.top,
+            )
+            CanvasHealthRow(
+                title = stringResource(R.string.canvas_apple_music),
+                health = model.health.appleMusic,
+                iconRes = R.drawable.music_note,
+                shape = CanvasSectionShapes.bottom,
+            )
+        }
     }
+}
+
+@Composable
+private fun CanvasHealthRow(title: String, health: CanvasHealth, @DrawableRes iconRes: Int, shape: Shape) {
+    val statusColor = when (health) {
+        CanvasHealth.AVAILABLE -> MaterialTheme.colorScheme.primary
+        CanvasHealth.UNAVAILABLE -> MaterialTheme.colorScheme.error
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Surface(shape = shape, color = MaterialTheme.colorScheme.surfaceContainerLow) {
+        Row(
+            modifier = remember {
+                Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}
+                    .padding(horizontal = SettingsDimensions.RowHorizontalPadding, vertical = SettingsDimensions.RowVerticalPadding)
+            },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = remember { Arrangement.spacedBy(16.dp) },
+        ) {
+            CanvasSectionIcon(iconRes = iconRes, tint = statusColor)
+            Column(
+                modifier = remember { Modifier.weight(1f) },
+                verticalArrangement = remember { Arrangement.spacedBy(4.dp) },
+            ) {
+                Text(title, style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(health.labelResource()), style = MaterialTheme.typography.bodyMedium, color = statusColor)
+            }
+            if (health == CanvasHealth.CHECKING) {
+                CircularProgressIndicator(modifier = remember { Modifier.size(20.dp) }, strokeWidth = 2.dp)
+            }
+        }
+    }
+}
+
+@Composable
+private fun CanvasCacheSection(model: CanvasSettingsUiModel, onCacheLimit: () -> Unit, onClear: () -> Unit) {
+    Column(verticalArrangement = remember { Arrangement.spacedBy(8.dp) }) {
+        Text(
+            text = stringResource(R.string.canvas_cache),
+            modifier = remember {
+                Modifier.padding(horizontal = SettingsDimensions.RowHorizontalPadding).semantics { heading() }
+            },
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        Column(verticalArrangement = remember { Arrangement.spacedBy(SettingsDimensions.SegmentedItemGap) }) {
+            Surface(shape = CanvasSectionShapes.top, color = MaterialTheme.colorScheme.surfaceContainerLow) {
+                Column(
+                    modifier = remember { Modifier.fillMaxWidth().padding(SettingsDimensions.RowHorizontalPadding) },
+                    verticalArrangement = remember { Arrangement.spacedBy(12.dp) },
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = remember { Arrangement.spacedBy(16.dp) },
+                    ) {
+                        CanvasSectionIcon(iconRes = R.drawable.storage, tint = MaterialTheme.colorScheme.primary)
+                        Text(
+                            text = stringResource(R.string.size_used, model.cacheSize),
+                            modifier = remember { Modifier.weight(1f) },
+                            style = MaterialTheme.typography.headlineSmall,
+                        )
+                    }
+                    if (model.busy) {
+                        LinearProgressIndicator(modifier = remember { Modifier.fillMaxWidth() })
+                    } else if (model.configuration.cacheLimitMb > 0) {
+                        val progress = remember(model.cacheProgress) { { model.cacheProgress } }
+                        LinearProgressIndicator(
+                            progress = progress,
+                            modifier = remember { Modifier.fillMaxWidth() },
+                            trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                            gapSize = 0.dp,
+                            drawStopIndicator = {},
+                        )
+                    }
+                    Text(
+                        text = stringResource(R.string.canvas_cache_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            Surface(
+                onClick = onCacheLimit,
+                enabled = !model.busy,
+                shape = CanvasSectionShapes.middle,
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
+            ) {
+                Row(
+                    modifier = remember {
+                        Modifier.fillMaxWidth().heightIn(min = 64.dp)
+                            .padding(horizontal = SettingsDimensions.RowHorizontalPadding, vertical = 12.dp)
+                    },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = remember { Arrangement.spacedBy(16.dp) },
+                ) {
+                    Column(modifier = remember { Modifier.weight(1f) }) {
+                        Text(stringResource(R.string.max_cache_size), style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            text = when (model.configuration.cacheLimitMb) {
+                                0 -> stringResource(R.string.disable)
+                                -1 -> stringResource(R.string.unlimited)
+                                else -> model.cacheLimit
+                            },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Icon(
+                        painterResource(R.drawable.edit), null,
+                        modifier = remember { Modifier.size(SettingsDimensions.RowIconInnerSize) },
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            Surface(
+                onClick = onClear,
+                enabled = !model.busy,
+                shape = CanvasSectionShapes.bottom,
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                contentColor = MaterialTheme.colorScheme.error,
+            ) {
+                Row(
+                    modifier = remember {
+                        Modifier.fillMaxWidth().heightIn(min = 56.dp)
+                            .padding(horizontal = SettingsDimensions.RowHorizontalPadding, vertical = 12.dp)
+                    },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = remember { Arrangement.spacedBy(16.dp) },
+                ) {
+                    Icon(painterResource(R.drawable.delete), null, modifier = remember { Modifier.size(SettingsDimensions.RowIconInnerSize) })
+                    Text(
+                        text = stringResource(R.string.clear_canvas_cache),
+                        modifier = remember { Modifier.weight(1f) },
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CanvasSectionIcon(@DrawableRes iconRes: Int, tint: Color) {
+    Surface(
+        modifier = remember { Modifier.size(SettingsDimensions.RowIconSize) },
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        contentColor = tint,
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(painterResource(iconRes), null, modifier = remember { Modifier.size(SettingsDimensions.RowIconInnerSize) })
+        }
+    }
+}
+
+private object CanvasSectionShapes {
+    val top = RoundedCornerShape(
+        topStart = SettingsDimensions.BannerCardCornerRadius,
+        topEnd = SettingsDimensions.BannerCardCornerRadius,
+        bottomStart = 4.dp,
+        bottomEnd = 4.dp,
+    )
+    val middle = RoundedCornerShape(4.dp)
+    val bottom = RoundedCornerShape(
+        topStart = 4.dp,
+        topEnd = 4.dp,
+        bottomStart = SettingsDimensions.BannerCardCornerRadius,
+        bottomEnd = SettingsDimensions.BannerCardCornerRadius,
+    )
 }
 
 @Composable

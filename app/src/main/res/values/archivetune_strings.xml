@@ -734,8 +734,7 @@
     <string name="canvas_health_offline">Offline</string>
     <string name="canvas_health_wifi_required">Waiting for Wi-Fi</string>
     <string name="canvas_health_low_data">Paused by low data mode</string>
-    <string name="canvas_cache_desc">Downloaded videos play without network access. The oldest videos are removed when the limit is reached.</string>
-    <string name="canvas_cache_limit">Cache limit: %1$s</string>
+    <string name="canvas_cache_desc">Videos play offline. Oldest videos are removed when the cache is full.</string>
     <string name="canvas_settings_load_failed">Could not load canvas settings</string>
     <string name="canvas_settings_update_failed">Could not update canvas settings</string>
 </resources>
