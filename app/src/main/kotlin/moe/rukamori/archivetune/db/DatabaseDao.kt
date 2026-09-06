@@ -1301,6 +1301,18 @@ interface DatabaseDao {
     )
 
     @Query(
+        """
+        UPDATE playlist SET thumbnailUrl = :thumbnailUrl
+        WHERE browseId = :browseId AND thumbnailUrl = :previousThumbnailUrl
+        """,
+    )
+    fun refreshPlaylistThumbnail(
+        browseId: String,
+        previousThumbnailUrl: String,
+        thumbnailUrl: String,
+    )
+
+    @Query(
         "UPDATE song SET liked = 0, likedDate = NULL, inLibrary = NULL WHERE isLocal = 0 AND (liked = 1 OR inLibrary IS NOT NULL)",
     )
     fun clearRemoteSongLibraryState()
