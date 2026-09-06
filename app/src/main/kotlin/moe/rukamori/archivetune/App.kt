@@ -53,6 +53,7 @@ import moe.rukamori.archivetune.ui.player.CanvasArtworkPlaybackCache
 import moe.rukamori.archivetune.ui.screens.settings.ThemePalettes
 import moe.rukamori.archivetune.ui.theme.ThemeSeedPalette
 import moe.rukamori.archivetune.ui.theme.ThemeSeedPaletteCodec
+import moe.rukamori.archivetune.utils.PlaylistCoverInterceptor
 import moe.rukamori.archivetune.utils.PreferenceStore
 import moe.rukamori.archivetune.utils.ProxyUtils
 import moe.rukamori.archivetune.utils.YTPlayerUtils
@@ -82,6 +83,9 @@ class App :
 
     @Inject
     lateinit var downloadedArtworkRepository: DownloadedArtworkRepository
+
+    @Inject
+    lateinit var playlistCoverInterceptor: PlaylistCoverInterceptor
 
     @Inject
     lateinit var youtubeiStreamRepository: YoutubeiStreamRepository
@@ -359,6 +363,7 @@ class App :
             .diskCache(diskCache)
             .diskCachePolicy(imageCacheConfig.policy)
             .components {
+                add(playlistCoverInterceptor)
                 add(downloadedArtworkRepository.coilMapper())
             }
             .build()
