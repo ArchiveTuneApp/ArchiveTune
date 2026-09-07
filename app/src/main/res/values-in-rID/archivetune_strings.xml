@@ -61,7 +61,7 @@
     <string name="history_no_results_desc">Coba lagu atau nama artis lain.</string>
     <string name="clear_selection">Hapus pilihan</string>
     <string name="scan_device">Pindai perangkat</string>
-    <string name="scanning_device">Perangkat pemindaian…</string>
+    <string name="scanning_device">Memindai perangkat…</string>
     <string name="local_songs_ready_desc">Putar lagu lokal di perangkat ini.</string>
     <string name="local_songs_permission_body">Izinkan akses penyimpanan untuk memindai file audio yang disimpan di perangkat ini.</string>
     <string name="local_songs_empty_title">Tidak ada lagu lokal yang ditemukan</string>
@@ -71,7 +71,7 @@
     <string name="local_songs_scan_title">Pindai lagu lokal</string>
     <string name="local_songs_scan_subtitle">Segarkan lagu yang disimpan di perangkat ini dan perbarui metadata pustaka lokal.</string>
     <string name="local_songs_latest_scan">Pemindaian terbaru</string>
-    <string name="local_songs_scan_filters_title">Pindai filter</string>
+    <string name="local_songs_scan_filters_title">Filter pemindaian</string>
     <string name="local_songs_scan_filters_note">Perubahan berlaku saat berikutnya Anda memindai perangkat ini.</string>
     <string name="local_songs_scan_duration_title">Kecualikan lagu pendek</string>
     <string name="local_songs_scan_duration_desc">Lewati lagu yang lebih pendek dari durasi yang dipilih.</string>
@@ -267,7 +267,7 @@
     <string name="lyrics_share_show_cover_desc">Sertakan sampul di header gambar yang diekspor.</string>
     <string name="lyrics_share_style_album_tint">Warna album</string>
     <string name="lyrics_share_style_frosted_dark">Gelap buram</string>
-    <string name="lyrics_share_style_frosted_light">Cahaya buram</string>
+    <string name="lyrics_share_style_frosted_light">Kaca buram terang</string>
     <string name="lyrics_share_style_clear_glass">Kaca bening</string>
     <string name="lyrics_share_style_deep_blur">Blur mendalam</string>
     <string name="lyrics_share_style_vivid_glow">Kilau cerah</string>
@@ -278,7 +278,7 @@
     <string name="select">Pilih semua</string>
     <string name="manage_tags">Kelola Tag</string>
     <string name="add_tag">Tambahkan Tag</string>
-    <string name="edit_tag">Sunting Tag</string>
+    <string name="edit_tag">Edit Tag</string>
     <string name="tag_name">Nama Tag</string>
     <string name="tag_color">Warna Tag</string>
     <string name="choose_color">Pilih Warna</string>
@@ -459,7 +459,7 @@
     <string name="new_releases">Rilisan Baru</string>
     <string name="latest_release">Rilisan Terbaru</string>
     <string name="release_type_album">Album</string>
-    <string name="release_type_single">Tunggal</string>
+    <string name="release_type_single">Single</string>
     <string name="release_metadata">%1$s • %2$d</string>
     <string name="total_releases">Jumlah rilisan</string>
     <string name="singles">Single</string>
@@ -490,7 +490,7 @@
     <string name="settings_playback_subtitle">Perilaku audio, crossfade, dan pemutaran latar belakang</string>
     <string name="settings_behavior_title">Perilaku</string>
     <string name="settings_behavior_subtitle">Riwayat, default, dan perilaku privasi</string>
-    <string name="settings_integration_subtitle">Discord, Last.fm, dan ListenBrainz</string>
+    <string name="settings_integration_subtitle">Discord, Last.fm, Libre.fm, dan ListenBrainz</string>
     <string name="settings_backup_restore_subtitle">Ekspor dan pulihkan data aplikasi pribadi Anda</string>
     <string name="settings_developer_options_title">Opsi Pengembang</string>
     <string name="settings_developer_options_subtitle">Fitur eksperimental dan debugging</string>
@@ -536,7 +536,7 @@
     <string name="stats_total_plays">Jumlah Pemutaran</string>
     <string name="stats_unique_songs">Lagu Unik</string>
     <string name="stats_unique_artists">Artis Unik</string>
-    <string name="stats_listening_by_day">Mendengarkan di Siang Hari</string>
+    <string name="stats_listening_by_day">Mendengarkan per Hari</string>
     <string name="stats_listening_by_hour">Mendengarkan per Jam</string>
     <string name="stats_peak_hour">Paling aktif: %s</string>
     <string name="stats_top_songs">Lagu teratas</string>
@@ -595,7 +595,7 @@
     <string name="backup_category_settings">Pengaturan Aplikasi</string>
     <string name="backup_category_settings_desc">Penampilan, pemutaran &amp; preferensi</string>
     <string name="backup_category_account">Detail Akun</string>
-    <string name="backup_category_account_desc">Kredensial YouTube, Spotify, Last.fm, Discord &amp; proxy</string>
+    <string name="backup_category_account_desc">Kredensial YouTube, Spotify, Last.fm, Libre.fm, Discord &amp; proxy</string>
     <string name="backup_category_downloads">Unduh ulang lagu offline</string>
     <string name="backup_category_downloads_desc">Akan diunduh lagi saat pemulihan</string>
     <string name="internal_service">Layanan Internal</string>
@@ -617,7 +617,7 @@
     <string name="import_source_local">Pustaka Lokal</string>
     <string name="import_source_youtube">YouTube Music</string>
     <string name="import_source_unresolved">Tidak Ditemukan</string>
-    <string name="import_review_title">Review Import</string>
+    <string name="import_review_title">Tinjau Impor</string>
     <string name="import_review_summary">%1$d lokal · %2$d YouTube Music · %3$d belum terselesaikan</string>
     <string name="import_review_skipped">%1$d dilewati</string>
     <string name="import_skip_song">Lewati</string>
@@ -636,7 +636,7 @@
     <string name="change_song_source">Ubah sumber</string>
     <string name="change_song_source_desc">Ganti entri playlist ini dari Musik Lokal atau YouTube Music.</string>
     <string name="replace_song">Ganti lagu</string>
-    <string name="song_source_changed">Sumber lagi diganti.</string>
+    <string name="song_source_changed">Sumber lagu diubah.</string>
     <string name="song_source_change_failed">Tidak dapat mengganti sumber lagu.</string>
     <string name="import_preparing">Menyiapkan impor…</string>
     <string name="import_matching_progress">Mencocokkan: %1$d/%2$d</string>

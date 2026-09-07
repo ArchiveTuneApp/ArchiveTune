@@ -106,7 +106,7 @@
     <string name="newest_year">Tahun terbaru</string>
     <string name="oldest_year">Tahun tertua</string>
     <string name="longest_duration">Durasi terlama</string>
-    <string name="shortest_duration">‐Durasi tersingkat</string>
+    <string name="shortest_duration">Durasi tersingkat</string>
     <string name="year_sort">Tahun</string>
     <string name="duration_sort">Durasi</string>
     <string name="featured_album_badge">ALBUM UNGGULAN</string>
@@ -137,7 +137,7 @@
     <string name="music_recognition">Pengenalan Musik</string>
     <string name="reset">Setel ulang</string>
     <string name="details">Detail</string>
-    <string name="edit">Sunting</string>
+    <string name="edit">Edit</string>
     <string name="start_radio">Mulai radio</string>
     <string name="start_mix">Putar mix</string>
     <string name="play">Mainkan</string>
@@ -150,7 +150,7 @@
     <string name="widget_listening_time_minutes">%1$d mnt</string>
     <string name="widget_listening_time_hours_minutes">%1$d j %2$d mnt</string>
     <plurals name="widget_total_plays">
-        <item quantity="other">%d Pemutaran</item>
+        <item quantity="other">%d pemutaran</item>
     </plurals>
     <string name="widget_top_song_summary">Paling sering diputar: %1$s</string>
     <string name="widget_no_recent_songs">Belum ada lagu yang diputar</string>
@@ -190,18 +190,18 @@
     <string name="hide_playlist_confirm">Sembunyikan \u0022%1$s\u0022 dari pustaka?</string>
     <string name="together_participants">Peserta</string>
     <string name="together_connected_count">%1$d terhubung</string>
-    <string name="together_role_host">Tuan Rumah</string>
+    <string name="together_role_host">Host</string>
     <string name="together_role_guest">Tamu</string>
     <string name="together_pending_approval">Menunggu persetujuan</string>
     <string name="together_waiting_approval">Menunggu Persetujuan</string>
-    <string name="together_host_left_session">Tuan Rumah Meninggalkan Sesi</string>
-    <string name="together_kick">Tendang</string>
-    <string name="together_ban">Ban</string>
+    <string name="together_host_left_session">Host Meninggalkan Sesi</string>
+    <string name="together_kick">Keluarkan</string>
+    <string name="together_ban">Blokir</string>
     <string name="together_transfer_host">Alihkan host</string>
     <string name="together_approve">Setujui</string>
     <string name="together_reject">Tolak</string>
-    <string name="together_kick_confirm">Tendang %1$s?</string>
-    <string name="together_ban_confirm">Ban %1$s?</string>
+    <string name="together_kick_confirm">Keluarkan %1$s?</string>
+    <string name="together_ban_confirm">Blokir %1$s?</string>
     <string name="together_transfer_host_confirm">Alihkan kepemilikan host ke %1$s?</string>
     <string name="together_requesting_song_change">Meminta host untuk mengganti lagu…</string>
     <string name="together_song_change_failed">Perubahan lagu tidak diterapkan. Silakan coba lagi.</string>
@@ -211,7 +211,7 @@
     <string name="together_unknown_participant">Seseorang</string>
     <string name="remove_from_history">Hapus dari riwayat</string>
     <string name="remove_from_playlist">Hapus dari playlist</string>
-    <string name="remove_from_queue">Hapus dari antrian</string>
+    <string name="remove_from_queue">Hapus dari antrean</string>
     <string name="removed_song_from_queue">Menghapus \"%s\" dari antrean</string>
     <string name="removed_n_songs_from_queue">Menghapus %d lagu dari antrean</string>
     <string name="search_online">Cari online</string>
@@ -229,7 +229,7 @@
     <string name="sort_order_ascending">Menaik</string>
     <string name="sort_order_descending">Menurun</string>
     <string name="media_id">Id media</string>
-    <string name="mime_type">tipe MIME</string>
+    <string name="mime_type">Tipe MIME</string>
     <string name="no_matching_playlists">Tidak ada playlist yang cocok</string>
     <string name="codecs">Codec</string>
     <string name="bitrate">Bitrate</string>
@@ -247,8 +247,8 @@
     <string name="lyrics_searching_providers">Mencari penyedia</string>
     <string name="lyrics_search_still_searching">Masih mencari...</string>
     <string name="lyrics_search_results_count">%1$d hasil</string>
-    <string name="lyrics_search_result_stats">%1$d baris, %2$d huruf</string>
-    <string name="edit_song">Sunting lagu</string>
+    <string name="lyrics_search_result_stats">%1$d baris, %2$d karakter</string>
+    <string name="edit_song">Edit lagu</string>
     <string name="song_title">Judul lagu</string>
     <string name="song_artists">Artis lagu</string>
     <string name="unsupported_language">Bahasa tidak didukung: %1$s</string>
@@ -305,10 +305,10 @@
     <string name="action_shuffle_off">Acak mati</string>
     <string name="repeat_mode_off">Mode pengulangan tidak aktif</string>
     <string name="repeat_mode_one">Ulangi lagu saat ini</string>
-    <string name="repeat_mode_all">Ulangi antrian</string>
+    <string name="repeat_mode_all">Ulangi antrean</string>
     <string name="queue_all_songs">Semua lagu</string>
     <string name="queue_searched_songs">Lagu yang dicari</string>
-    <string name="queue_continue_playing">Lanjutkan Bermain</string>
+    <string name="queue_continue_playing">Lanjutkan Memutar</string>
     <string name="queue_autoplaying_similar">Memutar otomatis musik serupa</string>
     <string name="music_player">Pemutar Musik</string>
     <string name="settings">Pengaturan</string>
@@ -349,8 +349,8 @@
     <string name="palette_ocean_blue">Biru Laut</string>
     <string name="palette_arctic_blue">Arktik</string>
     <string name="palette_midnight_navy">Tengah malam</string>
-    <string name="palette_sky_blue">Langit Biru</string>
-    <string name="palette_cobalt_blue">kobalt</string>
+    <string name="palette_sky_blue">Biru Langit</string>
+    <string name="palette_cobalt_blue">Kobalt</string>
     <string name="palette_electric_blue">Listrik</string>
     <string name="palette_emerald_green">Zamrud</string>
     <string name="palette_teal_wave">Teal Wave</string>
@@ -361,7 +361,7 @@
     <string name="palette_sage_green">Sage</string>
     <string name="palette_sunset_orange">Sunset</string>
     <string name="palette_golden_hour">Emas</string>
-    <string name="palette_warm_amber">kuning</string>
+    <string name="palette_warm_amber">Amber</string>
     <string name="palette_tangerine_blast">Tangerine</string>
     <string name="palette_peach">Persik</string>
     <string name="palette_mango">Mangga</string>
@@ -537,7 +537,7 @@
     <string name="sponsor_block_self_promotions">Promosi diri sendiri</string>
     <string name="sponsor_block_previews">Preview</string>
     <string name="sponsor_block_fillers">Filler</string>
-    <string name="sponsor_block_subscription_reminders">Pengingat subscibe</string>
+    <string name="sponsor_block_subscription_reminders">Pengingat subscribe</string>
     <string name="sponsor_block_hooks">Pengantar/Salam</string>
     <string name="queue">Antrean</string>
     <string name="persistent_queue">Antrean persisten</string>
@@ -658,7 +658,7 @@
     <string name="reset_listening_stats_confirm">Reset semua statistik pemutaran di perangkat ini? Ini akan menghapus riwayat pemutaran, jumlah pemutaran, dan waktu pemutaran. Pustaka, playlist, dan unduhan Anda akan tetap disimpan. Tindakan ini tidak dapat dibatalkan.</string>
     <string name="reset_listening_stats_progress">Mengatur ulang statistik mendengarkan…</string>
     <string name="reset_listening_stats_success">Statistik mendengarkan direset</string>
-    <string name="reset_listening_stats_error">Tidak dapat mengatur ulang statistik pendengaran. Coba lagi.</string>
+    <string name="reset_listening_stats_error">Tidak dapat mengatur ulang statistik mendengarkan. Coba lagi.</string>
     <string name="search_history">Riwayat pencarian</string>
     <string name="pause_search_history">Jeda riwayat pencarian</string>
     <string name="clear_search_history">Hapus riwayat pencarian</string>
@@ -698,7 +698,7 @@
     <string name="discord_authorization_success">Akun Discord terhubung</string>
     <string name="discord_authorization_failed">Otorisasi Discord gagal</string>
     <string name="discord_account_ready">ArchiveTune siap mempublikasikan Rich Presence untuk sesi mendengarkan Anda.</string>
-    <string name="discord_reauthorize_required_title">Sesi Discord kadaluarsa</string>
+    <string name="discord_reauthorize_required_title">Sesi Discord kedaluwarsa</string>
     <string name="discord_reauthorize_required_description">Rich Presence tidak dapat ditampilkan sampai Anda mengotorisasi Discord lagi.</string>
     <string name="discord_reauthorize_action">Otorisasi ulang</string>
     <string name="discord_connection_settings">Koneksi</string>
@@ -709,7 +709,7 @@
     <string name="preview">Pratinjau</string>
     <string name="enable_discord_rpc">Aktifkan Rich Presence</string>
     <string name="scrobbling">Scrobbling</string>
-    <string name="lastfm_integration">Integrasi Last.fm</string>
+    <string name="lastfm_integration">Integrasi Last.fm / Libre.fm</string>
     <string name="enable_scrobbling">Aktifkan Scrobbling</string>
     <string name="lastfm_now_playing">Perbarui Sedang Diputar</string>
     <string name="scrobbling_configuration">Konfigurasi Scrobbling</string>
@@ -745,7 +745,7 @@
     <string name="listenbrainz_scrobbling">Scrobble ListenBrainz</string>
     <string name="listenbrainz_scrobbling_description">Aktifkan pengiriman lagu yang sedang diputar dan yang sudah selesai ke ListenBrainz</string>
     <string name="set_listenbrainz_token">Atur token ListenBrainz</string>
-    <string name="edit_listenbrainz_token">Sunting token ListenBrainz</string>
+    <string name="edit_listenbrainz_token">Edit token ListenBrainz</string>
     <string name="discord_activity_name">Nama aktivitas</string>
     <string name="discord_activity_details">Detail aktivitas</string>
     <string name="discord_activity_state">Status aktivitas</string>
@@ -830,7 +830,7 @@
     <string name="display_codec_on_player">Tampilkan Codec di Player</string>
     <string name="description_display_codec_on_player">Tampilkan informasi codec audio terkini pada pemutar</string>
     <string name="nerd_stats">Statistik Nerd</string>
-    <string name="track_label">Lacak</string>
+    <string name="track_label">Trek</string>
     <string name="no_track_playing">Tidak ada trek yang diputar</string>
     <string name="codec_label">Kodek</string>
     <string name="unknown_codec">Kodek tidak dikenal</string>
@@ -855,7 +855,7 @@
     <string name="jump_to_latest_log">Lompat ke log terbaru</string>
     <string name="copy_log_entry">Salin entri log</string>
     <string name="export_logs_failed">Tidak dapat mengekspor log</string>
-    <string name="log_level_verbose">Bertele-tele</string>
+    <string name="log_level_verbose">Rinci</string>
     <string name="log_level_debug">Debug</string>
     <string name="log_level_info">Informasi</string>
     <string name="log_level_warning">Peringatan</string>
@@ -1018,11 +1018,11 @@
     <string name="loading">Memuat</string>
     <string name="connecting">Menghubungkan...</string>
     <string name="copy_link">Salin tautan</string>
-    <string name="together_host_section">Tuan rumah</string>
+    <string name="together_host_section">Host</string>
     <string name="together_join_section">Bergabunglah</string>
     <string name="together_status">Status</string>
     <string name="together_idle">Tidak dalam satu sesi</string>
-    <string name="together_hosting">Menyelenggaran Sesi</string>
+    <string name="together_hosting">Menyelenggarakan sesi</string>
     <string name="together_joining">Bergabung Dengan Sesi</string>
     <string name="together_connected">Terhubung</string>
     <string name="together_error_state">Kesalahan</string>
@@ -1059,9 +1059,9 @@
     <string name="together_welcome_host_title">Selenggarakan sesi</string>
     <string name="together_welcome_host_body">Ketuk Mulai sesi, lalu bagikan tautan sesi. Biarkan ArchiveTune tetap terbuka di latar belakang saat menghosting.</string>
     <string name="together_welcome_join_title">Bergabunglah dari perangkat lain</string>
-    <string name="together_welcome_join_body">Buka tautan yang dibagikan, atau masukkan kode dan ketuk Gabung. Antrian dan pemutaran Anda akan mengikuti host.</string>
+    <string name="together_welcome_join_body">Buka tautan yang dibagikan, atau masukkan kode dan ketuk Gabung. Antrean dan pemutaran Anda akan mengikuti host.</string>
     <string name="together_welcome_permissions_title">Izin dan keamanan</string>
-    <string name="together_welcome_permissions_body">Tuan rumah dapat memutuskan apakah tamu dapat menambahkan lagu, mengontrol pemutaran, atau memerlukan persetujuan untuk bergabung.</string>
+    <string name="together_welcome_permissions_body">Host dapat memutuskan apakah tamu dapat menambahkan lagu, mengontrol pemutaran, atau memerlukan persetujuan untuk bergabung.</string>
     <string name="saved_accounts">Akun yang disimpan</string>
     <string name="save_current_account">Simpan akun saat ini</string>
     <string name="no_saved_accounts">Belum ada akun yang disimpan</string>
@@ -1076,7 +1076,7 @@
     <string name="hidden_playlists">Playlist tersembunyi</string>
     <string name="hidden_playlists_description">Playlist yang disembunyikan dari pustaka akan muncul di sini</string>
     <string name="no_hidden_playlists">Tidak ada playlist tersembunyi</string>
-    <string name="unhide">Munculkan</string>
+    <string name="unhide">Tampilkan</string>
     <string name="scheduled_backup">Pencadangan otomatis terjadwal</string>
     <string name="scheduled_backup_enabled">Aktifkan pencadangan terjadwal</string>
     <string name="scheduled_backup_enabled_description">Pencadangan berjalan secara otomatis menggunakan jadwal di bawah ini.</string>
