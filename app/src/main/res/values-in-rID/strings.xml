@@ -140,7 +140,7 @@
     <string name="edit">Edit</string>
     <string name="start_radio">Mulai radio</string>
     <string name="start_mix">Putar mix</string>
-    <string name="play">Mainkan</string>
+    <string name="play">Putar</string>
     <string name="widget_pause">Jeda</string>
     <string name="widget_previous">Sebelumnya</string>
     <string name="widget_tap_to_open">Ketuk untuk membuka ArchiveTune</string>
@@ -835,7 +835,7 @@
     <string name="codec_label">Kodek</string>
     <string name="unknown_codec">Kodek tidak dikenal</string>
     <string name="bitrate_label">Bitrate</string>
-    <string name="unknown_bitrate">Kecepatan bit tidak diketahui</string>
+    <string name="unknown_bitrate">Bitrate tidak diketahui</string>
     <string name="sample_rate_label">Sample Rate</string>
     <string name="unknown_sample_rate">Sample rate tidak diketahui</string>
     <string name="content_length_label">Ukuran Konten</string>

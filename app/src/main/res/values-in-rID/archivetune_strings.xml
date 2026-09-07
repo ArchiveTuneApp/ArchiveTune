@@ -225,7 +225,7 @@
     <string name="aod_customize_auto_start_screen_off">Tampilkan AOD saat layar mati</string>
     <string name="aod_customize_auto_start_screen_off_desc">Secara otomatis menampilkan layar ambien AOD saat layar mati selama pemutaran</string>
     <string name="aod_customize_screensaver_info_title">Screen Saver Sistem (AOD Pengecasan)</string>
-    <string name="aod_customize_screensaver_info_desc">Untuk mengaktifkan AOD secara otomatis saat mengisi daya atau doking, buka Pengaturan Android &gt; Tampilan &gt; Screen saver lalu pilih ArchiveTune.</string>
+    <string name="aod_customize_screensaver_info_desc">Untuk mengaktifkan AOD secara otomatis saat mengisi daya atau terpasang di dok, buka Pengaturan Android &gt; Tampilan &gt; Screen saver lalu pilih ArchiveTune.</string>
     <string name="retry_button">Coba lagi</string>
     <string name="album_cover_desc">Sampul album</string>
     <string name="top_music_videos">Video musik teratas</string>
@@ -266,7 +266,7 @@
     <string name="lyrics_share_show_cover">Tampilkan sampul album</string>
     <string name="lyrics_share_show_cover_desc">Sertakan sampul di header gambar yang diekspor.</string>
     <string name="lyrics_share_style_album_tint">Warna album</string>
-    <string name="lyrics_share_style_frosted_dark">Gelap buram</string>
+    <string name="lyrics_share_style_frosted_dark">Kaca buram gelap</string>
     <string name="lyrics_share_style_frosted_light">Kaca buram terang</string>
     <string name="lyrics_share_style_clear_glass">Kaca bening</string>
     <string name="lyrics_share_style_deep_blur">Blur mendalam</string>
@@ -317,8 +317,8 @@
     </plurals>
     <string name="seek_forward_dynamic">+%1$d detik maju</string>
     <string name="seek_backward_dynamic">-%1$d detik mundur</string>
-    <string name="seek_seconds_addup">Pencarian progresif</string>
-    <string name="seek_seconds_addup_description">Jika diaktifkan, Menambahkan 5 detik ekstra secara bertahap pada setiap lompatan pencarian</string>
+    <string name="seek_seconds_addup">Lompat durasi progresif</string>
+    <string name="seek_seconds_addup_description">Jika diaktifkan, menambahkan 5 detik ekstra secara bertahap setiap kali melompati durasi</string>
     <string name="player_background_style">Gaya latar belakang pemutar</string>
     <string name="lyrics_background_style">Gaya latar belakang lirik</string>
     <string name="lyrics_background_default">Bawaan</string>
@@ -343,8 +343,8 @@
     <string name="player_buttons_style">Warna tombol pemutar</string>
     <string name="default_style">Bawaan</string>
     <string name="secondary_color_style">Sekunder</string>
-    <string name="enable_swipe_thumbnail">Aktifkan gesek untuk mengubah lagu</string>
-    <string name="swipe_song_to_add">Gesek lagu ke kiri untuk menambahkannya ke antrean atau ke kanan untuk memutarnya berikutnya</string>
+    <string name="enable_swipe_thumbnail">Aktifkan geser untuk mengubah lagu</string>
+    <string name="swipe_song_to_add">Geser lagu ke kiri untuk menambahkannya ke antrean atau ke kanan untuk memutarnya berikutnya</string>
     <string name="lyrics_click_change">Ubah lirik saat diklik</string>
     <string name="lyrics_auto_scroll">Gulir lirik otomatis</string>
     <string name="lyrics_text_size">Ukuran teks lirik</string>
@@ -394,7 +394,7 @@
     <string name="export_playlist_success">Playlist diekspor sebagai CSV</string>
     <string name="export_playlist_failed">Tidak dapat mengekspor playlist</string>
     <string name="export_playlist_failed_retry">Tidak dapat mengekspor playlist. Ketuk untuk mencoba lagi</string>
-    <string name="playlist_add_local_to_synced_note">Catatan: Menambahkan lagu lokal ke playlist yang disinkronkan/jarak jauh tidak didukung. Kombinasi lainnya valid</string>
+    <string name="playlist_add_local_to_synced_note">Catatan: Menambahkan lagu lokal ke playlist yang disinkronkan/online tidak didukung. Kombinasi lainnya valid</string>
     <string name="auto_download_on_like">Unduh otomatis saat disukai</string>
     <string name="auto_download_on_like_desc">Unduh lagu secara otomatis saat Anda menyukainya</string>
     <string name="swipe_sensitivity">Sensitivitas usap pemutar mini</string>
