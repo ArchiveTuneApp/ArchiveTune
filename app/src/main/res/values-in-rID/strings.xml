@@ -179,7 +179,7 @@
     <string name="view_artist">Lihat artis</string>
     <string name="view_album">Lihat album</string>
     <string name="view_all">Lihat semua</string>
-    <string name="more">lebih</string>
+    <string name="more">Lainnya</string>
     <string name="refetch">Ambil kembali</string>
     <string name="refetch_canvas">Segarkan kanvas</string>
     <string name="canvas_refetch_failed">Tidak dapat memperbarui animasi kanvas</string>
@@ -626,8 +626,8 @@
     <string name="smart_trimmer">Pemangkas Cerdas</string>
     <string name="smart_trimmer_description">Pemangkas cerdas secara dinamis mengelola cache gambar dan cache lagu, memangkas entri lama untuk menghemat ruang disk.</string>
     <string name="cache">Cache</string>
-    <string name="image_cache">Cache Gambar</string>
-    <string name="song_cache">Cache Lagu</string>
+    <string name="image_cache">Cache gambar</string>
+    <string name="song_cache">Cache lagu</string>
     <string name="max_cache_size">Ukuran cache maksimal</string>
     <string name="unlimited">Tidak terbatas</string>
     <string name="clear_all_downloads">Hapus semua unduhan</string>
@@ -886,9 +886,9 @@
     <string name="update_channel_desc">Pilih antara rilis teruji dan cuplikan pengembangan.</string>
     <string name="channel_artifact">Artefak</string>
     <string name="recent_commits">Commit Terbaru</string>
-    <string name="updates_artifact_hosting_description">Artefak build diambil langsung dari eksekusi workflow GitHub Actions.</string>
+    <string name="updates_artifact_hosting_description">Artefak build yang diambil langsung dari eksekusi workflow GitHub Actions.</string>
     <string name="updates_channel_warning_intro">ArchiveTune menyediakan dua saluran unduhan untuk build:</string>
-    <string name="updates_channel_warning_stable_title">Build stabil</string>
+    <string name="updates_channel_warning_stable_title">Build Stabil</string>
     <string name="updates_channel_warning_stable_source">Didistribusikan melalui Rilis GitHub resmi.</string>
     <string name="updates_channel_warning_stable_desc">Versi ini telah diuji dan direkomendasikan untuk sebagian besar pengguna.</string>
     <string name="updates_channel_warning_artifact_title">Build Artefak</string>
