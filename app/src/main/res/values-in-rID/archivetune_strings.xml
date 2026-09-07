@@ -337,7 +337,7 @@
     <string name="player_design_v9">Material Extended</string>
     <string name="player_design_v10">Editorial</string>
     <string name="player_background_blur">Blur</string>
-    <string name="coloring">Warnai</string>
+    <string name="coloring">Pewarnaan</string>
     <string name="blur_gradient">Blur Gradien</string>
     <string name="glow">Glow</string>
     <string name="player_buttons_style">Warna tombol pemutar</string>
@@ -447,7 +447,7 @@
     <string name="numbers">Angka</string>
     <string name="subscribers">Subscriber</string>
     <string name="monthly_listeners">Pendengar bulanan</string>
-    <string name="views">Jumlah Pemutaran</string>
+    <string name="views">Tayangan</string>
     <string name="likes">Suka</string>
     <string name="dislikes">Tidak suka</string>
     <string name="subscribe">Subscribe</string>

@@ -72,8 +72,8 @@
     <string name="all_songs">Semua Lagu</string>
     <string name="newest_first">Terbaru dahulu</string>
     <string name="oldest_first">Terlama dahulu</string>
-    <string name="sort_a_to_z">A - Z</string>
-    <string name="sort_z_to_a">Z - A</string>
+    <string name="sort_a_to_z">A → Z</string>
+    <string name="sort_z_to_a">Z → A</string>
     <string name="sort_artist">Artis</string>
     <string name="most_played_sort">Sering diputar</string>
     <string name="recently_added">Baru ditambahkan</string>
@@ -146,7 +146,7 @@
     <string name="widget_tap_to_open">Ketuk untuk membuka ArchiveTune</string>
     <string name="widget_insights_title">Wawasan Mendengarkan</string>
     <string name="widget_recommendations">Rekomendasi</string>
-    <string name="widget_listening_time_empty">Belum ada yang diputar</string>
+    <string name="widget_listening_time_empty">Belum ada waktu mendengarkan</string>
     <string name="widget_listening_time_minutes">%1$d mnt</string>
     <string name="widget_listening_time_hours_minutes">%1$d j %2$d mnt</string>
     <plurals name="widget_total_plays">
@@ -932,7 +932,7 @@
     <string name="allow">Izinkan</string>
     <string name="onboarding_welcome_title">Selamat datang di ArchiveTune</string>
     <string name="onboarding_welcome_subtitle">Atur pemutaran, musik lokal, dan perbarui izin sebelum Anda mulai mendengarkan.</string>
-    <string name="onboarding_permissions_title">Tinjau perizinan</string>
+    <string name="onboarding_permissions_title">Tinjau izin</string>
     <string name="onboarding_permissions_subtitle">Izinkan hanya apa yang Anda inginkan sekarang. Anda dapat melanjutkan dan memberikan izin nanti.</string>
     <string name="onboarding_login_title">Sinkronkan pemutaran Anda</string>
     <string name="onboarding_login_subtitle">Masuk untuk menyelaraskan pustaka dan riwayat Anda di berbagai perangkat serta mendapatkan pemutaran yang lebih andal.</string>
