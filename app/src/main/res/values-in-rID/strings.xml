@@ -91,7 +91,7 @@
     <string name="list_view">Tampilan Daftar</string>
     <string name="grid_view">Tampilan Kisi</string>
     <string name="personal_label">Pribadi</string>
-    <string name="youtube_synced">Sinkron YT</string>
+    <string name="youtube_synced">Sinkron YouTube</string>
     <string name="options_label">Pilihan</string>
     <string name="top_artist_badge">ARTIS TERATAS</string>
     <string name="no_artist_yet">Belum Ada Artis</string>
@@ -165,7 +165,7 @@
     <string name="downloading">Mengunduh</string>
     <string name="remove_download">Hapus unduhan</string>
     <string name="remove_download_confirm">Apakah Anda yakin ingin menghapus item yang diunduh ini? Tindakan ini tidak dapat dibatalkan.</string>
-    <string name="remove_download_section_confirm">Apakah Anda yakin ingin menghapus semua unduhan di bagian ini? Tindakan ini tidak dapat diurungkan.</string>
+    <string name="remove_download_section_confirm">Apakah Anda yakin ingin menghapus semua unduhan di bagian ini? Tindakan ini tidak dapat dibatalkan.</string>
     <string name="download_progress_percent">%1$d%%</string>
     <string name="import_playlist">Impor playlist</string>
     <string name="import_failed">Impor gagal</string>
@@ -289,7 +289,7 @@
     <string name="added_to_n_playlists">Ditambahkan ke %d playlist</string>
     <string name="added_n_songs_to_n_playlists">Menambahkan %1$d lagu ke %2$d playlist</string>
     <string name="playlist_synced">Playlist disinkronkan</string>
-    <string name="undo">Batalkan</string>
+    <string name="undo">Urungkan</string>
     <string name="lyrics_not_found">Lirik tidak ditemukan</string>
     <string name="lyrics_word_sync">Sinkron Kata</string>
     <string name="sleep_timer">Pengatur waktu tidur</string>
@@ -332,7 +332,7 @@
     <string name="theme">Tema</string>
     <string name="enable_dynamic_theme">Aktifkan tema dinamis</string>
     <string name="wallpaper_permission">Izin warna wallpaper</string>
-    <string name="wallpaper_permission_desc">Berikan izin penyimpanan untuk mengekstrak warna dari wallpaper Anda di perangkat yang lebih lama</string>
+    <string name="wallpaper_permission_desc">Berikan izin penyimpanan untuk mengekstrak warna dari wallpaper Anda di perangkat versi lama</string>
     <string name="random_theme_on_startup">Tema acak saat startup</string>
     <string name="random_theme_on_startup_desc">Terapkan palet warna acak setiap kali aplikasi dimulai</string>
     <string name="font_preference">Font</string>
@@ -380,7 +380,7 @@
     <string name="palette_bubblegum">Bubblegum</string>
     <string name="palette_crimson_red">Crimson</string>
     <string name="palette_youtube_red">YouTube</string>
-    <string name="palette_wine_red">Anggur</string>
+    <string name="palette_wine_red">Merah Anggur</string>
     <string name="palette_ruby_red">Rubi</string>
     <string name="palette_scarlet">Scarlet</string>
     <string name="palette_charcoal">Arang</string>
@@ -795,7 +795,7 @@
     <string name="target_language">Bahasa Sasaran</string>
     <string name="close_dialog">Tutup</string>
     <string name="support_development_title">Dukung pengembangan</string>
-    <string name="support_development_message">Halo! Saya Koiverse, pengembang ArchiveTune. Jika ArchiveTune telah menemani aktivitas mendengarkan musikmu sehari-hari, kamu bisa membantu agar proyek ini terus berkembang dengan cara berdonasi atau memberikan bintang (star) pada proyek ini di GitHub. Terima kasih telah mendukung proses pengembangan di balik aplikasi ini.</string>
+    <string name="support_development_message">Halo! Saya rukamori, pengembang ArchiveTune. Jika ArchiveTune telah menemani aktivitas mendengarkan musikmu sehari-hari, kamu bisa membantu agar proyek ini terus berkembang dengan cara berdonasi atau memberikan bintang (star) pada proyek ini di GitHub. Terima kasih telah mendukung proses pengembangan di balik aplikasi ini.</string>
     <string name="support_development_donate">Donasi untuk mendukung pembangunan</string>
     <string name="support_development_star">Bintangi di GitHub</string>
     <string name="later">Nanti</string>

@@ -146,7 +146,7 @@
     <string name="aod_customize_degree_value">%1$d°</string>
     <string name="aod_customize_percent_value">%1$d%%</string>
     <string name="aod_customize_sample_title">Midnight Archive</string>
-    <string name="aod_customize_sample_artist">Koiverse Ensemble</string>
+    <string name="aod_customize_sample_artist">moriee Ensemble</string>
     <string name="aod_customize_sample_album">Always On Sessions</string>
     <string name="aod_customize_sample_elapsed">1:24</string>
     <string name="aod_customize_sample_duration">3:48</string>
@@ -334,7 +334,7 @@
     <string name="player_design_v6">Ekspresif</string>
     <string name="player_design_v7">Immersive</string>
     <string name="player_design_v8">Immersive Extended</string>
-    <string name="player_design_v9">Material</string>
+    <string name="player_design_v9">Material Extended</string>
     <string name="player_design_v10">Editorial</string>
     <string name="player_background_blur">Blur</string>
     <string name="coloring">Warnai</string>
@@ -387,7 +387,7 @@
     <string name="export_playlist_csv_description">Pilih playlist dan simpan lagu-lagunya sebagai file CSV</string>
     <string name="export_playlist_picker_title">Pilih playlist</string>
     <string name="export_playlist_loading">Memuat playlist</string>
-    <string name="export_playlist_empty">Tidak ada playlist yang tidak kosong yang tersedia</string>
+    <string name="export_playlist_empty">Tidak ada playlist berisi lagu yang tersedia</string>
     <string name="export_playlist_load_failed_retry">Gagal memuat playlist. Ketuk untuk mencoba lagi</string>
     <string name="export_playlist_in_progress">Mengekspor playlist</string>
     <string name="export_playlist_writing">Menulis file CSV</string>
