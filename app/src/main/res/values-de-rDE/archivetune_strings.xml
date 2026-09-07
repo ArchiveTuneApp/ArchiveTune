@@ -344,7 +344,6 @@
     <string name="settings_developer_options_subtitle">Experimentelle Funktionen und Fehlerbehebung</string>
     <string name="settings_lyrics_subtitle">Anbieter von Songtexten und Übersetzung</string>
     <string name="settings_content_subtitle">Standardeinstellungen für Sprache, Land und Empfehlungen</string>
-    <string name="settings_po_token_subtitle">Wiedergabeüberprüfung und Besucherdaten</string>
     <string name="settings_storage_subtitle">Cache, Downloads und Offline-Speicher</string>
     <string name="settings_updates_subtitle">Version, Versionshinweise und Update-Kanal</string>
     <string name="settings_about_subtitle">App-Informationen, Lizenzen und Mitwirkende</string>
@@ -577,7 +576,6 @@
     <string name="aod_customize_auto_lock_delay_value">%ds</string>
     <string name="aod_customize_shake_to_unlock">Zum Entsperren schütteln</string>
     <string name="aod_clock_minimal">Minimal</string>
-    <string name="aod_mode_exit">AOD beenden</string>
     <string name="aod_mode">AOD-Modus</string>
     <string name="import_saving">Speichere Import…</string>
     <string name="import_saving_progress">Speichere: %1$d/%2$d</string>

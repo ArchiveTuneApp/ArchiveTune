@@ -111,7 +111,6 @@
     <string name="custom_value">قيمة على ذوقك</string>
     <string name="new_version_available">إصدار جديد متاح</string>
     <string name="updates">تحديثات</string>
-    <string name="updates_subtitle_stable">النسخ المستقرة وتفاصيل التحديثات</string>
     <string name="current_version">الإصدار الحالي</string>
     <string name="latest_version_format">آخر إصدار: %s</string>
     <string name="updates_status_checking">بنشوفلك آخر إصدار</string>
@@ -232,7 +231,6 @@
     <string name="delete">حذف</string>
     <string name="hide_playlist">خبّي البلاي ليست</string>
     <string name="unhide_playlist">ظهّر البلاي ليست</string>
-    <string name="show_hidden_playlists">عرض المخفي</string>
     <string name="hide_playlist_confirm">عايز تخفي \"%1$s\" من المكتبة؟</string>
     <string name="together_participants">المشاركين</string>
     <string name="together_connected_count">%1$d متصلين</string>
@@ -258,7 +256,6 @@
     <string name="search_online">بحث أونلاين</string>
     <string name="tempo_and_pitch">السرعة وطبقة الصوت</string>
     <string name="aod_mode">وضع الشاشة الدائمة</string>
-    <string name="aod_mode_exit">الخروج من الشاشة الدائمة</string>
     <string name="tempo">السرعة</string>
     <string name="pitch">طبقة الصوت</string>
     <string name="pitch_mode_semitones_short">نص نغمة</string>
@@ -322,10 +319,7 @@
         <item quantity="one">ولا دقيقة</item>
         <item quantity="other">دقيقة واحدة</item>
     </plurals>
-    <string name="error_no_stream">مفيش أي بث متاح دلوقتي</string>
     <string name="error_no_internet">مفيش اتصال بالإنترنت</string>
-    <string name="error_timeout">الوقت خلص والاتصال قطع</string>
-    <string name="error_malformed_stream">في المشكلة أو خطأ في المصدر</string>
     <string name="error_unknown">حصل خطأ مش معروف</string>
     <string name="action_like">أعجبني</string>
     <string name="action_remove_like">شيل الإعجاب</string>
@@ -448,7 +442,7 @@
     <string name="adjust_radius">ظبط نص قطر الزاوية</string>
     <string name="custom_radius">تعديل نص قطر زاوية الصورة</string>
     <string name="archivetune_canvas">خلفية متحركة (ArchiveTune Canvas)</string>
-    <string name="archivetune_canvas_desc">تحريك غلاف الألبوم وقت التشغيل (بواسطة BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">تحريك غلاف الألبوم وقت التشغيل</string>
     <string name="player_background_style_v8_v9_desc">مش متاح مع تصميم المشغل V8 و V9</string>
     <string name="show_button1_description">تبديل رؤية الزر 1 في حالة حضور Discord</string>
     <string name="show_button2_description">تبديل رؤية الزر 2 في حالة حضور Discord</string>
@@ -485,14 +479,6 @@
     <string name="action_login">تسجيل الدخول</string>
     <string name="login">تسجيل الدخول</string>
     <string name="not_logged_in">مش مسجل الدخول</string>
-    <string name="playback_confirmation_required">مطلوب تأكيد التشغيل</string>
-    <string name="playback_requires_youtube_music_confirmation">أكد التشغيل في يوتيوب ميوزك، وبعدين ارجع لـ ArchiveTune.</string>
-    <string name="playback_login_refresh_required">تحديث تسجيل دخول يوتيوب ميوزك</string>
-    <string name="playback_requires_youtube_music_login_refresh">جدد تسجيل الدخول في يوتيوب ميوزك، وبعدين ارجع لـ ArchiveTune.</string>
-    <string name="playback_error_code">الرمز</string>
-    <string name="playback_error_http">HTTP</string>
-    <string name="playback_error_message">الرسالة</string>
-    <string name="playback_error_cause">السبب</string>
     <string name="content_language">لغة المحتوى الافتراضية</string>
     <string name="content_country">بلد المحتوى الافتراضية</string>
     <string name="system_default">افتراضي النظام</string>
@@ -794,7 +780,6 @@
     <string name="about">حول التطبيق</string>
     <string name="update_channel">قناة التحديثات</string>
     <string name="update_channel_desc">اختار بين النسخ المستقرة المتجربة أو النسخ التجريبية.</string>
-    <string name="channel_stable">مستقرة</string>
     <string name="recent_commits">التعديلات الأخيرة (Commits)</string>
     <string name="updates_channel_warning_intro">ArchiveTune بيوفر قناتين لتنزيل النسخ:</string>
     <string name="updates_channel_warning_stable_title">النسخ المستقرة</string>
@@ -940,25 +925,6 @@
     <string name="together_welcome_join_body">افتح الرابط المشترك، أو دخل الرمز ودوس انضمام. دور التشغيل عندك هيتبع المضيف.</string>
     <string name="together_welcome_permissions_title">الصلاحيات والأمان</string>
     <string name="together_welcome_permissions_body">المضيف يقدر يقرر لو كان الضيوف يقدروا يضيفوا تراكات، يتحكموا في التشغيل، أو يتطلب موافقة للانضمام.</string>
-    <string name="po_token_generation">إنشاء رمز PO Token</string>
-    <string name="web_client_po_token">رمز PO لعميل الويب</string>
-    <string name="web_client_po_token_desc">تفعيل إنشاء رمز PO لعملاء المشغل المستندين للويب</string>
-    <string name="po_token_gvs">رمز PO (GVS)</string>
-    <string name="po_token_player">رمز PO (المشغل)</string>
-    <string name="visitor_data">بيانات الزائر</string>
-    <string name="generated_tokens">الرموز المنشأة</string>
-    <string name="regenerate">إعادة إنشاء</string>
-    <string name="regenerate_token">إعادة إنشاء الرمز</string>
-    <string name="source_url">رابط المصدر</string>
-    <string name="source_url_placeholder">https://youtube.com/account</string>
-    <string name="tokens_generated">تم إنشاء الرموز بنجاح</string>
-    <string name="token_generation_failed">فشل إنشاء الرموز</string>
-    <string name="token_copied">تم نسخ الرمز للحافظة</string>
-    <string name="extracting_from_url">جاري استخراج الرموز من الرابط</string>
-    <string name="po_token_account_notice_title">استخدم نفس الحساب</string>
-    <string name="po_token_account_notice_body">سجل دخول هنا بنفس حساب Google اللي بتستخدمه في يوتيوب ميوزك جوه ArchiveTune قبل ما تنشئ رمز PO.</string>
-    <string name="po_token_account_notice_same_account">لو صفحة الويب دي بتستخدم حساب مختلف، الرمز المنشأ مش هيشتغل صح.</string>
-    <string name="po_token_account_notice_mismatch">استخدم الحساب المطابق، كمل تسجيل الدخول، وافتح youtube.com/account وأنشئ الرمز من الصفحة دي.</string>
     <string name="saved_accounts">الحسابات المحفوظة</string>
     <string name="save_current_account">حفظ الحساب الحالي</string>
     <string name="no_saved_accounts">مفيش حسابات محفوظة لسه</string>
@@ -995,7 +961,6 @@
     <string name="custom_background_scale_value">%1$d%%</string>
     <string name="custom_background_permission_error">ArchiveTune مقدرش يحتفظ بالوصول للصورة دي.</string>
     <string name="custom_background_permission_cleanup_error">مقدرناش نلغي الوصول للصورة اللي فاتت.</string>
-    <string name="playback_login_po_token">رمز PO Token لتسجيل الدخول</string>
     <string name="enable_megalobiz_lyrics">تفعيل كلمات Megalobiz</string>
     <string name="eq_screen_subtitle">اضبط الصوت حسب ودنك وسماعتك</string>
     <string name="eq_sound_shaping_on">تعديل الصوت مفعل</string>

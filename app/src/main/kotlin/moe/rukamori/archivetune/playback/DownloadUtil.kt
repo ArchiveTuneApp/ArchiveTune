@@ -8,14 +8,19 @@
 package moe.rukamori.archivetune.playback
 
 import android.content.Context
+import android.net.Uri
 import androidx.core.net.toUri
 import androidx.media3.database.DatabaseProvider
+import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
+import androidx.media3.datasource.HttpDataSource
+import androidx.media3.datasource.TransferListener
 import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSink
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR
+import androidx.media3.datasource.cache.ContentMetadata
 import androidx.media3.datasource.cache.ContentMetadataMutations
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.offline.DefaultDownloadIndex
@@ -58,7 +63,9 @@ import moe.rukamori.archivetune.utils.isLowDataModeActive
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import timber.log.Timber
+import java.io.IOException
 import java.time.LocalDateTime
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -81,6 +88,8 @@ class DownloadUtil
         private val downloadExecutor = Executors.newFixedThreadPool(MAX_PARALLEL_DOWNLOADS)
         private val artworkJobs = mutableMapOf<String, Job>()
         private val downloadPreloadLock = Any()
+        private val playbackCacheReuseIds = ConcurrentHashMap.newKeySet<String>()
+        private val persistedMetadata = ConcurrentHashMap<String, DownloadMetadataSignature>()
 
         private var downloadPreloadTargetId: String? = null
         private var downloadPreloadJob: Job? = null
@@ -128,17 +137,13 @@ class DownloadUtil
                     if (request.header("Referer") == null && requestProfile.referer != null) {
                         requestBuilder.header("Referer", requestProfile.referer)
                     }
-                    val response = chain.proceed(requestBuilder.build())
-                    if (response.code in STREAM_REFRESH_RESPONSE_CODES) {
-                        invalidateResolvedStreamUrl(request.url.toString())
-                    }
-                    response
+                    chain.proceed(requestBuilder.build())
                 }.build()
         }
 
         val downloads = MutableStateFlow<Map<String, Download>>(emptyMap())
 
-        private val dataSourceFactory =
+        private val resolvedNetworkDataSourceFactory =
             ResolvingDataSource.Factory(
                 OkHttpDataSource.Factory(mediaOkHttpClient),
             ) { dataSpec ->
@@ -160,6 +165,33 @@ class DownloadUtil
                 dataSpec.withResolvedStream(resolved)
             }
 
+        private val invalidatingNetworkDataSourceFactory =
+            DataSource.Factory {
+                InvalidatingDataSource(
+                    upstream = resolvedNetworkDataSourceFactory.createDataSource(),
+                    onFailure = ::invalidateResolvedStream,
+                )
+            }
+
+        private val playbackCacheDataSourceFactory =
+            CacheDataSource
+                .Factory()
+                .setCache(playerCache)
+                .setUpstreamDataSourceFactory(invalidatingNetworkDataSourceFactory)
+                .setCacheWriteDataSinkFactory(null)
+                .setFlags(FLAG_IGNORE_CACHE_ON_ERROR)
+
+        private val downloadUpstreamDataSourceFactory =
+            DataSource.Factory {
+                CompletePlaybackCacheDataSource(
+                    downloadCache = downloadCache,
+                    playerCache = playerCache,
+                    playbackCacheDataSourceFactory = playbackCacheDataSourceFactory,
+                    networkDataSourceFactory = invalidatingNetworkDataSourceFactory,
+                    playbackCacheReuseIds = playbackCacheReuseIds,
+                )
+            }
+
         val downloadNotificationHelper =
             DownloadNotificationHelper(context, ExoDownloadService.CHANNEL_ID)
 
@@ -171,7 +203,7 @@ class DownloadUtil
                     CacheDataSource
                         .Factory()
                         .setCache(downloadCache)
-                        .setUpstreamDataSourceFactory(dataSourceFactory)
+                        .setUpstreamDataSourceFactory(downloadUpstreamDataSourceFactory)
                         .setCacheWriteDataSinkFactory(
                             CacheDataSink.Factory()
                                 .setCache(downloadCache)
@@ -200,6 +232,18 @@ class DownloadUtil
                             }
                             if (download.state == Download.STATE_COMPLETED) {
                                 scheduleDownloadedArtwork(download.request.id)
+                                playbackCacheReuseIds.remove(download.request.id)
+                            } else if (download.state == Download.STATE_FAILED) {
+                                playbackCacheReuseIds.remove(download.request.id)
+                                resolveAudioStream.invalidate(download.request.id)
+                                Timber.tag(TAG).e(
+                                    "Download failed for %s (reason=%d, bytes=%d, contentLength=%d, cause=%s)",
+                                    download.request.id,
+                                    download.failureReason,
+                                    download.bytesDownloaded,
+                                    download.contentLength,
+                                    finalException.sanitizedCauseChain(),
+                                )
                             }
                             updateNextDownloadPreload(downloadManager)
                         }
@@ -210,6 +254,8 @@ class DownloadUtil
                         ) {
                             downloads.update { map -> map - download.request.id }
                             cancelDownloadedArtworkJob(download.request.id)
+                            playbackCacheReuseIds.remove(download.request.id)
+                            persistedMetadata.remove(download.request.id)
                             downloadScope.launch {
                                 downloadedArtworkRepository.remove(download.request.id)
                             }
@@ -257,9 +303,7 @@ class DownloadUtil
             }
         }
 
-        private fun invalidateResolvedStreamUrl(url: String) {
-            resolveAudioStream.invalidateUrl(url)
-        }
+        private fun invalidateResolvedStream(mediaId: String) = resolveAudioStream.invalidate(mediaId)
 
         private fun Download.toProgressSnapshot(): Download {
             val progressSnapshot =
@@ -366,6 +410,8 @@ class DownloadUtil
             mediaId: String,
             resolved: ResolvedAudioStream,
         ) {
+            val signature = resolved.downloadMetadataSignature()
+            if (persistedMetadata.put(mediaId, signature) == signature) return
             downloadScope.launch {
                 try {
                     val artworkUrls =
@@ -416,12 +462,27 @@ class DownloadUtil
                         }
                     scheduleDownloadedArtwork(mediaId, artworkUrls)
                 } catch (exception: CancellationException) {
+                    persistedMetadata.remove(mediaId, signature)
                     throw exception
                 } catch (exception: Exception) {
+                    persistedMetadata.remove(mediaId, signature)
                     Timber.w(exception, "Failed to persist download metadata")
                 }
             }
         }
+
+        private fun ResolvedAudioStream.downloadMetadataSignature(): DownloadMetadataSignature =
+            DownloadMetadataSignature(
+                formatId = formatId,
+                mimeType = mimeType,
+                codecs = codecs,
+                bitrate = bitrate,
+                sampleRate = sampleRate,
+                contentLength = contentLength,
+                title = title,
+                durationSeconds = durationSeconds,
+                thumbnailUrl = thumbnailUrl,
+            )
 
         private fun DataSpec.withResolvedStream(resolved: ResolvedAudioStream): DataSpec =
             buildUpon()
@@ -473,15 +534,156 @@ class DownloadUtil
             }
         }
 
+        private data class DownloadMetadataSignature(
+            val formatId: Int,
+            val mimeType: String,
+            val codecs: String,
+            val bitrate: Int,
+            val sampleRate: Int?,
+            val contentLength: Long,
+            val title: String?,
+            val durationSeconds: Int?,
+            val thumbnailUrl: String?,
+        )
+
+        private class InvalidatingDataSource(
+            private val upstream: DataSource,
+            private val onFailure: (String) -> Unit,
+        ) : DataSource {
+            private var mediaId: String? = null
+            private var invalidated = false
+
+            override fun addTransferListener(transferListener: TransferListener) {
+                upstream.addTransferListener(transferListener)
+            }
+
+            override fun open(dataSpec: DataSpec): Long {
+                mediaId = dataSpec.key
+                invalidated = false
+                return try {
+                    upstream.open(dataSpec)
+                } catch (exception: IOException) {
+                    invalidateOnce()
+                    throw exception
+                }
+            }
+
+            override fun read(
+                buffer: ByteArray,
+                offset: Int,
+                length: Int,
+            ): Int =
+                try {
+                    upstream.read(buffer, offset, length)
+                } catch (exception: IOException) {
+                    invalidateOnce()
+                    throw exception
+                }
+
+            override fun getUri(): Uri? = upstream.uri
+
+            override fun getResponseHeaders(): Map<String, List<String>> = upstream.responseHeaders
+
+            override fun close() {
+                try {
+                    upstream.close()
+                } catch (exception: IOException) {
+                    invalidateOnce()
+                    throw exception
+                } finally {
+                    mediaId = null
+                }
+            }
+
+            private fun invalidateOnce() {
+                if (invalidated) return
+                invalidated = true
+                mediaId?.let(onFailure)
+            }
+        }
+
+        private class CompletePlaybackCacheDataSource(
+            private val downloadCache: Cache,
+            private val playerCache: Cache,
+            private val playbackCacheDataSourceFactory: DataSource.Factory,
+            private val networkDataSourceFactory: DataSource.Factory,
+            private val playbackCacheReuseIds: MutableSet<String>,
+        ) : DataSource {
+            private val transferListeners = mutableListOf<TransferListener>()
+            private var delegate: DataSource? = null
+
+            override fun addTransferListener(transferListener: TransferListener) {
+                transferListeners += transferListener
+                delegate?.addTransferListener(transferListener)
+            }
+
+            override fun open(dataSpec: DataSpec): Long {
+                val mediaId = dataSpec.key
+                val selectedFactory =
+                    if (mediaId != null && shouldUsePlaybackCache(mediaId)) {
+                        playbackCacheDataSourceFactory
+                    } else {
+                        networkDataSourceFactory
+                    }
+                return selectedFactory
+                    .createDataSource()
+                    .also { selected ->
+                        transferListeners.forEach(selected::addTransferListener)
+                        delegate = selected
+                    }.open(dataSpec)
+            }
+
+            override fun read(
+                buffer: ByteArray,
+                offset: Int,
+                length: Int,
+            ): Int = checkNotNull(delegate).read(buffer, offset, length)
+
+            override fun getUri(): Uri? = delegate?.uri
+
+            override fun getResponseHeaders(): Map<String, List<String>> = delegate?.responseHeaders ?: emptyMap()
+
+            override fun close() {
+                val selected = delegate
+                delegate = null
+                selected?.close()
+            }
+
+            private fun shouldUsePlaybackCache(mediaId: String): Boolean {
+                if (mediaId in playbackCacheReuseIds) return true
+                if (downloadCache.getCachedSpans(mediaId).isNotEmpty()) return false
+                val contentLength =
+                    ContentMetadata
+                        .getContentLength(playerCache.getContentMetadata(mediaId))
+                        .takeIf { it > 0L }
+                        ?: return false
+                if (!playerCache.isCached(mediaId, 0L, contentLength)) return false
+                playbackCacheReuseIds += mediaId
+                return true
+            }
+        }
+
+        private fun Throwable?.sanitizedCauseChain(): String =
+            generateSequence(this) { throwable -> throwable.cause }
+                .take(MAX_LOGGED_CAUSE_DEPTH)
+                .joinToString(separator = " <- ") { throwable ->
+                    if (throwable is HttpDataSource.InvalidResponseCodeException) {
+                        "${throwable.javaClass.simpleName}(HTTP ${throwable.responseCode})"
+                    } else {
+                        throwable.javaClass.simpleName.ifBlank { throwable.javaClass.name }
+                    }
+                }.ifBlank { "unknown" }
+
         companion object {
+            private const val TAG = "DownloadUtil"
             private const val DOWNLOAD_FORMAT_ID_METADATA_KEY = "archivetune_download_format_id"
             private const val MAX_PARALLEL_DOWNLOADS = 3
             private const val MAX_IDLE_DOWNLOAD_CONNECTIONS = 12
             private const val MAX_DOWNLOAD_HTTP_REQUESTS = MAX_PARALLEL_DOWNLOADS
-            private const val DOWNLOAD_READ_TIMEOUT_SECONDS = 90L
+            private const val DOWNLOAD_READ_TIMEOUT_SECONDS = 30L
             private const val DOWNLOAD_PROGRESS_REFRESH_INTERVAL_MS = 1_000L
             private const val DOWNLOAD_CONNECTION_KEEP_ALIVE_MINUTES = 5L
             private const val DOWNLOAD_WRITE_BUFFER_SIZE = 256 * 1024
-            private val STREAM_REFRESH_RESPONSE_CODES = setOf(403, 404, 410, 416)
+            private const val MAX_LOGGED_CAUSE_DEPTH = 6
         }
     }

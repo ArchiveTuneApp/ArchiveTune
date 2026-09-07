@@ -40,6 +40,8 @@ import androidx.media3.ui.compose.ContentFrame
 import androidx.media3.ui.compose.SURFACE_TYPE_TEXTURE_VIEW
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import moe.rukamori.archivetune.canvas.CanvasSource
+import moe.rukamori.archivetune.canvas.CanvasNetworkAccess
 import moe.rukamori.archivetune.innertube.YouTube
 import moe.rukamori.archivetune.utils.StreamClientUtils
 import okhttp3.OkHttpClient
@@ -51,12 +53,14 @@ private const val CanvasPlaybackStallTimeoutMs = 5_000L
 
 @Composable
 internal fun CanvasArtworkPlayer(
+    source: CanvasSource?,
     primaryUrl: String?,
     fallbackUrl: String?,
     isPlaying: Boolean,
     modifier: Modifier = Modifier,
     resizeMode: Int = AspectRatioFrameLayout.RESIZE_MODE_FIT,
 ) {
+    val provider = source ?: return
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val primary = primaryUrl?.trim()?.takeIf { it.isNotBlank() }
@@ -70,12 +74,16 @@ internal fun CanvasArtworkPlayer(
     var isVideoReady by remember(initial) { mutableStateOf(false) }
     var hasPlaybackFailed by remember(initial) { mutableStateOf(false) }
     val shouldPlay by rememberUpdatedState(isPlaying)
+    val isStarted = remember(lifecycleOwner) {
+        { lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED) }
+    }
 
     val okHttpClient =
-        remember {
+        remember(provider) {
             OkHttpClient
                 .Builder()
                 .proxy(YouTube.streamOkHttpProxy)
+                .addInterceptor { chain -> CanvasNetworkAccess.intercept(chain, provider) }
                 .addInterceptor { chain ->
                     val request = chain.request()
                     val host = request.url.host
@@ -137,8 +145,8 @@ internal fun CanvasArtworkPlayer(
                 }
         }
 
-    LaunchedEffect(isPlaying) {
-        if (hasPlaybackFailed) {
+    LaunchedEffect(isPlaying, exoPlayer) {
+        if (hasPlaybackFailed || !isStarted()) {
             exoPlayer.pause()
         } else {
             exoPlayer.setCanvasPlayback(isPlaying)
@@ -153,6 +161,11 @@ internal fun CanvasArtworkPlayer(
 
         while (isActive && isPlaying && currentUrl == primary) {
             delay(CanvasPlaybackStallCheckIntervalMs)
+            if (!isStarted()) {
+                stalledForMs = 0L
+                lastPosition = exoPlayer.currentPosition
+                continue
+            }
 
             val currentPosition = exoPlayer.currentPosition
             val playbackState = exoPlayer.playbackState
@@ -179,21 +192,24 @@ internal fun CanvasArtworkPlayer(
         }
     }
 
-    DisposableEffect(exoPlayer, lifecycleOwner) {
-        val observer =
-            LifecycleEventObserver { _, event ->
-                if (
-                    (event == Lifecycle.Event.ON_START || event == Lifecycle.Event.ON_RESUME) &&
-                    !hasPlaybackFailed &&
-                    exoPlayer.playerError == null
-                ) {
-                    exoPlayer.setCanvasPlayback(shouldPlay)
+    DisposableEffect(exoPlayer, lifecycleOwner, okHttpClient) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> {
+                    if (!hasPlaybackFailed && exoPlayer.playerError == null) {
+                        exoPlayer.prepare()
+                        exoPlayer.setCanvasPlayback(shouldPlay)
+                    }
                 }
+                Lifecycle.Event.ON_STOP -> {
+                    exoPlayer.stop()
+                    okHttpClient.dispatcher.cancelAll()
+                }
+                else -> Unit
             }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
         }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     DisposableEffect(exoPlayer, primary, fallback) {
@@ -217,13 +233,13 @@ internal fun CanvasArtworkPlayer(
 
                 override fun onRenderedFirstFrame() {
                     isVideoReady = true
-                    if (shouldPlay && !hasPlaybackFailed && exoPlayer.playerError == null) {
+                    if (isStarted() && shouldPlay && !hasPlaybackFailed && exoPlayer.playerError == null) {
                         exoPlayer.setCanvasPlayback(isPlaying = true)
                     }
                 }
 
                 override fun onPlaybackStateChanged(playbackState: Int) {
-                    if (!shouldPlay || hasPlaybackFailed || exoPlayer.playerError != null) return
+                    if (!isStarted() || !shouldPlay || hasPlaybackFailed || exoPlayer.playerError != null) return
                     exoPlayer.setCanvasPlayback(isPlaying = true)
                 }
 
@@ -231,13 +247,13 @@ internal fun CanvasArtworkPlayer(
                     playWhenReady: Boolean,
                     reason: Int,
                 ) {
-                    if (shouldPlay && !playWhenReady && !hasPlaybackFailed && exoPlayer.playerError == null) {
+                    if (isStarted() && shouldPlay && !playWhenReady && !hasPlaybackFailed && exoPlayer.playerError == null) {
                         exoPlayer.setCanvasPlayback(isPlaying = true)
                     }
                 }
 
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
-                    if (shouldPlay && !isPlaying && !hasPlaybackFailed && exoPlayer.playerError == null) {
+                    if (isStarted() && shouldPlay && !isPlaying && !hasPlaybackFailed && exoPlayer.playerError == null) {
                         exoPlayer.setCanvasPlayback(isPlaying = true)
                     }
                 }
@@ -269,13 +285,16 @@ internal fun CanvasArtworkPlayer(
 
         exoPlayer.stop()
         exoPlayer.setMediaItem(mediaItem)
-        exoPlayer.prepare()
-        exoPlayer.setCanvasPlayback(isPlaying)
+        if (isStarted()) {
+            exoPlayer.prepare()
+            exoPlayer.setCanvasPlayback(isPlaying)
+        }
     }
 
     DisposableEffect(exoPlayer) {
         onDispose {
             exoPlayer.release()
+            okHttpClient.dispatcher.cancelAll()
         }
     }
 

@@ -153,7 +153,7 @@
     <string name="added_n_songs_to_n_playlists">Додано %1$d пісень до %2$d плейлістів</string>
     <string name="playlist_synced">Плейліст синхронізовано</string>
     <string name="archivetune_canvas">ArchiveTune Canvas</string>
-    <string name="archivetune_canvas_desc">Анімувати обкладинку альбому під час відтворення (за технологією BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">Анімувати обкладинку альбому під час відтворення</string>
     <string name="tempo_and_pitch">Темп і висота звуку</string>
     <string name="tempo">Темп</string>
     <string name="pitch">Висота звуку</string>
@@ -186,9 +186,7 @@
         <item quantity="many">%d хвилин</item>
         <item quantity="other">%d хвилин</item>
     </plurals>
-    <string name="error_no_stream">Трансляція недоступна</string>
     <string name="error_no_internet">Відсутнє підключення до мережі</string>
-    <string name="error_timeout">Тайм-аут</string>
     <string name="error_unknown">Невідома помилка</string>
     <string name="action_like">Подобається</string>
     <string name="action_remove_like">Прибрати позначку \"Подобається\"</string>
@@ -326,10 +324,6 @@
     <string name="action_login">Увійти</string>
     <string name="login">Логін</string>
     <string name="not_logged_in">Ви не увійшли в систему</string>
-    <string name="playback_confirmation_required">Потрібне підтвердження відтворення</string>
-    <string name="playback_requires_youtube_music_confirmation">Підтвердьте відтворення в YouTube Music, а потім поверніться до ArchiveTune.</string>
-    <string name="playback_login_refresh_required">Оновлення входу в YouTube Music</string>
-    <string name="playback_requires_youtube_music_login_refresh">Оновіть дані для входу в YouTube Music, а потім поверніться до ArchiveTune.</string>
     <string name="content_language">Стандартна мова контенту</string>
     <string name="content_country">Стандартна країна походження контенту</string>
     <string name="system_default">Налаштування системи</string>
@@ -504,8 +498,6 @@
     <string name="unknown_codec">Невідомий кодек</string>
     <string name="bitrate_label">Швидкість передачі даних</string>
     <string name="unknown_bitrate">Невідома швидкість передачі даних</string>
-    <string name="web_client_po_token_desc">Увімкнути генерацію токенів PO для веб-плеєрів</string>
-    <string name="po_token_player">Токен PO (плеєр)</string>
     <string name="sample_rate_label">Частота дискретизації</string>
     <string name="unknown_sample_rate">Невідома частота дискретизації</string>
     <string name="content_length_label">Обсяг контенту</string>
@@ -543,7 +535,6 @@
     <string name="latest_version_format">Остання: %s</string>
     <string name="enable_update_notification">Увімкнути сповіщення про оновлення</string>
     <string name="update_channel">Канал оновлень</string>
-    <string name="channel_stable">Стабільний</string>
     <string name="recent_commits">Останні зміни</string>
     <string name="changelog">Історія змін</string>
     <string name="view_changelog">Переглянути історію змін</string>
@@ -616,23 +607,6 @@
     <string name="together_welcome_join_body">Відкрийте спільне посилання або введіть код і натисніть «Приєднатися». Ваша черга та відтворення будуть синхронізовані з організатором.</string>
     <string name="together_welcome_permissions_title">Дозволи та безпека</string>
     <string name="together_welcome_permissions_body">Хости можуть вирішувати, чи зможуть гості додавати пісні, керувати відтворенням або чи потрібно їм отримувати дозвіл на приєднання.</string>
-    <string name="po_token_generation">Генерація токенів PO</string>
-    <string name="web_client_po_token">Токен PO веб-клієнта</string>
-    <string name="po_token_gvs">Токен PO (GVS)</string>
-    <string name="visitor_data">Дані про відвідувачів</string>
-    <string name="generated_tokens">Створені токени</string>
-    <string name="regenerate">Згенерувати наново</string>
-    <string name="regenerate_token">Згенерувати токен наново</string>
-    <string name="source_url">URL-адреса джерела</string>
-    <string name="source_url_placeholder">https://youtube.com/account</string>
-    <string name="tokens_generated">Токени успішно згенеровано</string>
-    <string name="token_generation_failed">Помилка під час генерації токена</string>
-    <string name="token_copied">Токен скопійовано до буфера обміну</string>
-    <string name="extracting_from_url">Витягування токенів з URL-адреси…</string>
-    <string name="po_token_account_notice_title">Використовуйте той самий обліковий запис</string>
-    <string name="po_token_account_notice_body">Перш ніж створити токен PO, увійдіть сюди за допомогою того самого облікового запису Google, який ви вже використовуєте для YouTube Music у програмі ArchiveTune.</string>
-    <string name="po_token_account_notice_same_account">Якщо цей WebView використовує інший обліковий запис, згенерований токен не працюватиме належним чином.</string>
-    <string name="po_token_account_notice_mismatch">Використовуйте відповідний обліковий запис, завершіть процедуру входу, а потім відкрийте сторінку youtube.com/account і створіть токен на цій сторінці.</string>
     <string name="removed_song_from_queue">Вилучено \"%s\" із черги</string>
     <string name="removed_n_songs_from_queue">Видалено %d пісень із черги</string>
     <string name="sort_order_ascending">За зростанням</string>
@@ -664,7 +638,6 @@
     <string name="total_requests">Загальна кількість запитів</string>
     <string name="success_rate">Відсоток успішності</string>
     <string name="providers">Провайдери</string>
-    <string name="updates_subtitle_stable">Стабільні версії та інформація про версії</string>
     <string name="updates_status_checking">Перевірка наявності останньої версії</string>
     <string name="updates_status_current">Ви використовуєте останню доступну версію</string>
     <string name="update_channel_desc">Виберіть між перевіреними версіями та знімками з розробки.</string>

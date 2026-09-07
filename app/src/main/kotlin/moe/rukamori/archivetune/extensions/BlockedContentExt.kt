@@ -9,7 +9,9 @@ package moe.rukamori.archivetune.extensions
 
 import moe.rukamori.archivetune.innertube.models.AlbumItem
 import moe.rukamori.archivetune.innertube.models.ArtistItem
+import moe.rukamori.archivetune.innertube.models.EpisodeItem
 import moe.rukamori.archivetune.innertube.models.PlaylistItem
+import moe.rukamori.archivetune.innertube.models.PodcastItem
 import moe.rukamori.archivetune.innertube.models.SongItem
 import moe.rukamori.archivetune.innertube.models.YTItem
 import moe.rukamori.archivetune.innertube.pages.BrowseResult
@@ -23,6 +25,8 @@ fun <T : YTItem> List<T>.filterBlockedArtists(blockedArtistIds: Set<String>): Li
             is SongItem -> item.artists.none { it.id in blockedArtistIds }
             is AlbumItem -> item.artists.orEmpty().none { it.id in blockedArtistIds }
             is PlaylistItem -> item.author?.id !in blockedArtistIds
+            is PodcastItem -> item.author?.id !in blockedArtistIds
+            is EpisodeItem -> item.podcast?.id !in blockedArtistIds
         }
     }
 }

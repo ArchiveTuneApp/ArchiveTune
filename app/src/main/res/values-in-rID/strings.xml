@@ -100,7 +100,6 @@
     <string name="search_online">Cari online</string>
     <string name="tempo_and_pitch">Tempo dan Pitch</string>
     <string name="aod_mode">Mode AOD</string>
-    <string name="aod_mode_exit">Keluar dari AOD</string>
     <string name="tempo">Tempo</string>
     <string name="pitch">Pitch</string>
     <string name="pitch_mode_semitones_short">st</string>
@@ -172,10 +171,7 @@
     <plurals name="minute">
         <item quantity="other">%d menit</item>
     </plurals>
-    <string name="error_no_stream">Tidak ada aliran yang tersedia</string>
     <string name="error_no_internet">Tidak ada koneksi jaringan</string>
-    <string name="error_timeout">Timeout</string>
-    <string name="error_malformed_stream">Kesalahan sumber</string>
     <string name="error_unknown">Kesalahan tidak diketahui</string>
     <string name="action_like">Suka</string>
     <string name="action_remove_like">Hapus suka</string>
@@ -283,7 +279,7 @@
     <string name="brightness">Kecerahan</string>
     <string name="custom_value">Nilai kustom</string>
     <string name="archivetune_canvas">Kanvas ArchiveTune</string>
-    <string name="archivetune_canvas_desc">Menganimasikan sampul album saat diputar (Didukung oleh BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">Menganimasikan sampul album saat diputar</string>
     <string name="show_button1_description">Alihkan visibilitas tombol 1 di Discord Rich Presence</string>
     <string name="show_button2_description">Alihkan visibilitas tombol 1 di Discord Rich Presence</string>
     <string name="discord_activity_type">Jenis aktivitas</string>
@@ -316,10 +312,6 @@
     <string name="action_login">Masuk</string>
     <string name="login">Masuk</string>
     <string name="not_logged_in">Belum Masuk</string>
-    <string name="playback_confirmation_required">Konfirmasi pemutaran diperlukan</string>
-    <string name="playback_requires_youtube_music_confirmation">Konfirmasikan pemutaran di YouTube Music, lalu kembali ke ArchiveTune.</string>
-    <string name="playback_login_refresh_required">Segarkan login YouTube Music</string>
-    <string name="playback_requires_youtube_music_login_refresh">Segarkan login YouTube Music Anda, lalu kembali ke ArchiveTune.</string>
     <string name="content_language">Bahasa konten default</string>
     <string name="content_country">Negara konten default</string>
     <string name="system_default">Bawaan sistem</string>
@@ -596,7 +588,6 @@
     <string name="about">Tentang</string>
     <string name="new_version_available">Versi baru tersedia</string>
     <string name="updates">Pembaruan</string>
-    <string name="updates_subtitle_stable">Rilis stabil dan catatan rilis</string>
     <string name="current_version">Versi Saat Ini</string>
     <string name="latest_version_format">Terbaru: %s</string>
     <string name="updates_status_checking">Memeriksa rilis terbaru</string>
@@ -604,7 +595,6 @@
     <string name="enable_update_notification">Aktifkan Pemberitahuan Pembaruan</string>
     <string name="update_channel">Saluran Pembaruan</string>
     <string name="update_channel_desc">Pilih antara rilis teruji dan cuplikan pengembangan.</string>
-    <string name="channel_stable">Stabil</string>
     <string name="recent_commits">Commit Terbaru</string>
     <string name="updates_loading_commits">Memuat commit terbaru</string>
     <string name="updates_recent_commits_count">%1$d commit terbaru</string>
@@ -684,25 +674,6 @@
     <string name="together_welcome_join_body">Buka tautan yang dibagikan, atau masukkan kode dan ketuk Gabung. Antrian dan pemutaran Anda akan mengikuti host.</string>
     <string name="together_welcome_permissions_title">Izin dan keamanan</string>
     <string name="together_welcome_permissions_body">Tuan rumah dapat memutuskan apakah tamu dapat menambahkan lagu, mengontrol pemutaran, atau memerlukan persetujuan untuk bergabung.</string>
-    <string name="po_token_generation">Pembuatan Token PO</string>
-    <string name="web_client_po_token">Web klien PO Token</string>
-    <string name="web_client_po_token_desc">Aktifkan pembuatan token PO untuk klien pemain berbasis web</string>
-    <string name="po_token_gvs">Token PO (GVS)</string>
-    <string name="po_token_player">Token PO (Pemutar)</string>
-    <string name="visitor_data">Data Pengunjung</string>
-    <string name="generated_tokens">Token yang Dihasilkan</string>
-    <string name="regenerate">Generate ulang</string>
-    <string name="regenerate_token">Regenerasi Token</string>
-    <string name="source_url">URL sumber</string>
-    <string name="source_url_placeholder">https://youtube.com/account</string>
-    <string name="tokens_generated">Token berhasil dibuat</string>
-    <string name="token_generation_failed">Pembuatan token gagal</string>
-    <string name="token_copied">Token disalin ke papan klip</string>
-    <string name="extracting_from_url">Mengekstrak token dari URL</string>
-    <string name="po_token_account_notice_title">Gunakan akun yang sama</string>
-    <string name="po_token_account_notice_body">Masuk di sini dengan akun Google yang sama yang sudah Anda gunakan untuk YouTube Music di dalam ArchiveTune sebelum membuat token PO.</string>
-    <string name="po_token_account_notice_same_account">Jika WebView ini menggunakan akun lain, token yang dihasilkan tidak akan berfungsi dengan benar.</string>
-    <string name="po_token_account_notice_mismatch">Gunakan akun yang sesuai, selesaikan proses masuk, lalu buka youtube.com/account dan buat token dari halaman tersebut.</string>
     <string name="saved_accounts">Akun yang disimpan</string>
     <string name="save_current_account">Simpan akun saat ini</string>
     <string name="no_saved_accounts">Belum ada akun yang disimpan</string>
@@ -812,7 +783,6 @@
     <string name="canvas_refetch_failed">Tidak dapat memperbarui animasi kanvas</string>
     <string name="hide_playlist">Sembunyikan playlist</string>
     <string name="unhide_playlist">Tampilkan playlist</string>
-    <string name="show_hidden_playlists">Tampilkan yang disembunyikan</string>
     <string name="hide_playlist_confirm">Sembunyikan \"%1$s\" dari koleksi?</string>
     <string name="together_transfer_host">Alihkan host</string>
     <string name="together_approve">Setujui</string>
@@ -868,9 +838,6 @@
     <string name="player_background_style_v8_v9_desc">Tidak tersedia untuk gaya pemutar V8 dan V9</string>
     <string name="force_high_refresh_rate">Paksa laju penyegaran tinggi</string>
     <string name="max_supported_refresh_rate">Dukungan maks: %1$d Hz</string>
-    <string name="playback_login_po_token">Masuk dengan PO Token</string>
-    <string name="playback_error_message">Pesan</string>
-    <string name="playback_error_cause">Penyebab</string>
     <string name="proxy_connection_invalid_configuration">Host atau port proksi tidak valid</string>
     <string name="device_mute_recovery_volume">Naikkan volume dari 0</string>
     <string name="device_mute_recovery_volume_disabled">Dinonaktifkan</string>
@@ -881,8 +848,6 @@
     <string name="sort_z_to_a">Z → A</string>
     <string name="custom_order">Urutan kustom</string>
     <string name="lyrics_mode_v2">V2 Legacy</string>
-    <string name="playback_error_code">Kode</string>
-    <string name="playback_error_http">HTTP</string>
     <string name="enable_youlyplus_lyrics">Aktifkan lirik YouLyPlus</string>
     <string name="enable_megalobiz_lyrics">Aktifkan lirik Megalobiz</string>
     <string name="eq_sound_shaping_off">Pembentukan suara nonaktif</string>

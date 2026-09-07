@@ -67,6 +67,7 @@ import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -82,9 +83,7 @@ import moe.rukamori.archivetune.constants.ListItemHeight
 import moe.rukamori.archivetune.constants.ListThumbnailSize
 import moe.rukamori.archivetune.constants.SpeedDialSongIdsKey
 import moe.rukamori.archivetune.constants.ThumbnailCornerRadius
-import moe.rukamori.archivetune.db.entities.SongEntity
 import moe.rukamori.archivetune.extensions.toMediaItem
-import moe.rukamori.archivetune.innertube.YouTube
 import moe.rukamori.archivetune.innertube.models.SongItem
 import moe.rukamori.archivetune.models.MediaMetadata
 import moe.rukamori.archivetune.models.toMediaMetadata
@@ -106,6 +105,7 @@ import moe.rukamori.archivetune.utils.parseSpeedDialPins
 import moe.rukamori.archivetune.utils.rememberPreference
 import moe.rukamori.archivetune.utils.serializeSpeedDialPins
 import moe.rukamori.archivetune.utils.toggleSpeedDialPin
+import timber.log.Timber
 import java.time.LocalDateTime
 
 @SuppressLint("MutableCollectionMutableState")
@@ -282,17 +282,32 @@ fun YouTubeSongMenu(
             trailingContent = {
                 IconButton(
                     onClick = {
-                        database.transaction {
-                            librarySong.let { librarySong ->
-                                val updatedSong: SongEntity
-                                if (librarySong == null) {
-                                    insert(song.toMediaMetadata(), SongEntity::toggleLike)
-                                    updatedSong = song.toMediaMetadata().toSongEntity().let(SongEntity::toggleLike)
-                                } else {
-                                    updatedSong = librarySong.song.toggleLike()
-                                    update(updatedSong)
+                        coroutineScope.launch(Dispatchers.IO) {
+                            try {
+                                val requestedSong =
+                                    database.withTransaction {
+                                        val currentSong =
+                                            getSongById(song.id)
+                                                ?: run {
+                                                    insert(song.toMediaMetadata())
+                                                    getSongById(song.id)
+                                                }
+                                                ?: return@withTransaction null
+                                        currentSong.song.toggleLike()
+                                    } ?: return@launch
+                                syncUtils.likeSong(requestedSong).onFailure { error ->
+                                    Timber.w(error, "Failed to update liked song ${song.id}")
+                                    withContext(Dispatchers.Main) {
+                                        Toast.makeText(context, R.string.error_unknown, Toast.LENGTH_SHORT).show()
+                                    }
                                 }
-                                syncUtils.likeSong(updatedSong)
+                            } catch (error: CancellationException) {
+                                throw error
+                            } catch (error: Exception) {
+                                Timber.e(error, "Failed to prepare liked song ${song.id}")
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(context, R.string.error_unknown, Toast.LENGTH_SHORT).show()
+                                }
                             }
                         }
                     },
@@ -482,33 +497,35 @@ fun YouTubeSongMenu(
                     modifier =
                         Modifier.clickable {
                             coroutineScope.launch(Dispatchers.IO) {
-                                val shouldAdd = librarySong?.song?.inLibrary == null
-                                val remoteResult = YouTube.likeVideo(song.id, shouldAdd)
-                                if (remoteResult.isFailure) {
+                                try {
+                                    val requestedSong =
+                                        database.withTransaction {
+                                            val currentSong =
+                                                getSongById(song.id)?.song
+                                                    ?: song.toMediaMetadata().toSongEntity().also {
+                                                        insert(song.toMediaMetadata())
+                                                    }
+                                            val shouldAdd = currentSong.inLibrary == null
+                                            val now = LocalDateTime.now()
+                                            currentSong.copy(
+                                                liked = shouldAdd,
+                                                likedDate = if (shouldAdd) now else null,
+                                                inLibrary = if (shouldAdd) now else null,
+                                            )
+                                        }
+                                    syncUtils.likeSong(requestedSong).onFailure { error ->
+                                        Timber.w(error, "Failed to update song library state ${song.id}")
+                                        withContext(Dispatchers.Main) {
+                                            Toast.makeText(context, R.string.error_unknown, Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                } catch (error: CancellationException) {
+                                    throw error
+                                } catch (error: Exception) {
+                                    Timber.e(error, "Failed to prepare song library state ${song.id}")
                                     withContext(Dispatchers.Main) {
-                                        Toast
-                                            .makeText(context, context.getString(R.string.error_unknown), Toast.LENGTH_SHORT)
-                                            .show()
+                                        Toast.makeText(context, R.string.error_unknown, Toast.LENGTH_SHORT).show()
                                     }
-                                    return@launch
-                                }
-
-                                val now = LocalDateTime.now()
-                                database.withTransaction {
-                                    val base =
-                                        librarySong?.song
-                                            ?: database.getSongByIdBlocking(song.id)?.song
-                                            ?: song.toMediaMetadata().toSongEntity()
-                                    if (librarySong == null) {
-                                        insert(song.toMediaMetadata())
-                                    }
-                                    update(
-                                        base.copy(
-                                            liked = shouldAdd,
-                                            likedDate = if (shouldAdd) now else null,
-                                            inLibrary = if (shouldAdd) now else null,
-                                        ),
-                                    )
                                 }
                             }
                         },

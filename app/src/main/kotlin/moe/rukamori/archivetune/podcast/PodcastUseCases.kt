@@ -1,0 +1,120 @@
+/*
+ * ArchiveTune (2026)
+ * © Rukamori — github.com/rukamori
+ * GPL-3.0 License | Contributors: see git history
+ * Do not remove or alter this notice. - Per GPL-3.0 Section 4 & Section 5
+ */
+
+package moe.rukamori.archivetune.podcast
+
+import com.google.common.collect.ImmutableList
+import moe.rukamori.archivetune.innertube.models.EpisodeItem
+import moe.rukamori.archivetune.models.MediaMetadata
+import moe.rukamori.archivetune.models.toMediaMetadata
+import javax.inject.Inject
+
+data class PodcastLoadResult(
+    val uiState: PodcastUiState,
+    val continuation: String?,
+)
+
+data class PodcastContinuationResult(
+    val episodes: ImmutableList<PodcastEpisodeUiModel>,
+    val continuation: String?,
+)
+
+class LoadPodcastUseCase
+    @Inject
+    constructor(
+        private val repository: PodcastRepository,
+    ) {
+        suspend operator fun invoke(browseId: String): Result<PodcastLoadResult> {
+            val validatedBrowseId = browseId.trim().takeIf(String::isNotBlank) ?: return Result.failure(IllegalArgumentException())
+            return repository.loadPodcast(validatedBrowseId).map { page ->
+                val episodes =
+                    page.episodes
+                        .asSequence()
+                        .filter { it.id.isNotBlank() && it.title.isNotBlank() && it.endpoint.videoId?.isNotBlank() == true }
+                        .distinctBy(EpisodeItem::id)
+                        .map { episode ->
+                            episode.toUiModel(
+                                fallbackPodcastTitle = page.podcast.title,
+                                fallbackPodcastBrowseId = page.podcast.browseId,
+                            )
+                        }.toList()
+                PodcastLoadResult(
+                    uiState =
+                        PodcastUiState(
+                            browseId = page.podcast.browseId,
+                            title = page.podcast.title,
+                            author = page.podcast.author?.name,
+                            description = page.description,
+                            thumbnailUrl = page.podcast.thumbnail,
+                            episodes = ImmutableList.copyOf(episodes),
+                            isLoadingMore = false,
+                            canLoadMore = !page.continuation.isNullOrBlank(),
+                        ),
+                    continuation = page.continuation?.takeIf(String::isNotBlank),
+                )
+            }
+        }
+    }
+
+class LoadPodcastContinuationUseCase
+    @Inject
+    constructor(
+        private val repository: PodcastRepository,
+    ) {
+        suspend operator fun invoke(
+            continuation: String,
+            podcastTitle: String,
+            podcastBrowseId: String,
+        ): Result<PodcastContinuationResult> {
+            val validatedContinuation = continuation.trim().takeIf(String::isNotBlank) ?: return Result.failure(IllegalArgumentException())
+            return repository.loadContinuation(validatedContinuation).map { page ->
+                val episodes =
+                    page.episodes
+                        .asSequence()
+                        .filter { it.id.isNotBlank() && it.title.isNotBlank() && it.endpoint.videoId?.isNotBlank() == true }
+                        .distinctBy(EpisodeItem::id)
+                        .map { episode ->
+                            episode.toUiModel(
+                                fallbackPodcastTitle = podcastTitle,
+                                fallbackPodcastBrowseId = podcastBrowseId,
+                            )
+                        }.toList()
+                PodcastContinuationResult(
+                    episodes = ImmutableList.copyOf(episodes),
+                    continuation = page.continuation?.takeIf(String::isNotBlank),
+                )
+            }
+        }
+    }
+
+private fun EpisodeItem.toUiModel(
+    fallbackPodcastTitle: String,
+    fallbackPodcastBrowseId: String,
+): PodcastEpisodeUiModel {
+    val resolvedPodcastTitle = podcast?.name?.takeIf(String::isNotBlank) ?: fallbackPodcastTitle
+    val resolvedPodcastId = podcast?.id?.takeIf(String::isNotBlank) ?: fallbackPodcastBrowseId
+    val metadata =
+        toMediaMetadata().let { current ->
+            current.copy(
+                artists =
+                    current.artists.ifEmpty {
+                        listOf(MediaMetadata.Artist(id = resolvedPodcastId, name = resolvedPodcastTitle))
+                    },
+                album = current.album ?: MediaMetadata.Album(id = fallbackPodcastBrowseId, title = fallbackPodcastTitle),
+            )
+        }
+    return PodcastEpisodeUiModel(
+        id = id,
+        title = title,
+        podcastTitle = resolvedPodcastTitle,
+        description = description,
+        dateText = dateText,
+        durationText = durationText,
+        thumbnailUrl = thumbnail,
+        playbackMetadata = metadata,
+    )
+}

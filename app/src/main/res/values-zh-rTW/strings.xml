@@ -172,7 +172,6 @@
     <string name="delete">刪除</string>
     <string name="hide_playlist">隱藏播放清單</string>
     <string name="unhide_playlist">取消隱藏播放清單</string>
-    <string name="show_hidden_playlists">顯示隱藏內容</string>
     <string name="hide_playlist_confirm">從媒體庫中隱藏%1$s？</string>
     <string name="together_participants">參與者</string>
     <string name="together_connected_count">%1$d已連接</string>
@@ -202,7 +201,6 @@
     <string name="search_online">線上搜尋</string>
     <string name="tempo_and_pitch">速度與音高</string>
     <string name="aod_mode">AOD 模式</string>
-    <string name="aod_mode_exit">退出 AOD</string>
     <string name="tempo">速度</string>
     <string name="pitch">音高</string>
     <string name="pitch_mode_semitones_short">半音</string>
@@ -282,10 +280,7 @@
     <plurals name="minute">
         <item quantity="other">%d分</item>
     </plurals>
-    <string name="error_no_stream">無法取得串流播放</string>
     <string name="error_no_internet">無網路連線</string>
-    <string name="error_timeout">連線逾時</string>
-    <string name="error_malformed_stream">來源錯誤</string>
     <string name="error_unknown">未知錯誤</string>
     <string name="action_like">喜歡</string>
     <string name="action_remove_like">取消喜歡</string>
@@ -401,7 +396,7 @@
     <string name="brightness">亮度</string>
     <string name="custom_value">自訂值</string>
     <string name="archivetune_canvas">ArchiveTune 畫布</string>
-    <string name="archivetune_canvas_desc">播放時為專輯封面加入動畫效果（由 BetterLyrics 提供支援）</string>
+    <string name="archivetune_canvas_desc">播放時為專輯封面加入動畫效果</string>
     <string name="player_background_style_v8_v9_desc">V8 和 V9 播放器樣式不支援此功能</string>
     <string name="show_button1_description">切換 Discord Rich Presence 中按鈕 1 的可見性</string>
     <string name="show_button2_description">切換 Discord Rich Presence 中按鈕 2 的可見性</string>
@@ -440,14 +435,6 @@
     <string name="action_login">登入</string>
     <string name="login">登入</string>
     <string name="not_logged_in">未登入</string>
-    <string name="playback_confirmation_required">播放前需確認</string>
-    <string name="playback_requires_youtube_music_confirmation">請確認 YouTube Music 正在播放，然後返回 ArchiveTune。</string>
-    <string name="playback_login_refresh_required">刷新 YouTube Music 登入狀態</string>
-    <string name="playback_requires_youtube_music_login_refresh">刷新您的 YouTube Music 登入狀態，然後返回 ArchiveTune。</string>
-    <string name="playback_error_code">程式碼</string>
-    <string name="playback_error_http">HTTP</string>
-    <string name="playback_error_message">訊息</string>
-    <string name="playback_error_cause">造成</string>
     <string name="content_language">預設內容語言</string>
     <string name="content_country">預設內容地區</string>
     <string name="system_default">系統預設</string>
@@ -756,7 +743,6 @@
     <string name="about">關於</string>
     <string name="new_version_available">新版本可用</string>
     <string name="updates">更新</string>
-    <string name="updates_subtitle_stable">穩定版本與發行說明</string>
     <string name="current_version">目前版本</string>
     <string name="latest_version_format">最新： %s</string>
     <string name="updates_status_checking">正在檢查最新版本</string>
@@ -764,7 +750,6 @@
     <string name="enable_update_notification">啟用更新通知</string>
     <string name="update_channel">更新頻道</string>
     <string name="update_channel_desc">在穩定版本和開發版本之間進行選擇。</string>
-    <string name="channel_stable">穩定版本</string>
     <string name="recent_commits">近期提交</string>
     <string name="updates_channel_warning_intro">ArchiveTune 為建置版本提供了兩個下載管道：</string>
     <string name="updates_channel_warning_stable_title">穩定版本</string>
@@ -910,25 +895,6 @@
     <string name="together_welcome_join_body">打開分享鏈接，或輸入代碼並點擊\"加入\"。您的播放隊列和播放狀態將與主持人保持同步。</string>
     <string name="together_welcome_permissions_title">權限與安全</string>
     <string name="together_welcome_permissions_body">房主可以決定是否允許訪客新增歌曲、控製播放，或要求訪客加入時需經批准。</string>
-    <string name="po_token_generation">產生 PO 憑證</string>
-    <string name="web_client_po_token">網頁端 PO 憑證</string>
-    <string name="web_client_po_token_desc">啟用網頁端播放器 PO 憑證生成</string>
-    <string name="po_token_gvs">PO 憑證 (GVS)</string>
-    <string name="po_token_player">PO 憑證 (Player)</string>
-    <string name="visitor_data">訪客數據</string>
-    <string name="generated_tokens">生成的憑證</string>
-    <string name="regenerate">重新生成</string>
-    <string name="regenerate_token">重新生成憑證</string>
-    <string name="source_url">來源網址</string>
-    <string name="source_url_placeholder">https://youtube.com/account</string>
-    <string name="tokens_generated">憑證生成成功</string>
-    <string name="token_generation_failed">憑證生成失敗</string>
-    <string name="token_copied">憑證已複製到剪貼簿</string>
-    <string name="extracting_from_url">從 URL 提取憑證</string>
-    <string name="po_token_account_notice_title">使用相同帳戶</string>
-    <string name="po_token_account_notice_body">在產生 PO 憑證之前，請使用您已在 ArchiveTune 中用於 YouTube Music 的相同 Google 帳戶在此處登入。</string>
-    <string name="po_token_account_notice_same_account">如果此 WebView 使用了不同的帳戶，則產生的憑證將無法正常使用。</string>
-    <string name="po_token_account_notice_mismatch">使用對應的帳號完成登入流程，然後開啟\"https://youtube.com/account\"頁面並產生令牌。</string>
     <string name="saved_accounts">已儲存的帳戶</string>
     <string name="save_current_account">儲存目前帳戶</string>
     <string name="no_saved_accounts">沒有已儲存的帳戶</string>
@@ -984,7 +950,6 @@
     <string name="custom_background_permission_cleanup_error">無法釋放先前的相片存取權限。</string>
     <string name="force_high_refresh_rate">強制高刷新率</string>
     <string name="max_supported_refresh_rate">支援的最大刷新率：%1$d Hz</string>
-    <string name="playback_login_po_token">登入 PO 憑證</string>
     <string name="enable_megalobiz_lyrics">啟用 Megalobiz 歌詞</string>
     <string name="eq_screen_subtitle">針對您的聽覺與裝置最佳化播放效果</string>
     <string name="eq_sound_shaping_on">聲音塑形功能已開啟</string>

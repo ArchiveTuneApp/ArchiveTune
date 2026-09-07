@@ -17,6 +17,7 @@ import moe.rukamori.archivetune.db.entities.Song
 import moe.rukamori.archivetune.innertube.models.PlaylistItem
 import moe.rukamori.archivetune.innertube.pages.HomePage
 import moe.rukamori.archivetune.models.SimilarRecommendation
+import moe.rukamori.archivetune.podcast.PodcastPlaybackRequest
 
 sealed interface HomeScreenState {
     data object Loading : HomeScreenState
@@ -65,4 +66,19 @@ sealed interface HomeAction {
     data class LoadMore(
         val continuation: String?,
     ) : HomeAction
+
+    data class OpenRemoteItem(
+        val itemId: String,
+    ) : HomeAction
+}
+
+sealed interface HomeEvent {
+    data class OpenPodcast(
+        val browseId: String,
+    ) : HomeEvent
+
+    @Immutable
+    data class PlayPodcastEpisode(
+        val request: PodcastPlaybackRequest,
+    ) : HomeEvent
 }

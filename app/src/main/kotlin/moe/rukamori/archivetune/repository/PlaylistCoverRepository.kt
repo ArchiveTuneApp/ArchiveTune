@@ -14,9 +14,14 @@ import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.media.ExifInterface
 import android.net.Uri
+import android.os.SystemClock
+import android.util.LruCache
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import moe.rukamori.archivetune.db.MusicDatabase
 import moe.rukamori.archivetune.db.entities.PlaylistEntity
@@ -34,6 +39,43 @@ class PlaylistCoverRepository
         @ApplicationContext private val context: Context,
         private val database: MusicDatabase,
     ) {
+        private val refreshLocks = Array(8) { Mutex() }
+        private val refreshedCovers = LruCache<String, RefreshedCover>(64)
+
+        suspend fun refreshRemoteCover(
+            playlistId: String,
+            thumbnailUrl: String,
+        ): String = withContext(Dispatchers.IO) {
+            val lock = refreshLocks[(thumbnailUrl.hashCode() and Int.MAX_VALUE) % refreshLocks.size]
+            lock.withLock {
+                val cached = refreshedCovers.get(thumbnailUrl)
+                if (cached != null && SystemClock.elapsedRealtime() - cached.updatedAt < COVER_REFRESH_CACHE_MILLIS) {
+                    return@withLock cached.result.getOrThrow()
+                }
+
+                val result: Result<String> =
+                    try {
+                        val refreshedUrl =
+                            YouTube.playlist(playlistId).getOrThrow().playlist.thumbnail
+                                ?.takeIf(String::isNotBlank)
+                                ?: throw IllegalStateException("Playlist returned no cover artwork")
+                        database.refreshPlaylistThumbnail(
+                            browseId = playlistId,
+                            previousThumbnailUrl = thumbnailUrl,
+                            thumbnailUrl = refreshedUrl,
+                        )
+                        Result.success(refreshedUrl)
+                    } catch (exception: CancellationException) {
+                        throw exception
+                    } catch (exception: Exception) {
+                        Result.failure(exception)
+                    }
+
+                refreshedCovers.put(thumbnailUrl, RefreshedCover(result, SystemClock.elapsedRealtime()))
+                result.getOrThrow()
+            }
+        }
+
         suspend fun getPlaylist(playlistId: String): PlaylistEntity? =
             withContext(Dispatchers.IO) {
                 database.playlist(playlistId).first()?.playlist
@@ -235,7 +277,13 @@ class PlaylistCoverRepository
             return output.toByteArray()
         }
 
+        private data class RefreshedCover(
+            val result: Result<String>,
+            val updatedAt: Long,
+        )
+
         private companion object {
+            const val COVER_REFRESH_CACHE_MILLIS = 60_000L
             const val UPLOAD_DIMENSION_PX = 1080
             const val MAX_UPLOAD_BYTES = 2 * 1024 * 1024
             const val MAX_DECODE_PIXELS = 8_000_000L

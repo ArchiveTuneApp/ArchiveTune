@@ -71,6 +71,7 @@ import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -113,6 +114,7 @@ import moe.rukamori.archivetune.utils.serializeSpeedDialPins
 import moe.rukamori.archivetune.utils.shareLocalAudio
 import moe.rukamori.archivetune.utils.toggleSpeedDialPin
 import moe.rukamori.archivetune.viewmodels.CachePlaylistViewModel
+import timber.log.Timber
 
 @Composable
 fun SongMenu(
@@ -386,11 +388,34 @@ fun SongMenu(
             trailingContent = {
                 IconButton(
                     onClick = {
-                        val s = song.song.toggleLike()
-                        database.query {
-                            update(s)
+                        coroutineScope.launch(Dispatchers.IO) {
+                            try {
+                                val requestedSong =
+                                    database.withTransaction {
+                                        val currentSong =
+                                            getSongById(song.id)
+                                                ?: run {
+                                                    insert(song.toMediaMetadata())
+                                                    getSongById(song.id)
+                                                }
+                                                ?: return@withTransaction null
+                                        currentSong.song.toggleLike()
+                                    } ?: return@launch
+                                syncUtils.likeSong(requestedSong).onFailure { error ->
+                                    Timber.w(error, "Failed to update liked song ${song.id}")
+                                    withContext(Dispatchers.Main) {
+                                        Toast.makeText(context, R.string.error_unknown, Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            } catch (error: CancellationException) {
+                                throw error
+                            } catch (error: Exception) {
+                                Timber.e(error, "Failed to prepare liked song ${song.id}")
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(context, R.string.error_unknown, Toast.LENGTH_SHORT).show()
+                                }
+                            }
                         }
-                        syncUtils.likeSong(s)
                     },
                 ) {
                     Icon(

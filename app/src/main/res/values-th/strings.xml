@@ -176,7 +176,6 @@
     <string name="delete">ลบ</string>
     <string name="hide_playlist">ซ่อนเพลย์ลิสต์</string>
     <string name="unhide_playlist">เลิกซ่อนเพลย์ลิสต์</string>
-    <string name="show_hidden_playlists">แสดงรายการที่ซ่อน</string>
     <string name="hide_playlist_confirm">ซ่อน \"%1$s\" จากคลังเพลง</string>
     <string name="together_participants">ผู้เข้าร่วม</string>
     <string name="together_connected_count">เชื่อต่อแล้ว %1$d</string>
@@ -207,7 +206,6 @@
     <string name="search_online">ค้นหาออนไลน์</string>
     <string name="tempo_and_pitch">ความเร็วและคีย์</string>
     <string name="aod_mode">โหมด AOD</string>
-    <string name="aod_mode_exit">ออกจาก AOD</string>
     <string name="tempo">ความเร็ว</string>
     <string name="pitch">คีย์</string>
     <string name="sort_by_create_date">วันที่เพิ่ม</string>
@@ -286,10 +284,7 @@
     <plurals name="minute">
         <item quantity="other">%d นาที</item>
     </plurals>
-    <string name="error_no_stream">ไม่สามารถเล่นเพลงนี้ได้</string>
     <string name="error_no_internet">ไม่มีสัญญาณอินเทอร์เน็ต</string>
-    <string name="error_timeout">หมดเวลา</string>
-    <string name="error_malformed_stream">ข้อผิดพลาดของแหล่งข้อมูล</string>
     <string name="error_unknown">ข้อผิดพลาดที่ไม่ทราบ</string>
     <string name="action_like">ชอบ</string>
     <string name="action_remove_like">ยกเลิกการชอบ</string>

@@ -182,9 +182,7 @@
         <item quantity="many">%d دقيقة</item>
         <item quantity="other">%d دقيقة</item>
     </plurals>
-    <string name="error_no_stream">لا يوجد بث متاح</string>
     <string name="error_no_internet">ليس هناك اتصال بالشبكة</string>
-    <string name="error_timeout">انتهت المهلة</string>
     <string name="error_unknown">خطأ غير معروف</string>
     <string name="action_like">أعجبني</string>
     <string name="action_remove_like">مسح الإعجاب</string>
@@ -471,26 +469,10 @@
     <string name="content_length_label">مدة المحتوى</string>
     <string name="auto_start_on_bluetooth">التشغيل التلقائي عند الاتصال عبر البلوتوث</string>
     <string name="auto_start_on_bluetooth_desc">استئناف التشغيل تلقائيًا عند توصيل جهاز صوت عبر البلوتوث</string>
-    <string name="po_token_generation">إنشاء توكن PO</string>
-    <string name="web_client_po_token">توكن PO لعميل الويب</string>
-    <string name="web_client_po_token_desc">تفعيل إنشاء توكن PO لعملاء مشغّل الويب</string>
-    <string name="po_token_gvs">توكن PO (GVS)</string>
-    <string name="po_token_player">توكن PO (Player)</string>
-    <string name="visitor_data">بيانات الزائر</string>
-    <string name="generated_tokens">التوكنات المنشأة</string>
-    <string name="regenerate">إعادة الإنشاء</string>
-    <string name="regenerate_token">إعادة إنشاء التوكن</string>
-    <string name="source_url">مصدر URL</string>
-    <string name="source_url_placeholder">https://youtube.com/account</string>
-    <string name="tokens_generated">تم إنشاء التوكنات بنجاح</string>
-    <string name="token_generation_failed">فشلت عملية إنشاء التوكنات</string>
-    <string name="token_copied">تم نسخ التوكن إلى الحافظة</string>
-    <string name="extracting_from_url">استخراج التوكنات من عنوان URL</string>
     <string name="speed_dial">الوصول السريع</string>
     <string name="music_recognition">التعرف على الموسيقى</string>
     <string name="pin_to_speed_dial">التثبيت إلى قائمة الوصول السريع</string>
     <string name="remove_from_speed_dial">الإزالة من قائمة الوصول السريع</string>
-    <string name="playback_requires_youtube_music_confirmation">تأكد من تشغيل المقطع في YouTube Music ثم عد إلى ArchiveTune.</string>
     <string name="wakelock">إبقاء المعالج نشطًا أثناء التشغيل</string>
     <string name="wakelock_desc">يمنع النظام من مقاطعة تشغيل الموسيقى عبر إبقاء المعالج في حالة نشطة</string>
     <string name="external_downloader">برنامج تنزيل خارجي</string>
@@ -504,9 +486,6 @@
     <string name="no_matching_playlists">لم يتم العثور على قائمة تشغيل متطابقة</string>
     <string name="blur_intensity">مستوى التمويه</string>
     <string name="blur_intensity_value">%1$d dp</string>
-    <string name="playback_confirmation_required">يُلزم تأكيد المشغل</string>
-    <string name="playback_login_refresh_required">تحديث تسجيل الدخول إلى YouTube Music</string>
-    <string name="playback_requires_youtube_music_login_refresh">قم بتحديث بيانات تسجيل الدخول الخاصة بك على YouTube Music، ثم عد إلى ArchiveTune.</string>
     <string name="top_results">أفضل النتائج</string>
     <string name="most_played_badge">الأكثر تشغيلًا</string>
     <string name="play_all">تشغيل الكل</string>
@@ -617,7 +596,6 @@
     <string name="canvas_refetch_failed">تعذر تحديث الشاشة التفاعلية المتحركة</string>
     <string name="hide_playlist">إخفاء قائمة التشغيل</string>
     <string name="unhide_playlist">إلغاء إخفاء قائمة التشغيل</string>
-    <string name="show_hidden_playlists">إظهار المخفية</string>
     <string name="hide_playlist_confirm">إخفاء \"%1$s\" من المكتبة؟</string>
     <string name="together_participants">المشاركون</string>
     <string name="together_connected_count">%1$d متصل</string>
@@ -643,7 +621,6 @@
     <string name="removed_song_from_queue">تمت إزالة \"%s\" من قائمة الانتظار</string>
     <string name="removed_n_songs_from_queue">تمت إزالة %d أغنية من قائمة الانتظار</string>
     <string name="aod_mode">وضع AOD</string>
-    <string name="aod_mode_exit">الخروج من AOD</string>
     <string name="tempo">سرعة الإيقاع</string>
     <string name="pitch">حدّة الصوت</string>
     <string name="pitch_mode_semitones_short">نصف درجة</string>
@@ -661,7 +638,6 @@
     <string name="unsupported_language">اللغة غير مدعومة: %1$s</string>
     <string name="source">المصدر</string>
     <string name="lyrics_word_sync">مزامنة الكلمات</string>
-    <string name="error_malformed_stream">خطأ في المصدر</string>
     <string name="app_icon_description">اختر أيقونة المشغل</string>
     <string name="app_icon_default">الافتراضي</string>
     <string name="app_icon_subtitle">تخصيص المشغل الخاص بك</string>
@@ -706,7 +682,7 @@
     <string name="custom_background_permission_error">تعذر على ArchiveTune الاحتفاظ بصلاحية الوصول لهذه الصورة.</string>
     <string name="custom_background_permission_cleanup_error">تعذر تحرير صلاحية الوصول للصورة السابقة.</string>
     <string name="archivetune_canvas">شاشة ArchiveTune التفاعلية</string>
-    <string name="archivetune_canvas_desc">تحريك غلاف الألبوم أثناء التشغيل (مدعوم بواسطة BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">تحريك غلاف الألبوم أثناء التشغيل</string>
     <string name="player_background_style_v8_v9_desc">غير متاح مع نمطي المشغل V8 و V9</string>
     <string name="disable_animations">تعطيل الرسوم المتحركة</string>
     <string name="disable_animations_desc">تعطيل معظم الرسوم المتحركة في التطبيق. موصى به للأجهزة ضعيفة الإمكانيات</string>
@@ -723,11 +699,6 @@
     <string name="lyrics_mode_v2">V2 القديم</string>
     <string name="lyrics_mode_enhanced">محسّن</string>
     <string name="lyrics_animation_style_v2_only">متاح فقط في وضع الكلمات V2</string>
-    <string name="playback_login_po_token">توكن PO لتسجيل الدخول</string>
-    <string name="playback_error_code">الرمز</string>
-    <string name="playback_error_http">HTTP</string>
-    <string name="playback_error_message">الرسالة</string>
-    <string name="playback_error_cause">السبب</string>
     <string name="internet">الإنترنت</string>
     <string name="internet_warning_title">تحذير الأمان والاستخدام</string>
     <string name="internet_warning_doh">يعمل DNS over HTTPS فقط إذا كان بلدك يحظر YouTube. إذا كان YouTube يحظر منطقتك نشطًا، ففكر في استخدام بروكسي أو VPN.</string>
@@ -920,7 +891,6 @@
     <string name="about">حول</string>
     <string name="new_version_available">إصدار جديد متوفر</string>
     <string name="updates">التحديثات</string>
-    <string name="updates_subtitle_stable">الإصدارات المستقرة وملاحظات الإصدار</string>
     <string name="updates_subtitle_artifact">إصدارات Canary والتغييرات الحديثة في التطوير</string>
     <string name="current_version">الإصدار الحالي</string>
     <string name="latest_version_format">الأحدث: %s</string>
@@ -930,7 +900,6 @@
     <string name="enable_update_notification_channel_desc">تلقي إشعارات عند توفر إصدار جديد في القناة المحددة</string>
     <string name="update_channel">قناة التحديث</string>
     <string name="update_channel_desc">اختر بين الإصدارات المختبرة ولقطات التطوير.</string>
-    <string name="channel_stable">مستقر</string>
     <string name="channel_artifact">تجريبي (Canary)</string>
     <string name="recent_commits">التغييرات الأخيرة</string>
     <string name="updates_artifact_hosting_description">تُنشر إصدارات Canary تلقائيًا من أحدث فرع تطوير.</string>
@@ -1094,10 +1063,6 @@
     <string name="together_welcome_join_body">افتح الرابط المشترك، أو أدخل الرمز وانقر على انضمام. ستتبع قائمة الانتظار والتشغيل الخاصة بك المستضيف.</string>
     <string name="together_welcome_permissions_title">الأذونات والأمان</string>
     <string name="together_welcome_permissions_body">يمكن للمستضيفين تحديد ما إذا كان بإمكان الضيوف إضافة أغاني، التحكم في التشغيل، أو اشتراط الموافقة للانضمام.</string>
-    <string name="po_token_account_notice_title">استخدم نفس الحساب</string>
-    <string name="po_token_account_notice_body">سجل الدخول هنا باستخدام نفس حساب Google الذي تستخدمه بالفعل لـ YouTube Music داخل ArchiveTune قبل إنشاء توكن PO.</string>
-    <string name="po_token_account_notice_same_account">إذا استخدم عرض الويب هذا حسابًا مختلفًا، فلن يعمل التوكن المنشأ بشكل صحيح.</string>
-    <string name="po_token_account_notice_mismatch">استخدم الحساب المطابق، وأكمل عملية تسجيل الدخول، ثم افتح youtube.com/account وقم بإنشاء التوكن من تلك الصفحة.</string>
     <string name="saved_accounts">الحسابات المحفوظة</string>
     <string name="save_current_account">حفظ الحساب الحالي</string>
     <string name="no_saved_accounts">لا توجد حسابات محفوظة بعد</string>

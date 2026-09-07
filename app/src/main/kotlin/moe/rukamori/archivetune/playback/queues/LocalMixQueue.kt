@@ -27,13 +27,20 @@ class LocalMixQueue(
     override suspend fun getInitialStatus(): Queue.Status =
         withContext(Dispatchers.IO) {
             val playlistSongEntities = database.playlistSongs(playlistId).first()
-            val playlistSongIds = playlistSongEntities.map { it.map.songId }
+            val playlistSongIds =
+                playlistSongEntities
+                    .filterNot { it.song.song.isPodcast }
+                    .map { it.map.songId }
 
             val relatedSongs =
                 playlistSongIds.flatMap { songId ->
                     database.relatedSongs(songId)
                 }
-            val uniqueRelated = relatedSongs.filter { song -> song.id !in playlistSongIds }.distinctBy { it.id }
+            val uniqueRelated =
+                relatedSongs
+                    .filterNot { it.song.isPodcast }
+                    .filter { song -> song.id !in playlistSongIds }
+                    .distinctBy { it.id }
             val finalMix = uniqueRelated.take(maxMixSize)
 
             if (finalMix.isNotEmpty()) {

@@ -1,0 +1,83 @@
+/*
+ * ArchiveTune (2026)
+ * © Rukamori — github.com/rukamori
+ * GPL-3.0 License | Contributors: see git history
+ * Do not remove or alter this notice. - Per GPL-3.0 Section 4 & Section 5
+ */
+
+package moe.rukamori.archivetune.podcast
+
+import androidx.annotation.StringRes
+import androidx.compose.runtime.Immutable
+import com.google.common.collect.ImmutableList
+import moe.rukamori.archivetune.models.MediaMetadata
+
+sealed interface PodcastScreenState {
+    data object Loading : PodcastScreenState
+
+    @Immutable
+    data class Success(
+        val uiState: PodcastUiState,
+    ) : PodcastScreenState
+
+    data object Empty : PodcastScreenState
+
+    @Immutable
+    data class Error(
+        @StringRes val messageResId: Int,
+    ) : PodcastScreenState
+}
+
+@Immutable
+data class PodcastUiState(
+    val browseId: String,
+    val title: String,
+    val author: String?,
+    val description: String?,
+    val thumbnailUrl: String?,
+    val episodes: ImmutableList<PodcastEpisodeUiModel>,
+    val isLoadingMore: Boolean,
+    val canLoadMore: Boolean,
+)
+
+@Immutable
+data class PodcastEpisodeUiModel(
+    val id: String,
+    val title: String,
+    val podcastTitle: String,
+    val description: String?,
+    val dateText: String?,
+    val durationText: String?,
+    val thumbnailUrl: String,
+    val playbackMetadata: MediaMetadata,
+)
+
+@Immutable
+data class PodcastPlaybackRequest(
+    val title: String,
+    val items: ImmutableList<MediaMetadata>,
+    val startIndex: Int,
+)
+
+sealed interface PodcastAction {
+    data object Retry : PodcastAction
+
+    data object LoadMore : PodcastAction
+
+    data object PlayAll : PodcastAction
+
+    data class PlayEpisode(
+        val episodeId: String,
+    ) : PodcastAction
+}
+
+sealed interface PodcastEvent {
+    @Immutable
+    data class Play(
+        val request: PodcastPlaybackRequest,
+    ) : PodcastEvent
+
+    data class ShowMessage(
+        @StringRes val messageResId: Int,
+    ) : PodcastEvent
+}

@@ -11,6 +11,7 @@ import androidx.compose.runtime.Immutable
 import moe.rukamori.archivetune.db.entities.Song
 import moe.rukamori.archivetune.db.entities.SongEntity
 import moe.rukamori.archivetune.innertube.models.SongItem
+import moe.rukamori.archivetune.innertube.models.EpisodeItem
 import moe.rukamori.archivetune.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.Companion.MUSIC_VIDEO_TYPE_OMV
 import moe.rukamori.archivetune.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.Companion.MUSIC_VIDEO_TYPE_UGC
 import moe.rukamori.archivetune.ui.utils.YtimgResizePolicy
@@ -33,6 +34,7 @@ data class MediaMetadata(
     val likedDate: LocalDateTime? = null,
     val inLibrary: LocalDateTime? = null,
     val isMusicVideo: Boolean = false,
+    val isPodcast: Boolean = false,
 ) : Serializable {
     companion object {
         private const val serialVersionUID = 1L
@@ -67,6 +69,7 @@ data class MediaMetadata(
             albumName = album?.title,
             explicit = explicit,
             isMusicVideo = isMusicVideo,
+            isPodcast = isPodcast,
             liked = liked,
             likedDate = likedDate,
             inLibrary = inLibrary,
@@ -101,6 +104,41 @@ fun Song.toMediaMetadata() =
             },
         explicit = song.explicit,
         isMusicVideo = song.isMusicVideo,
+        isPodcast = song.isPodcast,
+    )
+
+fun EpisodeItem.toMediaMetadata() =
+    MediaMetadata(
+        id = id,
+        title = title,
+        artists =
+            podcast?.let {
+                listOf(
+                    MediaMetadata.Artist(
+                        id = it.id,
+                        name = it.name,
+                        thumbnailUrl = null,
+                    ),
+                )
+            }.orEmpty(),
+        duration = duration ?: -1,
+        thumbnailUrl =
+            thumbnail.resize(
+                width = 1080,
+                height = 1080,
+                ytimgResizePolicy = YtimgResizePolicy.PreserveOriginal,
+            ),
+        album =
+            podcast?.let { podcast ->
+                podcast.id?.let { podcastId ->
+                    MediaMetadata.Album(
+                        id = podcastId,
+                        title = podcast.name,
+                    )
+                }
+            },
+        setVideoId = endpoint.playlistSetVideoId,
+        isPodcast = true,
     )
 
 fun SongItem.toMediaMetadata() =

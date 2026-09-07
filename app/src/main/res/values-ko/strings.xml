@@ -97,7 +97,6 @@
     <string name="search_online">온라인으로 검색</string>
     <string name="tempo_and_pitch">템포 및 피치</string>
     <string name="aod_mode">AOD 모드</string>
-    <string name="aod_mode_exit">AOD 종료</string>
     <string name="tempo">템포</string>
     <string name="pitch">피치</string>
     <string name="pitch_mode_semitones_short">st</string>
@@ -169,10 +168,7 @@
     <plurals name="minute">
         <item quantity="other">%d분</item>
     </plurals>
-    <string name="error_no_stream">사용 가능한 오디오 스트림이 없습니다.</string>
     <string name="error_no_internet">인터넷 연결 끊김</string>
-    <string name="error_timeout">시간 초과</string>
-    <string name="error_malformed_stream">오디오 소스 에러</string>
     <string name="error_unknown">알 수 없는 오류</string>
     <string name="action_like">좋아요</string>
     <string name="action_remove_like">좋아요 취소</string>
@@ -280,7 +276,7 @@
     <string name="brightness">밝기</string>
     <string name="custom_value">사용자 지정 값</string>
     <string name="archivetune_canvas">ArchiveTune 캔버스</string>
-    <string name="archivetune_canvas_desc">음악이 재생되는 동안 움직이는 앨범 아트워크 표시 (BetterLyrics 지원)</string>
+    <string name="archivetune_canvas_desc">음악이 재생되는 동안 움직이는 앨범 아트워크 표시</string>
     <string name="show_button1_description">Discord Rich Presence에서 버튼 1의 가시성(표시 여부)을 설정합니다.</string>
     <string name="show_button2_description">Discord Rich Presence에서 버튼 2의 가시성(표시 여부)을 설정합니다.</string>
     <string name="discord_activity_type">활동 유형</string>
@@ -314,10 +310,6 @@
     <string name="action_login">로그인</string>
     <string name="login">로그인</string>
     <string name="not_logged_in">로그인되지 않음</string>
-    <string name="playback_confirmation_required">재생 승인 필요</string>
-    <string name="playback_requires_youtube_music_confirmation">YouTube Music에서 재생 여부를 확인한 후 ArchiveTune으로 돌아오세요.</string>
-    <string name="playback_login_refresh_required">YouTube Music 로그인 새로고침</string>
-    <string name="playback_requires_youtube_music_login_refresh">YouTube Music 로그인을 새로고침한 다음 ArchiveTune으로 돌아옵니다.</string>
     <string name="content_language">선호하는 콘텐츠 언어</string>
     <string name="content_country">선호하는 콘텐츠 국가</string>
     <string name="system_default">시스템 기본값</string>
@@ -565,7 +557,6 @@
     <string name="about">소개</string>
     <string name="new_version_available">새 버전 사용 가능</string>
     <string name="updates">업데이트</string>
-    <string name="updates_subtitle_stable">정식 릴리즈 및 안정화 버전 업데이트 노트</string>
     <string name="current_version">현재 설치된 버전</string>
     <string name="latest_version_format">최신 버전: %s</string>
     <string name="updates_status_checking">최신 정식 릴리즈가 배포되었는지 확인 중</string>
@@ -573,7 +564,6 @@
     <string name="enable_update_notification">신규 업데이트 푸시 알림 받기</string>
     <string name="update_channel">업데이트 채널</string>
     <string name="update_channel_desc">철저하게 테스트를 마친 정식 릴리즈와, 실시간 스냅샷 채널 중에서 수집 형태를 선택하세요.</string>
-    <string name="channel_stable">정식 릴리즈 (Stable)</string>
     <string name="recent_commits">최근 수집된 커밋 이력</string>
     <string name="updates_loading_commits">최근 실시간 커밋 데이터를 로드하는 중</string>
     <string name="updates_recent_commits_count">최근 수집된 기여 내용 %1$d개</string>
@@ -653,25 +643,6 @@
     <string name="together_welcome_join_body">전달받은 참가 주소나 핀 코드를 붙여넣고 세션 참가를 누릅니다. 내 대기열과 감상 일시가 방장의 기기와 실시간으로 완벽 매칭됩니다.</string>
     <string name="together_welcome_permissions_title">입장 제한 및 보안 편의 제어</string>
     <string name="together_welcome_permissions_body">방장은 게스트들이 자유롭게 노래 대기열을 조작하거나 일시정지 스킵을 주도할 수 있는지, 아니면 오직 승인된 게스트만 감상할 수 있을지 룰을 커스텀할 수 있습니다.</string>
-    <string name="po_token_generation">재생 차단 오류 해결 토큰 (PO Token) 생성</string>
-    <string name="web_client_po_token">웹 플레이어 차단 우회 토큰 (PO Token)</string>
-    <string name="web_client_po_token_desc">웹 플레이어에서 YouTube Music 재생이 막히거나 차단되는 현상을 우회해 줍니다.</string>
-    <string name="po_token_gvs">보안 시스템 검증 코드 (GVS)</string>
-    <string name="po_token_player">재생 검증 코드 (Player)</string>
-    <string name="visitor_data">방문자 가상 데이터 (Visitor Data)</string>
-    <string name="generated_tokens">성공적으로 연동 확보된 토큰 리스트</string>
-    <string name="regenerate">새로 추출</string>
-    <string name="regenerate_token">우회 토큰 일괄 재설정</string>
-    <string name="source_url">토큰 획득용 URL 경로</string>
-    <string name="source_url_placeholder">https://youtube.com/account</string>
-    <string name="tokens_generated">우회 토큰이 성공적으로 수집되었습니다.</string>
-    <string name="token_generation_failed">토큰 데이터 가져오기 실패</string>
-    <string name="token_copied">해당 검증 토큰을 안전하게 클립보드에 복사했습니다.</string>
-    <string name="extracting_from_url">지정된 구글 계정 주소로부터 토큰 구조 파싱 중</string>
-    <string name="po_token_account_notice_title">반드시 동일한 계정을 사용하십시오!</string>
-    <string name="po_token_account_notice_body">PO 토큰 생성을 정상 마쳐 무한 로딩 오류를 뚫기 전에, 먼저 현재 ArchiveTune 앱 내부에서 이미 로그인하여 사용하고 있는 동일한 Google/YouTube Music 계정으로 여기서 로그인해 주셔야 에러가 나지 않습니다.</string>
-    <string name="po_token_account_notice_same_account">이곳 내부 웹뷰와 메인 플레이어에 등록된 계정이 서로 다른 인물이면, 새로 수집되는 우회 토큰이 앱 재생기 상에서 올바르게 가동되지 않습니다.</string>
-    <string name="po_token_account_notice_mismatch">계정 불일치 경고: 동일한 계정으로 웹뷰 내부 가입 로그인 절차를 모두 마친 후 youtube.com/account 주소로 진입하여 토큰 데이터를 생성해 주시기 바랍니다.</string>
     <string name="saved_accounts">기기 저장된 전환용 구글 계정 목록</string>
     <string name="save_current_account">현재 수동 전환한 구글 프로필 저장</string>
     <string name="no_saved_accounts">아직 전환용으로 추가 보관된 Google 계정이 없습니다.</string>
@@ -822,7 +793,6 @@
     <string name="no_playlists_yet">재생목록이 아직 없습니다.</string>
     <string name="hide_playlist">재생목록 숨기기</string>
     <string name="unhide_playlist">재생목록 숨기기 취소</string>
-    <string name="show_hidden_playlists">숨겨진 재생목록 표시</string>
     <string name="hide_playlist_confirm">%1$s 재생목록을 정말로 숨기시겠습니까?</string>
     <string name="together_transfer_host">호스트 권한 위임</string>
     <string name="together_approve">승인</string>
@@ -837,10 +807,6 @@
     <string name="lyrics_search_results_count">검색 결과 %1$d개</string>
     <string name="lyrics_search_result_stats">%1$d 줄, %2$d 글자</string>
     <string name="unsupported_language">"지원되지 않는 언어 :  %1$s"</string>
-    <string name="playback_error_code">재생 오류 코드</string>
-    <string name="playback_error_http">HTTP 오류</string>
-    <string name="playback_error_message">오류 내용</string>
-    <string name="playback_error_cause">원인</string>
     <string name="discord_reauthorize_required_title">Discord 재인증 필요</string>
     <string name="discord_reauthorize_required_description">Discord 연동 상태를 유지하려면 다시 인증을 진행해야 합니다.</string>
     <string name="discord_reauthorize_action">다시 인증하기</string>

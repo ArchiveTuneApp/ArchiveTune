@@ -19,6 +19,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -45,6 +46,7 @@ import moe.rukamori.archivetune.db.entities.*
 import moe.rukamori.archivetune.extensions.filterBlockedArtists
 import moe.rukamori.archivetune.extensions.toEnum
 import moe.rukamori.archivetune.home.HomeAction
+import moe.rukamori.archivetune.home.HomeEvent
 import moe.rukamori.archivetune.home.HomePresentationPreferences
 import moe.rukamori.archivetune.home.HomeScreenState
 import moe.rukamori.archivetune.home.HomeUiState
@@ -52,7 +54,9 @@ import moe.rukamori.archivetune.home.LoadPersonalizedQuickPicksUseCase
 import moe.rukamori.archivetune.home.ObserveHomePresentationPreferencesUseCase
 import moe.rukamori.archivetune.innertube.YouTube
 import moe.rukamori.archivetune.innertube.models.AccountChannel
+import moe.rukamori.archivetune.innertube.models.EpisodeItem
 import moe.rukamori.archivetune.innertube.models.PlaylistItem
+import moe.rukamori.archivetune.innertube.models.PodcastItem
 import moe.rukamori.archivetune.innertube.models.WatchEndpoint
 import moe.rukamori.archivetune.innertube.models.YTItem
 import moe.rukamori.archivetune.innertube.models.filterExplicit
@@ -61,6 +65,8 @@ import moe.rukamori.archivetune.innertube.pages.HomePage
 import moe.rukamori.archivetune.innertube.utils.completed
 import moe.rukamori.archivetune.innertube.utils.hasYouTubeLoginCookie
 import moe.rukamori.archivetune.models.SimilarRecommendation
+import moe.rukamori.archivetune.models.toMediaMetadata
+import moe.rukamori.archivetune.podcast.PodcastPlaybackRequest
 import moe.rukamori.archivetune.utils.SavedAccount
 import moe.rukamori.archivetune.utils.SpeedDialPinType
 import moe.rukamori.archivetune.utils.SyncUtils
@@ -228,6 +234,8 @@ class HomeViewModel
         val allLocalItems: StateFlow<List<LocalItem>> = _allLocalItems.asStateFlow()
         private val _allYtItems = MutableStateFlow<List<YTItem>>(emptyList())
         val allYtItems: StateFlow<List<YTItem>> = _allYtItems.asStateFlow()
+        private val eventChannel = Channel<HomeEvent>(Channel.BUFFERED)
+        val events = eventChannel.receiveAsFlow()
 
         private val _accountName = MutableStateFlow("")
         val accountName: StateFlow<String> = _accountName.asStateFlow()
@@ -323,11 +331,6 @@ class HomeViewModel
         private var previousLoginState: Boolean? = null
         private var chipLoadJob: Job? = null
 
-        private fun filterHomeChips(chips: List<HomePage.Chip>?): List<HomePage.Chip>? =
-            chips?.filterNot {
-                it.title.contains("podcasts", ignoreCase = true)
-            }
-
         private fun HomePage.extractQuickPicks(): Pair<HomePage, HomePage.Section?> {
             val quickPicksIndex =
                 sections.indexOfFirst { section ->
@@ -363,7 +366,7 @@ class HomeViewModel
         }
 
         private fun List<Song>.toQuickPickSample(): List<Song> =
-            filter { song -> song.artists.none { it.blockedAt != null } }
+            filter { song -> !song.song.isPodcast && song.artists.none { it.blockedAt != null } }
                 .distinctBy { it.id }
                 .shuffled()
                 .take(20)
@@ -388,6 +391,13 @@ class HomeViewModel
             _allLocalItems.value =
                 (quickPicks.value.orEmpty() + forgottenFavorites.value.orEmpty() + keepListening.value.orEmpty())
                     .filter { it is Song || it is Album }
+        }
+
+        private fun updateAllYtItems() {
+            _allYtItems.value =
+                similarRecommendations.value?.flatMap { it.items }.orEmpty() +
+                    remoteQuickPicks.value?.items.orEmpty() +
+                    homePage.value?.sections?.flatMap { it.items }.orEmpty()
         }
 
         private suspend fun quickPicksWithFallback(primary: List<Song>): List<Song> {
@@ -530,7 +540,7 @@ class HomeViewModel
                             database
                                 .forgottenFavorites()
                                 .first()
-                                .filter { song -> song.artists.none { it.blockedAt != null } }
+                                .filter { song -> !song.song.isPodcast && song.artists.none { it.blockedAt != null } }
                                 .shuffled()
                                 .take(20)
                     }
@@ -540,7 +550,7 @@ class HomeViewModel
                             database
                                 .mostPlayedSongs(fromTimeStamp, limit = 15, offset = 5)
                                 .first()
-                                .filter { song -> song.artists.none { it.blockedAt != null } }
+                                .filter { song -> !song.song.isPodcast && song.artists.none { it.blockedAt != null } }
                                 .shuffled()
                                 .take(10)
                         val keepListeningAlbums =
@@ -552,7 +562,7 @@ class HomeViewModel
                                 .take(5)
                         val keepListeningArtists =
                             database
-                                .mostPlayedArtists(fromTimeStamp)
+                                .mostPlayedMusicArtists(fromTimeStamp)
                                 .first()
                                 .filter {
                                     it.artist.blockedAt == null &&
@@ -572,7 +582,7 @@ class HomeViewModel
                             }
                         val filteredPage =
                             page.copy(
-                                chips = filterHomeChips(page.chips),
+                                chips = page.chips,
                                 sections =
                                     page.sections.map { section ->
                                         section.copy(
@@ -606,12 +616,7 @@ class HomeViewModel
                     loadSimilarRecommendations()
                 }
 
-                _allYtItems.value = similarRecommendations.value?.flatMap { it.items }.orEmpty() +
-                    remoteQuickPicks.value?.items.orEmpty() +
-                    homePage.value
-                        ?.sections
-                        ?.flatMap { it.items }
-                        .orEmpty()
+                updateAllYtItems()
 
                 isInitialLoadComplete.value = true
             } catch (e: CancellationException) {
@@ -634,7 +639,7 @@ class HomeViewModel
 
             val artistRecommendations =
                 database
-                    .mostPlayedArtists(fromTimeStamp, limit = 10)
+                    .mostPlayedMusicArtists(fromTimeStamp, limit = 10)
                     .first()
                     .filter { it.artist.blockedAt == null && it.artist.isYouTubeArtist }
                     .shuffled()
@@ -671,7 +676,7 @@ class HomeViewModel
                 database
                     .mostPlayedSongs(fromTimeStamp, limit = 10)
                     .first()
-                    .filter { it.album != null }
+                    .filter { !it.song.isPodcast && it.album != null }
                     .shuffled()
                     .take(2)
                     .mapNotNull { song ->
@@ -699,12 +704,7 @@ class HomeViewModel
 
             similarRecommendations.value = (artistRecommendations + songRecommendations).shuffled()
 
-            _allYtItems.value = similarRecommendations.value?.flatMap { it.items }.orEmpty() +
-                remoteQuickPicks.value?.items.orEmpty() +
-                homePage.value
-                    ?.sections
-                    ?.flatMap { it.items }
-                    .orEmpty()
+            updateAllYtItems()
         }
 
         private fun clearAccountData() {
@@ -840,6 +840,7 @@ class HomeViewModel
                         )
                     val (pageWithoutQuickPicks, _) = mergedPage.extractQuickPicks()
                     homePage.value = pageWithoutQuickPicks
+                    updateAllYtItems()
                 } finally {
                     isLoadingMore.value = false
                 }
@@ -854,6 +855,7 @@ class HomeViewModel
                 previousHomePage.value = null
                 previousRemoteQuickPicks.value = null
                 selectedChip.value = null
+                updateAllYtItems()
                 return
             }
 
@@ -889,7 +891,27 @@ class HomeViewModel
                     val (pageWithoutQuickPicks, _) = filteredPage.extractQuickPicks()
                     homePage.value = pageWithoutQuickPicks
                     selectedChip.value = chip
+                    updateAllYtItems()
                 }
+        }
+
+        private fun openRemoteItem(itemId: String) {
+            when (val item = _allYtItems.value.firstOrNull { it.id == itemId }) {
+                is PodcastItem -> eventChannel.trySend(HomeEvent.OpenPodcast(item.browseId))
+                is EpisodeItem -> {
+                    eventChannel.trySend(
+                        HomeEvent.PlayPodcastEpisode(
+                            PodcastPlaybackRequest(
+                                title = item.podcast?.name ?: item.title,
+                                items = ImmutableList.of(item.toMediaMetadata()),
+                                startIndex = 0,
+                            ),
+                        ),
+                    )
+                }
+
+                else -> Unit
+            }
         }
 
         fun onAction(action: HomeAction) {
@@ -897,6 +919,7 @@ class HomeViewModel
                 HomeAction.Refresh -> refresh()
                 is HomeAction.SelectChip -> toggleChip(action.chip)
                 is HomeAction.LoadMore -> loadMoreYouTubeItems(action.continuation)
+                is HomeAction.OpenRemoteItem -> openRemoteItem(action.itemId)
             }
         }
 

@@ -234,7 +234,9 @@ import moe.rukamori.archivetune.extensions.toMediaItem
 import moe.rukamori.archivetune.innertube.YouTube
 import moe.rukamori.archivetune.innertube.models.AlbumItem
 import moe.rukamori.archivetune.innertube.models.ArtistItem
+import moe.rukamori.archivetune.innertube.models.EpisodeItem
 import moe.rukamori.archivetune.innertube.models.PlaylistItem
+import moe.rukamori.archivetune.innertube.models.PodcastItem
 import moe.rukamori.archivetune.innertube.models.SongItem
 import moe.rukamori.archivetune.models.toMediaMetadata
 import moe.rukamori.archivetune.musicrecognition.ACTION_MUSIC_RECOGNITION
@@ -617,15 +619,16 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val channelString = withContext(Dispatchers.IO) { dataStore.data.first()[UpdateChannelKey] }
                     val actualChannel = UpdateChannel.fromStoredName(channelString, defaultUpdateChannel)
-                    val versionResult =
-                        when (actualChannel) {
-                            UpdateChannel.ARTIFACT -> Updater.getLatestCanaryVersionName()
-                            UpdateChannel.STABLE -> Updater.getLatestVersionName()
-                        }
-                    versionResult.onSuccess {
-                        if (Updater.isUpdateAvailable(it, BuildConfig.VERSION_NAME)) {
-                            latestUpdateChannel = actualChannel
-                            latestVersionName = it
+                    if (actualChannel != UpdateChannel.ARTIFACT) {
+                        val versionResult =
+                            when (actualChannel) {
+                                UpdateChannel.STABLE -> Updater.getLatestVersionName()
+                            }
+                        versionResult.onSuccess {
+                            if (Updater.isUpdateAvailable(it, BuildConfig.VERSION_NAME)) {
+                                latestUpdateChannel = actualChannel
+                                latestVersionName = it
+                            }
                         }
                     }
                 }
@@ -719,12 +722,13 @@ class MainActivity : ComponentActivity() {
                 if (
                     BuildConfig.UPDATER_AVAILABLE &&
                     latestUpdateChannel == updateChannel &&
+                    latestUpdateChannel != UpdateChannel.ARTIFACT &&
                     Updater.isUpdateAvailable(latestVersionName, BuildConfig.VERSION_NAME)
                 ) {
                     val releaseNotesResult =
                         when (latestUpdateChannel) {
-                            UpdateChannel.ARTIFACT -> Updater.getLatestCanaryReleaseNotes()
                             UpdateChannel.STABLE -> Updater.getLatestReleaseNotes()
+                            else -> return@LaunchedEffect
                         }
                     releaseNotesResult
                         .onSuccess {
@@ -1877,6 +1881,7 @@ class MainActivity : ComponentActivity() {
                                                             if (
                                                                 BuildConfig.UPDATER_AVAILABLE &&
                                                                 latestUpdateChannel == updateChannel &&
+                                                                latestUpdateChannel != UpdateChannel.ARTIFACT &&
                                                                 Updater.isUpdateAvailable(latestVersionName, BuildConfig.VERSION_NAME)
                                                             ) {
                                                                 Badge()
@@ -2296,6 +2301,19 @@ class MainActivity : ComponentActivity() {
                                                                     luckyItem.playEndpoint?.let {
                                                                         playerConnection?.playQueue(YouTubeQueue.playlist(it))
                                                                     }
+                                                                }
+
+                                                                is PodcastItem -> {
+                                                                    navController.navigate("podcast/${Uri.encode(luckyItem.browseId)}")
+                                                                }
+
+                                                                is EpisodeItem -> {
+                                                                    playerConnection?.playQueue(
+                                                                        ListQueue(
+                                                                            title = luckyItem.podcast?.name ?: luckyItem.title,
+                                                                            items = listOf(luckyItem.toMediaItem()),
+                                                                        ),
+                                                                    )
                                                                 }
                                                             }
                                                         }

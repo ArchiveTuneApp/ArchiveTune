@@ -4,6 +4,13 @@
     <string name="songs">Songs</string>
     <string name="artists">Artists</string>
     <string name="albums">Albums</string>
+    <string name="podcast">Podcast</string>
+    <string name="episodes">Episodes</string>
+    <string name="podcast_has_no_episodes">This podcast has no available episodes.</string>
+    <plurals name="n_episode">
+        <item quantity="one">%d episode</item>
+        <item quantity="other">%d episodes</item>
+    </plurals>
     <string name="playlists">Playlists</string>
     <plurals name="n_selected">
         <item quantity="other">%d selected</item>
@@ -182,7 +189,6 @@
     <string name="delete">Delete</string>
     <string name="hide_playlist">Hide playlist</string>
     <string name="unhide_playlist">Unhide playlist</string>
-    <string name="show_hidden_playlists">Show hidden</string>
     <string name="hide_playlist_confirm">Hide \u0022%1$s\u0022 from library?</string>
     <string name="together_participants">Participants</string>
     <string name="together_connected_count">%1$d connected</string>
@@ -301,10 +307,10 @@
         <item quantity="one">1 minute</item>
         <item quantity="other">%d minutes</item>
     </plurals>
-    <string name="error_no_stream">No stream available</string>
+    <string name="error_no_stream" translatable="false">No stream available</string>
     <string name="error_no_internet">No network connection</string>
-    <string name="error_timeout">Timeout</string>
-    <string name="error_malformed_stream">Source error</string>
+    <string name="error_timeout" translatable="false">Timeout</string>
+    <string name="error_malformed_stream" translatable="false">Source error</string>
     <string name="error_unknown">Unknown error</string>
     <string name="action_like">Like</string>
     <string name="action_remove_like">Remove like</string>
@@ -451,7 +457,7 @@
     <string name="brightness">Brightness</string>
     <string name="custom_value">Custom value</string>
     <string name="archivetune_canvas">ArchiveTune Canvas</string>
-    <string name="archivetune_canvas_desc">Animate album artwork while playing (Powered by BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">Animate album artwork while playing</string>
     <string name="player_background_style_v8_v9_desc">Unavailable with V8, V9, and V10 player styles</string>
     <string name="show_button1_description">Toggle visibility of button 1 in Discord Rich Presence</string>
     <string name="show_button2_description">Toggle visibility of button 2 in Discord Rich Presence</string>
@@ -491,16 +497,19 @@
     <string name="action_logout">Log out</string>
     <string name="action_login">Log in</string>
     <string name="login">Login</string>
-    <string name="playback_login_po_token">Login PO Token</string>
     <string name="not_logged_in">Not logged in</string>
-    <string name="playback_confirmation_required">Playback confirmation required</string>
-    <string name="playback_requires_youtube_music_confirmation">Confirm playback in YouTube Music, then return to ArchiveTune.</string>
-    <string name="playback_login_refresh_required">Refresh YouTube Music login</string>
-    <string name="playback_requires_youtube_music_login_refresh">Refresh your YouTube Music login, then return to ArchiveTune.</string>
-    <string name="playback_error_code">Code</string>
-    <string name="playback_error_http">HTTP</string>
-    <string name="playback_error_message">Message</string>
-    <string name="playback_error_cause">Cause</string>
+    <string name="playback_confirmation_required" translatable="false">Playback confirmation required</string>
+    <string name="playback_requires_youtube_music_confirmation" translatable="false">Confirm playback in YouTube Music, then return to ArchiveTune.</string>
+    <string name="playback_login_refresh_required" translatable="false">Refresh YouTube Music login</string>
+    <string name="playback_requires_youtube_music_login_refresh" translatable="false">Refresh your YouTube Music login, then return to ArchiveTune.</string>
+    <string name="playback_error_unknown" translatable="false">Unknown error</string>
+    <string name="playback_error_no_internet" translatable="false">No network connection</string>
+    <string name="playback_error_details" translatable="false">Details</string>
+    <string name="playback_error_app_version" translatable="false">App version: %1$s (%2$d)</string>
+    <string name="playback_error_code" translatable="false">Code</string>
+    <string name="playback_error_http" translatable="false">HTTP</string>
+    <string name="playback_error_message" translatable="false">Message</string>
+    <string name="playback_error_cause" translatable="false">Cause</string>
     <string name="content_language">Default content language</string>
     <string name="content_country">Default content country</string>
     <string name="system_default">System default</string>
@@ -542,6 +551,20 @@
     <string name="low_data_mode_description">Reduces mobile data usage by using low-quality streams and disabling playback cache and canvas on metered networks</string>
     <string name="preload_next_song_title">Preload Mode</string>
     <string name="preload_next_song_warning">Uses additional data, battery, and processing in the background.</string>
+    <string name="sponsor_block_group">Sponsor Block</string>
+    <string name="sponsor_block_use">Use SponsorBlock</string>
+    <string name="sponsor_block_categories">SponsorBlock</string>
+    <string name="sponsor_block_categories_desc">Select SponsorBlock filtering</string>
+    <string name="sponsor_block_api_url">SponsorBlock API URL</string>
+    <string name="sponsor_block_music_off_topic">Non-music and off-topic portions</string>
+    <string name="sponsor_block_sponsors">Sponsors</string>
+    <string name="sponsor_block_intro">Intro</string>
+    <string name="sponsor_block_outro">Outro</string>
+    <string name="sponsor_block_self_promotions">Self promos</string>
+    <string name="sponsor_block_previews">Previews</string>
+    <string name="sponsor_block_fillers">Fillers</string>
+    <string name="sponsor_block_subscription_reminders">Subscription reminders</string>
+    <string name="sponsor_block_hooks">Hook/Greetings</string>
     <string name="queue">Queue</string>
     <string name="persistent_queue">Persistent queue</string>
     <string name="persistent_queue_desc">Restore your last queue when the app starts</string>
@@ -657,6 +680,11 @@
     <string name="pause_listen_history">Pause listen history</string>
     <string name="clear_listen_history">Clear listen history</string>
     <string name="clear_listen_history_confirm">Are you sure you want to clear all listen history?</string>
+    <string name="reset_listening_stats">Reset listening stats</string>
+    <string name="reset_listening_stats_confirm">Reset all listening stats on this device? This deletes listening history, play counts, and listening time. Your library, playlists, and downloads will be kept. This cannot be undone.</string>
+    <string name="reset_listening_stats_progress">Resetting listening stats…</string>
+    <string name="reset_listening_stats_success">Listening stats reset</string>
+    <string name="reset_listening_stats_error">Could not reset listening stats. Try again.</string>
     <string name="search_history">Search history</string>
     <string name="pause_search_history">Pause search history</string>
     <string name="clear_search_history">Clear search history</string>
@@ -864,7 +892,6 @@
     <string name="about">About</string>
     <string name="new_version_available">New version available</string>
     <string name="updates">Updates</string>
-    <string name="updates_subtitle_stable">Stable releases and release notes</string>
     <string name="updates_subtitle_artifact">Artifact builds from GitHub Actions workflow</string>
     <string name="current_version">Current Version</string>
     <string name="latest_version_format">Latest: %s</string>
@@ -874,7 +901,6 @@
     <string name="enable_update_notification_channel_desc">Get notified when a new release is available on the selected channel</string>
     <string name="update_channel">Update Channel</string>
     <string name="update_channel_desc">Choose between tested releases and development snapshots.</string>
-    <string name="channel_stable">Stable</string>
     <string name="channel_artifact">Artifact</string>
     <string name="recent_commits">Recent Commits</string>
     <string name="updates_artifact_hosting_description">Artifact builds are fetched directly from GitHub Actions workflow runs.</string>
@@ -1053,25 +1079,6 @@
     <string name="together_welcome_join_body">Open the shared link, or enter code and tap Join. Your queue and playback will follow the host.</string>
     <string name="together_welcome_permissions_title">Permissions and safety</string>
     <string name="together_welcome_permissions_body">Hosts can decide whether guests can add songs, control playback, or require approval to join.</string>
-    <string name="po_token_generation">PO Token Generation</string>
-    <string name="web_client_po_token">Web Client PO Token</string>
-    <string name="web_client_po_token_desc">Enable PO token generation for web-based player clients</string>
-    <string name="po_token_gvs">PO Token (GVS)</string>
-    <string name="po_token_player">PO Token (Player)</string>
-    <string name="visitor_data">Visitor Data</string>
-    <string name="generated_tokens">Generated Tokens</string>
-    <string name="regenerate">Re-generate</string>
-    <string name="regenerate_token">Regenerate Token</string>
-    <string name="source_url">Source URL</string>
-    <string name="source_url_placeholder">https://youtube.com/account</string>
-    <string name="tokens_generated">Tokens generated successfully</string>
-    <string name="token_generation_failed">Token generation failed</string>
-    <string name="token_copied">Token copied to clipboard</string>
-    <string name="extracting_from_url">Extracting tokens from URL</string>
-    <string name="po_token_account_notice_title">Use the same account</string>
-    <string name="po_token_account_notice_body">Sign in here with the same Google account that you already use for YouTube Music inside ArchiveTune before generating a PO token.</string>
-    <string name="po_token_account_notice_same_account">If this WebView uses a different account, the generated token will not work correctly.</string>
-    <string name="po_token_account_notice_mismatch">Use the matching account, finish the sign-in flow, then open youtube.com/account and generate the token from that page.</string>
     <string name="saved_accounts">Saved accounts</string>
     <string name="save_current_account">Save current account</string>
     <string name="no_saved_accounts">No saved accounts yet</string>

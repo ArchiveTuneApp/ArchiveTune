@@ -384,15 +384,23 @@ class ManageDownloadsUseCase
             return downloads.mapValues { (songId, download) ->
                 val previous = byteSamples[songId]
                 val currentBytes = download.bytesDownloaded.coerceAtLeast(0L)
-                val speed =
-                    if (download.state == Download.STATE_DOWNLOADING && previous != null) {
-                        val elapsedMs = (now - previous.timestampMs).coerceAtLeast(1L)
-                        val downloadedBytes = (currentBytes - previous.bytes).coerceAtLeast(0L)
-                        downloadedBytes * 1_000L / elapsedMs
+                if (download.state != Download.STATE_DOWNLOADING || previous == null || currentBytes < previous.bytes) {
+                    byteSamples[songId] = ByteSample(currentBytes, now, 0L)
+                    return@mapValues 0L
+                }
+
+                if (currentBytes == previous.bytes) {
+                    return@mapValues if (now - previous.timestampMs <= SPEED_SAMPLE_HOLD_MS) {
+                        previous.speedBytesPerSecond
                     } else {
                         0L
                     }
-                byteSamples[songId] = ByteSample(currentBytes, now)
+                }
+
+                val elapsedMs = (now - previous.timestampMs).coerceAtLeast(1L)
+                val downloadedBytes = currentBytes - previous.bytes
+                val speed = downloadedBytes * 1_000L / elapsedMs
+                byteSamples[songId] = ByteSample(currentBytes, now, speed)
                 speed
             }
         }
@@ -428,9 +436,11 @@ class ManageDownloadsUseCase
         private data class ByteSample(
             val bytes: Long,
             val timestampMs: Long,
+            val speedBytesPerSecond: Long,
         )
 
         private companion object {
             const val MIN_COLLECTION_SIZE = 2
+            const val SPEED_SAMPLE_HOLD_MS = 2_500L
         }
     }

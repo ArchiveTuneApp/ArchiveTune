@@ -12,7 +12,9 @@ import kotlinx.coroutines.flow.combine
 import moe.rukamori.archivetune.innertube.models.AlbumItem
 import moe.rukamori.archivetune.innertube.models.Artist
 import moe.rukamori.archivetune.innertube.models.ArtistItem
+import moe.rukamori.archivetune.innertube.models.EpisodeItem
 import moe.rukamori.archivetune.innertube.models.PlaylistItem
+import moe.rukamori.archivetune.innertube.models.PodcastItem
 import moe.rukamori.archivetune.innertube.models.SongItem
 import moe.rukamori.archivetune.innertube.models.YTItem
 import javax.inject.Inject
@@ -104,6 +106,10 @@ class FilterAiContentUseCase
                         .filterNotNull()
                         .mapNotNull(::normalizeChannelKey)
                 }
+
+                is PodcastItem -> author?.keys().orEmpty()
+
+                is EpisodeItem -> podcast?.keys().orEmpty()
             }
 
         private fun Artist.keys(): Sequence<String> =

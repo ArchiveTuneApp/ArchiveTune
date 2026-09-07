@@ -276,7 +276,6 @@
     <string name="settings_lyrics_subtitle">가사 출처 및 번역 설정</string>
     <string name="settings_content_subtitle">언어, 국가 및 기본 추천 영역 설정</string>
     <string name="settings_internet_subtitle">프록시, DNS 및 network 재생 동작 설정</string>
-    <string name="settings_po_token_subtitle">재생 확인 검증 및 방문자 데이터 관리</string>
     <string name="settings_storage_subtitle">캐시, 다운로드 및 오프라인 저장소 설정</string>
     <string name="settings_updates_subtitle">버전 확인, 업데이트 노트 및 릴리즈 채널 관리</string>
     <string name="settings_about_subtitle">앱 정보, 라이선스 및 기여자 목록 보기</string>

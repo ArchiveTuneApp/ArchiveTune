@@ -489,7 +489,6 @@
     <string name="settings_lyrics_subtitle">歌詞プロバイダーと翻訳</string>
     <string name="settings_content_subtitle">言語、国、推奨事項のデフォルト</string>
     <string name="settings_internet_subtitle">プロキシ、DNS、およびネットワーク再生動作</string>
-    <string name="settings_po_token_subtitle">再生検証と訪問者データ</string>
     <string name="settings_storage_subtitle">キャッシュ、ダウンロード、オフライン ストレージ</string>
     <string name="settings_updates_subtitle">バージョン、リリースノート、アップデートチャネル</string>
     <string name="settings_about_subtitle">アプリ情報、ライセンス、寄稿者</string>
@@ -695,7 +694,6 @@
     <string name="about_content_desc_telegram">電報</string>
     <string name="about_content_desc_donate">寄付する</string>
     <string name="aod_mode">AODモード</string>
-    <string name="aod_mode_exit">AOD を終了する</string>
     <string name="playlist_source_local">ローカル</string>
     <string name="playlist_source_online">オンライン</string>
 </resources>

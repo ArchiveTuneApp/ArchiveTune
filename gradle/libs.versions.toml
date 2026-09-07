@@ -1,7 +1,7 @@
 [versions]
-agp = "9.2.1"
+agp = "9.3.2"
 annotation = "1.10.0"
-kotlin = "2.4.0"
+kotlin = "2.4.10"
 kotlinMetadata = "2.4.0"
 compose = "1.12.0-beta02"
 lifecycle = "2.11.0"
@@ -47,9 +47,13 @@ leakCanary = "2.14"
 spotless = "8.10.0"
 graphicsShapes = "1.0.1"
 quickjsKt = "1.0.14"
+protobuf = "4.36.1"
+webkit = "1.17.0"
 
 
 [libraries]
+webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
+protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.ref = "protobuf" }
 annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }

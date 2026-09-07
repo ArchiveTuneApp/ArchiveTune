@@ -11,10 +11,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.cache.HttpCache
-import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
@@ -29,254 +26,116 @@ import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 
 object ArchiveTuneCanvas {
-    private const val BASE_URL = "https://artwork-archivetune.koiiverse.cloud/"
-    private const val FALLBACK_URL = "https://artwork.boidu.dev/"
-
-    @Volatile
-    private var bearerToken: String? = null
-
-    fun initialize(bearerToken: String?) {
-        this.bearerToken = bearerToken?.trim()?.takeIf { it.isNotEmpty() }
-    }
-
-    private val json =
-        Json {
-            ignoreUnknownKeys = true
-            isLenient = true
-            explicitNulls = false
-        }
-
+    private const val BASE_URL = "https://artwork.boidu.dev/"
+    private const val CACHE_TTL_MS = 60_000L
     private val client by lazy {
         HttpClient(OkHttp) {
-            install(ContentNegotiation) { json(json) }
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
             install(HttpTimeout) {
                 connectTimeoutMillis = 12_000
                 requestTimeoutMillis = 18_000
                 socketTimeoutMillis = 18_000
             }
-            install(ContentEncoding) {
-                gzip()
-                deflate()
-            }
-            install(HttpCache)
-            defaultRequest {
-                url(BASE_URL)
-                // bearerToken?.let { header(HttpHeaders.Authorization, "Bearer $it") }
-            }
             expectSuccess = false
         }
     }
 
-    private val fallbackClient by lazy {
-        HttpClient(OkHttp) {
-            install(ContentNegotiation) { json(json) }
-            install(HttpTimeout) {
-                connectTimeoutMillis = 12_000
-                requestTimeoutMillis = 18_000
-                socketTimeoutMillis = 18_000
-            }
-            install(ContentEncoding) {
-                gzip()
-                deflate()
-            }
-            install(HttpCache)
-            defaultRequest {
-                url(FALLBACK_URL)
-            }
-            expectSuccess = false
-        }
-    }
-
-    private data class CacheEntry(
-        val value: CanvasArtwork?,
-        val expiresAtMs: Long,
-    )
-
+    private data class CacheEntry(val artwork: CanvasArtwork, val expiresAtMs: Long)
     private val cache = ConcurrentHashMap<String, CacheEntry>()
-    private val ttlMs = 60_000L
 
     suspend fun getBySongArtist(
         song: String,
         artist: String,
         storefront: String = "us",
         forceRefresh: Boolean = false,
+        source: CanvasSource = CanvasSource.ALL,
+        requireVertical: Boolean = false,
     ): CanvasArtwork? {
-        val key = cacheKey("sa", song, artist, storefront)
-        if (forceRefresh) {
-            cache.remove(key)
+        fun CanvasArtwork.matches(): Boolean =
+            matchesSongIdentity(song, artist) &&
+                !(if (requireVertical) preferredVerticalAnimationUrl else preferredAnimationUrl).isNullOrBlank()
+        if (source.accepts(CanvasSource.BETTER_LYRICS)) {
+            fetch(mapOf("s" to song, "a" to artist, "storefront" to storefront), forceRefresh)
+                ?.takeIf { it.matches() }
+                ?.let { return it }
+        }
+        return if (source.accepts(CanvasSource.APPLE_MUSIC)) {
+            AppleMusicProvider.getBySongArtist(song, artist, null, storefront, forceRefresh)
+                ?.takeIf { it.matches() }
+                ?.copy(source = CanvasSource.APPLE_MUSIC)
         } else {
-            cache[key]?.let { entry ->
-                if (entry.expiresAtMs > System.currentTimeMillis()) return entry.value
-                cache.remove(key)
-            }
+            null
         }
-
-        val response =
-            try {
-                client.get {
-                    parameter("s", song)
-                    parameter("a", artist)
-                    parameter("storefront", storefront)
-                    if (forceRefresh) header(HttpHeaders.CacheControl, "no-cache")
-                }
-            } catch (error: CancellationException) {
-                throw error
-            } catch (_: Exception) {
-                null
-            }
-
-        val primary =
-            when (response?.status) {
-                HttpStatusCode.OK -> runCatching { response.body<CanvasArtwork>() }.getOrNull()
-                else -> null
-            }?.takeIf { artwork -> artwork.matchesSongIdentity(song, artist) }
-
-        val value =
-            primary ?: run {
-                val fallbackResponse =
-                    try {
-                        fallbackClient.get {
-                            parameter("s", song)
-                            parameter("a", artist)
-                            parameter("storefront", storefront)
-                            if (forceRefresh) header(HttpHeaders.CacheControl, "no-cache")
-                        }
-                    } catch (error: CancellationException) {
-                        throw error
-                    } catch (_: Exception) {
-                        null
-                    }
-                when (fallbackResponse?.status) {
-                    HttpStatusCode.OK -> runCatching { fallbackResponse.body<CanvasArtwork>() }.getOrNull()
-                    else -> null
-                }?.takeIf { artwork -> artwork.matchesSongIdentity(song, artist) }
-            } ?: AppleMusicProvider
-                .getBySongArtist(song, artist, null, storefront, forceRefresh)
-                ?.takeIf { artwork -> artwork.matchesSongIdentity(song, artist) }
-
-        cache[key] =
-            CacheEntry(
-                value = value,
-                expiresAtMs = System.currentTimeMillis() + ttlMs,
-            )
-
-        return value
     }
 
-    suspend fun getByAlbumId(albumId: String): CanvasArtwork? {
-        val key = cacheKey("id", albumId)
-        cache[key]?.let { entry ->
-            if (entry.expiresAtMs > System.currentTimeMillis()) return entry.value
-            cache.remove(key)
+    suspend fun getByAlbumId(
+        albumId: String,
+        source: CanvasSource = CanvasSource.ALL,
+    ): CanvasArtwork? {
+        if (source.accepts(CanvasSource.BETTER_LYRICS)) {
+            fetch(mapOf("id" to albumId))?.let { return it }
         }
-
-        val response =
-            runCatching {
-                client.get {
-                    parameter("id", albumId)
-                }
-            }.getOrNull()
-
-        val primary =
-            when (response?.status) {
-                HttpStatusCode.OK -> runCatching { response.body<CanvasArtwork>() }.getOrNull()
-                else -> null
-            }
-
-        val value =
-            primary ?: run {
-                val fallbackResponse =
-                    runCatching {
-                        fallbackClient.get {
-                            parameter("id", albumId)
-                        }
-                    }.getOrNull()
-                when (fallbackResponse?.status) {
-                    HttpStatusCode.OK -> runCatching { fallbackResponse.body<CanvasArtwork>() }.getOrNull()
-                    else -> null
-                }
-            } ?: AppleMusicProvider.getByAlbumId(albumId)
-
-        cache[key] =
-            CacheEntry(
-                value = value,
-                expiresAtMs = System.currentTimeMillis() + ttlMs,
-            )
-
-        return value
+        return if (source.accepts(CanvasSource.APPLE_MUSIC)) {
+            AppleMusicProvider.getByAlbumId(albumId)?.copy(source = CanvasSource.APPLE_MUSIC)
+        } else {
+            null
+        }
     }
 
-    suspend fun getByAlbumUrl(url: String): CanvasArtwork? {
-        val key = cacheKey("url", url)
-        cache[key]?.let { entry ->
-            if (entry.expiresAtMs > System.currentTimeMillis()) return entry.value
-            cache.remove(key)
+    suspend fun getByAlbumUrl(
+        url: String,
+        source: CanvasSource = CanvasSource.ALL,
+    ): CanvasArtwork? {
+        if (source.accepts(CanvasSource.BETTER_LYRICS)) {
+            fetch(mapOf("url" to url))?.let { return it }
         }
+        if (!source.accepts(CanvasSource.APPLE_MUSIC)) return null
+        val parsed = runCatching { java.net.URI(url) }.getOrNull() ?: return null
+        if (parsed.host != "music.apple.com") return null
+        val parts = parsed.path.trim('/').split('/')
+        val albumId = parts.lastOrNull()?.takeIf { it.isNotEmpty() && it.all(Char::isDigit) } ?: return null
+        val storefront = parts.firstOrNull()?.takeIf { it.length == 2 } ?: return null
+        return AppleMusicProvider.getByAlbumId(albumId, storefront)?.copy(source = CanvasSource.APPLE_MUSIC)
+    }
 
-        val response =
-            runCatching {
-                client.get {
-                    parameter("url", url)
-                }
-            }.getOrNull()
-
-        val primary =
-            when (response?.status) {
-                HttpStatusCode.OK -> runCatching { response.body<CanvasArtwork>() }.getOrNull()
-                else -> null
+    private suspend fun fetch(
+        parameters: Map<String, String>,
+        forceRefresh: Boolean = false,
+    ): CanvasArtwork? {
+        CanvasRequestPolicy.check(CanvasSource.BETTER_LYRICS)
+        val key = parameters.entries.joinToString("|") { "${it.key}=${it.value.trim().lowercase(Locale.ROOT)}" }
+        if (forceRefresh) cache.remove(key)
+        cache[key]?.takeIf { it.expiresAtMs > System.currentTimeMillis() }?.let { return it.artwork }
+        return try {
+            val response = client.get(BASE_URL) {
+                parameters.forEach { (key, value) -> parameter(key, value) }
+                if (forceRefresh) header(HttpHeaders.CacheControl, "no-cache")
             }
-
-        val fallback =
-            primary ?: run {
-                val fallbackResponse =
-                    runCatching {
-                        fallbackClient.get {
-                            parameter("url", url)
-                        }
-                    }.getOrNull()
-                when (fallbackResponse?.status) {
-                    HttpStatusCode.OK -> runCatching { fallbackResponse.body<CanvasArtwork>() }.getOrNull()
-                    else -> null
-                }
-            }
-
-        val value =
-            fallback ?: parseAppleMusicAlbumUrl(url)?.let { (albumId, storefront) ->
-                AppleMusicProvider.getByAlbumId(albumId, storefront)
-            }
-
-        cache[key] =
-            CacheEntry(
-                value = value,
-                expiresAtMs = System.currentTimeMillis() + ttlMs,
-            )
-
-        return value
+            CanvasRequestPolicy.check(CanvasSource.BETTER_LYRICS)
+            if (response.status != HttpStatusCode.OK) return null
+            val artwork = response.body<CanvasArtwork>().copy(source = CanvasSource.BETTER_LYRICS)
+            if (cache.size >= 128) cache.clear()
+            cache[key] = CacheEntry(artwork, System.currentTimeMillis() + CACHE_TTL_MS)
+            artwork
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            System.err.println("BetterLyrics canvas request failed: ${error.javaClass.simpleName}")
+            null
+        }
     }
 
     suspend fun isHealthy(): Boolean {
-        val response = runCatching { client.get("health") }.getOrNull() ?: return false
-        return response.status == HttpStatusCode.OK
-    }
-
-    private fun parseAppleMusicAlbumUrl(url: String): Pair<String, String>? {
-        if (!url.contains("music.apple.com")) return null
-        val albumPart = url.substringAfter("/album/", "").substringBefore("?")
-        val albumId = albumPart.substringAfterLast("/", "")
-        if (albumId.isBlank() || !albumId.all { it.isDigit() }) return null
-        val storefront = url.substringAfter("music.apple.com/").substringBefore("/")
-        if (storefront.isBlank()) return null
-        return albumId to storefront
-    }
-
-    private fun cacheKey(
-        prefix: String,
-        vararg parts: String,
-    ): String {
-        val normalized =
-            parts
-                .map { it.trim().lowercase(Locale.ROOT) }
-                .joinToString("|")
-        return "$prefix|$normalized"
+        CanvasRequestPolicy.check(CanvasSource.BETTER_LYRICS)
+        return try {
+            client.get("${BASE_URL}health") {
+                header(HttpHeaders.CacheControl, "no-cache")
+            }.status == HttpStatusCode.OK
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            System.err.println("BetterLyrics canvas health failed: ${error.javaClass.simpleName}")
+            false
+        }
     }
 }

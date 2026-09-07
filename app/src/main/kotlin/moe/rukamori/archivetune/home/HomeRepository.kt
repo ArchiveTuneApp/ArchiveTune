@@ -195,7 +195,8 @@ class HomeRepository
                 endpoint = WatchEndpoint(videoId = id),
             )
 
-        private fun Song.isYouTubeRecommendationSeed(): Boolean = !song.isLocal && id.length == YOUTUBE_VIDEO_ID_LENGTH
+        private fun Song.isYouTubeRecommendationSeed(): Boolean =
+            !song.isLocal && !song.isPodcast && id.length == YOUTUBE_VIDEO_ID_LENGTH
 
         private val Artist.recommendationKey: String
             get() = id?.takeIf(String::isNotBlank) ?: name.lowercase(Locale.ROOT)

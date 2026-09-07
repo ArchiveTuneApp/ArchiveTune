@@ -408,7 +408,6 @@
     <string name="aod_background_soft_radial">Radial souple</string>
     <string name="aod_shape_cookie_9">Cookie 9</string>
     <string name="settings_storage_subtitle">Cache, téléchargements et stockage hors ligne</string>
-    <string name="settings_po_token_subtitle">Vérification de la lecture et données relatives aux visiteurs</string>
     <string name="settings_stats_subtitle">Vos titres, artistes préférés et votre historique d\'écoute</string>
     <string name="total_releases">Nombre total de publications</string>
     <string name="aod_customize_shape_rotation">Rotation de la forme</string>
@@ -625,7 +624,6 @@
     <string name="aod_customize_screensaver_info_title">Écran de veille système (AOD en charge)</string>
     <string name="aod_customize_screensaver_info_desc">Pour activer automatiquement AOD pendant la recharge ou lorsque l\'appareil est connecté à sa station d\'accueil, accédez aux Paramètres Android &gt; Affichage &gt; Écran de veille, puis sélectionnez ArchiveTune.</string>
     <string name="aod_mode">Mode AOD</string>
-    <string name="aod_mode_exit">Quitter AOD</string>
     <string name="aod_customize_minimal_locked_view">Vue minimale verrouillée</string>
     <string name="aod_customize_touch_lock_desc">Empêche les contacts accidentels sur l\'écran AOD</string>
     <string name="aod_customize_show_clock">Afficher l\'horloge numérique</string>
@@ -699,4 +697,7 @@
     <string name="arrange_playlist_tags_desc">Choisissez l\'ordre d\'affichage des filtres par balise dans votre bibliothèque</string>
     <string name="arrange_library_chips">Trier les jetons de la bibliothèque</string>
     <string name="arrange_library_chips_desc">Choisissez l\'ordre d\'affichage des onglets dans votre bibliothèque</string>
+    <string name="aod_customize_mode_enabled">Activer le mode AOD</string>
+    <string name="aod_customize_mode_enabled_desc">Autoriser ArchiveTune à afficher l\'écran du lecteur en mode permanent</string>
+    <string name="ai_provider_openrouter">OpenRouter</string>
 </resources>

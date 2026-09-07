@@ -33,7 +33,11 @@ import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.constants.GridThumbnailHeight
 import moe.rukamori.archivetune.innertube.models.AlbumItem
 import moe.rukamori.archivetune.innertube.models.ArtistItem
+import moe.rukamori.archivetune.innertube.models.EpisodeItem
 import moe.rukamori.archivetune.innertube.models.PlaylistItem
+import moe.rukamori.archivetune.innertube.models.PodcastItem
+import moe.rukamori.archivetune.extensions.toMediaItem
+import moe.rukamori.archivetune.playback.queues.ListQueue
 import moe.rukamori.archivetune.ui.component.IconButton
 import moe.rukamori.archivetune.ui.component.LocalMenuState
 import moe.rukamori.archivetune.ui.component.YouTubeGridItem
@@ -94,43 +98,59 @@ fun BrowseScreen(
                                             navController.navigate("artist/${item.id}")
                                         }
 
+                                        is PodcastItem -> {
+                                            navController.navigate("podcast/${android.net.Uri.encode(item.browseId)}")
+                                        }
+
+                                        is EpisodeItem -> {
+                                            playerConnection.playQueue(
+                                                ListQueue(
+                                                    title = item.podcast?.name ?: item.title,
+                                                    items = listOf(item.toMediaItem()),
+                                                ),
+                                            )
+                                        }
+
                                         else -> {
                                             // Do nothing
                                         }
                                     }
                                 },
-                                onLongClick = {
-                                    menuState.show {
-                                        when (item) {
-                                            is AlbumItem -> {
-                                                YouTubeAlbumMenu(
-                                                    albumItem = item,
-                                                    navController = navController,
-                                                    onDismiss = menuState::dismiss,
-                                                )
-                                            }
+                                onLongClick =
+                                    if (item is AlbumItem || item is PlaylistItem || item is ArtistItem) {
+                                        {
+                                            menuState.show {
+                                                when (item) {
+                                                    is AlbumItem -> {
+                                                        YouTubeAlbumMenu(
+                                                            albumItem = item,
+                                                            navController = navController,
+                                                            onDismiss = menuState::dismiss,
+                                                        )
+                                                    }
 
-                                            is PlaylistItem -> {
-                                                YouTubePlaylistMenu(
-                                                    playlist = item,
-                                                    coroutineScope = coroutineScope,
-                                                    onDismiss = menuState::dismiss,
-                                                )
-                                            }
+                                                    is PlaylistItem -> {
+                                                        YouTubePlaylistMenu(
+                                                            playlist = item,
+                                                            coroutineScope = coroutineScope,
+                                                            onDismiss = menuState::dismiss,
+                                                        )
+                                                    }
 
-                                            is ArtistItem -> {
-                                                YouTubeArtistMenu(
-                                                    artist = item,
-                                                    onDismiss = menuState::dismiss,
-                                                )
-                                            }
+                                                    is ArtistItem -> {
+                                                        YouTubeArtistMenu(
+                                                            artist = item,
+                                                            onDismiss = menuState::dismiss,
+                                                        )
+                                                    }
 
-                                            else -> {
-                                                // Do nothing
+                                                    else -> Unit
+                                                }
                                             }
                                         }
-                                    }
-                                },
+                                    } else {
+                                        null
+                                    },
                             ),
                 )
             }

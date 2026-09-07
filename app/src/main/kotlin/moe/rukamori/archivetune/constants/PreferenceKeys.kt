@@ -37,6 +37,8 @@ val PlayerDesignStyleKey = stringPreferencesKey("playerDesignStyle")
 val ShowPlayerVolumeBarKey = booleanPreferencesKey("showPlayerVolumeBar")
 val HidePlayerThumbnailKey = booleanPreferencesKey("hidePlayerThumbnail")
 val ArchiveTuneCanvasKey = booleanPreferencesKey("archiveTuneCanvas")
+val CanvasSourceKey = stringPreferencesKey("canvasSource")
+val CanvasWifiOnlyKey = booleanPreferencesKey("canvasWifiOnly")
 val ThumbnailCornerRadiusKey = floatPreferencesKey("thumbnailCornerRadius")
 val CropThumbnailToSquareKey = booleanPreferencesKey("cropThumbnailToSquare")
 
@@ -756,6 +758,9 @@ val LyricsV2LrcBounceEnabledKey = booleanPreferencesKey("lyricsV2LrcBounceEnable
 
 val PlayerVolumeKey = floatPreferencesKey("playerVolume")
 val RepeatModeKey = intPreferencesKey("repeatMode")
+val SponsorBlockEnabledKey = booleanPreferencesKey("sponsorBlockEnabled")
+val SponsorBlockCategoriesKey = stringSetPreferencesKey("sponsorBlockCategories")
+val SponsorBlockApiUrlKey = stringPreferencesKey("sponsorBlockApiUrl")
 
 val SearchSourceKey = stringPreferencesKey("searchSource")
 val SwipeThumbnailKey = booleanPreferencesKey("swipeThumbnail")

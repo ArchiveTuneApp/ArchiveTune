@@ -83,7 +83,6 @@
     <string name="sort_by_artist">艺术家</string>
     <string name="allow">允许</string>
     <string name="update_channel">更新频道</string>
-    <string name="channel_stable">稳定</string>
     <string name="update_notification_channel_name">应用更新</string>
     <string name="update_notification_channel_desc">新应用更新通知</string>
     <string name="update_notification_title">更新可用</string>
@@ -105,9 +104,7 @@
     <string name="lyrics_not_found">未找到歌词</string>
     <string name="sleep_timer">睡眠计时器</string>
     <string name="end_of_song">歌曲结束</string>
-    <string name="error_no_stream">没有可用的流媒体</string>
     <string name="error_no_internet">无网络连接</string>
-    <string name="error_timeout">超时</string>
     <string name="error_unknown">未知错误</string>
     <string name="action_like">喜爱</string>
     <string name="action_remove_like">移除喜爱</string>
@@ -382,7 +379,7 @@
     <string name="contrast">对比</string>
     <string name="brightness">亮度</string>
     <string name="archivetune_canvas">ArchiveTune画布</string>
-    <string name="archivetune_canvas_desc">播放时动画化专辑封面（由BetterLyrics提供）</string>
+    <string name="archivetune_canvas_desc">播放时动画化专辑封面</string>
     <string name="show_button1_description">在Discord Rich Presence中切换按钮1的可见性</string>
     <string name="show_button2_description">在Discord Rich Presence中切换按钮2的可见性</string>
     <string name="discord_activity_type">活动类型</string>
@@ -566,21 +563,6 @@
     <string name="together_welcome_join_body">打开分享链接，或将其粘贴至此处并点击“加入”。您的播放队列与进度将随主持人同步</string>
     <string name="together_welcome_permissions_title">权限与隐私安全</string>
     <string name="together_welcome_permissions_body">房主可以决定访客是否能够添加歌曲、控制播放，或在加入时是否需要审批</string>
-    <string name="po_token_generation">身份验证令牌生成</string>
-    <string name="web_client_po_token">网页端验证令牌</string>
-    <string name="web_client_po_token_desc">启用网页端播放器验证令牌生成</string>
-    <string name="po_token_gvs">GVS 验证令牌</string>
-    <string name="po_token_player">播放器验证令牌</string>
-    <string name="visitor_data">访客数据</string>
-    <string name="generated_tokens">已生成的令牌</string>
-    <string name="regenerate">重新生成</string>
-    <string name="regenerate_token">重新生成令牌</string>
-    <string name="source_url">来源 URL</string>
-    <string name="source_url_placeholder">https://youtube.com/account</string>
-    <string name="tokens_generated">令牌生成成功</string>
-    <string name="token_generation_failed">令牌生成失败</string>
-    <string name="token_copied">令牌已复制到剪贴板</string>
-    <string name="extracting_from_url">正在从 URL 提取令牌…</string>
     <string name="album_backdrop">背景模糊</string>
     <string name="album_backdrop_desc">在播放器上将艺术作品显示为模糊背景</string>
     <string name="backdrop_blur_amount">背景模糊程度</string>
@@ -687,7 +669,6 @@
     <string name="canvas_refetch_failed">无法刷新动态封面</string>
     <string name="hide_playlist">隐藏歌单</string>
     <string name="unhide_playlist">取消隐藏歌单</string>
-    <string name="show_hidden_playlists">显示已隐藏</string>
     <string name="hide_playlist_confirm">是否在音乐库中隐藏“%1$s”？</string>
     <string name="together_transfer_host">移交房主</string>
     <string name="together_approve">同意</string>
@@ -700,7 +681,6 @@
     <string name="removed_song_from_queue">已从播放队列中移除“%s”</string>
     <string name="removed_n_songs_from_queue">已从播放队列中移除 %d 首歌曲</string>
     <string name="aod_mode">熄屏显示模式</string>
-    <string name="aod_mode_exit">退出熄屏显示</string>
     <string name="sort_by_most_played">最常播放</string>
     <string name="sort_order_ascending">升序</string>
     <string name="sort_order_descending">降序</string>
@@ -716,7 +696,6 @@
     <string name="unsupported_language">不支持的语言：%1$s</string>
     <string name="source">歌词源</string>
     <string name="lyrics_word_sync">逐词对齐</string>
-    <string name="error_malformed_stream">源错误</string>
     <string name="app_icon_description">选择应用图标</string>
     <string name="app_icon_default">默认</string>
     <string name="app_icon_subtitle">自定义启动图标</string>
@@ -766,15 +745,6 @@
     <string name="lyrics_mode_v2">V2 经典模式</string>
     <string name="lyrics_mode_enhanced">增强模式</string>
     <string name="lyrics_animation_style_v2_only">仅在 V2 歌词模式下可用</string>
-    <string name="playback_login_po_token">登录 PO Token</string>
-    <string name="playback_confirmation_required">需要确认播放</string>
-    <string name="playback_requires_youtube_music_confirmation">请先在 YouTube Music 中确认播放，然后返回 ArchiveTune</string>
-    <string name="playback_login_refresh_required">刷新 YouTube Music 登录状态</string>
-    <string name="playback_requires_youtube_music_login_refresh">请重新登录 YouTube Music，然后返回 ArchiveTune</string>
-    <string name="playback_error_code">错误代码</string>
-    <string name="playback_error_http">HTTP 状态</string>
-    <string name="playback_error_message">错误信息</string>
-    <string name="playback_error_cause">错误原因</string>
     <string name="internet">网络</string>
     <string name="internet_warning_title">安全与使用警告</string>
     <string name="internet_warning_doh">DoH（基于 HTTPS 的 DNS）仅适用于你所在国家/地区封锁 YouTube 的情况。如果是 YouTube 主动限制了你所在区域，请考虑使用代理或 VPN</string>
@@ -935,7 +905,6 @@
     <string name="copy_log_entry">复制日志条目</string>
     <string name="export_logs_failed">无法导出日志</string>
     <string name="export">导出</string>
-    <string name="updates_subtitle_stable">稳定版发布与更新日志</string>
     <string name="updates_subtitle_artifact">Canary 预览版与近期开发 Commit</string>
     <string name="updates_status_checking">正在检查最新版本</string>
     <string name="updates_status_current">当前已是最新版本</string>
@@ -1036,10 +1005,6 @@
     <string name="together_activity_queue_updated">%1$s 更新了播放队列</string>
     <string name="together_activity_playback_state_changed">%1$s 更改了播放状态</string>
     <string name="together_activity_error">错误：%1$s</string>
-    <string name="po_token_account_notice_title">请使用同一账号</string>
-    <string name="po_token_account_notice_body">生成 PO Token 前，请确保在此登录的 Google 账号与您在 ArchiveTune 中用于 YouTube Music 的账号一致</string>
-    <string name="po_token_account_notice_same_account">若此内置浏览器使用不一致的账号登录，生成的 Token 将无法正常工作</string>
-    <string name="po_token_account_notice_mismatch">请切换至匹配的账号，完成登录后再打开 youtube.com/account 页面生成 Token</string>
     <string name="saved_accounts">已保存账号</string>
     <string name="save_current_account">保存当前账号</string>
     <string name="no_saved_accounts">暂无已保存账号</string>

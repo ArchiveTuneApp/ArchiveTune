@@ -144,9 +144,7 @@
         <item quantity="one">1 minute</item>
         <item quantity="other">%d minuti</item>
     </plurals>
-    <string name="error_no_stream">Nessun flusso disponibile</string>
     <string name="error_no_internet">Nessuna connessione di rete</string>
-    <string name="error_timeout">Timeout</string>
     <string name="error_unknown">Errore sconosciuto</string>
     <string name="action_like">Mi piace</string>
     <string name="action_remove_like">Rimuovi mi piace</string>
@@ -443,7 +441,6 @@
     <string name="latest_version_format">Latest: %s</string>
     <string name="enable_update_notification">Abilita notifica di aggiornamento</string>
     <string name="update_channel">Aggiorna canale</string>
-    <string name="channel_stable">Stabile</string>
     <string name="recent_commits">Impegni recenti</string>
     <string name="update_notification_channel_name">Aggiornamenti dell\'app</string>
     <string name="update_notification_channel_desc">Notifiche per nuovi aggiornamenti dell\'app</string>
@@ -480,7 +477,6 @@
     <string name="removed_song_from_queue">Rimosso \"%s\" dalla coda</string>
     <string name="removed_n_songs_from_queue">Rimossi %d brani dalla coda</string>
     <string name="aod_mode">Modalità AOD</string>
-    <string name="aod_mode_exit">Lascia AOD</string>
     <string name="tempo">Ritmo</string>
     <string name="pitch">Tono</string>
     <string name="pitch_mode_semitones_short">st</string>
@@ -489,11 +485,10 @@
     <string name="sort_order_ascending">Crescente</string>
     <string name="sort_order_descending">Decrescente</string>
     <string name="no_matching_playlists">Nessuna playlist corrispondente</string>
-    <string name="error_malformed_stream">Errore fonte</string>
     <string name="random_theme_on_startup">Tema random all\'avvio</string>
     <string name="random_theme_on_startup_desc">Applica una palette di colori randomica ad ogni avvio dell\'app</string>
     <string name="archivetune_canvas">Canvas ArchiveTune</string>
-    <string name="archivetune_canvas_desc">Anima la copertina dell\'album durante la riproduzione (Fornito da BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">Anima la copertina dell\'album durante la riproduzione</string>
     <string name="disable_animations">Disabilita animazioni</string>
     <string name="disable_animations_desc">Disabilita la maggior parte delle animazioni dell\'app. Raccomandato per dispositivi di fascia bassa</string>
     <string name="blur_intensity">Intensità sfocatura</string>
@@ -503,10 +498,6 @@
     <string name="slider_style_thick">Spesso</string>
     <string name="slider_style_circular">Circolare</string>
     <string name="slider_style_simple">Semplice</string>
-    <string name="playback_confirmation_required">Richiesta conferma playback</string>
-    <string name="playback_requires_youtube_music_confirmation">Conferma il playback in YouTube Music, quindi ritorna su ArchiveTune.</string>
-    <string name="playback_login_refresh_required">Ricarica login YouTube Music</string>
-    <string name="playback_requires_youtube_music_login_refresh">Ricarica il login di YouTube Music, quindi ritorna su ArchiveTune.</string>
     <string name="internet">Internet</string>
     <string name="internet_warning_title">Sicurezza e Avvertenza Utilizzo</string>
     <string name="internet_warning_doh">DNS tramite HTTPS funziona solo se la tua nazione blocca YouTube. Se YouTube blocca attivamente la tua regione, considera l\'utilizzo di un Proxy o VPN.</string>

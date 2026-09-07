@@ -8,6 +8,8 @@
 package moe.rukamori.archivetune.ui.utils
 
 import moe.rukamori.archivetune.innertube.models.ArtistItem
+import moe.rukamori.archivetune.innertube.models.EpisodeItem
+import moe.rukamori.archivetune.innertube.models.PodcastItem
 import moe.rukamori.archivetune.innertube.models.SongItem
 import moe.rukamori.archivetune.innertube.models.YTItem
 
@@ -35,7 +37,7 @@ val YTItem.preferredThumbnailRatio: Float
     get() = preferredThumbnailRatio(cropThumbnailToSquare = false)
 
 fun YTItem.preferredThumbnailRatio(cropThumbnailToSquare: Boolean): Float {
-    if (this is ArtistItem) return SQUARE_RATIO
+    if (this is ArtistItem || this is PodcastItem || this is EpisodeItem) return SQUARE_RATIO
 
     if (cropThumbnailToSquare && thumbnail?.contains("ytimg.com", ignoreCase = true) == true) {
         return SQUARE_RATIO

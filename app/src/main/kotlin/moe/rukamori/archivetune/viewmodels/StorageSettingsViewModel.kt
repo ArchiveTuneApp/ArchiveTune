@@ -234,10 +234,6 @@ class StorageSettingsViewModel
             clearCache(StorageCacheKind.IMAGES, showFeedback)
         }
 
-        fun clearCanvasCache(showFeedback: Boolean = true) {
-            clearCache(StorageCacheKind.CANVAS, showFeedback)
-        }
-
         private fun selectStorageLocation(optionId: String) {
             viewModelScope.launch(Dispatchers.IO) {
                 migrationState.value =

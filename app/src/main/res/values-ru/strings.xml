@@ -181,9 +181,7 @@
         <item quantity="many">%d минут</item>
         <item quantity="other">%d минут</item>
     </plurals>
-    <string name="error_no_stream">Нет доступного потока</string>
     <string name="error_no_internet">Нет подключения к интернету</string>
-    <string name="error_timeout">Время ожидания истекло</string>
     <string name="error_unknown">Неизвестная ошибка</string>
     <string name="action_like">Нравится</string>
     <string name="action_remove_like">Убрать \"Нравится\"</string>
@@ -292,7 +290,7 @@
     <string name="brightness">Яркость</string>
     <string name="custom_value">Пользовательское</string>
     <string name="archivetune_canvas">ArchiveTune Canvas</string>
-    <string name="archivetune_canvas_desc">Анимировать обложку альбома при воспроизведении (С помощью BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">Анимировать обложку альбома при воспроизведении</string>
     <string name="show_button1_description">Включить видимость кнопки 1 в Discord Rich Presence</string>
     <string name="show_button2_description">Включить видимость кнопки 2 в Discord Rich Presence</string>
     <string name="discord_activity_type">Тип активности</string>
@@ -508,7 +506,6 @@
     <string name="latest_version_format">Последняя: %s</string>
     <string name="enable_update_notification">Включить уведомление об обновлении</string>
     <string name="update_channel">Канал обновлений</string>
-    <string name="channel_stable">Стабильный</string>
     <string name="recent_commits">Последние коммиты</string>
     <string name="changelog">Список изменений</string>
     <string name="view_changelog">Посмотреть список изменений</string>
@@ -593,21 +590,6 @@
     <string name="pause_on_device_mute_desc">Автоматически ставить музыку на паузу когда звук отключён, и снова воспроизводить когда звук включён</string>
     <string name="auto_start_on_bluetooth">Автозапуск при подключении Bluetooth</string>
     <string name="auto_start_on_bluetooth_desc">Автоматически возобновлять воспроизведение при подключении Bluetooth аудио-устройства</string>
-    <string name="po_token_generation">Генерация PO токена</string>
-    <string name="web_client_po_token">Веб-клиент PO токен</string>
-    <string name="web_client_po_token_desc">Включить генерацию PO токена для веб-клиентов плеера</string>
-    <string name="po_token_gvs">PO токен (GVS)</string>
-    <string name="po_token_player">PO токен (плеер)</string>
-    <string name="visitor_data">Данные посетителя</string>
-    <string name="generated_tokens">Сгенерированные токены</string>
-    <string name="regenerate">Повторить генерацию</string>
-    <string name="regenerate_token">Повторить генерацию токена</string>
-    <string name="source_url">URL источника</string>
-    <string name="source_url_placeholder">https://youtube.com/account</string>
-    <string name="tokens_generated">Токены сгенерированы успешно</string>
-    <string name="token_generation_failed">Генерация токена провалилась</string>
-    <string name="token_copied">Токен скопирован в буфер обмена</string>
-    <string name="extracting_from_url">Извлечение токенов по ссылке…</string>
     <string name="speed_dial">Быстрый набор</string>
     <string name="music_recognition">Распознавание музыки</string>
     <string name="pin_to_speed_dial">Закрепить на быстром наборе</string>
@@ -622,10 +604,6 @@
     <string name="disable_animations_desc">Отключить большинство анимаций в приложении. Рекомендовано для слабых устройств</string>
     <string name="blur_intensity">Сила размытия</string>
     <string name="blur_intensity_value">%1$d dp</string>
-    <string name="playback_confirmation_required">Необходимо подтверждение воспроизведения</string>
-    <string name="playback_requires_youtube_music_confirmation">Подтвердите воспроизведение в YouTube Music, потом вернитесь в ArchiveTune.</string>
-    <string name="playback_login_refresh_required">Обновить вход в YouTube Music</string>
-    <string name="playback_requires_youtube_music_login_refresh">Обновите ваш вход в YouTube Music, потом вернитесь в ArchiveTune.</string>
     <string name="internet">Интернет</string>
     <string name="internet_warning_title">Предупреждение об безопасности и использовании</string>
     <string name="internet_warning_doh">DNS через HTTPS работает только в том случае, если в вашей стране заблокирован YouTube. Если YouTube активно блокирует ваш регион, рассмотрите возможность использования прокси-сервера или VPN.</string>
@@ -652,7 +630,6 @@
     <string name="open_with_downloader">Открыть с помощью загрузчика</string>
     <string name="external_downloader_not_installed">Внешнее приложение-загрузчик не установлено</string>
     <string name="external_downloader_not_configured">Не настроено ни одного внешнего загрузчика. Настройте один в Настройки → Плеер.</string>
-    <string name="updates_subtitle_stable">Стабильные релизы и заметки релиза</string>
     <string name="updates_status_checking">Проверка последнего релиза</string>
     <string name="updates_status_current">Вы на последней версии релиза</string>
     <string name="update_channel_desc">Выбирайте между тестированными релизами и снапшотами разработки.</string>
@@ -663,10 +640,6 @@
     <string name="playlist_suggestion_source_title">Название плейлиста</string>
     <string name="playlist_suggestion_source_content">Контент плейлиста</string>
     <string name="playlist_suggestion_source_both">Название плейлиста и контент</string>
-    <string name="po_token_account_notice_title">Использовать тот же аккаунт</string>
-    <string name="po_token_account_notice_body">Войдите тут с тем же аккаунтом Google который вы использовали для входа в YouTube Music в ArchiveTune перед генерацией PO токена.</string>
-    <string name="po_token_account_notice_same_account">Если этот WebView использует другой аккаунт, сгенерированный токен не будет нормально работать.</string>
-    <string name="po_token_account_notice_mismatch">Используйте подходящий аккаунт, завершите вход, потом откройте youtube.com/account и сгенерируйте токен с этой страницы.</string>
     <string name="album_backdrop">Размытие фона</string>
     <string name="album_backdrop_desc">Показывать изображение в качестве размытого фона на плеере</string>
     <string name="backdrop_blur_amount">Степень размытия фона</string>

@@ -429,7 +429,6 @@
     <string name="settings_lyrics_subtitle">歌詞提供者與翻譯</string>
     <string name="settings_content_subtitle">語言、國家和推薦的預設設置</string>
     <string name="settings_internet_subtitle">代理、DNS 和網路播放行為</string>
-    <string name="settings_po_token_subtitle">播放驗證與訪客數據</string>
     <string name="settings_storage_subtitle">快取、下載和離線存儲</string>
     <string name="settings_updates_subtitle">版本、發行說明和更新頻道</string>
     <string name="settings_about_subtitle">應用資訊、許可證與貢獻者</string>
@@ -680,4 +679,16 @@
     <string name="song_source_changed">歌曲來源已更改。</string>
     <string name="arrange_playlist_tags">排列播放清單標籤</string>
     <string name="arrange_playlist_tags_desc">選擇資料庫中標籤篩選器的顯示順序</string>
+    <string name="arrange_library_chips">調整媒體庫標籤順序</string>
+    <string name="arrange_library_chips_desc">調整媒體庫中顯示的標籤頁順序</string>
+    <string name="song_source_change_failed">無法更改歌曲來源。</string>
+    <string name="import_preparing">正在準備導入…</string>
+    <string name="import_matching_progress">匹配： %1$d/%2$d</string>
+    <string name="import_saving">正在保存導入…</string>
+    <string name="import_saving_progress">保存：%1$d/%2$d</string>
+    <string name="playlist_source_local">本地</string>
+    <string name="playlist_source_online">線上</string>
+    <string name="aod_customize_mode_enabled">啟用 AOD 模式</string>
+    <string name="aod_customize_mode_enabled_desc">允許 ArchiveTune 顯示 AOD 播放器介面</string>
+    <string name="ai_provider_openrouter">開放路由器</string>
 </resources>

@@ -174,7 +174,6 @@
     <string name="delete">حڈف</string>
     <string name="hide_playlist">مجموعہ گیت کو پوشیدہ کریں</string>
     <string name="unhide_playlist">مجموعہ گیت کو غیر پوشیدہ کریں</string>
-    <string name="show_hidden_playlists">پوشیدہ کردہ دکھائیں</string>
     <string name="hide_playlist_confirm">\"%1$s\" کو فہرست سے پوشیدہ کریں؟</string>
     <string name="together_participants">شرکاء</string>
     <string name="together_connected_count">%1$d واصل کردہ</string>
@@ -204,7 +203,6 @@
     <string name="search_online">آنلائن تلاش کریں</string>
     <string name="tempo_and_pitch">ٹیمپو ایور پچ</string>
     <string name="aod_mode">اے او ڈی اسلوب</string>
-    <string name="aod_mode_exit">اے او ڈی سے نکلیں</string>
     <string name="tempo">ٹیمپو</string>
     <string name="pitch">پچ</string>
     <string name="pitch_mode_semitones_short">st</string>
@@ -291,10 +289,7 @@
         <item quantity="one">ایک منٹ</item>
         <item quantity="other">%d منٹ</item>
     </plurals>
-    <string name="error_no_stream">نشر دستیاب نہیں</string>
     <string name="error_no_internet">کسی نیٹورک سے رابطہ نہیں</string>
-    <string name="error_timeout">وقت ختم</string>
-    <string name="error_malformed_stream">مصدر کی تحریف</string>
     <string name="error_unknown">نامعلوم تحریف</string>
     <string name="action_like">بسند</string>
     <string name="action_remove_like">پسند کردہ سے حزف کریں</string>
@@ -410,7 +405,7 @@
     <string name="brightness">چمک دمک</string>
     <string name="custom_value">حسب ضرورت وصف</string>
     <string name="archivetune_canvas">‫ArchiveTune کینوس</string>
-    <string name="archivetune_canvas_desc">‫سنتے دوران البم کی تصویر کو حرکت پذیر کیرں (BetterLyrics کی جانب سے)</string>
+    <string name="archivetune_canvas_desc">‫سنتے دوران البم کی تصویر کو حرکت پذیر کیرں</string>
     <string name="player_background_style_v8_v9_desc">‫V8 اور V9 طرز سازندہ میں دستیاب نہیں</string>
     <string name="show_button1_description">ڈسکورڈ رچ پریژنس کے پہلے رکمے کی رؤیت کو تبدیل کریں</string>
     <string name="show_button2_description">ڈسکورڈ رچ پریژنس کے دوسرے رکمے کی رؤیت کو تبدیل کریں</string>
@@ -451,14 +446,6 @@
     <string name="action_login">لاگ ان</string>
     <string name="login">لاگن</string>
     <string name="not_logged_in">لاگ ان لردہ نہیں</string>
-    <string name="playback_confirmation_required">نشر کی تصدیق ضروری ہے</string>
-    <string name="playback_requires_youtube_music_confirmation">‫YouTube Music میں نشر کی تصدیق کریں، پھر ArchiveTune پر واپس آئیں۔</string>
-    <string name="playback_login_refresh_required">یوٹیوب میوسک کے لاگن کوتازہ کریں</string>
-    <string name="playback_requires_youtube_music_login_refresh">‫اپنے YouTube Music کے لاگن کوتازہ کریں، پھر ArchiveTune پر واپس آئیں۔</string>
-    <string name="playback_error_code">کوڈ</string>
-    <string name="playback_error_http">HTTP</string>
-    <string name="playback_error_message">پیغام</string>
-    <string name="playback_error_cause">وجہ</string>
     <string name="content_language">مواد کی ڈیفالٹ زبان</string>
     <string name="content_country">مواد کا ڈیفالٹ ملک</string>
     <string name="system_default">سسٹم کا ڈیفالٹ</string>
@@ -787,7 +774,6 @@
     <string name="custom_background_blur_value">%1$d dp</string>
     <string name="custom_background_scale_value">%%%1$d</string>
     <string name="custom_background_permission_error">‫ArchiveTune اس تصویر تک رسائی نہیں رکھ سکا۔</string>
-    <string name="playback_login_po_token">‫لاگن کا PO ٹوکن</string>
     <string name="enable_megalobiz_lyrics">‫Megalobiz کے کلمات کو فعل کریں</string>
     <string name="eq_screen_subtitle">نشر کو اپنے کانوں اور سازو سامان کے مطابق ڈھالیں</string>
     <string name="eq_sound_shaping_on">سمعی ڈھالنا فعل ہے</string>
@@ -865,7 +851,6 @@
     <string name="about">بحوالہ</string>
     <string name="new_version_available">نیا نسخہ دستیاب ہے</string>
     <string name="updates">پیش رفتات</string>
-    <string name="updates_subtitle_stable">مستحکم اشعات اور شائع پرچے</string>
     <string name="updates_subtitle_artifact">‫Canary اشعات اور حالیہ تعمراتی کام</string>
     <string name="recent_commits">حالیہ کام</string>
     <string name="current_version">موجودہ نسخہ</string>
@@ -876,7 +861,6 @@
     <string name="enable_update_notification_channel_desc">اطلاع حاصل کریں جب کوئی نیا شائع مقررہ چینل پر دستیاب ہو</string>
     <string name="update_channel">چینل کی پیش رفت</string>
     <string name="update_channel_desc">آزمودہ اشعات اور تعمیراتی سنیپشاٹس میں انتخاب کریں۔</string>
-    <string name="channel_stable">مستحکم</string>
     <string name="channel_artifact">‫تجربی (Canary)</string>
     <string name="updates_artifact_hosting_description">‫Canary اشعات خودکاری سے تازہ ترین تعمیراتی شاخ سے شائع ہوتے ہیں۔</string>
     <string name="updates_channel_warning_stable_title">مستحکم تعمیرات</string>
@@ -1038,25 +1022,6 @@
     <string name="together_welcome_join_body">اشتراک شدہ ربط کو کھولیں، یا رمز ڈالیں اور شامل کو ضرب لگائیں۔ آپکی قطار اور نشر میزبان کی پیروی کرے گی۔</string>
     <string name="together_welcome_permissions_title">اجازات اور تحفظ</string>
     <string name="together_welcome_permissions_body">میزبان یہ فیصلہ کرتے ہیں کہ مہمان گیت شامل کر سکتے ہیں، نشر کو کنٹرول کر سکتے ہیں، یا شمولیت کے لیے منظوری درکار ہیں۔</string>
-    <string name="po_token_generation">‫PO ٹوکن کی تولید</string>
-    <string name="web_client_po_token">Web Client PO Token</string>
-    <string name="web_client_po_token_desc">‫ویب پر مشتمل سازندہ گاہکوں کے لئے PO ٹوکن کی تولید کو فعل کریں</string>
-    <string name="po_token_gvs">‫PO ٹوکن (GVS)</string>
-    <string name="po_token_player">PO ٹوکن (Player)</string>
-    <string name="visitor_data">زائر کے قوائف</string>
-    <string name="generated_tokens">تولید شدہ ٹوکنات</string>
-    <string name="regenerate">دوبارہ تولید</string>
-    <string name="regenerate_token">ٹوکن کی دوبارہ تولید کریں</string>
-    <string name="source_url">مصدر URL</string>
-    <string name="source_url_placeholder">https://youtube.com/account</string>
-    <string name="tokens_generated">کامیابی سے ٹوکنات کی تولید ہوئی</string>
-    <string name="token_generation_failed">ٹوکن کی تولید ناکام</string>
-    <string name="token_copied">ٹوکن کو تختہ پر نقل کیا</string>
-    <string name="extracting_from_url">URL سے ٹوکن نکالا جا رہا ہے</string>
-    <string name="po_token_account_notice_title">ایک ہی اکاَئونٹ استعمال کریں</string>
-    <string name="po_token_account_notice_body">‫یہاں اسی Google اکاؤنٹ سے دخل کریں جسے آپنے PO ٹوکن کی تولید سے پہلے ArchiveTune میں YouTube Music کے لئے استعال کیا تھا۔</string>
-    <string name="po_token_account_notice_same_account">اگر یہ ویب-ویو کوئ دسرا حساب استعمال کرتا ہے تو تولیدہ کردہ ٹوکن صحیح سے کام نہیں کرے گا۔</string>
-    <string name="po_token_account_notice_mismatch">‫ایک جیسا حساب استعمال کریں، دخل فلو کو مکمل کریں، پھر youtube.com/account کھولیں اور اس صفحے سے ٹوکن کی تولید کریں۔</string>
     <string name="saved_accounts">محفوظ شدہ حسابات</string>
     <string name="save_current_account">موجودہ حساب کو حفظ کریں</string>
     <string name="no_saved_accounts">ابھی تک کوئی محفوظ حسابات نہیں</string>

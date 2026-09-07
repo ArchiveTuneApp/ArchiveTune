@@ -7,6 +7,7 @@
 
 package moe.rukamori.archivetune.ui.component
 
+import android.view.View
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
@@ -16,7 +17,10 @@ import androidx.compose.animation.core.snap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.DraggableState
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitVerticalTouchSlopOrCancellation
+import androidx.compose.foundation.gestures.verticalDrag
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -33,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -43,13 +48,19 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.input.pointer.util.addPointerInputChange
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
@@ -380,28 +391,78 @@ fun rememberBottomSheetState(
     }
 }
 
+private class BottomSheetGestureRegion(private val view: View) {
+    var coordinates: LayoutCoordinates? = null
+    private val windowLocation = IntArray(2)
+
+    fun canStartDrag(position: Offset): Boolean {
+        val layoutCoordinates = coordinates?.takeIf { it.isAttached } ?: return false
+        val insets = ViewCompat.getRootWindowInsets(view)?.getInsets(
+            WindowInsetsCompat.Type.systemGestures() or WindowInsetsCompat.Type.navigationBars(),
+        ) ?: return true
+        val rootView = view.rootView
+        rootView.getLocationInWindow(windowLocation)
+        val windowPosition = layoutCoordinates.localToWindow(position)
+        val x = windowPosition.x - windowLocation[0]
+        val y = windowPosition.y - windowLocation[1]
+        return x >= insets.left && x < rootView.width - insets.right &&
+            y >= insets.top && y < rootView.height - insets.bottom
+    }
+}
+
 @Composable
 fun Modifier.bottomSheetDraggable(
     state: BottomSheetState,
     onDismiss: (() -> Unit)? = null,
-): Modifier =
-    this.pointerInput(state) {
-        val velocityTracker = VelocityTracker()
-
-        detectVerticalDragGestures(
-            onVerticalDrag = { change, dragAmount ->
-                velocityTracker.addPointerInputChange(change)
-                state.dispatchRawDelta(dragAmount)
-            },
-            onDragCancel = {
-                val velocity = -velocityTracker.calculateVelocity().y
-                velocityTracker.resetTracking()
-                state.performFling(velocity, onDismiss)
-            },
-            onDragEnd = {
-                val velocity = -velocityTracker.calculateVelocity().y
-                velocityTracker.resetTracking()
-                state.performFling(velocity, onDismiss)
-            },
-        )
+): Modifier {
+    val view = LocalView.current
+    val gestureRegion = remember(view) { BottomSheetGestureRegion(view) }
+    val updateCoordinates: (LayoutCoordinates) -> Unit = remember(gestureRegion) {
+        { gestureRegion.coordinates = it }
     }
+    val currentOnDismiss by rememberUpdatedState(onDismiss)
+
+    return this
+        .onGloballyPositioned(updateCoordinates)
+        .pointerInput(state, gestureRegion) {
+            val velocityTracker = VelocityTracker()
+
+            awaitEachGesture {
+                val down = awaitFirstDown(requireUnconsumed = false)
+                if (!gestureRegion.canStartDrag(down.position)) return@awaitEachGesture
+
+                val initialAnchor = state.targetAnchor
+                velocityTracker.resetTracking()
+                velocityTracker.addPointerInputChange(down)
+                var dragStarted = false
+                var dragCompleted = false
+
+                try {
+                    val drag = awaitVerticalTouchSlopOrCancellation(down.id) { change, overSlop ->
+                        change.consume()
+                        dragStarted = true
+                        velocityTracker.addPointerInputChange(change)
+                        state.dispatchRawDelta(overSlop)
+                    } ?: return@awaitEachGesture
+
+                    dragCompleted = verticalDrag(drag.id) { change ->
+                        velocityTracker.addPointerInputChange(change)
+                        state.dispatchRawDelta(change.positionChange().y)
+                        change.consume()
+                    }
+                    if (dragCompleted) {
+                        state.performFling(-velocityTracker.calculateVelocity().y, currentOnDismiss)
+                    }
+                } finally {
+                    velocityTracker.resetTracking()
+                    if (dragStarted && !dragCompleted) {
+                        when (initialAnchor) {
+                            EXPANDED_ANCHOR -> state.expandSoft()
+                            COLLAPSED_ANCHOR -> state.collapseSoft()
+                            DISMISSED_ANCHOR -> state.dismiss()
+                        }
+                    }
+                }
+            }
+        }
+}
