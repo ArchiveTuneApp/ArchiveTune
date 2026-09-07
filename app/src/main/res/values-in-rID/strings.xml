@@ -158,7 +158,7 @@
     <string name="widget_no_recommendations">Belum ada rekomendasi</string>
     <string name="play_next">Putar berikutnya</string>
     <string name="add_to_queue">Tambah ke antrean</string>
-    <string name="add_to_library">Tambah ke pustaka</string>
+    <string name="add_to_library">Tambah ke Pustaka</string>
     <string name="remove_from_library">Hapus dari pustaka</string>
     <string name="remove_from_library_confirm">Hapus \"%1$s\" dari pustaka anda?</string>
     <string name="action_download">Unduh</string>
