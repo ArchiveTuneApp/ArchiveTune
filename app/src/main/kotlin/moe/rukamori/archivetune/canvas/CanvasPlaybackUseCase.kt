@@ -28,6 +28,7 @@ class CanvasPlaybackUseCase @Inject constructor(
 ) {
     val policy = CanvasNetworkAccess.policy
     val revision = repository.revision
+    val spotifyConnected = repository.spotifyConnected
 
     suspend fun load(request: CanvasPlaybackRequest, policy: CanvasPolicy): CanvasVideo? {
         if (!policy.ready || !policy.configuration.enabled) return null

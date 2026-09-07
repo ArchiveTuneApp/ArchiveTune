@@ -12,7 +12,7 @@ import androidx.compose.runtime.Immutable
 @Immutable
 data class CanvasConfiguration(
     val enabled: Boolean = false,
-    val source: CanvasSource = CanvasSource.BOTH,
+    val source: CanvasSource = CanvasSource.ALL,
     val wifiOnly: Boolean = false,
     val cacheLimitMb: Int = 256,
     val lowDataMode: Boolean = false,
@@ -54,6 +54,7 @@ enum class CanvasHealth {
     AVAILABLE,
     UNAVAILABLE,
     NOT_SELECTED,
+    NOT_CONNECTED,
     DISABLED,
     OFFLINE,
     WIFI_REQUIRED,
@@ -64,4 +65,10 @@ enum class CanvasHealth {
 data class CanvasHealthStatus(
     val betterLyrics: CanvasHealth = CanvasHealth.NOT_CHECKED,
     val appleMusic: CanvasHealth = CanvasHealth.NOT_CHECKED,
-)
+    val tidal: CanvasHealth = CanvasHealth.NOT_CHECKED,
+    val spotify: CanvasHealth = CanvasHealth.NOT_CHECKED,
+) {
+    val checking: Boolean
+        get() = betterLyrics == CanvasHealth.CHECKING || appleMusic == CanvasHealth.CHECKING ||
+            tidal == CanvasHealth.CHECKING || spotify == CanvasHealth.CHECKING
+}

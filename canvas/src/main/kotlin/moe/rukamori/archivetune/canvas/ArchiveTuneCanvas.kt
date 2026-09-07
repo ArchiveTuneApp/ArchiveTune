@@ -48,7 +48,7 @@ object ArchiveTuneCanvas {
         artist: String,
         storefront: String = "us",
         forceRefresh: Boolean = false,
-        source: CanvasSource = CanvasSource.BOTH,
+        source: CanvasSource = CanvasSource.ALL,
         requireVertical: Boolean = false,
     ): CanvasArtwork? {
         fun CanvasArtwork.matches(): Boolean =
@@ -70,7 +70,7 @@ object ArchiveTuneCanvas {
 
     suspend fun getByAlbumId(
         albumId: String,
-        source: CanvasSource = CanvasSource.BOTH,
+        source: CanvasSource = CanvasSource.ALL,
     ): CanvasArtwork? {
         if (source.accepts(CanvasSource.BETTER_LYRICS)) {
             fetch(mapOf("id" to albumId))?.let { return it }
@@ -84,7 +84,7 @@ object ArchiveTuneCanvas {
 
     suspend fun getByAlbumUrl(
         url: String,
-        source: CanvasSource = CanvasSource.BOTH,
+        source: CanvasSource = CanvasSource.ALL,
     ): CanvasArtwork? {
         if (source.accepts(CanvasSource.BETTER_LYRICS)) {
             fetch(mapOf("url" to url))?.let { return it }

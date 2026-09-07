@@ -35,6 +35,7 @@ class StartCanvasPolicyUseCase @Inject constructor(
         if (job != null) return
         CanvasNetworkAccess.connectivity = repository::currentConnectivity
         CanvasRequestPolicy.check = { source -> CanvasNetworkAccess.check(source) }
+        CanvasRequestPolicy.intercept = CanvasNetworkAccess::intercept
         job = scope.launch(Dispatchers.IO) {
             var previous: CanvasPolicy? = null
             flow {
@@ -68,6 +69,7 @@ class CanvasSettingsUseCases @Inject constructor(
     private val repository: CanvasSettingsRepository,
 ) {
     val policy = CanvasNetworkAccess.policy
+    val spotifyConnected = repository.spotifyConnected
 
     suspend fun setEnabled(enabled: Boolean) = repository.setEnabled(enabled)
     suspend fun setSource(source: CanvasSource) = repository.setSource(source)
@@ -82,22 +84,26 @@ class CanvasSettingsUseCases @Inject constructor(
     suspend fun cacheBytes(): Long = repository.cacheBytes()
     suspend fun clearCache() = repository.clearCache()
 
-    fun pendingHealth(policy: CanvasPolicy): CanvasHealthStatus = CanvasHealthStatus(
+    fun pendingHealth(policy: CanvasPolicy, spotifyConnected: Boolean): CanvasHealthStatus = CanvasHealthStatus(
         betterLyrics = healthAvailability(policy, CanvasSource.BETTER_LYRICS),
         appleMusic = healthAvailability(policy, CanvasSource.APPLE_MUSIC),
+        tidal = healthAvailability(policy, CanvasSource.TIDAL),
+        spotify = healthAvailability(policy, CanvasSource.SPOTIFY, spotifyConnected),
     )
 
-    suspend fun checkHealth(policy: CanvasPolicy): CanvasHealthStatus = coroutineScope {
+    suspend fun checkHealth(policy: CanvasPolicy, spotifyConnected: Boolean): CanvasHealthStatus = coroutineScope {
         val betterLyrics = async { checkProvider(policy, CanvasSource.BETTER_LYRICS) }
         val appleMusic = async { checkProvider(policy, CanvasSource.APPLE_MUSIC) }
-        CanvasHealthStatus(betterLyrics.await(), appleMusic.await())
+        val tidal = async { checkProvider(policy, CanvasSource.TIDAL) }
+        val spotify = async { checkProvider(policy, CanvasSource.SPOTIFY, spotifyConnected) }
+        CanvasHealthStatus(betterLyrics.await(), appleMusic.await(), tidal.await(), spotify.await())
     }
 
-    private suspend fun checkProvider(policy: CanvasPolicy, source: CanvasSource): CanvasHealth {
-        val availability = healthAvailability(policy, source)
+    private suspend fun checkProvider(policy: CanvasPolicy, source: CanvasSource, spotifyConnected: Boolean = true): CanvasHealth {
+        val availability = healthAvailability(policy, source, spotifyConnected)
         if (availability != CanvasHealth.CHECKING) return availability
         return try {
-            if (withTimeoutOrNull(20_000) { repository.isHealthy(source) } == true) {
+            if (withTimeoutOrNull(if (source == CanvasSource.SPOTIFY) 45_000L else 20_000L) { repository.isHealthy(source) } == true) {
                 CanvasHealth.AVAILABLE
             } else {
                 CanvasHealth.UNAVAILABLE
@@ -110,10 +116,11 @@ class CanvasSettingsUseCases @Inject constructor(
         }
     }
 
-    private fun healthAvailability(policy: CanvasPolicy, source: CanvasSource): CanvasHealth = when {
+    private fun healthAvailability(policy: CanvasPolicy, source: CanvasSource, spotifyConnected: Boolean = true): CanvasHealth = when {
         !policy.ready -> CanvasHealth.NOT_CHECKED
         !policy.configuration.source.accepts(source) -> CanvasHealth.NOT_SELECTED
         !policy.configuration.enabled -> CanvasHealth.DISABLED
+        source == CanvasSource.SPOTIFY && !spotifyConnected -> CanvasHealth.NOT_CONNECTED
         !policy.connectivity.online -> CanvasHealth.OFFLINE
         policy.configuration.wifiOnly && !policy.connectivity.wifi -> CanvasHealth.WIFI_REQUIRED
         policy.configuration.lowDataMode && policy.connectivity.metered -> CanvasHealth.LOW_DATA_MODE

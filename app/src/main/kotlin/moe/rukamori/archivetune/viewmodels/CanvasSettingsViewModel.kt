@@ -32,7 +32,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.canvas.CanvasConfiguration
-import moe.rukamori.archivetune.canvas.CanvasHealth
 import moe.rukamori.archivetune.canvas.CanvasHealthStatus
 import moe.rukamori.archivetune.canvas.CanvasSettingsUseCases
 import moe.rukamori.archivetune.canvas.CanvasSource
@@ -102,9 +101,10 @@ class CanvasSettingsViewModel @Inject constructor(
     private val health = useCases.policy
         .map { it.copy(configuration = it.configuration.copy(cacheLimitMb = 0)) }
         .distinctUntilChanged()
-        .transformLatest { policy ->
-            emit(useCases.pendingHealth(policy))
-            emit(useCases.checkHealth(policy))
+        .combine(useCases.spotifyConnected) { policy, connected -> policy to connected }
+        .transformLatest { (policy, connected) ->
+            emit(useCases.pendingHealth(policy, connected))
+            emit(useCases.checkHealth(policy, connected))
         }
     private val cacheBytes = flow {
         while (currentCoroutineContext().isActive) {
@@ -125,8 +125,7 @@ class CanvasSettingsViewModel @Inject constructor(
                         CanvasSettingsUiModel(
                             configuration = policy.configuration,
                             health = health,
-                            canRefreshHealth = policy.networkAllowed &&
-                                health.betterLyrics != CanvasHealth.CHECKING && health.appleMusic != CanvasHealth.CHECKING,
+                            canRefreshHealth = policy.networkAllowed && !health.checking,
                             cacheSize = formatFileSize(bytes),
                             cacheLimit = formatFileSize(limit.coerceAtLeast(0)),
                             cacheProgress = if (limit > 0) (bytes.toDouble() / limit).toFloat().coerceIn(0f, 1f) else 0f,

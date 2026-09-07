@@ -162,7 +162,11 @@ private fun CanvasSettingsBody(
                     val onSelect = remember(source, onAction) { { onAction(CanvasSettingsAction.SelectSource(source)) } }
                     CanvasChoiceRow(
                         title = stringResource(source.labelResource()),
-                        description = if (source == CanvasSource.BOTH) stringResource(R.string.canvas_source_both_desc) else null,
+                        description = when (source) {
+                            CanvasSource.ALL -> stringResource(R.string.canvas_source_all_desc)
+                            CanvasSource.SPOTIFY -> stringResource(R.string.canvas_spotify_desc)
+                            else -> null
+                        },
                         selected = model.configuration.source == source,
                         enabled = !model.busy,
                         onClick = onSelect,
@@ -278,6 +282,18 @@ private fun CanvasHealthSection(model: CanvasSettingsUiModel, onRefresh: () -> U
             CanvasHealthRow(
                 title = stringResource(R.string.canvas_apple_music),
                 health = model.health.appleMusic,
+                iconRes = R.drawable.music_note,
+                shape = CanvasSectionShapes.middle,
+            )
+            CanvasHealthRow(
+                title = stringResource(R.string.canvas_tidal),
+                health = model.health.tidal,
+                iconRes = R.drawable.music_note,
+                shape = CanvasSectionShapes.middle,
+            )
+            CanvasHealthRow(
+                title = stringResource(R.string.canvas_spotify),
+                health = model.health.spotify,
                 iconRes = R.drawable.music_note,
                 shape = CanvasSectionShapes.bottom,
             )
@@ -510,7 +526,9 @@ private fun CanvasSettingsFailure(@StringRes messageRes: Int, onAction: (CanvasS
 private fun CanvasSource.labelResource(): Int = when (this) {
     CanvasSource.BETTER_LYRICS -> R.string.canvas_better_lyrics
     CanvasSource.APPLE_MUSIC -> R.string.canvas_apple_music
-    CanvasSource.BOTH -> R.string.canvas_source_both
+    CanvasSource.TIDAL -> R.string.canvas_tidal
+    CanvasSource.SPOTIFY -> R.string.canvas_spotify
+    CanvasSource.ALL -> R.string.canvas_source_all
 }
 
 @StringRes
@@ -519,6 +537,7 @@ private fun CanvasHealth.labelResource(): Int = when (this) {
     CanvasHealth.CHECKING -> R.string.canvas_health_checking
     CanvasHealth.AVAILABLE -> R.string.canvas_health_available
     CanvasHealth.UNAVAILABLE -> R.string.canvas_health_unavailable
+    CanvasHealth.NOT_CONNECTED -> R.string.spotify_not_connected
     CanvasHealth.NOT_SELECTED -> R.string.canvas_health_not_selected
     CanvasHealth.DISABLED -> R.string.canvas_health_disabled
     CanvasHealth.OFFLINE -> R.string.canvas_health_offline

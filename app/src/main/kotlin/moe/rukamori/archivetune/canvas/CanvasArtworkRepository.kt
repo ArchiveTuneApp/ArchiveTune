@@ -7,21 +7,27 @@
 
 package moe.rukamori.archivetune.canvas
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import moe.rukamori.archivetune.canvas.models.CanvasArtwork
 import moe.rukamori.archivetune.canvas.models.matchesSongIdentity
 import moe.rukamori.archivetune.ui.player.CanvasArtworkPlaybackCache
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CanvasArtworkRepository @Inject constructor() {
+class CanvasArtworkRepository @Inject constructor(
+    private val spotifyCanvas: SpotifyCanvasRepository,
+) {
     private val mutableRevision = MutableStateFlow(0L)
     val revision = mutableRevision.asStateFlow()
+    val spotifyConnected = spotifyCanvas.connected
 
     suspend fun resolve(
         request: CanvasPlaybackRequest,
@@ -46,15 +52,35 @@ class CanvasArtworkRepository @Inject constructor() {
             songTitle to request.artist,
             request.title to request.artist,
         ).filter { (song, artist) -> song.isNotBlank() && artist.isNotBlank() }
-        val fetched = candidates.firstNotNullOfOrNull { (song, artist) ->
-            ArchiveTuneCanvas.getBySongArtist(
-                song = song,
-                artist = artist,
-                storefront = request.storefront,
-                source = source,
-                requireVertical = request.requireVertical,
-                forceRefresh = forceRefresh,
-            )?.takeIf { it.matches(request) }
+        val fetched = providers.firstNotNullOfOrNull { provider ->
+            if (!source.accepts(provider) || (provider == CanvasSource.TIDAL && request.requireVertical)) {
+                return@firstNotNullOfOrNull null
+            }
+            try {
+                withTimeoutOrNull(if (provider == CanvasSource.SPOTIFY) 45_000L else 20_000L) {
+                    candidates.firstNotNullOfOrNull { (song, artist) ->
+                        CanvasNetworkAccess.check(provider)
+                        when (provider) {
+                            CanvasSource.BETTER_LYRICS, CanvasSource.APPLE_MUSIC -> ArchiveTuneCanvas.getBySongArtist(
+                                song = song,
+                                artist = artist,
+                                storefront = request.storefront,
+                                source = provider,
+                                requireVertical = request.requireVertical,
+                                forceRefresh = forceRefresh,
+                            )
+                            CanvasSource.TIDAL -> TidalCanvasProvider.getBySongArtist(song, artist, request.storefront)
+                            CanvasSource.SPOTIFY -> spotifyCanvas.getBySongArtist(song, artist)
+                            CanvasSource.ALL -> error("Canvas lookup requires one provider")
+                        }?.takeIf { it.matches(request) }
+                    }
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                Timber.w(error, "Canvas lookup failed: %s", provider)
+                null
+            }
         } ?: return@withContext null
         CanvasNetworkAccess.check(fetched.source)
         val artwork = if (forceRefresh) {
@@ -64,6 +90,10 @@ class CanvasArtworkRepository @Inject constructor() {
         }
         if (forceRefresh) mutableRevision.update { it + 1 }
         artwork
+    }
+
+    private companion object {
+        val providers = listOf(CanvasSource.BETTER_LYRICS, CanvasSource.APPLE_MUSIC, CanvasSource.TIDAL, CanvasSource.SPOTIFY)
     }
 }
 

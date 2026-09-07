@@ -36,13 +36,16 @@ import javax.inject.Singleton
 @Singleton
 class CanvasSettingsRepository @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val spotifyCanvas: SpotifyCanvasRepository,
 ) {
     private val connectivityManager = context.getSystemService<ConnectivityManager>()
+
+    val spotifyConnected = spotifyCanvas.connected
 
     val configuration: Flow<CanvasConfiguration> = context.dataStore.data.map { preferences ->
         CanvasConfiguration(
             enabled = preferences[ArchiveTuneCanvasKey] ?: false,
-            source = CanvasSource.entries.firstOrNull { it.name == preferences[CanvasSourceKey] } ?: CanvasSource.BOTH,
+            source = CanvasSource.fromPreference(preferences[CanvasSourceKey]),
             wifiOnly = preferences[CanvasWifiOnlyKey] ?: false,
             cacheLimitMb = (preferences[MaxCanvasCacheSizeKey] ?: 256).coerceAtLeast(-1),
             lowDataMode = preferences[LowDataModeKey] ?: false,
@@ -118,7 +121,9 @@ class CanvasSettingsRepository @Inject constructor(
         when (source) {
             CanvasSource.BETTER_LYRICS -> ArchiveTuneCanvas.isHealthy()
             CanvasSource.APPLE_MUSIC -> AppleMusicProvider.isHealthy()
-            CanvasSource.BOTH -> error("Health checks require one provider")
+            CanvasSource.TIDAL -> TidalCanvasProvider.isHealthy()
+            CanvasSource.SPOTIFY -> spotifyCanvas.isHealthy()
+            CanvasSource.ALL -> error("Health checks require one provider")
         }
     }
 }

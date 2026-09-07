@@ -262,14 +262,17 @@ object CanvasArtworkPlaybackCache {
         val source = artwork.source ?: throw IOException("Canvas artwork has no provider identity")
         CanvasNetworkAccess.check(source)
         val current = synchronized(this@CanvasArtworkPlaybackCache) { map[mediaId] }
+        val regularUrl = artwork.downloadableRegularUrl()
+        val verticalUrl = artwork.downloadableVerticalUrl()
+        val sharedVideo = regularUrl != null && regularUrl == verticalUrl
         val regularFileName =
             cacheCanvasVideo(
                 directory = directory,
                 mediaId = mediaId,
                 variant = CanvasVideoVariant.Regular,
                 source = source,
-                url = artwork.downloadableRegularUrl(),
-                currentFileName = current?.regularFileName,
+                url = regularUrl,
+                currentFileName = current?.regularFileName ?: current?.verticalFileName.takeIf { sharedVideo },
             )
         persistEntry(
             directory = directory,
@@ -283,15 +286,18 @@ object CanvasArtworkPlaybackCache {
                     lastAccessedAtMs = System.currentTimeMillis(),
                 ),
         )
-        val verticalFileName =
+        val verticalFileName = if (sharedVideo && regularFileName != null) {
+            regularFileName
+        } else {
             cacheCanvasVideo(
                 directory = directory,
                 mediaId = mediaId,
                 variant = CanvasVideoVariant.Vertical,
                 source = source,
-                url = artwork.downloadableVerticalUrl(),
+                url = verticalUrl,
                 currentFileName = current?.verticalFileName,
             )
+        }
 
         val now = System.currentTimeMillis()
         val entry =
@@ -358,8 +364,9 @@ object CanvasArtworkPlaybackCache {
         val entry = map.remove(mediaId) ?: return
         val directory = cacheDirectory
         if (directory != null) {
-            runCatching { entry.regularFileName?.let { fileName -> directory.resolve(fileName).delete() } }
-            runCatching { entry.verticalFileName?.let { fileName -> directory.resolve(fileName).delete() } }
+            listOfNotNull(entry.regularFileName, entry.verticalFileName).distinct().forEach { fileName ->
+                runCatching { directory.resolve(fileName).delete() }
+            }
         }
         schedulePersist()
     }
@@ -642,8 +649,9 @@ object CanvasArtworkPlaybackCache {
             val entry = iterator.next().value
             val entryBytes = entry.byteSize(directory)
             iterator.remove()
-            runCatching { entry.regularFileName?.let { directory.resolve(it).delete() } }
-            runCatching { entry.verticalFileName?.let { directory.resolve(it).delete() } }
+            listOfNotNull(entry.regularFileName, entry.verticalFileName).distinct().forEach { fileName ->
+                runCatching { directory.resolve(fileName).delete() }
+            }
             totalBytes -= entryBytes
         }
     }
@@ -707,6 +715,7 @@ object CanvasArtworkPlaybackCache {
     ) {
         fun byteSize(directory: File): Long =
             listOfNotNull(regularFileName, verticalFileName)
+                .distinct()
                 .sumOf { fileName ->
                     directory
                         .resolve(fileName)
