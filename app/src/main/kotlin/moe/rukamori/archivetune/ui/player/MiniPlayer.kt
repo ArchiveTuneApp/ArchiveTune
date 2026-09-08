@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.lerp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.palette.graphics.Palette
 import coil3.imageLoader
@@ -61,14 +62,14 @@ fun MiniPlayer(
     duration: Long,
     modifier: Modifier = Modifier,
     pureBlack: Boolean,
-    isPairedWithNavigation: Boolean = false,
+    navigationProximity: Float = 0f,
 ) {
     NewMiniPlayer(
         position = position,
         duration = duration,
         modifier = modifier,
         pureBlack = pureBlack,
-        isPairedWithNavigation = isPairedWithNavigation,
+        navigationProximity = navigationProximity,
     )
 }
 
@@ -78,7 +79,7 @@ private fun NewMiniPlayer(
     duration: Long,
     modifier: Modifier = Modifier,
     pureBlack: Boolean,
-    isPairedWithNavigation: Boolean,
+    navigationProximity: Float,
 ) {
     val playerConnection = LocalPlayerConnection.current ?: return
     val context = LocalContext.current
@@ -179,22 +180,16 @@ private fun NewMiniPlayer(
             useArtworkBackground = effectiveBackgroundStyle != MiniPlayerBackgroundStyle.THEME,
         )
     val miniPlayerShape =
-        remember(isPairedWithNavigation) {
-            if (isPairedWithNavigation) {
-                RoundedCornerShape(
-                    topStart = 28.dp,
-                    topEnd = 28.dp,
-                    bottomStart = 12.dp,
-                    bottomEnd = 12.dp,
-                )
-            } else {
-                null
-            }
-        } ?: MaterialTheme.shapes.extraLarge
+        RoundedCornerShape(
+            topStart = lerp(32f, 28f, navigationProximity).dp,
+            topEnd = lerp(32f, 28f, navigationProximity).dp,
+            bottomStart = lerp(32f, 12f, navigationProximity).dp,
+            bottomEnd = lerp(32f, 12f, navigationProximity).dp,
+        )
 
     SwipeableMiniPlayerBox(
         modifier = modifier,
-        contentMaxWidth = if (isPairedWithNavigation) NavigationBarMaxWidth else null,
+        contentMaxWidth = if (navigationProximity > 0f) NavigationBarMaxWidth else null,
         swipeSensitivity = swipeSensitivity,
         swipeThumbnail = swipeThumbnail,
         playerConnection = playerConnection,

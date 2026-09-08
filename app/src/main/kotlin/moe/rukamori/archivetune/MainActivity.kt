@@ -2130,16 +2130,39 @@ class MainActivity : ComponentActivity() {
                                 },
                                 bottomBar = {
                                     Box {
-                                        val areBottomBarsPaired =
-                                            shouldShowNavigationBar &&
-                                                !useRail &&
-                                                playerBottomSheetState.isCollapsed
+                                        val navigationProximity =
+                                            if (!shouldShowNavigationBar || useRail) {
+                                                0f
+                                            } else {
+                                                val navRatio =
+                                                    (bottomNavigationBarHeight / navVisibleHeight)
+                                                        .coerceIn(0f, 1f)
+                                                val sheetAtRestRatio =
+                                                    with(playerBottomSheetState) {
+                                                        if (value <= collapsedBound) {
+                                                            if (collapsedBound > dismissedBound) {
+                                                                ((value - dismissedBound) / (collapsedBound - dismissedBound))
+                                                                    .coerceIn(0f, 1f)
+                                                            } else {
+                                                                0f
+                                                            }
+                                                        } else {
+                                                            if (expandedBound > collapsedBound) {
+                                                                ((expandedBound - value) / (expandedBound - collapsedBound))
+                                                                    .coerceIn(0f, 1f)
+                                                            } else {
+                                                                0f
+                                                            }
+                                                        }
+                                                    }
+                                                sheetAtRestRatio * navRatio
+                                            }
 
                                         BottomSheetPlayer(
                                             state = playerBottomSheetState,
                                             navController = navController,
                                             pureBlack = pureBlack,
-                                            isMiniPlayerPairedWithNavigation = areBottomBarsPaired,
+                                            navigationProximity = navigationProximity,
                                         )
 
                                         if (useRail) return@Box
@@ -2182,7 +2205,7 @@ class MainActivity : ComponentActivity() {
                                             FloatingNavigationToolbar(
                                                 items = navigationItems,
                                                 pureBlack = pureBlack,
-                                                isPairedWithMiniPlayer = areBottomBarsPaired,
+                                                miniPlayerProximity = navigationProximity,
                                                 modifier =
                                                     Modifier
                                                         .align(Alignment.BottomCenter)

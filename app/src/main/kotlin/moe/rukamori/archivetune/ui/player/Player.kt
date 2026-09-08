@@ -308,7 +308,7 @@ fun BottomSheetPlayer(
     navController: NavController,
     modifier: Modifier = Modifier,
     pureBlack: Boolean,
-    isMiniPlayerPairedWithNavigation: Boolean = false,
+    navigationProximity: Float = 0f,
     canvasViewModel: CanvasPlaybackViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
@@ -1147,7 +1147,7 @@ fun BottomSheetPlayer(
                 position = position,
                 duration = duration,
                 pureBlack = pureBlack,
-                isPairedWithNavigation = isMiniPlayerPairedWithNavigation,
+                navigationProximity = navigationProximity,
             )
         },
     ) {
