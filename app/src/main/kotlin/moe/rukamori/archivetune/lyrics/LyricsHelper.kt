@@ -15,6 +15,7 @@ import androidx.datastore.preferences.core.Preferences
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
@@ -296,7 +297,7 @@ class LyricsHelper
                     val remaining = deadline - SystemClock.elapsedRealtime()
                     if (remaining <= 0L) break
                     val (finished, result) = withTimeoutOrNull(remaining) {
-                        select {
+                        select<Pair<Deferred<Candidate?>, Candidate?>> {
                             pending.forEach { deferred ->
                                 deferred.onAwait { deferred to it }
                             }
