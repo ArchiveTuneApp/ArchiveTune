@@ -46,6 +46,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import moe.rukamori.archivetune.constants.FloatingBarJunctionCornerRadius
+import moe.rukamori.archivetune.constants.FloatingBarOuterCornerRadius
+import moe.rukamori.archivetune.constants.FloatingBarStandaloneCornerRadius
 import moe.rukamori.archivetune.constants.NavigationBarHeight
 import moe.rukamori.archivetune.constants.NavigationBarMaxWidth
 import moe.rukamori.archivetune.ui.screens.Screens
@@ -65,10 +68,10 @@ fun FloatingNavigationToolbar(
 ) {
     val navigationShape =
         RoundedCornerShape(
-            topStart = lerp(32f, 12f, miniPlayerProximity).dp,
-            topEnd = lerp(32f, 12f, miniPlayerProximity).dp,
-            bottomStart = lerp(32f, 28f, miniPlayerProximity).dp,
-            bottomEnd = lerp(32f, 28f, miniPlayerProximity).dp,
+            topStart = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarJunctionCornerRadius.value, miniPlayerProximity).dp,
+            topEnd = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarJunctionCornerRadius.value, miniPlayerProximity).dp,
+            bottomStart = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarOuterCornerRadius.value, miniPlayerProximity).dp,
+            bottomEnd = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarOuterCornerRadius.value, miniPlayerProximity).dp,
         )
     val navigationContainerColor =
         if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainer

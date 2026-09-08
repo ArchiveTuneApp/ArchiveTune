@@ -46,6 +46,9 @@ import kotlinx.coroutines.withContext
 import moe.rukamori.archivetune.LocalPlayerConnection
 import moe.rukamori.archivetune.constants.MiniPlayerBackgroundStyle
 import moe.rukamori.archivetune.constants.MiniPlayerBackgroundStyleKey
+import moe.rukamori.archivetune.constants.FloatingBarJunctionCornerRadius
+import moe.rukamori.archivetune.constants.FloatingBarOuterCornerRadius
+import moe.rukamori.archivetune.constants.FloatingBarStandaloneCornerRadius
 import moe.rukamori.archivetune.constants.MiniPlayerHeight
 import moe.rukamori.archivetune.constants.NavigationBarMaxWidth
 import moe.rukamori.archivetune.constants.SwipeSensitivityKey
@@ -181,10 +184,10 @@ private fun NewMiniPlayer(
         )
     val miniPlayerShape =
         RoundedCornerShape(
-            topStart = lerp(32f, 28f, navigationProximity).dp,
-            topEnd = lerp(32f, 28f, navigationProximity).dp,
-            bottomStart = lerp(32f, 12f, navigationProximity).dp,
-            bottomEnd = lerp(32f, 12f, navigationProximity).dp,
+            topStart = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarOuterCornerRadius.value, navigationProximity).dp,
+            topEnd = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarOuterCornerRadius.value, navigationProximity).dp,
+            bottomStart = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarJunctionCornerRadius.value, navigationProximity).dp,
+            bottomEnd = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarJunctionCornerRadius.value, navigationProximity).dp,
         )
 
     SwipeableMiniPlayerBox(

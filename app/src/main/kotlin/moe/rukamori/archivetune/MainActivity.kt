@@ -2134,9 +2134,11 @@ class MainActivity : ComponentActivity() {
                                             (bottomNavigationBarHeight / navVisibleHeight).coerceIn(0f, 1f)
                                         val isNavTransitioning =
                                             bottomNavigationBarHeight > 0.dp && bottomNavigationBarHeight < navVisibleHeight
+                                        // Threshold matches physical travel needed on dismiss for MiniPlayer's top edge
+                                        // to align flush with NavBar's top edge (MiniPlayerHeight + MiniPlayerBottomSpacing = 74dp).
                                         val morphThreshold = MiniPlayerHeight + MiniPlayerBottomSpacing
                                         val swipeDeviation =
-                                            if (isNavTransitioning) {
+                                            if (isNavTransitioning && playerBottomSheetState.targetAnchor == COLLAPSED_ANCHOR) {
                                                 0.dp
                                             } else {
                                                 playerBottomSheetState.value.let { v ->
