@@ -27,6 +27,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -41,6 +44,7 @@ import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.constants.RedownloadOnRestoreKey
 import moe.rukamori.archivetune.backup.BackupArchiveCategory
 import moe.rukamori.archivetune.backup.BackupArchiveRepository
+import moe.rukamori.archivetune.backup.BackupOperationCoordinator
 import moe.rukamori.archivetune.backup.BackupArchiveStep
 import moe.rukamori.archivetune.backup.CreateBackupUseCase
 import moe.rukamori.archivetune.backup.ObserveScheduledBackupSettingsUseCase
@@ -246,6 +250,7 @@ class BackupRestoreViewModel
     constructor(
         val database: MusicDatabase,
         private val createBackupUseCase: CreateBackupUseCase,
+        private val backupOperationCoordinator: BackupOperationCoordinator,
         observeScheduledBackupSettings: ObserveScheduledBackupSettingsUseCase,
         private val updateScheduledBackup: UpdateScheduledBackupUseCase,
         private val observeExportablePlaylists: ObserveExportablePlaylistsUseCase,
@@ -273,6 +278,7 @@ class BackupRestoreViewModel
         private var showCustomDatePicker = false
         private var scheduledBackupUpdateJob: Job? = null
         private var manualBackupJob: Job? = null
+        private var restoreJob: Job? = null
         private var exportablePlaylists: ImmutableList<ExportablePlaylist> = ImmutableList.of()
         private var pendingExportPlaylistId: String? = null
         private var exportPlaylistListJob: Job? = null
@@ -431,7 +437,7 @@ class BackupRestoreViewModel
             uri: Uri,
             categories: Set<BackupCategory>,
         ) {
-            if (manualBackupJob?.isActive == true) return
+            if (manualBackupJob?.isActive == true || restoreJob?.isActive == true) return
             manualBackupJob =
                 viewModelScope.launch(Dispatchers.IO) {
                     val title = context.getString(R.string.backup_in_progress)
@@ -565,149 +571,159 @@ class BackupRestoreViewModel
             uri: Uri,
             categories: Set<BackupCategory>,
         ) {
-            viewModelScope.launch(Dispatchers.IO) {
-                val title = context.getString(R.string.restore_in_progress)
-                try {
-                    val includeSettings = BackupCategory.SETTINGS in categories
-                    val includeAccount = BackupCategory.ACCOUNT in categories
-                    val includeLibrary = BackupCategory.LIBRARY in categories
-                    val includeDownloads = BackupCategory.DOWNLOADS in categories
-                    val settingsExcludedKeys = if (includeAccount) emptySet() else ACCOUNT_PREF_KEYS
-                    emitProgress(
-                        title = title,
-                        step = context.getString(R.string.restore_step_verifying),
-                        percent = 0,
-                        indeterminate = true,
-                    )
+            if (restoreJob?.isActive == true || manualBackupJob?.isActive == true) return
+            restoreJob = viewModelScope.launch(Dispatchers.IO) {
+                backupOperationCoordinator.withLock {
+                    val title = context.getString(R.string.restore_in_progress)
+                    try {
+                        val includeSettings = BackupCategory.SETTINGS in categories
+                        val includeAccount = BackupCategory.ACCOUNT in categories
+                        val includeLibrary = BackupCategory.LIBRARY in categories
+                        val includeDownloads = BackupCategory.DOWNLOADS in categories
+                        val settingsExcludedKeys = if (includeAccount) emptySet() else ACCOUNT_PREF_KEYS
+                        emitProgress(
+                            title = title,
+                            step = context.getString(R.string.restore_step_verifying),
+                            percent = 0,
+                            indeterminate = true,
+                        )
 
-                    val entryNames = ArrayList<String>()
-                    var hasDb = false
-                    context.applicationContext.contentResolver.openInputStream(uri)?.use { stream ->
-                        stream.zipInputStream().use { zip ->
-                            var entry = zip.nextEntry
-                            while (entry != null) {
-                                entryNames.add(entry.name)
-                                if (entry.name == InternalDatabase.DB_NAME) hasDb = true
-                                entry = zip.nextEntry
+                        val entryNames = ArrayList<String>()
+                        var hasDb = false
+                        context.applicationContext.contentResolver.openInputStream(uri)?.use { stream ->
+                            stream.zipInputStream().use { zip ->
+                                var entry = zip.nextEntry
+                                while (entry != null) {
+                                    entryNames.add(entry.name)
+                                    if (entry.name == InternalDatabase.DB_NAME) hasDb = true
+                                    entry = zip.nextEntry
+                                }
                             }
                         }
-                    }
-                    if (includeLibrary && !hasDb) throw IllegalStateException("Backup missing database")
+                        if (includeLibrary && !hasDb) throw IllegalStateException("Backup missing database")
 
-                    val restoreEntries =
-                        entryNames.filter { name ->
-                            (includeSettings && (name == SETTINGS_XML_FILENAME || name == SETTINGS_FILENAME)) ||
-                                (
-                                    includeLibrary && (
-                                        name == InternalDatabase.DB_NAME ||
-                                            name == "${InternalDatabase.DB_NAME}-wal" ||
-                                            name == "${InternalDatabase.DB_NAME}-shm" ||
-                                            name == "${InternalDatabase.DB_NAME}-journal"
+                        val restoreEntries =
+                            entryNames.filter { name ->
+                                (includeSettings && (name == SETTINGS_XML_FILENAME || name == SETTINGS_FILENAME)) ||
+                                    (
+                                        includeLibrary && (
+                                            name == InternalDatabase.DB_NAME ||
+                                                name == "${InternalDatabase.DB_NAME}-wal" ||
+                                                name == "${InternalDatabase.DB_NAME}-shm" ||
+                                                name == "${InternalDatabase.DB_NAME}-journal"
+                                        )
                                     )
-                                )
+                            }
+
+                        val totalUnits = 1 + (if (includeLibrary) 1 else 0) + restoreEntries.size
+                        val unitSpan = 100f / totalUnits.coerceAtLeast(1)
+                        var completedUnits = 0
+
+                        fun emit(
+                            step: String,
+                            indeterminate: Boolean,
+                        ) {
+                            val p = (completedUnits * unitSpan).roundToInt().coerceIn(0, 100)
+                            emitProgress(title = title, step = step, percent = p, indeterminate = indeterminate)
                         }
 
-                    val totalUnits = 1 + (if (includeLibrary) 1 else 0) + restoreEntries.size
-                    val unitSpan = 100f / totalUnits.coerceAtLeast(1)
-                    var completedUnits = 0
-
-                    fun emit(
-                        step: String,
-                        indeterminate: Boolean,
-                    ) {
-                        val p = (completedUnits * unitSpan).roundToInt().coerceIn(0, 100)
-                        emitProgress(title = title, step = step, percent = p, indeterminate = indeterminate)
-                    }
-
-                    completedUnits++
-                    if (includeLibrary) {
-                        emit(context.getString(R.string.restore_step_stopping_playback), indeterminate = true)
-                        runCatching { context.stopService(Intent(context, MusicService::class.java)) }
-                        runCatching { database.awaitIdle() }
-                        runCatching { database.checkpoint() }
-                        runCatching { database.close() }
-                        completedUnits++
-                    }
-
-                    context.applicationContext.contentResolver.openInputStream(uri)?.use { stream ->
-                        stream.zipInputStream().use { zip ->
-                            var entry = zip.nextEntry
-                            while (entry != null) {
-                                val name = entry.name
-                                if (name !in restoreEntries) {
-                                    entry = zip.nextEntry
-                                    continue
-                                }
-                                when (name) {
-                                    SETTINGS_XML_FILENAME -> {
-                                        emit(context.getString(R.string.restore_step_restoring_settings), indeterminate = true)
-                                        restoreSettingsFromXml(context, zip, settingsExcludedKeys)
-                                    }
-
-                                    SETTINGS_FILENAME -> {
-                                        emit(context.getString(R.string.restore_step_restoring_settings), indeterminate = true)
-                                        val settingsDir = context.filesDir / "datastore"
-                                        if (!settingsDir.exists()) settingsDir.mkdirs()
-                                        (settingsDir / SETTINGS_FILENAME).outputStream().use { out ->
-                                            zip.copyTo(out)
-                                        }
-                                    }
-
-                                    InternalDatabase.DB_NAME,
-                                    "${InternalDatabase.DB_NAME}-wal",
-                                    "${InternalDatabase.DB_NAME}-shm",
-                                    "${InternalDatabase.DB_NAME}-journal",
-                                    -> {
-                                        emit(context.getString(R.string.restore_step_restoring_file, name), indeterminate = true)
-                                        val dbFile = context.getDatabasePath(name)
-                                        if (dbFile.exists()) {
-                                            dbFile.delete()
-                                        }
-                                        FileOutputStream(dbFile).use { out ->
-                                            zip.copyTo(out)
-                                        }
-                                    }
+                        currentCoroutineContext().ensureActive()
+                        withContext(NonCancellable) {
+                            completedUnits++
+                            if (includeLibrary) {
+                                emit(context.getString(R.string.restore_step_stopping_playback), indeterminate = true)
+                                context.stopService(Intent(context, MusicService::class.java))
+                                database.awaitIdle()
+                                database.checkpoint()
+                                database.close()
+                                listOf("-wal", "-shm", "-journal").forEach { suffix ->
+                                    val sidecar = context.getDatabasePath("${InternalDatabase.DB_NAME}$suffix")
+                                    check(!sidecar.exists() || sidecar.delete()) { "Failed to clear database sidecar" }
                                 }
                                 completedUnits++
-                                entry = zip.nextEntry
                             }
-                        }
-                    }
 
-                    emitProgress(
-                        title = title,
-                        step = context.getString(R.string.restore_step_restarting),
-                        percent = 100,
-                        indeterminate = true,
-                    )
+                            context.applicationContext.contentResolver.openInputStream(uri)?.use { stream ->
+                                stream.zipInputStream().use { zip ->
+                                    var entry = zip.nextEntry
+                                    while (entry != null) {
+                                        val name = entry.name
+                                        if (name !in restoreEntries) {
+                                            entry = zip.nextEntry
+                                            continue
+                                        }
+                                        when (name) {
+                                            SETTINGS_XML_FILENAME -> {
+                                                emit(context.getString(R.string.restore_step_restoring_settings), indeterminate = true)
+                                                restoreSettingsFromXml(context, zip, settingsExcludedKeys)
+                                            }
 
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(context, R.string.restore_success, Toast.LENGTH_SHORT).show()
-                    }
+                                            SETTINGS_FILENAME -> {
+                                                emit(context.getString(R.string.restore_step_restoring_settings), indeterminate = true)
+                                                val settingsDir = context.filesDir / "datastore"
+                                                if (!settingsDir.exists()) settingsDir.mkdirs()
+                                                (settingsDir / SETTINGS_FILENAME).outputStream().use { out ->
+                                                    zip.copyTo(out)
+                                                }
+                                            }
 
-                    try {
-                        context.filesDir.resolve(PERSISTENT_QUEUE_FILE).delete()
-                    } catch (_: Exception) {
-                    }
-
-                    if (includeDownloads) {
-                        runCatching {
-                            context.dataStore.edit { prefs ->
-                                prefs[RedownloadOnRestoreKey] = true
+                                            InternalDatabase.DB_NAME,
+                                            "${InternalDatabase.DB_NAME}-wal",
+                                            "${InternalDatabase.DB_NAME}-shm",
+                                            "${InternalDatabase.DB_NAME}-journal",
+                                            -> {
+                                                emit(context.getString(R.string.restore_step_restoring_file, name), indeterminate = true)
+                                                val dbFile = context.getDatabasePath(name)
+                                                if (dbFile.exists()) {
+                                                    dbFile.delete()
+                                                }
+                                                FileOutputStream(dbFile).use { out ->
+                                                    zip.copyTo(out)
+                                                }
+                                            }
+                                        }
+                                        completedUnits++
+                                        entry = zip.nextEntry
+                                    }
+                                }
                             }
-                        }
-                    }
 
-                    _backupRestoreProgress.value = null
-                    context.startActivity(Intent(context, MainActivity::class.java))
-                    exitProcess(0)
-                } catch (e: Exception) {
-                    reportException(e)
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(context, e.message ?: context.getString(R.string.restore_failed), Toast.LENGTH_LONG).show()
+                            emitProgress(
+                                title = title,
+                                step = context.getString(R.string.restore_step_restarting),
+                                percent = 100,
+                                indeterminate = true,
+                            )
+
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(context, R.string.restore_success, Toast.LENGTH_SHORT).show()
+                            }
+
+                            try {
+                                context.filesDir.resolve(PERSISTENT_QUEUE_FILE).delete()
+                            } catch (_: Exception) {
+                            }
+
+                            if (includeDownloads) {
+                                context.dataStore.edit { prefs ->
+                                    prefs[RedownloadOnRestoreKey] = true
+                                }
+                            }
+
+                            _backupRestoreProgress.value = null
+                            context.startActivity(Intent(context, MainActivity::class.java))
+                            exitProcess(0)
+                        }
+                    } catch (cancellation: CancellationException) {
+                        throw cancellation
+                    } catch (e: Exception) {
+                        reportException(e)
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, e.message ?: context.getString(R.string.restore_failed), Toast.LENGTH_LONG).show()
+                        }
+                    } finally {
+                        _backupRestoreProgress.value = null
                     }
-                } finally {
-                    _backupRestoreProgress.value = null
                 }
             }
         }
