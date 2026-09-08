@@ -2130,32 +2130,29 @@ class MainActivity : ComponentActivity() {
                                 },
                                 bottomBar = {
                                     Box {
+                                        val navRatio =
+                                            (bottomNavigationBarHeight / navVisibleHeight).coerceIn(0f, 1f)
+                                        val isNavTransitioning =
+                                            bottomNavigationBarHeight > 0.dp && bottomNavigationBarHeight < navVisibleHeight
+                                        val morphThreshold = MiniPlayerHeight + MiniPlayerBottomSpacing
+                                        val swipeDeviation =
+                                            if (isNavTransitioning) {
+                                                0.dp
+                                            } else {
+                                                playerBottomSheetState.value.let { v ->
+                                                    if (v < playerBottomSheetState.collapsedBound) {
+                                                        playerBottomSheetState.collapsedBound - v
+                                                    } else {
+                                                        v - playerBottomSheetState.collapsedBound
+                                                    }
+                                                }
+                                            }
+                                        val sheetPresence = (1f - (swipeDeviation / morphThreshold)).coerceIn(0f, 1f)
                                         val navigationProximity =
                                             if (!shouldShowNavigationBar || useRail) {
                                                 0f
                                             } else {
-                                                val navRatio =
-                                                    (bottomNavigationBarHeight / navVisibleHeight)
-                                                        .coerceIn(0f, 1f)
-                                                val sheetAtRestRatio =
-                                                    with(playerBottomSheetState) {
-                                                        if (value <= collapsedBound) {
-                                                            if (collapsedBound > dismissedBound) {
-                                                                ((value - dismissedBound) / (collapsedBound - dismissedBound))
-                                                                    .coerceIn(0f, 1f)
-                                                            } else {
-                                                                0f
-                                                            }
-                                                        } else {
-                                                            if (expandedBound > collapsedBound) {
-                                                                ((expandedBound - value) / (expandedBound - collapsedBound))
-                                                                    .coerceIn(0f, 1f)
-                                                            } else {
-                                                                0f
-                                                            }
-                                                        }
-                                                    }
-                                                sheetAtRestRatio * navRatio
+                                                navRatio * sheetPresence
                                             }
 
                                         BottomSheetPlayer(
