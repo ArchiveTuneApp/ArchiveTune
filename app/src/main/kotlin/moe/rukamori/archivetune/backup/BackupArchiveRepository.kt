@@ -11,9 +11,11 @@ import android.content.Context
 import android.net.Uri
 import androidx.datastore.preferences.core.Preferences
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import moe.rukamori.archivetune.db.InternalDatabase
 import moe.rukamori.archivetune.db.MusicDatabase
 import moe.rukamori.archivetune.extensions.zipOutputStream
@@ -44,99 +46,107 @@ class BackupArchiveRepository
     constructor(
         @ApplicationContext private val context: Context,
         private val database: MusicDatabase,
+        private val operationCoordinator: BackupOperationCoordinator,
     ) {
-        private val backupMutex = Mutex()
-
         suspend fun createBackup(
             uri: Uri,
             categories: Set<BackupArchiveCategory>,
             onProgress: (BackupArchiveProgress) -> Unit = {},
-        ) = backupMutex.withLock {
-            require(categories.isNotEmpty()) { "At least one backup category is required" }
+        ) = withContext(Dispatchers.IO) {
+            operationCoordinator.withLock {
+                require(categories.isNotEmpty()) { "At least one backup category is required" }
 
-            val includeSettings = BackupArchiveCategory.SETTINGS in categories
-            val includeAccount = BackupArchiveCategory.ACCOUNT in categories
-            val includeLibrary = BackupArchiveCategory.LIBRARY in categories
-            val settingsExcludedKeys = if (includeAccount) emptySet() else ACCOUNT_PREFERENCE_KEYS
-            val dbFile = context.getDatabasePath(InternalDatabase.DB_NAME)
-            val dbFiles =
-                if (includeLibrary) {
-                    listOf(
-                        dbFile,
-                        dbFile.resolveSibling("${InternalDatabase.DB_NAME}-wal"),
-                        dbFile.resolveSibling("${InternalDatabase.DB_NAME}-shm"),
-                        dbFile.resolveSibling("${InternalDatabase.DB_NAME}-journal"),
-                    ).filter { it.exists() }
-                } else {
-                    emptyList()
+                val includeSettings = BackupArchiveCategory.SETTINGS in categories
+                val includeAccount = BackupArchiveCategory.ACCOUNT in categories
+                val includeLibrary = BackupArchiveCategory.LIBRARY in categories
+                val settingsExcludedKeys = if (includeAccount) emptySet() else ACCOUNT_PREFERENCE_KEYS
+                val dbFile = context.getDatabasePath(InternalDatabase.DB_NAME)
+                val dbFiles =
+                    if (includeLibrary) {
+                        listOf(
+                            dbFile,
+                            dbFile.resolveSibling("${InternalDatabase.DB_NAME}-wal"),
+                        ).filter { it.exists() }
+                    } else {
+                        emptyList()
+                    }
+
+                val totalUnits = (if (includeSettings) 1 else 0) + (if (includeLibrary) 1 else 0) + dbFiles.size
+                val unitSpan = 100f / totalUnits.coerceAtLeast(1)
+                var completedUnits = 0
+                var lastProgress: BackupArchiveProgress? = null
+
+                fun emit(
+                    step: BackupArchiveStep,
+                    fileName: String? = null,
+                    unitFraction: Float = 0f,
+                    indeterminate: Boolean = false,
+                ) {
+                    val progress =
+                        BackupArchiveProgress(
+                            step = step,
+                            fileName = fileName,
+                            percent =
+                                ((completedUnits + unitFraction.coerceIn(0f, 1f)) * unitSpan)
+                                    .roundToInt()
+                                    .coerceIn(0, 100),
+                            indeterminate = indeterminate,
+                        )
+                    if (progress != lastProgress) {
+                        lastProgress = progress
+                        onProgress(progress)
+                    }
                 }
 
-            val totalUnits = (if (includeSettings) 1 else 0) + (if (includeLibrary) 1 else 0) + dbFiles.size
-            val unitSpan = 100f / totalUnits.coerceAtLeast(1)
-            var completedUnits = 0
-            var lastProgress: BackupArchiveProgress? = null
-
-            fun emit(
-                step: BackupArchiveStep,
-                fileName: String? = null,
-                unitFraction: Float = 0f,
-                indeterminate: Boolean = false,
-            ) {
-                val progress =
-                    BackupArchiveProgress(
-                        step = step,
-                        fileName = fileName,
-                        percent =
-                            ((completedUnits + unitFraction.coerceIn(0f, 1f)) * unitSpan)
-                                .roundToInt()
-                                .coerceIn(0, 100),
-                        indeterminate = indeterminate,
-                    )
-                if (progress != lastProgress) {
-                    lastProgress = progress
-                    onProgress(progress)
-                }
-            }
-
-            val output =
-                context.contentResolver.openOutputStream(uri, "wt")
-                    ?: throw IllegalStateException("Failed to open backup destination")
-            output.buffered().zipOutputStream().use { zipStream ->
-                if (includeSettings) {
-                    emit(BackupArchiveStep.EXPORT_SETTINGS, indeterminate = true)
-                    zipStream.putNextEntry(ZipEntry(SETTINGS_XML_FILENAME))
-                    writeSettingsToXml(zipStream, settingsExcludedKeys)
-                    zipStream.closeEntry()
-                    completedUnits++
-                }
-
-                if (includeLibrary) {
-                    emit(BackupArchiveStep.CHECKPOINT_DATABASE, indeterminate = true)
-                    database.awaitIdle()
-                    database.checkpoint()
-                    completedUnits++
-
-                    val buffer = ByteArray(BUFFER_SIZE)
-                    dbFiles.forEach { file ->
-                        val fileSize = file.length().coerceAtLeast(1L)
-                        var bytesCopied = 0L
-                        emit(BackupArchiveStep.COPY_DATABASE_FILE, file.name)
-                        zipStream.putNextEntry(ZipEntry(file.name))
-                        FileInputStream(file).use { input ->
-                            while (true) {
-                                val read = input.read(buffer)
-                                if (read <= 0) break
-                                zipStream.write(buffer, 0, read)
-                                bytesCopied += read
-                                emit(
-                                    step = BackupArchiveStep.COPY_DATABASE_FILE,
-                                    fileName = file.name,
-                                    unitFraction = bytesCopied.toFloat() / fileSize.toFloat(),
-                                )
-                            }
-                        }
+                val output =
+                    context.contentResolver.openOutputStream(uri, "wt")
+                        ?: throw IllegalStateException("Failed to open backup destination")
+                output.buffered().zipOutputStream().use { zipStream ->
+                    if (includeSettings) {
+                        emit(BackupArchiveStep.EXPORT_SETTINGS, indeterminate = true)
+                        zipStream.putNextEntry(ZipEntry(SETTINGS_XML_FILENAME))
+                        writeSettingsToXml(zipStream, settingsExcludedKeys)
                         zipStream.closeEntry()
                         completedUnits++
+                    }
+
+                    if (includeLibrary) {
+                        emit(BackupArchiveStep.CHECKPOINT_DATABASE, indeterminate = true)
+                        database.awaitIdle()
+                        database.checkpoint()
+                        completedUnits++
+
+                        val buffer = ByteArray(BUFFER_SIZE)
+                        val connection = database.openHelper.writableDatabase
+                        connection.beginTransactionNonExclusive()
+                        try {
+                            listOf(dbFile, dbFile.resolveSibling("${InternalDatabase.DB_NAME}-wal"))
+                                .filter { it.exists() }
+                                .forEach { file ->
+                                    val fileSize = file.length().coerceAtLeast(1L)
+                                    var bytesCopied = 0L
+                                    emit(BackupArchiveStep.COPY_DATABASE_FILE, file.name)
+                                    zipStream.putNextEntry(ZipEntry(file.name))
+                                    FileInputStream(file).use { input ->
+                                        while (true) {
+                                            currentCoroutineContext().ensureActive()
+                                            val read = input.read(buffer)
+                                            if (read <= 0) break
+                                            zipStream.write(buffer, 0, read)
+                                            bytesCopied += read
+                                            emit(
+                                                step = BackupArchiveStep.COPY_DATABASE_FILE,
+                                                fileName = file.name,
+                                                unitFraction = bytesCopied.toFloat() / fileSize.toFloat(),
+                                            )
+                                        }
+                                    }
+                                    zipStream.closeEntry()
+                                    completedUnits++
+                                }
+                        } finally {
+                            connection.endTransaction()
+                        }
                     }
                 }
             }

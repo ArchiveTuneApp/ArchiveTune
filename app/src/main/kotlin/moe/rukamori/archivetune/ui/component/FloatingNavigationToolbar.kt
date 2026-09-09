@@ -45,6 +45,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.lerp
+import moe.rukamori.archivetune.constants.FloatingBarJunctionCornerRadius
+import moe.rukamori.archivetune.constants.FloatingBarOuterCornerRadius
+import moe.rukamori.archivetune.constants.FloatingBarStandaloneCornerRadius
 import moe.rukamori.archivetune.constants.NavigationBarHeight
 import moe.rukamori.archivetune.constants.NavigationBarMaxWidth
 import moe.rukamori.archivetune.ui.screens.Screens
@@ -57,24 +61,19 @@ fun FloatingNavigationToolbar(
     items: List<Screens>,
     pureBlack: Boolean,
     modifier: Modifier = Modifier,
-    isPairedWithMiniPlayer: Boolean = false,
+    miniPlayerProximityProvider: () -> Float = { 0f },
     isSelected: (Screens) -> Boolean,
     onItemClick: (Screens, Boolean) -> Unit,
     onSearchItemDoubleClick: (() -> Unit)? = null,
 ) {
+    val miniPlayerProximity = miniPlayerProximityProvider()
     val navigationShape =
-        remember(isPairedWithMiniPlayer) {
-            if (isPairedWithMiniPlayer) {
-                RoundedCornerShape(
-                    topStart = 12.dp,
-                    topEnd = 12.dp,
-                    bottomStart = 28.dp,
-                    bottomEnd = 28.dp,
-                )
-            } else {
-                null
-            }
-        } ?: MaterialTheme.shapes.extraLarge
+        RoundedCornerShape(
+            topStart = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarJunctionCornerRadius.value, miniPlayerProximity).dp,
+            topEnd = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarJunctionCornerRadius.value, miniPlayerProximity).dp,
+            bottomStart = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarOuterCornerRadius.value, miniPlayerProximity).dp,
+            bottomEnd = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarOuterCornerRadius.value, miniPlayerProximity).dp,
+        )
     val navigationContainerColor =
         if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainer
     val motionScheme = MaterialTheme.motionScheme
