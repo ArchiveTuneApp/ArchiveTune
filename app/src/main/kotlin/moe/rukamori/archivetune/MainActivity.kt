@@ -1046,11 +1046,12 @@ class MainActivity : ComponentActivity() {
                     val floatingBarsBottomPadding = NavigationBarBottomPadding
                     val navVisibleHeight = NavigationBarHeight
 
-                    val bottomNavigationBarHeight by animateDpAsState(
+                    val bottomNavigationBarHeightState = animateDpAsState(
                         targetValue = if (shouldShowNavigationBar && !useRail) navVisibleHeight else 0.dp,
                         animationSpec = if (disableAnimations) snap() else NavigationBarAnimationSpec,
                         label = "",
                     )
+                    val bottomNavigationBarHeight by bottomNavigationBarHeightState
 
                     val playerBottomSheetState =
                         rememberBottomSheetState(
@@ -2130,38 +2131,50 @@ class MainActivity : ComponentActivity() {
                                 },
                                 bottomBar = {
                                     Box {
-                                        val navRatio =
-                                            (bottomNavigationBarHeight / navVisibleHeight).coerceIn(0f, 1f)
-                                        val isNavTransitioning =
-                                            bottomNavigationBarHeight > 0.dp && bottomNavigationBarHeight < navVisibleHeight
-                                        // Threshold matches physical travel needed on dismiss for MiniPlayer's top edge
-                                        // to align flush with NavBar's top edge (MiniPlayerHeight + MiniPlayerBottomSpacing = 74dp).
-                                        val morphThreshold = MiniPlayerHeight + MiniPlayerBottomSpacing
-                                        val swipeDeviation =
-                                            if (isNavTransitioning && playerBottomSheetState.targetAnchor == COLLAPSED_ANCHOR) {
-                                                0.dp
-                                            } else {
-                                                playerBottomSheetState.value.let { v ->
-                                                    if (v < playerBottomSheetState.collapsedBound) {
-                                                        playerBottomSheetState.collapsedBound - v
+                                        // All per-frame inputs (sheet drag value, navbar spring) are read inside this
+                                        // provider, which is only consumed in the draw phase (graphicsLayer) or behind
+                                        // derivedStateOf. The bottomBar scope and the player/miniplayer/toolbar chain
+                                        // therefore never recompose during drag or navigation morphs.
+                                        val showNavigationBarState = rememberUpdatedState(shouldShowNavigationBar)
+                                        val useRailState = rememberUpdatedState(useRail)
+                                        val navigationProximityProvider: () -> Float =
+                                            remember(playerBottomSheetState, bottomNavigationBarHeightState) {
+                                                {
+                                                    val navRatio =
+                                                        (bottomNavigationBarHeightState.value / navVisibleHeight).coerceIn(0f, 1f)
+                                                    val isNavTransitioning =
+                                                        bottomNavigationBarHeightState.value > 0.dp &&
+                                                            bottomNavigationBarHeightState.value < navVisibleHeight
+                                                    // Threshold matches physical travel needed on dismiss for MiniPlayer's
+                                                    // top edge to align flush with NavBar's top edge
+                                                    // (MiniPlayerHeight + MiniPlayerBottomSpacing = 74dp).
+                                                    val morphThreshold = MiniPlayerHeight + MiniPlayerBottomSpacing
+                                                    val swipeDeviation =
+                                                        if (isNavTransitioning && playerBottomSheetState.targetAnchor == COLLAPSED_ANCHOR) {
+                                                            0.dp
+                                                        } else {
+                                                            playerBottomSheetState.value.let { v ->
+                                                                if (v < playerBottomSheetState.collapsedBound) {
+                                                                    playerBottomSheetState.collapsedBound - v
+                                                                } else {
+                                                                    v - playerBottomSheetState.collapsedBound
+                                                                }
+                                                            }
+                                                        }
+                                                    val sheetPresence = (1f - (swipeDeviation / morphThreshold)).coerceIn(0f, 1f)
+                                                    if (!showNavigationBarState.value || useRailState.value) {
+                                                        0f
                                                     } else {
-                                                        v - playerBottomSheetState.collapsedBound
+                                                        navRatio * sheetPresence
                                                     }
                                                 }
-                                            }
-                                        val sheetPresence = (1f - (swipeDeviation / morphThreshold)).coerceIn(0f, 1f)
-                                        val navigationProximity =
-                                            if (!shouldShowNavigationBar || useRail) {
-                                                0f
-                                            } else {
-                                                navRatio * sheetPresence
                                             }
 
                                         BottomSheetPlayer(
                                             state = playerBottomSheetState,
                                             navController = navController,
                                             pureBlack = pureBlack,
-                                            navigationProximity = navigationProximity,
+                                            navigationProximityProvider = navigationProximityProvider,
                                         )
 
                                         if (useRail) return@Box
@@ -2204,7 +2217,7 @@ class MainActivity : ComponentActivity() {
                                             FloatingNavigationToolbar(
                                                 items = navigationItems,
                                                 pureBlack = pureBlack,
-                                                miniPlayerProximity = navigationProximity,
+                                                miniPlayerProximityProvider = navigationProximityProvider,
                                                 modifier =
                                                     Modifier
                                                         .align(Alignment.BottomCenter)

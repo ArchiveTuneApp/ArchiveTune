@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,14 +66,14 @@ fun MiniPlayer(
     duration: Long,
     modifier: Modifier = Modifier,
     pureBlack: Boolean,
-    navigationProximity: Float = 0f,
+    navigationProximityProvider: () -> Float = { 0f },
 ) {
     NewMiniPlayer(
         position = position,
         duration = duration,
         modifier = modifier,
         pureBlack = pureBlack,
-        navigationProximity = navigationProximity,
+        navigationProximityProvider = navigationProximityProvider,
     )
 }
 
@@ -82,7 +83,7 @@ private fun NewMiniPlayer(
     duration: Long,
     modifier: Modifier = Modifier,
     pureBlack: Boolean,
-    navigationProximity: Float,
+    navigationProximityProvider: () -> Float,
 ) {
     val playerConnection = LocalPlayerConnection.current ?: return
     val context = LocalContext.current
@@ -182,17 +183,25 @@ private fun NewMiniPlayer(
         rememberMiniPlayerContentColors(
             useArtworkBackground = effectiveBackgroundStyle != MiniPlayerBackgroundStyle.THEME,
         )
+    // The proximity provider is read here, at the leaf: only this scope recomposes while the
+    // MiniPlayer drags, so the bottomBar/Player chain above stays skipped. Read once per frame
+    // and reuse for all four corners. (The width constraint is a layout concern, and
+    // derivedStateOf re-composes it only when the threshold crosses zero.)
+    val proximity = navigationProximityProvider()
     val miniPlayerShape =
         RoundedCornerShape(
-            topStart = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarOuterCornerRadius.value, navigationProximity).dp,
-            topEnd = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarOuterCornerRadius.value, navigationProximity).dp,
-            bottomStart = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarJunctionCornerRadius.value, navigationProximity).dp,
-            bottomEnd = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarJunctionCornerRadius.value, navigationProximity).dp,
+            topStart = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarOuterCornerRadius.value, proximity).dp,
+            topEnd = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarOuterCornerRadius.value, proximity).dp,
+            bottomStart = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarJunctionCornerRadius.value, proximity).dp,
+            bottomEnd = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarJunctionCornerRadius.value, proximity).dp,
         )
+    val constrainToNavigationWidth by remember {
+        derivedStateOf { navigationProximityProvider() > 0f }
+    }
 
     SwipeableMiniPlayerBox(
         modifier = modifier,
-        contentMaxWidth = if (navigationProximity > 0f) NavigationBarMaxWidth else null,
+        contentMaxWidth = if (constrainToNavigationWidth) NavigationBarMaxWidth else null,
         swipeSensitivity = swipeSensitivity,
         swipeThumbnail = swipeThumbnail,
         playerConnection = playerConnection,
