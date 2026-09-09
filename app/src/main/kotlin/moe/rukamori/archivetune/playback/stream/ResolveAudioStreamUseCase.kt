@@ -274,19 +274,36 @@ class ResolveAudioStreamUseCase
                 }
             } catch (throwable: ExecutionException) {
                 future.cancel(true)
-                throw throwable.cause ?: throwable
+                val cause = throwable.cause ?: throwable
+                if (cause is CancellationException && request.purpose == StreamPurpose.DOWNLOAD) {
+                    throw InterruptedIOException("Download stream resolution was invalidated").apply {
+                        initCause(cause)
+                    }
+                }
+                throw cause
+            } catch (throwable: CancellationException) {
+                future.cancel(true)
+                if (request.purpose == StreamPurpose.DOWNLOAD) {
+                    throw InterruptedIOException("Download stream resolution was cancelled").apply {
+                        initCause(throwable)
+                    }
+                }
+                throw throwable
             } catch (throwable: Throwable) {
                 future.cancel(true)
                 throw throwable
             }
         }
 
-        fun invalidate(mediaId: String) {
+        fun invalidate(mediaId: String, purpose: StreamPurpose? = null) {
             val deferredsToCancel =
                 synchronized(inFlightLock) {
-                    cache.keys.removeIf { it.mediaId == mediaId }
+                    cache.keys.removeIf { it.mediaId == mediaId && (purpose == null || it.purpose == purpose) }
                     inFlight.keys
-                        .filter { it.cacheKey.mediaId == mediaId }
+                        .filter {
+                            it.cacheKey.mediaId == mediaId &&
+                                (purpose == null || it.cacheKey.purpose == purpose)
+                        }
                         .mapNotNull { inFlight.remove(it)?.deferred }
                 }
             deferredsToCancel.forEach { it.cancel() }
