@@ -66,9 +66,6 @@ fun FloatingNavigationToolbar(
     onItemClick: (Screens, Boolean) -> Unit,
     onSearchItemDoubleClick: (() -> Unit)? = null,
 ) {
-    // Read at the leaf: the toolbar scope is the smallest unit that must recompose during the
-    // navigation spring; the bottomBar scope above stays skipped. Read once per frame and
-    // reuse for all four corners.
     val miniPlayerProximity = miniPlayerProximityProvider()
     val navigationShape =
         RoundedCornerShape(

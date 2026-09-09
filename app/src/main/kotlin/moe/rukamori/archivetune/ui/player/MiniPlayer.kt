@@ -183,10 +183,6 @@ private fun NewMiniPlayer(
         rememberMiniPlayerContentColors(
             useArtworkBackground = effectiveBackgroundStyle != MiniPlayerBackgroundStyle.THEME,
         )
-    // The proximity provider is read here, at the leaf: only this scope recomposes while the
-    // MiniPlayer drags, so the bottomBar/Player chain above stays skipped. Read once per frame
-    // and reuse for all four corners. (The width constraint is a layout concern, and
-    // derivedStateOf re-composes it only when the threshold crosses zero.)
     val proximity = navigationProximityProvider()
     val miniPlayerShape =
         RoundedCornerShape(

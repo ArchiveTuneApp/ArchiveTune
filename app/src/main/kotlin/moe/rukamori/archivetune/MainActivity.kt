@@ -2131,10 +2131,6 @@ class MainActivity : ComponentActivity() {
                                 },
                                 bottomBar = {
                                     Box {
-                                        // All per-frame inputs (sheet drag value, navbar spring) are read inside this
-                                        // provider, which is only consumed in the draw phase (graphicsLayer) or behind
-                                        // derivedStateOf. The bottomBar scope and the player/miniplayer/toolbar chain
-                                        // therefore never recompose during drag or navigation morphs.
                                         val showNavigationBarState = rememberUpdatedState(shouldShowNavigationBar)
                                         val useRailState = rememberUpdatedState(useRail)
                                         val navigationProximityProvider: () -> Float =
@@ -2145,9 +2141,6 @@ class MainActivity : ComponentActivity() {
                                                     val isNavTransitioning =
                                                         bottomNavigationBarHeightState.value > 0.dp &&
                                                             bottomNavigationBarHeightState.value < navVisibleHeight
-                                                    // Threshold matches physical travel needed on dismiss for MiniPlayer's
-                                                    // top edge to align flush with NavBar's top edge
-                                                    // (MiniPlayerHeight + MiniPlayerBottomSpacing = 74dp).
                                                     val morphThreshold = MiniPlayerHeight + MiniPlayerBottomSpacing
                                                     val swipeDeviation =
                                                         if (isNavTransitioning && playerBottomSheetState.targetAnchor == COLLAPSED_ANCHOR) {
