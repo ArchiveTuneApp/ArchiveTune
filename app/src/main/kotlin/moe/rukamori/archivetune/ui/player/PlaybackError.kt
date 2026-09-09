@@ -45,6 +45,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -389,30 +391,62 @@ private fun PlaybackErrorDetails(
     details: String,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        modifier = modifier,
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainerHighest,
+    Column(
+        modifier = modifier.verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+        PlaybackErrorReportingHint()
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.large,
+            color = MaterialTheme.colorScheme.surfaceContainerHighest,
         ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            SelectionContainer(
-                modifier = Modifier.verticalScroll(rememberScrollState()),
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(
-                    text = details,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontFamily = FontFamily.Monospace,
+                    text = label,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                SelectionContainer {
+                    Text(
+                        text = details,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontFamily = FontFamily.Monospace,
+                    )
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun PlaybackErrorReportingHint(modifier: Modifier = Modifier) {
+    val isDarkSurface = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    Surface(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.medium,
+        color = if (isDarkSurface) PlaybackErrorInfoDarkContainer else PlaybackErrorInfoLightContainer,
+        contentColor = if (isDarkSurface) PlaybackErrorInfoDarkContent else PlaybackErrorInfoLightContent,
+    ) {
+        Row(
+            modifier = remember { Modifier.fillMaxWidth().padding(16.dp) },
+            horizontalArrangement = remember { Arrangement.spacedBy(12.dp) },
+            verticalAlignment = Alignment.Top,
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.info),
+                contentDescription = null,
+                modifier = remember { Modifier.size(24.dp) },
+            )
+            Text(
+                text = stringResource(R.string.playback_error_reporting_hint),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = remember { Modifier.weight(1f) },
+            )
         }
     }
 }
@@ -515,4 +549,8 @@ private fun buildPlaybackErrorDetails(
 private val PlaybackErrorDialogMaxWidth: Dp = 760.dp
 private val PlaybackErrorExpandedMinWidth: Dp = 600.dp
 private val PlaybackErrorExpandedMinHeight: Dp = 360.dp
+private val PlaybackErrorInfoLightContainer = Color(0xFFD9E2FF)
+private val PlaybackErrorInfoLightContent = Color(0xFF174EA6)
+private val PlaybackErrorInfoDarkContainer = Color(0xFF003063)
+private val PlaybackErrorInfoDarkContent = Color(0xFFA8C7FA)
 private const val PlaybackErrorMaxCauseDepth = 6
