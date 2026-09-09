@@ -343,10 +343,32 @@ class ResolveAudioStreamUseCase
                 } else {
                     request.authState
                 }
-            return youtubeiRepository.resolve(
-                request = request.copy(authState = resolvedAuthState),
-                priority = priority,
-            )
+            return try {
+                youtubeiRepository.resolve(
+                    request = request.copy(authState = resolvedAuthState),
+                    priority = priority,
+                )
+            } catch (failure: Exception) {
+                coroutineContext.ensureActive()
+                if (!request.authState.hasLoginCookie ||
+                    (failure !is YTPlayerUtils.LoginRequiredForPlaybackException &&
+                        failure !is YTPlayerUtils.BotDetectionPlaybackException)
+                ) {
+                    throw failure
+                }
+                Timber.tag(TAG).i("Refreshing authenticated playback session for %s", request.mediaId)
+                youtubeiRepository.invalidateSessions()
+                val refreshedAuthState =
+                    YTPlayerUtils.ensureYoutubeiPoTokensForPlayback(
+                        videoId = request.mediaId,
+                        authState = request.authState,
+                        forceRefresh = true,
+                    )
+                youtubeiRepository.resolve(
+                    request = request.copy(authState = refreshedAuthState),
+                    priority = priority,
+                )
+            }
         }
 
         private fun AudioStreamRequest.resolutionPriority(

@@ -83,7 +83,8 @@ object YTPlayerUtils {
         val videoId: String,
         val targetUrl: String,
         reason: String?,
-    ) : IllegalStateException(reason)
+        cause: Throwable? = null,
+    ) : IllegalStateException(reason, cause)
 
     class InvalidPlaybackLoginContextException(
         val videoId: String,
@@ -94,7 +95,8 @@ object YTPlayerUtils {
     class BotDetectionPlaybackException(
         val videoId: String,
         val clients: Set<String>,
-    ) : IllegalStateException("YouTube playback bot detection blocked all stream clients")
+        cause: Throwable? = null,
+    ) : IllegalStateException("YouTube playback bot detection blocked all stream clients", cause)
 
     class BadStreamPlayerResponseException(
         val videoId: String,
@@ -373,15 +375,30 @@ object YTPlayerUtils {
     suspend fun ensureYoutubeiPoTokensForPlayback(
         videoId: String,
         authState: PlaybackAuthState = YouTube.currentPlaybackAuthState(),
+        forceRefresh: Boolean = false,
     ): PlaybackAuthState {
         val contentBinding = authState.youtubeiContentBinding() ?: return authState
+        val requestAuthState =
+            if (forceRefresh) {
+                BotGuardTokenGenerator.invalidatePlayerToken(videoId)
+                authState.copy(
+                    poTokenGvs = null,
+                    poTokenGvsVideoId = null,
+                    poTokenPlayer = null,
+                    poTokenPlayerVideoId = null,
+                    poTokenSubs = null,
+                    poTokenSubsVideoId = null,
+                )
+            } else {
+                authState
+            }
         val tokenResult =
             BotGuardTokenGenerator.mintToken(
                 videoId = videoId,
                 sessionId = contentBinding,
                 maximumWaitMillis = YOUTUBEI_PO_TOKEN_RESOLUTION_BUDGET_MS,
-            ) ?: return authState
-        return authState
+            ) ?: return requestAuthState
+        return requestAuthState
             .withGeneratedPoTokens(videoId, tokenResult)
             .copy(dataSyncId = contentBinding)
     }
@@ -1616,7 +1633,7 @@ object YTPlayerUtils {
     private fun Throwable.isForbiddenPlayerRequest(): Boolean =
         (this as? ClientRequestException)?.response?.status == HttpStatusCode.Forbidden
 
-    private fun isBotDetectionError(reason: String): Boolean {
+    internal fun isBotDetectionError(reason: String): Boolean {
         val lower = reason.lowercase(Locale.US)
         return "bot" in lower ||
             "unusual traffic" in lower ||
