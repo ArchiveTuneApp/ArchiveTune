@@ -740,4 +740,7 @@
     <string name="canvas_cache_desc">Videos play offline. Oldest videos are removed when the cache is full.</string>
     <string name="canvas_settings_load_failed">Could not load canvas settings</string>
     <string name="canvas_settings_update_failed">Could not update canvas settings</string>
+    <string name="media_info_empty">No information available</string>
+    <string name="media_info_load_error">Couldn’t load this information</string>
+    <string name="media_info_itag" translatable="false">Itag</string>
 </resources>
