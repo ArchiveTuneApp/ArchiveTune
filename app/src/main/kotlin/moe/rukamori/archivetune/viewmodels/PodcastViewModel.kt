@@ -26,6 +26,7 @@ import moe.rukamori.archivetune.podcast.PodcastAction
 import moe.rukamori.archivetune.podcast.PodcastEvent
 import moe.rukamori.archivetune.podcast.PodcastPlaybackRequest
 import moe.rukamori.archivetune.podcast.PodcastScreenState
+import moe.rukamori.archivetune.utils.reportException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -73,8 +74,9 @@ class PodcastViewModel
                                 } else {
                                     PodcastScreenState.Success(result.uiState)
                                 }
-                        }.onFailure {
+                        }.onFailure { throwable ->
                             continuation = null
+                            reportException(throwable)
                             _screenState.value = PodcastScreenState.Error(R.string.error_unknown)
                         }
                 }
@@ -105,7 +107,8 @@ class PodcastViewModel
                                             canLoadMore = !result.continuation.isNullOrBlank(),
                                         ),
                                 )
-                        }.onFailure {
+                        }.onFailure { throwable ->
+                            reportException(throwable)
                             eventChannel.send(PodcastEvent.ShowMessage(R.string.error_unknown))
                         }
                     } finally {

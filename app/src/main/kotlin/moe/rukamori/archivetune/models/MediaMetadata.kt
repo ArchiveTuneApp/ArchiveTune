@@ -172,4 +172,5 @@ fun SongItem.toMediaMetadata() =
         isMusicVideo =
             endpoint?.watchEndpointMusicSupportedConfigs?.watchEndpointMusicConfig?.musicVideoType in
                 listOf(MUSIC_VIDEO_TYPE_OMV, MUSIC_VIDEO_TYPE_UGC),
+        isPodcast = isPodcast,
     )

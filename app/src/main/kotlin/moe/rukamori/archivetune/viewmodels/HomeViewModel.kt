@@ -870,7 +870,12 @@ class HomeViewModel
                     val hideVideo = context.dataStore.get(HideVideoKey, false)
                     val blockedArtistIds = database.getBlockedArtistIds().toSet()
                     val aiContentFilterPolicy = loadAiContentFilterPolicy()
-                    val nextSections = YouTube.home(params = chip?.endpoint?.params).getOrNull() ?: return@launch
+                    val nextSections =
+                        YouTube.home(params = chip?.endpoint?.params).getOrElse { throwable ->
+                            if (throwable is CancellationException) throw throwable
+                            reportException(throwable)
+                            return@launch
+                        }
                     val filteredPage =
                         nextSections.copy(
                             chips = homePage.value?.chips,
@@ -888,7 +893,8 @@ class HomeViewModel
                                     )
                                 },
                         )
-                    val (pageWithoutQuickPicks, _) = filteredPage.extractQuickPicks()
+                    val (pageWithoutQuickPicks, selectedQuickPicks) = filteredPage.extractQuickPicks()
+                    remoteQuickPicks.value = selectedQuickPicks?.takeIf { it.items.isNotEmpty() }
                     homePage.value = pageWithoutQuickPicks
                     selectedChip.value = chip
                     updateAllYtItems()
