@@ -162,13 +162,24 @@ class BottomSheetState(
     val collapsedBound: Dp
         get() = collapsedBoundState.value
 
+    var targetCollapsedBound: Dp by mutableStateOf(collapsedBound)
+        private set
+
     private var lastAnimationSpec: AnimationSpec<Dp> =
         if (animationsDisabled) snap() else BottomSheetAnimationSpec
 
-    internal fun retargetCollapseIfNeeded(newTargetBound: Dp) {
-        if (targetAnchor == COLLAPSED_ANCHOR && animatable.isRunning && animatable.targetValue != newTargetBound) {
-            coroutineScope.launch(start = CoroutineStart.UNDISPATCHED) {
-                animatable.animateTo(newTargetBound, lastAnimationSpec)
+    internal fun updateTargetCollapsedBound(newTargetBound: Dp) {
+        val previousTarget = targetCollapsedBound
+        targetCollapsedBound = newTargetBound
+        if (previousTarget == newTargetBound) return
+
+        if (targetAnchor == COLLAPSED_ANCHOR) {
+            val isRestingAtOldCollapsed = !animatable.isRunning &&
+                (animatable.value - collapsedBoundState.value).let { if (it < 0.dp) -it else it } < 0.5.dp
+            if (!isRestingAtOldCollapsed) {
+                coroutineScope.launch(start = CoroutineStart.UNDISPATCHED) {
+                    animatable.animateTo(newTargetBound, lastAnimationSpec)
+                }
             }
         }
     }
@@ -237,7 +248,7 @@ class BottomSheetState(
         updateAnchor(COLLAPSED_ANCHOR)
         lastAnimationSpec = animationSpec
         coroutineScope.launch(start = CoroutineStart.UNDISPATCHED) {
-            animatable.animateTo(collapsedBound, animationSpec)
+            animatable.animateTo(targetCollapsedBound, animationSpec)
         }
     }
 
@@ -444,9 +455,9 @@ fun rememberBottomSheetState(
             )
         }
 
-    // Retarget an in-flight collapse when the target collapsedBound changes (route change)
+    // Update target bound and retarget an in-flight collapse when route changes
     LaunchedEffect(state, collapsedBound) {
-        state.retargetCollapseIfNeeded(collapsedBound)
+        state.updateTargetCollapsedBound(collapsedBound)
     }
 
     // Re-anchor resting collapsed sheet frame-by-frame as the layout moves
