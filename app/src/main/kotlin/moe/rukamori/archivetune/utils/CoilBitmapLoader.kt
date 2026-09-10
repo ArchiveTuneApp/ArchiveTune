@@ -33,8 +33,8 @@ class CoilBitmapLoader(
     context: Context,
     private val scope: CoroutineScope,
 ) : BitmapLoader {
-    private val context = context.applicationContext
-    private val maximumArtworkDimensionPx = this.context.resolveMaximumArtworkDimensionPx()
+    private val applicationContext = context.applicationContext
+    private val maximumArtworkDimensionPx = context.resolveMaximumArtworkDimensionPx()
 
     override fun supportsMimeType(mimeType: String): Boolean = mimeType.startsWith("image/")
 
@@ -55,13 +55,13 @@ class CoilBitmapLoader(
         scope.future(Dispatchers.IO) {
             val request =
                 ImageRequest
-                    .Builder(context)
+                    .Builder(applicationContext)
                     .data(uri)
                     .allowHardware(false)
                     .size(maximumArtworkDimensionPx, maximumArtworkDimensionPx)
                     .build()
 
-            when (val result = context.imageLoader.execute(request)) {
+            when (val result = applicationContext.imageLoader.execute(request)) {
                 is SuccessResult -> withContext(Dispatchers.Default) {
                     ensureActive()
                     result.image
@@ -85,7 +85,7 @@ private fun decodeSampledBitmap(
 
     var sampleSize = 1
     val largestDimension = maxOf(bounds.outWidth, bounds.outHeight)
-    while (largestDimension / (sampleSize * 2) >= maximumDimensionPx) {
+    while (largestDimension / sampleSize / 2 >= maximumDimensionPx) {
         sampleSize *= 2
     }
 
@@ -110,8 +110,8 @@ private fun Bitmap.scaleToNotificationArtwork(maximumDimensionPx: Int): Bitmap {
             maximumDimensionPx.toFloat() / width.toFloat(),
             maximumDimensionPx.toFloat() / height.toFloat(),
         )
-    val targetWidth = (width * scale).roundToInt().coerceAtLeast(1)
-    val targetHeight = (height * scale).roundToInt().coerceAtLeast(1)
+    val targetWidth = (width * scale).roundToInt().coerceIn(1, maximumDimensionPx)
+    val targetHeight = (height * scale).roundToInt().coerceIn(1, maximumDimensionPx)
     return Bitmap.createScaledBitmap(this, targetWidth, targetHeight, true)
 }
 
@@ -136,5 +136,17 @@ private fun Context.resolveMaximumArtworkDimensionPx(): Int {
         } else {
             (LegacyMediaMetadataBitmapMaxSizeDp * resources.displayMetrics.density).roundToInt()
         }
-    return minOf(NotificationArtworkSizePx, frameworkLimitPx - 1).coerceAtLeast(1)
+    val pixelLimitResourceId =
+        resources.getIdentifier(
+            "config_maxBitmapSizePx",
+            "integer",
+            "android",
+        )
+    val pixelLimitPx =
+        if (pixelLimitResourceId != 0) {
+            resources.getInteger(pixelLimitResourceId).takeIf { it > 0 } ?: frameworkLimitPx
+        } else {
+            frameworkLimitPx
+        }
+    return minOf(NotificationArtworkSizePx, frameworkLimitPx, pixelLimitPx).coerceAtLeast(1)
 }
