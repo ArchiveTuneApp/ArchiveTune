@@ -78,9 +78,7 @@ import moe.rukamori.archivetune.constants.EnableMegalobizLyricsKey
 import moe.rukamori.archivetune.constants.EnablePaxsenixAppleMusicLyricsKey
 import moe.rukamori.archivetune.constants.EnablePaxsenixLyricsKey
 import moe.rukamori.archivetune.constants.EnablePaxsenixMusixmatchLyricsKey
-import moe.rukamori.archivetune.constants.EnablePaxsenixNeteaseLyricsKey
 import moe.rukamori.archivetune.constants.EnablePaxsenixSpotifyLyricsKey
-import moe.rukamori.archivetune.constants.EnablePaxsenixYouTubeLyricsKey
 import moe.rukamori.archivetune.constants.EnableSimpMusicLyricsKey
 import moe.rukamori.archivetune.constants.EnableUnisonLyricsKey
 import moe.rukamori.archivetune.constants.EnableYouLyPlusLyricsKey
@@ -182,11 +180,6 @@ fun LyricsSettings(
             key = EnablePaxsenixAppleMusicLyricsKey,
             defaultValue = true,
         )
-    val (enablePaxsenixNeteaseLyrics, onEnablePaxsenixNeteaseLyricsChange) =
-        rememberPreference(
-            key = EnablePaxsenixNeteaseLyricsKey,
-            defaultValue = true,
-        )
     val (enablePaxsenixSpotifyLyrics, onEnablePaxsenixSpotifyLyricsChange) =
         rememberPreference(
             key = EnablePaxsenixSpotifyLyricsKey,
@@ -195,11 +188,6 @@ fun LyricsSettings(
     val (enablePaxsenixMusixmatchLyrics, onEnablePaxsenixMusixmatchLyricsChange) =
         rememberPreference(
             key = EnablePaxsenixMusixmatchLyricsKey,
-            defaultValue = true,
-        )
-    val (enablePaxsenixYouTubeLyrics, onEnablePaxsenixYouTubeLyricsChange) =
-        rememberPreference(
-            key = EnablePaxsenixYouTubeLyricsKey,
             defaultValue = true,
         )
     val (enableUnisonLyrics, onEnableUnisonLyricsChange) = rememberPreference(key = EnableUnisonLyricsKey, defaultValue = true)
@@ -581,7 +569,7 @@ fun LyricsSettings(
 
             item(visible = enablePaxsenixLyrics) {
                 SwitchPreference(
-                    title = { Text("Paxsenix: Apple Music") },
+                    title = { Text(stringResource(R.string.paxsenix_apple_music)) },
                     icon = { Icon(painterResource(R.drawable.lyrics), null) },
                     checked = enablePaxsenixAppleMusicLyrics,
                     onCheckedChange = onEnablePaxsenixAppleMusicLyricsChange,
@@ -590,16 +578,7 @@ fun LyricsSettings(
 
             item(visible = enablePaxsenixLyrics) {
                 SwitchPreference(
-                    title = { Text("Paxsenix: NetEase") },
-                    icon = { Icon(painterResource(R.drawable.lyrics), null) },
-                    checked = enablePaxsenixNeteaseLyrics,
-                    onCheckedChange = onEnablePaxsenixNeteaseLyricsChange,
-                )
-            }
-
-            item(visible = enablePaxsenixLyrics) {
-                SwitchPreference(
-                    title = { Text("Paxsenix: Spotify") },
+                    title = { Text(stringResource(R.string.paxsenix_spotify)) },
                     icon = { Icon(painterResource(R.drawable.lyrics), null) },
                     checked = enablePaxsenixSpotifyLyrics,
                     onCheckedChange = onEnablePaxsenixSpotifyLyricsChange,
@@ -608,19 +587,10 @@ fun LyricsSettings(
 
             item(visible = enablePaxsenixLyrics) {
                 SwitchPreference(
-                    title = { Text("Paxsenix: Musixmatch") },
+                    title = { Text(stringResource(R.string.paxsenix_musixmatch)) },
                     icon = { Icon(painterResource(R.drawable.lyrics), null) },
                     checked = enablePaxsenixMusixmatchLyrics,
                     onCheckedChange = onEnablePaxsenixMusixmatchLyricsChange,
-                )
-            }
-
-            item(visible = enablePaxsenixLyrics) {
-                SwitchPreference(
-                    title = { Text("Paxsenix: YouTube") },
-                    icon = { Icon(painterResource(R.drawable.lyrics), null) },
-                    checked = enablePaxsenixYouTubeLyrics,
-                    onCheckedChange = onEnablePaxsenixYouTubeLyricsChange,
                 )
             }
 
@@ -711,6 +681,7 @@ fun LyricsSettings(
 
 private enum class PaxsenixServerStatus { Operational, Degraded, Down }
 
+@Composable
 private fun PreferredLyricsProvider.displayName(): String =
     when (this) {
         PreferredLyricsProvider.LRCLIB -> "LrcLib"
@@ -720,11 +691,9 @@ private fun PreferredLyricsProvider.displayName(): String =
         PreferredLyricsProvider.BETTER_LYRICS_PORTATO -> "BetterLyrics Portato"
         PreferredLyricsProvider.YOULY_PLUS -> "YouLyPlus"
         PreferredLyricsProvider.SIMPMUSIC -> "SimpMusic"
-        PreferredLyricsProvider.PAXSENIX_APPLE_MUSIC -> "Paxsenix: Apple Music"
-        PreferredLyricsProvider.PAXSENIX_NETEASE -> "Paxsenix: NetEase"
-        PreferredLyricsProvider.PAXSENIX_SPOTIFY -> "Paxsenix: Spotify"
-        PreferredLyricsProvider.PAXSENIX_MUSIXMATCH -> "Paxsenix: Musixmatch"
-        PreferredLyricsProvider.PAXSENIX_YOUTUBE -> "Paxsenix: YouTube"
+        PreferredLyricsProvider.PAXSENIX_APPLE_MUSIC -> stringResource(R.string.paxsenix_apple_music)
+        PreferredLyricsProvider.PAXSENIX_SPOTIFY -> stringResource(R.string.paxsenix_spotify)
+        PreferredLyricsProvider.PAXSENIX_MUSIXMATCH -> stringResource(R.string.paxsenix_musixmatch)
         PreferredLyricsProvider.UNISON -> "Unison"
     }
 

@@ -36,14 +36,14 @@ import moe.rukamori.archivetune.constants.EnableKugouKey
 import moe.rukamori.archivetune.constants.EnableLrcLibKey
 import moe.rukamori.archivetune.constants.EnableMegalobizLyricsKey
 import moe.rukamori.archivetune.constants.EnablePaxsenixAppleMusicLyricsKey
+import moe.rukamori.archivetune.constants.EnablePaxsenixLyricsKey
 import moe.rukamori.archivetune.constants.EnablePaxsenixMusixmatchLyricsKey
-import moe.rukamori.archivetune.constants.EnablePaxsenixNeteaseLyricsKey
 import moe.rukamori.archivetune.constants.EnablePaxsenixSpotifyLyricsKey
-import moe.rukamori.archivetune.constants.EnablePaxsenixYouTubeLyricsKey
 import moe.rukamori.archivetune.constants.EnableSimpMusicLyricsKey
 import moe.rukamori.archivetune.constants.EnableUnisonLyricsKey
 import moe.rukamori.archivetune.constants.EnableYouLyPlusLyricsKey
 import moe.rukamori.archivetune.constants.LyricsProviderOrderKey
+import moe.rukamori.archivetune.constants.PaxsenixApiKeyKey
 import moe.rukamori.archivetune.constants.PreferredLyricsProvider
 import moe.rukamori.archivetune.constants.deserializeLyricsProviderOrder
 import moe.rukamori.archivetune.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
@@ -73,10 +73,8 @@ class LyricsHelper
                 SimpMusicLyricsProvider,
                 UnisonLyricsProvider,
                 PaxsenixAppleMusicLyricsProvider,
-                PaxsenixNeteaseLyricsProvider,
                 PaxsenixSpotifyLyricsProvider,
                 PaxsenixMusixmatchLyricsProvider,
-                PaxsenixYouTubeLyricsProvider,
                 YouTubeSubtitleLyricsProvider,
                 YouTubeLyricsProvider,
             )
@@ -92,10 +90,15 @@ class LyricsHelper
                 SimpMusicLyricsProvider to EnableSimpMusicLyricsKey,
                 UnisonLyricsProvider to EnableUnisonLyricsKey,
                 PaxsenixAppleMusicLyricsProvider to EnablePaxsenixAppleMusicLyricsKey,
-                PaxsenixNeteaseLyricsProvider to EnablePaxsenixNeteaseLyricsKey,
                 PaxsenixSpotifyLyricsProvider to EnablePaxsenixSpotifyLyricsKey,
                 PaxsenixMusixmatchLyricsProvider to EnablePaxsenixMusixmatchLyricsKey,
-                PaxsenixYouTubeLyricsProvider to EnablePaxsenixYouTubeLyricsKey,
+            )
+
+        private val paxsenixProviders =
+            setOf(
+                PaxsenixAppleMusicLyricsProvider,
+                PaxsenixSpotifyLyricsProvider,
+                PaxsenixMusixmatchLyricsProvider,
             )
 
         private val cacheLock = Any()
@@ -398,16 +401,19 @@ class LyricsHelper
                     PreferredLyricsProvider.YOULY_PLUS to YouLyPlusLyricsProvider,
                     PreferredLyricsProvider.SIMPMUSIC to SimpMusicLyricsProvider,
                     PreferredLyricsProvider.PAXSENIX_APPLE_MUSIC to PaxsenixAppleMusicLyricsProvider,
-                    PreferredLyricsProvider.PAXSENIX_NETEASE to PaxsenixNeteaseLyricsProvider,
                     PreferredLyricsProvider.PAXSENIX_SPOTIFY to PaxsenixSpotifyLyricsProvider,
                     PreferredLyricsProvider.PAXSENIX_MUSIXMATCH to PaxsenixMusixmatchLyricsProvider,
-                    PreferredLyricsProvider.PAXSENIX_YOUTUBE to PaxsenixYouTubeLyricsProvider,
                     PreferredLyricsProvider.UNISON to UnisonLyricsProvider,
                 )
             val userOrdered = orderedEnums.mapNotNull { providerMap[it] }
             val rest = baseProviders.filterNot { it in userOrdered }
+            val paxsenixEnabled = preferences[EnablePaxsenixLyricsKey] ?: true
+            val paxsenixApiKeyConfigured = !preferences[PaxsenixApiKeyKey].isNullOrBlank()
             return (userOrdered + rest).distinct().filter { provider ->
-                providerPreferenceKeys[provider]?.let { preferences[it] } ?: true
+                val providerEnabled = providerPreferenceKeys[provider]?.let { preferences[it] } ?: true
+                val paxsenixProviderEnabled =
+                    provider !in paxsenixProviders || (paxsenixEnabled && paxsenixApiKeyConfigured)
+                providerEnabled && paxsenixProviderEnabled
             }
         }
 
