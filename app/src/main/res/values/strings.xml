@@ -543,6 +543,9 @@
     <string name="enable_simpmusic_lyrics">Enable SimpMusic lyrics</string>
     <string name="enable_megalobiz_lyrics">Enable Megalobiz lyrics</string>
     <string name="enable_paxsenix_lyrics">Enable Paxsenix lyrics</string>
+    <string name="paxsenix_api_key">Paxsenix API key</string>
+    <string name="paxsenix_api_key_configured">Configured</string>
+    <string name="paxsenix_api_key_missing">Required for authenticated Paxsenix requests</string>
     <string name="player_and_audio">Player and audio</string>
     <string name="audio_quality">Audio quality</string>
     <string name="audio_quality_auto">Auto</string>

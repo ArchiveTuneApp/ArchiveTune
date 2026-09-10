@@ -233,6 +233,7 @@ class BackupArchiveRepository
                     "lastfmCustomEndpoint",
                     "lastfmApiKeyOverride",
                     "lastfmSecretOverride",
+                    "paxsenixApiKey",
                     "listenbrainz_token",
                     "discordToken",
                     "discordUsername",

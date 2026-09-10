@@ -198,6 +198,7 @@ class App :
                     YouTube.locale = YouTube.locale.copy(hl = lang)
                 }
 
+                PaxsenixLyrics.setApiKey(prefs[PaxsenixApiKeyKey].orEmpty())
                 LastFmServiceConfig.fromPreferences(prefs).apply(prefs[LastFMSessionKey])
 
                 ProxyUtils.applyYouTubeProxy(

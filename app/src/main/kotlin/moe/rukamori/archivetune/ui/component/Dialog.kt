@@ -63,6 +63,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -327,6 +328,7 @@ fun TextFieldDialog(
     dismissOnDone: Boolean = true,
     maxLines: Int = if (singleLine) 1 else 10,
     keyboardOptions: KeyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+    visualTransformation: VisualTransformation = VisualTransformation.None,
     isInputValid: (String) -> Boolean = { it.isNotEmpty() },
     onDone: (String) -> Unit = {},
     // new multi-field support
@@ -393,6 +395,7 @@ fun TextFieldDialog(
                         maxLines = maxLines,
                         colors = OutlinedTextFieldDefaults.colors(),
                         keyboardOptions = keyboardOptions,
+                        visualTransformation = visualTransformation,
                         keyboardActions =
                             KeyboardActions(
                                 onDone = {
@@ -428,6 +431,7 @@ fun TextFieldDialog(
                     maxLines = maxLines,
                     colors = OutlinedTextFieldDefaults.colors(),
                     keyboardOptions = keyboardOptions,
+                    visualTransformation = visualTransformation,
                     keyboardActions =
                         KeyboardActions(
                             onDone = {
