@@ -52,12 +52,12 @@ object DiscordImageResolver {
     ): ResolvedDiscordImages {
         val songId = song.song.id
         val thumbnailUrl = song.song.thumbnailUrl?.asHttpUrl()
-        val artistUrl =
-            song.artists
-                .firstOrNull()
-                ?.thumbnailUrl
-                ?.asHttpUrl()
-                ?.takeUnless { it == thumbnailUrl }
+
+        // Collect artist URLs from all artists (multi-artist support)
+        val artistUrls = song.artists
+            .mapNotNull { it.thumbnailUrl?.asHttpUrl() }
+            .filter { it != thumbnailUrl }
+        val artistUrl = artistUrls.firstOrNull()
 
         getCachedImages(songId)
             ?.takeIf { cached ->
@@ -83,15 +83,22 @@ object DiscordImageResolver {
         val persistedArtist = artistUrl ?: savedArtistUrl
 
         // Fetch channel avatar from YouTube API when playing a music video
+        // Try all artists and use the first available channel avatar
         val channelAvatar = if (isMusicVideo) {
-            val artistId = song.artists.firstOrNull()?.id
-            if (artistId != null && artistId.startsWith("UC")) {
-                runCatching {
-                    YouTube.artist(artistId).getOrNull()?.artist?.thumbnail
-                }.getOrNull()
-            } else {
-                null
+            var avatar: String? = null
+            for (artist in song.artists) {
+                val artistId = artist.id
+                if (artistId.startsWith("UC")) {
+                    val result = runCatching {
+                        YouTube.artist(artistId).getOrNull()?.artist?.thumbnail
+                    }.getOrNull()
+                    if (result != null) {
+                        avatar = result
+                        break
+                    }
+                }
             }
+            avatar
         } else {
             null
         }
