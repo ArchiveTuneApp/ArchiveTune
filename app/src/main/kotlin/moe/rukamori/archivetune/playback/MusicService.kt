@@ -63,6 +63,7 @@ import androidx.media3.common.Timeline
 import androidx.media3.common.audio.SonicAudioProcessor
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.DataSourceException
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.HttpDataSource
@@ -219,6 +220,8 @@ import moe.rukamori.archivetune.models.MediaMetadata
 import moe.rukamori.archivetune.models.PersistPlayerState
 import moe.rukamori.archivetune.models.PersistQueue
 import moe.rukamori.archivetune.models.toMediaMetadata
+import moe.rukamori.archivetune.morideobfuscator.youtubei.YoutubeiException
+import moe.rukamori.archivetune.morideobfuscator.youtubei.YoutubeiFailureKind
 import moe.rukamori.archivetune.playback.preload.NextStreamPreloader
 import moe.rukamori.archivetune.playback.preload.ObservePlaybackPreloadConfigurationUseCase
 import moe.rukamori.archivetune.playback.preload.PlaybackPreloadConfiguration
@@ -670,6 +673,7 @@ class MusicService :
         var current: Throwable? = this
         while (current != null) {
             if (current is SocketTimeoutException) return true
+            if (current is YoutubeiException && current.kind == YoutubeiFailureKind.TIMEOUT) return true
             if (current.message?.contains("Request timeout has expired", ignoreCase = true) == true) return true
             current = current.cause
         }
@@ -7610,19 +7614,23 @@ class MusicService :
                     }
 
                     throwable is YTPlayerUtils.BadStreamPlayerResponseException -> {
-                        throw PlaybackException(
+                        throw DataSourceException(
                             getString(R.string.error_no_stream),
                             throwable,
-                            PlaybackException.ERROR_CODE_REMOTE_ERROR,
+                            PlaybackException.ERROR_CODE_IO_UNSPECIFIED,
                         )
                     }
 
                     throwable is PlaybackException -> {
-                        throw throwable
+                        throw DataSourceException(
+                            throwable.message,
+                            throwable,
+                            PlaybackException.ERROR_CODE_IO_UNSPECIFIED,
+                        )
                     }
 
                     throwable.isNetworkConnectionFailure() -> {
-                        throw PlaybackException(
+                        throw DataSourceException(
                             getString(R.string.playback_error_no_internet),
                             throwable,
                             PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
@@ -7630,18 +7638,20 @@ class MusicService :
                     }
 
                     throwable.isRequestTimeout() -> {
-                        throw PlaybackException(
+                        throw DataSourceException(
                             getString(R.string.error_timeout),
                             throwable,
                             PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT,
                         )
                     }
 
+                    throwable is IOException -> throw throwable
+
                     else -> {
-                        throw PlaybackException(
+                        throw DataSourceException(
                             getString(R.string.playback_error_unknown),
                             throwable,
-                            PlaybackException.ERROR_CODE_REMOTE_ERROR,
+                            PlaybackException.ERROR_CODE_IO_UNSPECIFIED,
                         )
                     }
                 }
