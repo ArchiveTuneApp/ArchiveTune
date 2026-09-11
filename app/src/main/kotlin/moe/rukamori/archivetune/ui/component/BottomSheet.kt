@@ -159,16 +159,9 @@ class BottomSheetState(
 ) : DraggableState by draggableState {
     private val collapsedBoundState = mutableStateOf(collapsedBound)
 
-    /**
-     * Effective collapsed bound currently applied to the sheet.
-     * During navigation bar transitions, this value animates per-frame to follow the bar smoothly.
-     */
     val collapsedBound: Dp
         get() = collapsedBoundState.value
 
-    /**
-     * The destination collapsed bound for the current route.
-     */
     internal var targetCollapsedBound: Dp by mutableStateOf(
         collapsedBound.coerceIn(animatable.lowerBound!!, animatable.upperBound!!)
     )
@@ -177,12 +170,6 @@ class BottomSheetState(
     private var lastAnimationSpec: AnimationSpec<Dp> =
         if (animationsDisabled) snap() else BottomSheetAnimationSpec
 
-    /**
-     * Updates the target collapsed bound when route or navigation bar presence changes.
-     * If the sheet is actively in-flight collapsing, retargets the animation to the new bound
-     * from its current position. In-flight collapses settle using [lastAnimationSpec], while
-     * any remaining difference is cleanly resolved per-frame by [reanchorTo].
-     */
     internal fun updateTargetCollapsedBound(newTargetBound: Dp) {
         val clampedTarget = newTargetBound.coerceIn(animatable.lowerBound!!, animatable.upperBound!!)
         val previousTarget = targetCollapsedBound
@@ -200,10 +187,6 @@ class BottomSheetState(
         }
     }
 
-    /**
-     * Shifts the resting sheet position and [collapsedBoundState] per-frame to match
-     * animated navigation bar changes without triggering full sheet recompositions.
-     */
     internal suspend fun reanchorTo(newCollapsedBound: Dp) {
         val previous = collapsedBoundState.value
         if (newCollapsedBound == previous) return
@@ -475,12 +458,10 @@ fun rememberBottomSheetState(
             )
         }
 
-    // Update target bound and retarget an in-flight collapse when route changes
     LaunchedEffect(state, collapsedBound) {
         state.updateTargetCollapsedBound(collapsedBound)
     }
 
-    // Re-anchor resting collapsed sheet frame-by-frame as the layout moves
     val animationSpec = if (animationsDisabled) snap() else NavigationBarAnimationSpec
     val animatedCollapsedBound by
         animateDpAsState(
