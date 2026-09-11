@@ -57,9 +57,13 @@ import moe.rukamori.archivetune.constants.ListItemHeight
 import moe.rukamori.archivetune.extensions.togglePlayPause
 import moe.rukamori.archivetune.innertube.models.AlbumItem
 import moe.rukamori.archivetune.innertube.models.ArtistItem
+import moe.rukamori.archivetune.innertube.models.EpisodeItem
 import moe.rukamori.archivetune.innertube.models.PlaylistItem
+import moe.rukamori.archivetune.innertube.models.PodcastItem
 import moe.rukamori.archivetune.innertube.models.SongItem
 import moe.rukamori.archivetune.models.toMediaMetadata
+import moe.rukamori.archivetune.extensions.toMediaItem
+import moe.rukamori.archivetune.playback.queues.ListQueue
 import moe.rukamori.archivetune.playback.queues.YouTubeQueue
 import moe.rukamori.archivetune.ui.component.IconButton
 import moe.rukamori.archivetune.ui.component.LocalMenuState
@@ -222,46 +226,62 @@ fun YouTubeBrowseScreen(
                                                             is AlbumItem -> navController.navigate("album/${item.id}")
                                                             is ArtistItem -> navController.navigate("artist/${item.id}")
                                                             is PlaylistItem -> navController.navigate("online_playlist/${item.id}")
+                                                            is PodcastItem -> navController.navigate("podcast/${android.net.Uri.encode(item.browseId)}")
+                                                            is EpisodeItem -> {
+                                                                playerConnection.playQueue(
+                                                                    ListQueue(
+                                                                        title = item.podcast?.name ?: item.title,
+                                                                        items = listOf(item.toMediaItem()),
+                                                                    ),
+                                                                )
+                                                            }
                                                             else -> item
                                                         }
                                                     },
-                                                    onLongClick = {
-                                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                        menuState.show {
-                                                            when (item) {
-                                                                is SongItem -> {
-                                                                    YouTubeSongMenu(
-                                                                        song = item,
-                                                                        navController = navController,
-                                                                        onDismiss = menuState::dismiss,
-                                                                    )
-                                                                }
+                                                    onLongClick =
+                                                        if (item is PodcastItem || item is EpisodeItem) {
+                                                            null
+                                                        } else {
+                                                            {
+                                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                                menuState.show {
+                                                                    when (item) {
+                                                                        is SongItem -> {
+                                                                            YouTubeSongMenu(
+                                                                                song = item,
+                                                                                navController = navController,
+                                                                                onDismiss = menuState::dismiss,
+                                                                            )
+                                                                        }
 
-                                                                is AlbumItem -> {
-                                                                    YouTubeAlbumMenu(
-                                                                        albumItem = item,
-                                                                        navController = navController,
-                                                                        onDismiss = menuState::dismiss,
-                                                                    )
-                                                                }
+                                                                        is AlbumItem -> {
+                                                                            YouTubeAlbumMenu(
+                                                                                albumItem = item,
+                                                                                navController = navController,
+                                                                                onDismiss = menuState::dismiss,
+                                                                            )
+                                                                        }
 
-                                                                is ArtistItem -> {
-                                                                    YouTubeArtistMenu(
-                                                                        artist = item,
-                                                                        onDismiss = menuState::dismiss,
-                                                                    )
-                                                                }
+                                                                        is ArtistItem -> {
+                                                                            YouTubeArtistMenu(
+                                                                                artist = item,
+                                                                                onDismiss = menuState::dismiss,
+                                                                            )
+                                                                        }
 
-                                                                is PlaylistItem -> {
-                                                                    YouTubePlaylistMenu(
-                                                                        playlist = item,
-                                                                        coroutineScope = coroutineScope,
-                                                                        onDismiss = menuState::dismiss,
-                                                                    )
+                                                                        is PlaylistItem -> {
+                                                                            YouTubePlaylistMenu(
+                                                                                playlist = item,
+                                                                                coroutineScope = coroutineScope,
+                                                                                onDismiss = menuState::dismiss,
+                                                                            )
+                                                                        }
+
+                                                                        is PodcastItem, is EpisodeItem -> Unit
+                                                                    }
                                                                 }
                                                             }
-                                                        }
-                                                    },
+                                                        },
                                                 ).animateItem(),
                                     )
                                 }

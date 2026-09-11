@@ -43,6 +43,8 @@ import moe.rukamori.archivetune.ui.screens.playlist.LocalPlaylistScreen
 import moe.rukamori.archivetune.ui.screens.playlist.OnlinePlaylistScreen
 import moe.rukamori.archivetune.ui.screens.playlist.SpotifyPlaylistScreen
 import moe.rukamori.archivetune.ui.screens.playlist.TopPlaylistScreen
+import moe.rukamori.archivetune.ui.screens.podcast.PodcastRoute
+import moe.rukamori.archivetune.ui.screens.podcast.PodcastScreen
 import moe.rukamori.archivetune.ui.screens.search.OnlineSearchResult
 import moe.rukamori.archivetune.ui.screens.search.OnlineSearchResultArgument
 import moe.rukamori.archivetune.ui.screens.search.OnlineSearchResultRoute
@@ -52,6 +54,7 @@ import moe.rukamori.archivetune.ui.screens.settings.AboutScreen
 import moe.rukamori.archivetune.ui.screens.settings.AccountSettings
 import moe.rukamori.archivetune.ui.screens.settings.AiIntegrationSettings
 import moe.rukamori.archivetune.ui.screens.settings.AodCustomizedScreen
+import moe.rukamori.archivetune.ui.screens.settings.CanvasSettings
 import moe.rukamori.archivetune.ui.screens.settings.AppearanceSettings
 import moe.rukamori.archivetune.ui.screens.settings.BackupAndRestore
 import moe.rukamori.archivetune.ui.screens.settings.ChangelogScreen
@@ -242,6 +245,17 @@ fun NavGraphBuilder.navigationBuilder(
         AlbumScreen(navController, scrollBehavior)
     }
     composable(
+        route = PodcastRoute,
+        arguments =
+            listOf(
+                navArgument("browseId") {
+                    type = NavType.StringType
+                },
+            ),
+    ) {
+        PodcastScreen(navController)
+    }
+    composable(
         route = "artist/{artistId}",
         arguments =
             listOf(
@@ -421,6 +435,9 @@ fun NavGraphBuilder.navigationBuilder(
     }
     composable("settings/player") {
         PlayerSettings(navController)
+    }
+    composable("settings/canvas") {
+        CanvasSettings(navController)
     }
     composable("settings/storage") {
         StorageSettings(navController)

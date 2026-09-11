@@ -174,7 +174,6 @@
     <string name="delete">Verwijderen</string>
     <string name="hide_playlist">Afspeellijst verbergen</string>
     <string name="unhide_playlist">Afspeellijst weergeven</string>
-    <string name="show_hidden_playlists">Verborgen weergeven</string>
     <string name="hide_playlist_confirm">“%1$s” verbergen in de bibliotheek?</string>
     <string name="together_participants">Deelnemers</string>
     <string name="together_connected_count">%1$d verbonden</string>
@@ -204,7 +203,6 @@
     <string name="search_online">Online zoeken</string>
     <string name="tempo_and_pitch">Tempo en Toonhoogte</string>
     <string name="aod_mode">AOD-modus</string>
-    <string name="aod_mode_exit">AOD afsluiten</string>
     <string name="tempo">Tempo</string>
     <string name="pitch">Toonhoogte</string>
     <string name="pitch_mode_semitones_short">st</string>

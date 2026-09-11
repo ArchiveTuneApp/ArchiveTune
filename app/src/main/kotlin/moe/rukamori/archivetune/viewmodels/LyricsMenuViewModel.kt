@@ -174,7 +174,6 @@ class LyricsMenuViewModel
                             songArtists = artist,
                             songAlbum = album,
                             duration = duration,
-                            forceRefresh = true,
                         ) { result ->
                             if (generation != searchGeneration.get()) return@getAllLyrics
                             val model = result.toUiModel(resultModels.size)

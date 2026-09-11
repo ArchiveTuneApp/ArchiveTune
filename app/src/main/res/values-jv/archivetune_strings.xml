@@ -353,7 +353,6 @@
     <string name="settings_lyrics_subtitle">Penyedia lirik dan terjemahan</string>
     <string name="settings_content_subtitle">Bahasa, negara, dan rekomendasi default</string>
     <string name="settings_internet_subtitle">Proksi, DNS, dan perilaku pemutaran jaringan</string>
-    <string name="settings_po_token_subtitle">Verifikasi pemutaran dan data pengunjung</string>
     <string name="settings_storage_subtitle">Cache, unduhan, dan penyimpanan offline</string>
     <string name="settings_updates_subtitle">Versi, catatan rilis, dan saluran pembaruan</string>
     <string name="settings_about_subtitle">Info aplikasi, lisensi, dan kontributor</string>

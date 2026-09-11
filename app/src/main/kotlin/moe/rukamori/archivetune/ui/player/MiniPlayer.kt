@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.lerp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.palette.graphics.Palette
 import coil3.imageLoader
@@ -45,6 +47,9 @@ import kotlinx.coroutines.withContext
 import moe.rukamori.archivetune.LocalPlayerConnection
 import moe.rukamori.archivetune.constants.MiniPlayerBackgroundStyle
 import moe.rukamori.archivetune.constants.MiniPlayerBackgroundStyleKey
+import moe.rukamori.archivetune.constants.FloatingBarJunctionCornerRadius
+import moe.rukamori.archivetune.constants.FloatingBarOuterCornerRadius
+import moe.rukamori.archivetune.constants.FloatingBarStandaloneCornerRadius
 import moe.rukamori.archivetune.constants.MiniPlayerHeight
 import moe.rukamori.archivetune.constants.NavigationBarMaxWidth
 import moe.rukamori.archivetune.constants.SwipeSensitivityKey
@@ -61,14 +66,14 @@ fun MiniPlayer(
     duration: Long,
     modifier: Modifier = Modifier,
     pureBlack: Boolean,
-    isPairedWithNavigation: Boolean = false,
+    navigationProximityProvider: () -> Float = { 0f },
 ) {
     NewMiniPlayer(
         position = position,
         duration = duration,
         modifier = modifier,
         pureBlack = pureBlack,
-        isPairedWithNavigation = isPairedWithNavigation,
+        navigationProximityProvider = navigationProximityProvider,
     )
 }
 
@@ -78,7 +83,7 @@ private fun NewMiniPlayer(
     duration: Long,
     modifier: Modifier = Modifier,
     pureBlack: Boolean,
-    isPairedWithNavigation: Boolean,
+    navigationProximityProvider: () -> Float,
 ) {
     val playerConnection = LocalPlayerConnection.current ?: return
     val context = LocalContext.current
@@ -178,23 +183,21 @@ private fun NewMiniPlayer(
         rememberMiniPlayerContentColors(
             useArtworkBackground = effectiveBackgroundStyle != MiniPlayerBackgroundStyle.THEME,
         )
+    val proximity = navigationProximityProvider()
     val miniPlayerShape =
-        remember(isPairedWithNavigation) {
-            if (isPairedWithNavigation) {
-                RoundedCornerShape(
-                    topStart = 28.dp,
-                    topEnd = 28.dp,
-                    bottomStart = 12.dp,
-                    bottomEnd = 12.dp,
-                )
-            } else {
-                null
-            }
-        } ?: MaterialTheme.shapes.extraLarge
+        RoundedCornerShape(
+            topStart = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarOuterCornerRadius.value, proximity).dp,
+            topEnd = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarOuterCornerRadius.value, proximity).dp,
+            bottomStart = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarJunctionCornerRadius.value, proximity).dp,
+            bottomEnd = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarJunctionCornerRadius.value, proximity).dp,
+        )
+    val constrainToNavigationWidth by remember {
+        derivedStateOf { navigationProximityProvider() > 0f }
+    }
 
     SwipeableMiniPlayerBox(
         modifier = modifier,
-        contentMaxWidth = if (isPairedWithNavigation) NavigationBarMaxWidth else null,
+        contentMaxWidth = if (constrainToNavigationWidth) NavigationBarMaxWidth else null,
         swipeSensitivity = swipeSensitivity,
         swipeThumbnail = swipeThumbnail,
         playerConnection = playerConnection,

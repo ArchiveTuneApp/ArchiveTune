@@ -100,7 +100,6 @@
     <string name="remove_from_speed_dial">מחיקה מהפעלה מהירה</string>
     <string name="together_requesting_song_change">מבקש מהמארח לשנות את השיר…</string>
     <string name="palette_youtube_red">Youtube</string>
-    <string name="error_malformed_stream">שגיאת מקור</string>
     <string name="palette_mint_fresh">מנטה</string>
     <string name="storage">אחסון</string>
     <string name="disable_blur_desc">השבתת אפקטים של טשטוש בכל האפליקציה</string>
@@ -111,7 +110,6 @@
     <string name="palette_blush">סומק</string>
     <string name="save">שמירה</string>
     <string name="downloaded_songs">שירים שהורדו</string>
-    <string name="playback_login_refresh_required">רענון כניסה ל- YouTube Music</string>
     <string name="palette_ocean">אוקיינוס</string>
     <string name="view_album">ראה אלבום</string>
     <string name="repeat_mode_off">מצב חזרה כבוי</string>
@@ -143,7 +141,6 @@
     <string name="together_ban">חסימה</string>
     <string name="action_logout">התנתק</string>
     <string name="image_cache">מטמון תמונה</string>
-    <string name="error_timeout">פסק זמן</string>
     <string name="cancel_button">ביטול</string>
     <string name="lyrics_not_found">מילות השיר לא נמצאו</string>
     <string name="palette_mango">מנגו</string>
@@ -183,7 +180,6 @@
     <string name="disable_animations">השבתת הנפשות</string>
     <string name="palette_cyberpunk">סייברפאנק</string>
     <string name="added_n_songs_to_n_playlists">נוספו %1$d שירים ל%2$d פלייליסטים</string>
-    <string name="playback_requires_youtube_music_confirmation">אשר את ההפעלה ב- YouTube Music, ולאחר מכן חזור אל ArchiveTune.</string>
     <string name="proxy_connection_failed">חיבור הפרוקסי נכשל: %s</string>
     <string name="font_preference_default">ברירת מחדל</string>
     <string name="unknown">לא ידוע</string>
@@ -271,7 +267,6 @@
     <string name="together_connected_count">%1$d מחוברים</string>
     <string name="download_progress_percent">%1$d%%</string>
     <string name="widget_previous">קודם</string>
-    <string name="error_no_stream">אין סטרימינג זמין</string>
     <plurals name="n_album">
         <item quantity="one">אלבום אחד</item>
         <item quantity="two">שני אלבומים</item>
@@ -279,7 +274,7 @@
     </plurals>
     <string name="eq_profiles">פרופילים</string>
     <string name="retry">נסה שוב</string>
-    <string name="archivetune_canvas_desc">הנפשת גרפיקת אלבום בזמן נגינה (מופעל על ידי BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">הנפשת גרפיקת אלבום בזמן נגינה</string>
     <string name="queue">תור</string>
     <string name="dns_custom_url">כתובת URL מותאמת אישית של DNS DoH</string>
     <string name="together_waiting_approval">ממתין לאישור</string>
@@ -433,7 +428,6 @@
     <string name="palette_cobalt_blue">כחול קובלט</string>
     <string name="discord_activity_type">סוג פעילות</string>
     <string name="persistent_queue_desc">שחזר את התור האחרון שלך בעת הפעלת האפליקציה</string>
-    <string name="aod_mode_exit">יציאה מ- AOD</string>
     <string name="loudness">עוצמה</string>
     <string name="palette_peach">אפרסק</string>
     <string name="player">נגָן</string>
@@ -445,7 +439,6 @@
     <string name="palette_crimson_red">ארגמן</string>
     <string name="permanent_shuffle">מצב ערבוב קבוע</string>
     <string name="delete_playlist_confirm">האם אתה באמת רוצה למחוק את פלייליסט \"%s\"?</string>
-    <string name="playback_confirmation_required">נדרש אישור הפעלה</string>
     <string name="palette_royal_purple">סגול מלכותי</string>
     <string name="together_pending_approval">ממתין לאישור</string>
     <string name="audio_quality_low">נמוכה</string>
@@ -486,7 +479,6 @@
     <string name="palette_candy">סוכריה</string>
     <string name="eq_import_success">%1$d פרופילים מיובאים</string>
     <string name="error_unknown">שגיאה לא ידועה</string>
-    <string name="playback_requires_youtube_music_login_refresh">רענן את פרטי ההתחברות שלך ל- YouTube Music, ולאחר מכן חזור אל ArchiveTune.</string>
     <string name="removed_n_songs_from_queue">הוסרו \'\'%d\'\' שירים מהתור</string>
     <string name="remove_from_playlist">הסר מהפלייליסט</string>
     <string name="font_preference_system">מערכת</string>
@@ -728,7 +720,6 @@
     <string name="about">אודות</string>
     <string name="new_version_available">גרסה חדשה זמינה</string>
     <string name="updates">עדכונים</string>
-    <string name="updates_subtitle_stable">מהדורות יציבות והערות שחרור</string>
     <string name="current_version">גרסה נוכחית</string>
     <string name="latest_version_format">אחרון: %s</string>
     <string name="updates_status_checking">בודק את הגרסה האחרונה</string>
@@ -736,7 +727,6 @@
     <string name="enable_update_notification">הפעל התראות עדכון</string>
     <string name="update_channel">עדכון ערוץ</string>
     <string name="update_channel_desc">בחרו בין גרסאות שנבדקו לבין תמונות מצב של פיתוח.</string>
-    <string name="channel_stable">יציב</string>
     <string name="recent_commits">שינויים אחרונים</string>
     <string name="updates_loading_commits">טוען את השינויים האחרונים</string>
     <string name="updates_recent_commits_count">%1$d שינויים אחרונים</string>
@@ -817,25 +807,6 @@
     <string name="together_welcome_join_body">פתחו את הקישור המשותף, או הזינו את הקוד והקישו על הצטרף. התור וההשמעה שלכם יעקבו אחר המארח.</string>
     <string name="together_welcome_permissions_title">הרשאות ובטיחות</string>
     <string name="together_welcome_permissions_body">מארחים יכולים להחליט אם אורחים יכולים להוסיף שירים, לשלוט בהפעלה או לדרוש אישור להצטרפות.</string>
-    <string name="po_token_generation">יצירת טוקן PO</string>
-    <string name="web_client_po_token">טוקן PO של לקוח אינטרנט</string>
-    <string name="web_client_po_token_desc">הפעלת יצירת טוקן PO עבור לקוחות שחקנים מבוססי אינטרנט</string>
-    <string name="po_token_gvs">טוקן PO (GVS)</string>
-    <string name="po_token_player">טוקן PO (שחקן)</string>
-    <string name="visitor_data">נתוני מבקרים</string>
-    <string name="generated_tokens">טוקנים שנוצרו</string>
-    <string name="regenerate">יצירה מחדש</string>
-    <string name="regenerate_token">צור מחדש טוקן</string>
-    <string name="source_url">כתובת URL של המקור</string>
-    <string name="source_url_placeholder">https://youtube.com/account</string>
-    <string name="tokens_generated">טוקנים נוצרו בהצלחה</string>
-    <string name="token_generation_failed">יצירת הטוקנים נכשלה</string>
-    <string name="token_copied">הטוקן הועתק ללוח</string>
-    <string name="extracting_from_url">חילוץ טוקנים מכתובת URL</string>
-    <string name="po_token_account_notice_title">השתמש באותו חשבון</string>
-    <string name="po_token_account_notice_body">היכנס כאן עם אותו חשבון גוגל שבו אתה כבר משתמש עבור YouTube Music בתוך ArchiveTune לפני יצירת טוקן PO.</string>
-    <string name="po_token_account_notice_same_account">אם תצוגת WebView זו משתמשת בחשבון אחר, הטוקן שנוצר לא יפעל כהלכה.</string>
-    <string name="po_token_account_notice_mismatch">השתמש בחשבון התואם, סיימו את תהליך הכניסה, לאחר מכן פתחו את youtube.com/account וצרו את הטוקן מאותו דף.</string>
     <string name="saved_accounts">חשבונות שמורים</string>
     <string name="save_current_account">שמירת חשבון נוכחי</string>
     <string name="no_saved_accounts">עדיין אין חשבונות שמורים</string>
@@ -877,7 +848,6 @@
     <string name="no_playlists_yet">אין עדיין פלייליסטים</string>
     <string name="hide_playlist">הסתרת פלייליסט</string>
     <string name="unhide_playlist">ביטול הסתרת פלייליסט</string>
-    <string name="show_hidden_playlists">הצגת מוסתרים</string>
     <string name="hide_playlist_confirm">להסתיר את \"%1$s\" מהספרייה?</string>
     <string name="together_transfer_host">העברת מארח</string>
     <string name="together_approve">אישור</string>
@@ -886,10 +856,6 @@
     <string name="together_participant_joined_notification">%1$s הצטרף/ה לחדר</string>
     <string name="together_participant_left_notification">%1$s עזב/ה את החדר</string>
     <string name="together_unknown_participant">מישהו</string>
-    <string name="playback_error_code">קוד</string>
-    <string name="playback_error_http">HTTP</string>
-    <string name="playback_error_message">הודעה</string>
-    <string name="playback_error_cause">סיבה</string>
     <string name="discord_reauthorize_required_title">סשן Discord פג תוקפו</string>
     <string name="discord_reauthorize_required_description">לא ניתן להציג את Rich Presence עד שתאשר שוב את Discord.</string>
     <string name="discord_reauthorize_action">הרשאה מחדש</string>

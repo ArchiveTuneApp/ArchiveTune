@@ -72,12 +72,16 @@ import moe.rukamori.archivetune.innertube.YouTube.SearchFilter.Companion.FILTER_
 import moe.rukamori.archivetune.innertube.YouTube.SearchFilter.Companion.FILTER_VIDEO
 import moe.rukamori.archivetune.innertube.models.AlbumItem
 import moe.rukamori.archivetune.innertube.models.ArtistItem
+import moe.rukamori.archivetune.innertube.models.EpisodeItem
 import moe.rukamori.archivetune.innertube.models.PlaylistItem
+import moe.rukamori.archivetune.innertube.models.PodcastItem
 import moe.rukamori.archivetune.innertube.models.SongItem
 import moe.rukamori.archivetune.innertube.models.WatchEndpoint
 import moe.rukamori.archivetune.innertube.models.YTItem
 import moe.rukamori.archivetune.innertube.pages.SearchSummary
 import moe.rukamori.archivetune.models.toMediaMetadata
+import moe.rukamori.archivetune.extensions.toMediaItem
+import moe.rukamori.archivetune.playback.queues.ListQueue
 import moe.rukamori.archivetune.playback.queues.YouTubeQueue
 import moe.rukamori.archivetune.ui.component.ChipsRow
 import moe.rukamori.archivetune.ui.component.EmptyPlaceholder
@@ -162,43 +166,50 @@ fun OnlineSearchResult(
     }
 
     val ytItemContent: @Composable LazyItemScope.(YTItem) -> Unit = { item: YTItem ->
-        val longClick = {
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            menuState.show {
-                when (item) {
-                    is SongItem -> {
-                        YouTubeSongMenu(
-                            song = item,
-                            navController = navController,
-                            onDismiss = menuState::dismiss,
-                        )
-                    }
+        val longClick: (() -> Unit)? =
+            if (item is PodcastItem || item is EpisodeItem) {
+                null
+            } else {
+                {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    menuState.show {
+                        when (item) {
+                            is SongItem -> {
+                                YouTubeSongMenu(
+                                    song = item,
+                                    navController = navController,
+                                    onDismiss = menuState::dismiss,
+                                )
+                            }
 
-                    is AlbumItem -> {
-                        YouTubeAlbumMenu(
-                            albumItem = item,
-                            navController = navController,
-                            onDismiss = menuState::dismiss,
-                        )
-                    }
+                            is AlbumItem -> {
+                                YouTubeAlbumMenu(
+                                    albumItem = item,
+                                    navController = navController,
+                                    onDismiss = menuState::dismiss,
+                                )
+                            }
 
-                    is ArtistItem -> {
-                        YouTubeArtistMenu(
-                            artist = item,
-                            onDismiss = menuState::dismiss,
-                        )
-                    }
+                            is ArtistItem -> {
+                                YouTubeArtistMenu(
+                                    artist = item,
+                                    onDismiss = menuState::dismiss,
+                                )
+                            }
 
-                    is PlaylistItem -> {
-                        YouTubePlaylistMenu(
-                            playlist = item,
-                            coroutineScope = coroutineScope,
-                            onDismiss = menuState::dismiss,
-                        )
+                            is PlaylistItem -> {
+                                YouTubePlaylistMenu(
+                                    playlist = item,
+                                    coroutineScope = coroutineScope,
+                                    onDismiss = menuState::dismiss,
+                                )
+                            }
+
+                            is PodcastItem, is EpisodeItem -> Unit
+                        }
                     }
                 }
             }
-        }
         YouTubeListItem(
             item = item,
             viewCountText = (item as? SongItem)?.viewCountText,
@@ -210,13 +221,13 @@ fun OnlineSearchResult(
                 },
             isPlaying = isPlaying,
             trailingContent = {
-                IconButton(
-                    onClick = longClick,
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.more_vert),
-                        contentDescription = null,
-                    )
+                if (longClick != null) {
+                    IconButton(onClick = longClick) {
+                        Icon(
+                            painter = painterResource(R.drawable.more_vert),
+                            contentDescription = null,
+                        )
+                    }
                 }
             },
             modifier =
@@ -247,6 +258,19 @@ fun OnlineSearchResult(
 
                                 is PlaylistItem -> {
                                     navController.navigate("online_playlist/${item.id}")
+                                }
+
+                                is PodcastItem -> {
+                                    navController.navigate("podcast/${android.net.Uri.encode(item.browseId)}")
+                                }
+
+                                is EpisodeItem -> {
+                                    playerConnection.playQueue(
+                                        ListQueue(
+                                            title = item.podcast?.name ?: item.title,
+                                            items = listOf(item.toMediaItem()),
+                                        ),
+                                    )
                                 }
                             }
                         },

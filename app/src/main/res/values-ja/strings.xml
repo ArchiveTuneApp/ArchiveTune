@@ -182,7 +182,6 @@
     <string name="delete">削除</string>
     <string name="hide_playlist">プレイリストを非表示にする</string>
     <string name="unhide_playlist">プレイリストを再表示する</string>
-    <string name="show_hidden_playlists">非表示を表示</string>
     <string name="hide_playlist_confirm">\u0022%1$s\u0022 をライブラリから非表示にしますか?</string>
     <string name="together_participants">参加者</string>
     <string name="together_connected_count">%1$d が接続されました</string>
@@ -301,10 +300,7 @@
         <item quantity="one">1 minute</item>
         <item quantity="other">%d分</item>
     </plurals>
-    <string name="error_no_stream">利用可能なストリームがありません</string>
     <string name="error_no_internet">ネットワーク接続がありません</string>
-    <string name="error_timeout">タイムアウト</string>
-    <string name="error_malformed_stream">ソースエラー</string>
     <string name="error_unknown">不明なエラー</string>
     <string name="action_like">いいね</string>
     <string name="action_remove_like">いいねを削除</string>
@@ -449,7 +445,7 @@
     <string name="brightness">明るさ</string>
     <string name="custom_value">カスタム値</string>
     <string name="archivetune_canvas">アーカイブチューン キャンバス</string>
-    <string name="archivetune_canvas_desc">再生中にアルバムのアートワークをアニメーション化 (Powered by BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">再生中にアルバムのアートワークをアニメーション化</string>
     <string name="player_background_style_v8_v9_desc">V8 および V9 プレーヤー スタイルでは利用できません</string>
     <string name="show_button1_description">Discord リッチ プレゼンスのボタン 1 の表示を切り替えます</string>
     <string name="show_button2_description">Discord リッチ プレゼンスのボタン 2 の表示を切り替えます</string>
@@ -489,16 +485,7 @@
     <string name="action_logout">ログアウト</string>
     <string name="action_login">ログイン</string>
     <string name="login">ログイン</string>
-    <string name="playback_login_po_token">ログインPOトークン</string>
     <string name="not_logged_in">ログインしていません</string>
-    <string name="playback_confirmation_required">再生確認が必要です</string>
-    <string name="playback_requires_youtube_music_confirmation">YouTube Music で再生を確認し、ArchiveTune に戻ります。</string>
-    <string name="playback_login_refresh_required">YouTube Music のログインを更新する</string>
-    <string name="playback_requires_youtube_music_login_refresh">YouTube Music のログインを更新してから、ArchiveTune に戻ります。</string>
-    <string name="playback_error_code">コード</string>
-    <string name="playback_error_http">HTTP</string>
-    <string name="playback_error_message">メッセージ</string>
-    <string name="playback_error_cause">原因</string>
     <string name="content_language">デフォルトのコンテンツ言語</string>
     <string name="content_country">デフォルトのコンテンツの国</string>
     <string name="system_default">システムのデフォルト</string>
@@ -860,7 +847,6 @@
     <string name="about">について</string>
     <string name="new_version_available">新しいバージョンが利用可能になりました</string>
     <string name="updates">アップデート</string>
-    <string name="updates_subtitle_stable">安定版リリースとリリースノート</string>
     <string name="updates_subtitle_artifact">Canary リリースと最近の開発コミット</string>
     <string name="current_version">現在のバージョン</string>
     <string name="latest_version_format">Latest: %s</string>
@@ -870,7 +856,6 @@
     <string name="enable_update_notification_channel_desc">選択したチャンネルで新しいリリースが利用可能になったときに通知を受け取る</string>
     <string name="update_channel">チャンネルを更新する</string>
     <string name="update_channel_desc">テスト済みのリリースと開発スナップショットのどちらかを選択します。</string>
-    <string name="channel_stable">安定した</string>
     <string name="channel_artifact">カナリア</string>
     <string name="recent_commits">最近のコミット</string>
     <string name="updates_artifact_hosting_description">Canary リリースは、最新の開発ブランチから自動的に公開されます。</string>
@@ -1038,25 +1023,6 @@
     <string name="together_welcome_join_body">共有リンクを開くか、コードを入力して「参加」をタップします。キューと再生はホストに従います。</string>
     <string name="together_welcome_permissions_title">許可と安全性</string>
     <string name="together_welcome_permissions_body">ホストは、ゲストが曲を追加できるか、再生を制御できるか、または参加に承認を必要とするかを決定できます。</string>
-    <string name="po_token_generation">POトークンの生成</string>
-    <string name="web_client_po_token">WebクライアントPOトークン</string>
-    <string name="web_client_po_token_desc">Web ベースのプレーヤー クライアントの PO トークン生成を有効にする</string>
-    <string name="po_token_gvs">PO トークン (GVS)</string>
-    <string name="po_token_player">POトークン（プレイヤー）</string>
-    <string name="visitor_data">訪問者データ</string>
-    <string name="generated_tokens">生成されたトークン</string>
-    <string name="regenerate">Re-generate</string>
-    <string name="regenerate_token">トークンを再生成する</string>
-    <string name="source_url">ソースURL</string>
-    <string name="source_url_placeholder">https://youtube.com/account</string>
-    <string name="tokens_generated">トークンが正常に生成されました</string>
-    <string name="token_generation_failed">トークンの生成に失敗しました</string>
-    <string name="token_copied">トークンがクリップボードにコピーされました</string>
-    <string name="extracting_from_url">URLからトークンを抽出する</string>
-    <string name="po_token_account_notice_title">同じアカウントを使用する</string>
-    <string name="po_token_account_notice_body">PO トークンを生成する前に、ArchiveTune 内で YouTube Music にすでに使用しているのと同じ Google アカウントでここにサインインします。</string>
-    <string name="po_token_account_notice_same_account">この WebView が別のアカウントを使用している場合、生成されたトークンは正しく機能しません。</string>
-    <string name="po_token_account_notice_mismatch">一致するアカウントを使用してサインイン フローを完了し、youtube.com/account を開いてそのページからトークンを生成します。</string>
     <string name="saved_accounts">保存されたアカウント</string>
     <string name="save_current_account">現在のアカウントを保存する</string>
     <string name="no_saved_accounts">保存されたアカウントはまだありません</string>

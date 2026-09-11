@@ -183,7 +183,6 @@
     <string name="delete">Apagar</string>
     <string name="hide_playlist">Ocultar lista de reprodução</string>
     <string name="unhide_playlist">Mostrar lista de reprodução</string>
-    <string name="show_hidden_playlists">Mostrar ocultados</string>
     <string name="hide_playlist_confirm">Ocultar \"%1$s\" da biblioteca?</string>
     <string name="together_participants">Participantes</string>
     <string name="together_connected_count">%1$d conectados</string>
@@ -310,10 +309,7 @@
         <item quantity="many">%d minutos</item>
         <item quantity="other">%d minutos</item>
     </plurals>
-    <string name="error_no_stream">Nenhum stream disponível</string>
     <string name="error_no_internet">Sem ligação à rede</string>
-    <string name="error_timeout">Tempo esgotado</string>
-    <string name="error_malformed_stream">Erro na fonte</string>
     <string name="error_unknown">Erro desconhecido</string>
     <string name="action_like">Gostar</string>
     <string name="action_remove_like">Remover gosto</string>
@@ -459,7 +455,7 @@
     <string name="brightness">Brilho</string>
     <string name="custom_value">Valor personalizado</string>
     <string name="archivetune_canvas">ArchiveTune Canvas</string>
-    <string name="archivetune_canvas_desc">Animar a capa do álbum durante a reprodução (Desenvolvido por BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">Animar a capa do álbum durante a reprodução</string>
     <string name="player_background_style_v8_v9_desc">Indisponível com os estilos de reprodutor V8 e V9</string>
     <string name="show_button1_description">Alternar visibilidade do botão 1 no Rich Presence do Discord</string>
     <string name="show_button2_description">Alternar visibilidade do botão 2 no Rich Presence do Discord</string>
@@ -499,16 +495,7 @@
     <string name="action_logout">Sair</string>
     <string name="action_login">Entrar</string>
     <string name="login">Entrar</string>
-    <string name="playback_login_po_token">Entrar com Token PO</string>
     <string name="not_logged_in">Não conectado</string>
-    <string name="playback_confirmation_required">Confirmação de reprodução necessária</string>
-    <string name="playback_requires_youtube_music_confirmation">Confirma a reprodução no YouTube Music e volta ao ArchiveTune.</string>
-    <string name="playback_login_refresh_required">Atualizar ligação ao YouTube Music</string>
-    <string name="playback_requires_youtube_music_login_refresh">Atualiza a tua ligação ao YouTube Music e volta ao ArchiveTune.</string>
-    <string name="playback_error_code">Código</string>
-    <string name="playback_error_http">HTTP</string>
-    <string name="playback_error_message">Mensagem</string>
-    <string name="playback_error_cause">Causa</string>
     <string name="content_language">Idioma de conteúdo padrão</string>
     <string name="content_country">País de conteúdo padrão</string>
     <string name="system_default">Padrão do sistema</string>
@@ -870,7 +857,6 @@
     <string name="about">Sobre</string>
     <string name="new_version_available">Nova versão disponível</string>
     <string name="updates">Atualizações</string>
-    <string name="updates_subtitle_stable">Versões estáveis e notas de versão</string>
     <string name="updates_subtitle_artifact">Lançamentos da versão Canary e commits recentes de desenvolvimento</string>
     <string name="current_version">Versão Atual</string>
     <string name="latest_version_format">Mais recente: %s</string>
@@ -880,7 +866,6 @@
     <string name="enable_update_notification_channel_desc">Recebe uma notificação quando uma nova versão estiver disponível no canal selecionado</string>
     <string name="update_channel">Canal de Atualização</string>
     <string name="update_channel_desc">Escolhe entre versões testadas e snapshots de desenvolvimento.</string>
-    <string name="channel_stable">Estável</string>
     <string name="channel_artifact">Canary</string>
     <string name="recent_commits">Commits Recentes</string>
     <string name="updates_artifact_hosting_description">As versões Canary são publicadas automaticamente a partir do ramo de desenvolvimento mais recente.</string>
@@ -1048,25 +1033,6 @@
     <string name="together_welcome_join_body">Abre o link compartilhado ou insere o código e carrega em Entrar. As filas e reproduções seguirão o anfitrião.</string>
     <string name="together_welcome_permissions_title">Permissões e segurança</string>
     <string name="together_welcome_permissions_body">Os anfitriões podem decidir se os convidados podem adicionar músicas, controlar a reprodução, ou requerer aprovação para entrar.</string>
-    <string name="po_token_generation">Geração de Token PO</string>
-    <string name="web_client_po_token">Token PO do Cliente Web</string>
-    <string name="web_client_po_token_desc">Ativar geração de token PO para clientes do reprodutor baseados na web</string>
-    <string name="po_token_gvs">Token PO (GVS)</string>
-    <string name="po_token_player">Token PO (Reprodutor)</string>
-    <string name="visitor_data">Dados do Visitante</string>
-    <string name="generated_tokens">Tokens Gerados</string>
-    <string name="regenerate">Gerar Novamente</string>
-    <string name="regenerate_token">Gerar Token Tovamente</string>
-    <string name="source_url">URL de origem</string>
-    <string name="source_url_placeholder">https://youtube.com/account</string>
-    <string name="tokens_generated">Tokens gerados com sucesso</string>
-    <string name="token_generation_failed">Falha ao gerar token</string>
-    <string name="token_copied">Token copiado para a área de transferência</string>
-    <string name="extracting_from_url">A extrair tokens da URL</string>
-    <string name="po_token_account_notice_title">Usa a mesma conta</string>
-    <string name="po_token_account_notice_body">Entra aqui com a mesma conta Google que já usas para o YouTube Music dentro do ArchiveTune antes de gerar um token PO.</string>
-    <string name="po_token_account_notice_same_account">Se esta WebView usar uma conta diferente, o token gerado não funcionará corretamente.</string>
-    <string name="po_token_account_notice_mismatch">Usa a conta correspondente, conclui o fluxo de login, depois abre youtube.com/account e gera o token a partir dessa página.</string>
     <string name="saved_accounts">Contas guardadas</string>
     <string name="save_current_account">Guardar conta atual</string>
     <string name="no_saved_accounts">Ainda sem contas guardadas</string>

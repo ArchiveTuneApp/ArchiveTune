@@ -65,8 +65,8 @@ android {
     applicationId = "moe.rukamori.archivetune"
         minSdk = 26
         targetSdk = 37
-        versionCode = 140
-        versionName = "14.1.0"
+        versionCode = 141
+        versionName = "15.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
@@ -87,12 +87,6 @@ android {
                 ?: System.getenv("TOGETHER_BEARER_TOKEN")
                 ?: ""
         buildConfigField("String", "TOGETHER_BEARER_TOKEN", "\"$togetherBearerToken\"")
-
-        val canvasBearerToken =
-            localProperties.getProperty("CANVAS_BEARER_TOKEN")
-                ?: System.getenv("CANVAS_BEARER_TOKEN")
-                ?: ""
-        buildConfigField("String", "CANVAS_BEARER_TOKEN", "\"$canvasBearerToken\"")
 
         buildConfigField("String", "DATA_SERVER_URL", dataServerUrl.asBuildConfigString())
         buildConfigField("String", "API_BEARER_TOKEN", apiBearerToken.asBuildConfigString())
@@ -126,6 +120,17 @@ android {
         buildConfigField("String", "GITHUB_OWNER", githubOwner.asBuildConfigString())
         buildConfigField("String", "GITHUB_REPO", githubRepo.asBuildConfigString())
         buildConfigField("boolean", "IS_NIGHTLY_BUILD", "false")
+
+        val releaseGithubOwner =
+            System.getenv("RELEASE_GITHUB_OWNER")?.trim()
+                ?: localProperties.getProperty("RELEASE_GITHUB_OWNER")?.trim()
+                ?: githubOwner
+        val releaseGithubRepo =
+            System.getenv("RELEASE_GITHUB_REPO")?.trim()
+                ?: localProperties.getProperty("RELEASE_GITHUB_REPO")?.trim()
+                ?: githubRepo
+        buildConfigField("String", "RELEASE_GITHUB_OWNER", releaseGithubOwner.asBuildConfigString())
+        buildConfigField("String", "RELEASE_GITHUB_REPO", releaseGithubRepo.asBuildConfigString())
     }
 
     flavorDimensions += listOf("distribution", "device", "abi")
@@ -226,6 +231,17 @@ android {
             buildConfigField("boolean", "LEAK_CANARY_TOGGLE_AVAILABLE", "true")
             buildConfigField("boolean", "IS_NIGHTLY_BUILD", "true")
             matchingFallbacks += listOf("release")
+
+            val nightlyReleaseOwner =
+                System.getenv("NIGHTLY_RELEASE_GITHUB_OWNER")?.trim()
+                    ?: localProperties.getProperty("NIGHTLY_RELEASE_GITHUB_OWNER")?.trim()
+                    ?: "rukamori"
+            val nightlyReleaseRepo =
+                System.getenv("NIGHTLY_RELEASE_GITHUB_REPO")?.trim()
+                    ?: localProperties.getProperty("NIGHTLY_RELEASE_GITHUB_REPO")?.trim()
+                    ?: "canary"
+            buildConfigField("String", "RELEASE_GITHUB_OWNER", nightlyReleaseOwner.asBuildConfigString())
+            buildConfigField("String", "RELEASE_GITHUB_REPO", nightlyReleaseRepo.asBuildConfigString())
         }
     }
 
@@ -345,6 +361,7 @@ dependencies {
     implementation("androidx.media3:media3-ui-compose:${libs.versions.media3.get()}")
     add("gmsImplementation", libs.media3.cast)
     add("gmsImplementation", libs.mediarouter)
+    add("gmsImplementation", "com.google.android.gms:play-services-auth:22.0.0")
     implementation(libs.squigglyslider)
 
 
@@ -376,6 +393,7 @@ dependencies {
     implementation(project(":morideobfuscator"))
     implementation("com.materialkolor:material-kolor:5.0.0-alpha07")
 
+    implementation(libs.webkit)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.serialization.json)

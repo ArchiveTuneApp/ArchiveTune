@@ -37,6 +37,8 @@ val PlayerDesignStyleKey = stringPreferencesKey("playerDesignStyle")
 val ShowPlayerVolumeBarKey = booleanPreferencesKey("showPlayerVolumeBar")
 val HidePlayerThumbnailKey = booleanPreferencesKey("hidePlayerThumbnail")
 val ArchiveTuneCanvasKey = booleanPreferencesKey("archiveTuneCanvas")
+val CanvasSourceKey = stringPreferencesKey("canvasSource")
+val CanvasWifiOnlyKey = booleanPreferencesKey("canvasWifiOnly")
 val ThumbnailCornerRadiusKey = floatPreferencesKey("thumbnailCornerRadius")
 val CropThumbnailToSquareKey = booleanPreferencesKey("cropThumbnailToSquare")
 
@@ -193,11 +195,10 @@ val EnableYouLyPlusLyricsKey = booleanPreferencesKey("enableYouLyPlusLyrics")
 val EnableSimpMusicLyricsKey = booleanPreferencesKey("enableSimpMusicLyrics")
 val EnableMegalobizLyricsKey = booleanPreferencesKey("enableMegalobizLyrics")
 val EnablePaxsenixLyricsKey = booleanPreferencesKey("enablePaxsenixLyrics")
+val PaxsenixApiKeyKey = stringPreferencesKey("paxsenixApiKey")
 val EnablePaxsenixAppleMusicLyricsKey = booleanPreferencesKey("enablePaxsenixAppleMusicLyrics")
-val EnablePaxsenixNeteaseLyricsKey = booleanPreferencesKey("enablePaxsenixNeteaseLyrics")
 val EnablePaxsenixSpotifyLyricsKey = booleanPreferencesKey("enablePaxsenixSpotifyLyrics")
 val EnablePaxsenixMusixmatchLyricsKey = booleanPreferencesKey("enablePaxsenixMusixmatchLyrics")
-val EnablePaxsenixYouTubeLyricsKey = booleanPreferencesKey("enablePaxsenixYouTubeLyrics")
 val EnableUnisonLyricsKey = booleanPreferencesKey("enableUnisonLyrics")
 val HideExplicitKey = booleanPreferencesKey("hideExplicit")
 val HideVideoKey = booleanPreferencesKey("hideVideo")
@@ -598,10 +599,8 @@ enum class PreferredLyricsProvider {
     SIMPMUSIC,
     UNISON,
     PAXSENIX_APPLE_MUSIC,
-    PAXSENIX_NETEASE,
     PAXSENIX_SPOTIFY,
     PAXSENIX_MUSIXMATCH,
-    PAXSENIX_YOUTUBE,
 }
 
 val DefaultLyricsProviderOrder =
@@ -615,10 +614,8 @@ val DefaultLyricsProviderOrder =
         PreferredLyricsProvider.SIMPMUSIC,
         PreferredLyricsProvider.UNISON,
         PreferredLyricsProvider.PAXSENIX_APPLE_MUSIC,
-        PreferredLyricsProvider.PAXSENIX_NETEASE,
         PreferredLyricsProvider.PAXSENIX_SPOTIFY,
         PreferredLyricsProvider.PAXSENIX_MUSIXMATCH,
-        PreferredLyricsProvider.PAXSENIX_YOUTUBE,
     )
 
 fun deserializeLyricsProviderOrder(orderStr: String?): List<PreferredLyricsProvider> {
@@ -756,6 +753,9 @@ val LyricsV2LrcBounceEnabledKey = booleanPreferencesKey("lyricsV2LrcBounceEnable
 
 val PlayerVolumeKey = floatPreferencesKey("playerVolume")
 val RepeatModeKey = intPreferencesKey("repeatMode")
+val SponsorBlockEnabledKey = booleanPreferencesKey("sponsorBlockEnabled")
+val SponsorBlockCategoriesKey = stringSetPreferencesKey("sponsorBlockCategories")
+val SponsorBlockApiUrlKey = stringPreferencesKey("sponsorBlockApiUrl")
 
 val SearchSourceKey = stringPreferencesKey("searchSource")
 val SwipeThumbnailKey = booleanPreferencesKey("swipeThumbnail")

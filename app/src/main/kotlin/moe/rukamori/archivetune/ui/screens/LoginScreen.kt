@@ -350,8 +350,8 @@ private fun mergeYouTubeCookies(
 
                 val key = part.substring(0, separatorIndex).trim()
                 val value = part.substring(separatorIndex + 1).trim()
-                if (key.isNotEmpty()) {
-                    cookieParts[key] = value
+                if (key.isNotEmpty() && value.isNotEmpty()) {
+                    cookieParts.putIfAbsent(key, value)
                 }
             }
     }

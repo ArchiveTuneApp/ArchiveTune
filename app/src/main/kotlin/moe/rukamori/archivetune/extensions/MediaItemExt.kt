@@ -11,7 +11,9 @@ import android.os.Bundle
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata.MEDIA_TYPE_MUSIC
+import androidx.media3.common.MediaMetadata.MEDIA_TYPE_PODCAST_EPISODE
 import moe.rukamori.archivetune.db.entities.Song
+import moe.rukamori.archivetune.innertube.models.EpisodeItem
 import moe.rukamori.archivetune.innertube.models.SongItem
 import moe.rukamori.archivetune.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.Companion.MUSIC_VIDEO_TYPE_OMV
 import moe.rukamori.archivetune.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.Companion.MUSIC_VIDEO_TYPE_UGC
@@ -25,6 +27,7 @@ import moe.rukamori.archivetune.utils.NotificationArtworkSizePx
 import moe.rukamori.archivetune.utils.isLocalMediaId
 
 const val ExtraIsMusicVideo = "moe.rukamori.archivetune.extra.IS_MUSIC_VIDEO"
+const val ExtraIsPodcast = "moe.rukamori.archivetune.extra.IS_PODCAST"
 
 val MediaItem.metadata: MediaMetadata?
     get() = localConfiguration?.tag as? MediaMetadata
@@ -66,8 +69,13 @@ fun Song.toMediaItem() =
                 )
                 .setAlbumTitle(song.albumName)
                 .setIsPlayable(true)
-                .setMediaType(MEDIA_TYPE_MUSIC)
-                .setExtras(Bundle().apply { putBoolean(ExtraIsMusicVideo, song.isMusicVideo) })
+                .setMediaType(if (song.isPodcast) MEDIA_TYPE_PODCAST_EPISODE else MEDIA_TYPE_MUSIC)
+                .setExtras(
+                    Bundle().apply {
+                        putBoolean(ExtraIsMusicVideo, song.isMusicVideo)
+                        putBoolean(ExtraIsPodcast, song.isPodcast)
+                    },
+                )
                 .build(),
         ).build()
 
@@ -93,9 +101,16 @@ fun SongItem.toMediaItem() =
                 ).setAlbumTitle(album?.name)
                 .setIsPlayable(true)
                 .setMediaType(MEDIA_TYPE_MUSIC)
-                .setExtras(Bundle().apply { putBoolean(ExtraIsMusicVideo, isMusicVideo()) })
+                .setExtras(
+                    Bundle().apply {
+                        putBoolean(ExtraIsMusicVideo, isMusicVideo())
+                        putBoolean(ExtraIsPodcast, false)
+                    },
+                )
                 .build(),
         ).build()
+
+fun EpisodeItem.toMediaItem() = toMediaMetadata().toMediaItem()
 
 fun MediaMetadata.toMediaItem() =
     MediaItem
@@ -118,8 +133,13 @@ fun MediaMetadata.toMediaItem() =
                     },
                 ).setAlbumTitle(album?.title)
                 .setIsPlayable(true)
-                .setMediaType(MEDIA_TYPE_MUSIC)
-                .setExtras(Bundle().apply { putBoolean(ExtraIsMusicVideo, isMusicVideo) })
+                .setMediaType(if (isPodcast) MEDIA_TYPE_PODCAST_EPISODE else MEDIA_TYPE_MUSIC)
+                .setExtras(
+                    Bundle().apply {
+                        putBoolean(ExtraIsMusicVideo, isMusicVideo)
+                        putBoolean(ExtraIsPodcast, isPodcast)
+                    },
+                )
                 .build(),
         ).build()
 

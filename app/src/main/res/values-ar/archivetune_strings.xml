@@ -485,7 +485,6 @@
     <string name="settings_lyrics_subtitle">مزودو الكلمات والترجمة</string>
     <string name="settings_content_subtitle">اللغة، البلد، وإعدادات التوصيات الافتراضية</string>
     <string name="settings_internet_subtitle">البروكسي، DNS، وسلوك تشغيل الشبكة</string>
-    <string name="settings_po_token_subtitle">التحقق من التشغيل وبيانات الزائر</string>
     <string name="settings_storage_subtitle">التخزين المؤقت، التنزيلات، والتخزين غير المتصل</string>
     <string name="settings_updates_subtitle">الإصدار، ملاحظات الإصدار، وقناة التحديث</string>
     <string name="settings_about_subtitle">معلومات التطبيق، التراخيص، والمساهمون</string>

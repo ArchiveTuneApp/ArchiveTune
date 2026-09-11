@@ -72,7 +72,6 @@ import kotlinx.coroutines.withContext
 import moe.rukamori.archivetune.LocalPlayerAwareWindowInsets
 import moe.rukamori.archivetune.LocalPlayerConnection
 import moe.rukamori.archivetune.R
-import moe.rukamori.archivetune.constants.MaxCanvasCacheSizeKey
 import moe.rukamori.archivetune.constants.MaxImageCacheSizeKey
 import moe.rukamori.archivetune.constants.MaxSongCacheSizeKey
 import moe.rukamori.archivetune.constants.SmartTrimmerKey
@@ -87,7 +86,6 @@ import moe.rukamori.archivetune.ui.component.ListPreference
 import moe.rukamori.archivetune.ui.component.PreferenceEntry
 import moe.rukamori.archivetune.ui.component.PreferenceGroup
 import moe.rukamori.archivetune.ui.component.SwitchPreference
-import moe.rukamori.archivetune.ui.player.CanvasArtworkPlaybackCache
 import moe.rukamori.archivetune.ui.utils.backToMain
 import moe.rukamori.archivetune.ui.utils.formatFileSize
 import moe.rukamori.archivetune.utils.rememberPreference
@@ -145,11 +143,6 @@ fun StorageSettings(
         remember {
             cacheSizeValues + (-1)
         }
-    val canvasCacheSizeValues =
-        remember {
-            listOf(0, 64, 128, 256, 512, 1024, 2048, 4096, 8192, -1)
-        }
-
     val (smartTrimmer, onSmartTrimmerChange) =
         rememberPreference(
             key = SmartTrimmerKey,
@@ -165,19 +158,12 @@ fun StorageSettings(
             key = MaxSongCacheSizeKey,
             defaultValue = 1024,
         )
-    val (maxCanvasCacheSize, onMaxCanvasCacheSizeChange) =
-        rememberPreference(
-            key = MaxCanvasCacheSizeKey,
-            defaultValue = 256,
-        )
     var clearCacheDialog by remember { mutableStateOf(false) }
     var clearDownloads by remember { mutableStateOf(false) }
     var clearImageCacheDialog by remember { mutableStateOf(false) }
-    var clearCanvasCacheDialog by remember { mutableStateOf(false) }
     var imageCacheSize by remember { mutableLongStateOf(0L) }
     var playerCacheSize by remember { mutableLongStateOf(0L) }
     var downloadCacheSize by remember { mutableLongStateOf(0L) }
-    var canvasCacheBytes by remember { mutableLongStateOf(0L) }
     val isCacheClearInProgress =
         (screenState as? StorageSettingsScreenState.Success)
             ?.model
@@ -213,16 +199,6 @@ fun StorageSettings(
             },
         label = "playerCacheProgress",
     )
-    val canvasCacheProgress by animateFloatAsState(
-        targetValue =
-            if (maxCanvasCacheSize > 0) {
-                val maxCanvasCacheSizeBytes = cacheSizeMegabytesToBytes(maxCanvasCacheSize)
-                (canvasCacheBytes.toFloat() / maxCanvasCacheSizeBytes).coerceIn(0f, 1f)
-            } else {
-                0f
-            },
-        label = "canvasCacheProgress",
-    )
     val isSmartTrimmerAvailable = maxImageCacheSize != 0 || maxSongCacheSize != 0
 
     LaunchedEffect(isSmartTrimmerAvailable) {
@@ -236,12 +212,6 @@ fun StorageSettings(
     LaunchedEffect(maxSongCacheSize) {
         if (maxSongCacheSize == 0) {
             viewModel.clearSongCache(showFeedback = false)
-        }
-    }
-    LaunchedEffect(maxCanvasCacheSize) {
-        CanvasArtworkPlaybackCache.setMaxSize(maxCanvasCacheSize)
-        if (maxCanvasCacheSize == 0) {
-            viewModel.clearCanvasCache(showFeedback = false)
         }
     }
     LaunchedEffect(imageDiskCache, isCacheClearInProgress) {
@@ -276,17 +246,6 @@ fun StorageSettings(
             delay(StorageRefreshIntervalMillis)
         }
     }
-    LaunchedEffect(isCacheClearInProgress) {
-        if (isCacheClearInProgress) return@LaunchedEffect
-        while (isActive) {
-            canvasCacheBytes =
-                withContext(Dispatchers.IO) {
-                    CanvasArtworkPlaybackCache.byteSize()
-                }
-            delay(StorageRefreshIntervalMillis)
-        }
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -491,71 +450,7 @@ fun StorageSettings(
                 )
             }
 
-            PreferenceGroup(title = stringResource(R.string.canvas_cache)) {
-                item {
-                    ListPreference(
-                        title = { Text(stringResource(R.string.max_cache_size)) },
-                        description =
-                            when {
-                                maxCanvasCacheSize < 0 -> {
-                                    stringResource(R.string.size_used, formatFileSize(canvasCacheBytes))
-                                }
 
-                                maxCanvasCacheSize > 0 -> {
-                                    stringResource(
-                                        R.string.storage_size_ratio,
-                                        formatFileSize(canvasCacheBytes),
-                                        formatFileSize(cacheSizeMegabytesToBytes(maxCanvasCacheSize)),
-                                    )
-                                }
-
-                                else -> {
-                                    stringResource(R.string.disable)
-                                }
-                            },
-                        icon = {
-                            Icon(
-                                painter = painterResource(R.drawable.motion_photos_on),
-                                contentDescription = null,
-                            )
-                        },
-                        selectedValue = maxCanvasCacheSize,
-                        values = canvasCacheSizeValues,
-                        valueText = {
-                            when (it) {
-                                0 -> stringResource(R.string.disable)
-                                -1 -> stringResource(R.string.unlimited)
-                                else -> formatFileSize(cacheSizeMegabytesToBytes(it))
-                            }
-                        },
-                        onValueSelected = onMaxCanvasCacheSizeChange,
-                    )
-                }
-                item(visible = maxCanvasCacheSize > 0) {
-                    CacheUsagePreference(progress = canvasCacheProgress)
-                }
-                item {
-                    PreferenceEntry(
-                        title = { Text(stringResource(R.string.clear_canvas_cache)) },
-                        onClick = { clearCanvasCacheDialog = true },
-                    )
-                }
-            }
-
-            if (clearCanvasCacheDialog) {
-                ActionPromptDialog(
-                    title = stringResource(R.string.clear_canvas_cache),
-                    onDismiss = { clearCanvasCacheDialog = false },
-                    onConfirm = {
-                        viewModel.clearCanvasCache()
-                        clearCanvasCacheDialog = false
-                    },
-                    onCancel = { clearCanvasCacheDialog = false },
-                    content = {
-                        Text(text = stringResource(R.string.clear_canvas_cache_dialog))
-                    },
-                )
-            }
         }
     }
 

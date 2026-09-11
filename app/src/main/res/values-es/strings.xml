@@ -171,9 +171,7 @@
         <item quantity="many">%d minutos</item>
         <item quantity="other">%d minutos</item>
     </plurals>
-    <string name="error_no_stream">No hay transmisión disponible</string>
     <string name="error_no_internet">Sin conexión a Internet</string>
-    <string name="error_timeout">Tiempo agotado</string>
     <string name="error_unknown">Error desconocido</string>
     <string name="action_like">Me gusta</string>
     <string name="action_remove_like">Quitar me gusta</string>
@@ -283,7 +281,7 @@
     <string name="brightness">Brillo</string>
     <string name="custom_value">Valor personalizado</string>
     <string name="archivetune_canvas">ArchiveTune Canvas</string>
-    <string name="archivetune_canvas_desc">Animar la portada del álbum mientras se reproduce (Impulsado por BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">Animar la portada del álbum mientras se reproduce</string>
     <string name="show_button1_description">Alternar la visibilidad del botón 1 en Discord Rich Presence</string>
     <string name="show_button2_description">Alternar la visibilidad del botón 2 en Discord Rich Presence</string>
     <string name="discord_activity_type">Tipo de actividad</string>
@@ -503,7 +501,6 @@
     <string name="latest_version_format">Ultima: %s</string>
     <string name="enable_update_notification">Activar la Notificación de Actualización</string>
     <string name="update_channel">Canal de actualización</string>
-    <string name="channel_stable">Estable</string>
     <string name="recent_commits">Cambios recientes</string>
     <string name="changelog">Registro de cambios</string>
     <string name="view_changelog">Ver registro de cambios</string>
@@ -588,10 +585,6 @@
     <string name="slider_style_thick">Grueso</string>
     <string name="slider_style_circular">Circular</string>
     <string name="slider_style_simple">Sencillo</string>
-    <string name="playback_confirmation_required">Se requiere confirmación de reproducción</string>
-    <string name="playback_requires_youtube_music_confirmation">Confirma la reproducción en YouTube Music y, a continuación, vuelve a ArchiveTune.</string>
-    <string name="playback_login_refresh_required">Actualizar el inicio de sesión en YouTube Music</string>
-    <string name="playback_requires_youtube_music_login_refresh">Actualiza tu sesión de YouTube Music y, a continuación, vuelve a ArchiveTune.</string>
     <string name="pause_on_device_mute">Pausar cuando el dispositivo este en silencio</string>
     <string name="pause_on_device_mute_desc">Pausar con el volumen a cero, explicar los intentos de reproducción y reanudar cuando aumente el volumen</string>
     <string name="wakelock">Mantener la cpu activa durante la reproducción</string>
@@ -605,30 +598,10 @@
     <string name="open_with_downloader">Abrir con Downloader</string>
     <string name="external_downloader_not_installed">No hay ninguna aplicación de descarga externa instalada</string>
     <string name="external_downloader_not_configured">No hay ningún programa de descarga externo configurado. Configura uno en Ajustes ↄ1�7 Reproductor.</string>
-    <string name="po_token_generation">Generación de tokens de autenticación</string>
-    <string name="web_client_po_token">Token de verificación basado en web</string>
-    <string name="web_client_po_token_desc">Habilitar la generación de tokens de verificación para el reproductor multimedia basado en la web</string>
-    <string name="po_token_gvs">Token de validación GVS</string>
-    <string name="po_token_player">Token de verificación del reproductor</string>
-    <string name="visitor_data">Datos de los visitantes</string>
-    <string name="generated_tokens">Tokens generados</string>
-    <string name="regenerate">Regenerar</string>
-    <string name="regenerate_token">Renovar el token</string>
-    <string name="source_url">Url de origen</string>
-    <string name="source_url_placeholder">https://youtube.com/account</string>
-    <string name="tokens_generated">Tokens generados correctamente</string>
-    <string name="token_generation_failed">Error al generar los tokens</string>
-    <string name="token_copied">Token copiado en el portapapeles</string>
-    <string name="extracting_from_url">Extrayendo tokens de la URL</string>
-    <string name="po_token_account_notice_title">Utiliza la misma cuenta</string>
-    <string name="po_token_account_notice_body">Inicia sesión aquí con la misma cuenta de Google que ya utilizas para YouTube Music dentro de ArchiveTune antes de generar un token PO.</string>
-    <string name="po_token_account_notice_same_account">Si esta WebView utiliza una cuenta diferente, el token generado no funcionará correctamente.</string>
-    <string name="po_token_account_notice_mismatch">Utiliza la cuenta correspondiente, completa el proceso de inicio de sesión y, a continuación, abre youtube.com/account y genera el token desde esa página.</string>
     <string name="sort_order_ascending">Ascendente</string>
     <string name="sort_order_descending">Descendente</string>
     <string name="disable_animations">Desactivar animaciones</string>
     <string name="disable_animations_desc">Desactiva la mayoría de las animaciones de las aplicaciones. Recomendado para dispositivos de gama baja</string>
-    <string name="updates_subtitle_stable">Versiones estables y notas de la versión</string>
     <string name="updates_status_checking">Comprobar si hay una nueva versión</string>
     <string name="updates_status_current">Tienes la última versión disponible</string>
     <string name="update_channel_desc">Elige entre versiones probadas o en desarrollo.</string>
@@ -666,7 +639,6 @@
     <string name="total_requests">Solicitudes totales</string>
     <string name="success_rate">Tasa de éxito</string>
     <string name="providers">Proveedores</string>
-    <string name="error_malformed_stream">Error en la fuente</string>
     <string name="support_development_title">Apoyar el desarrollo</string>
     <string name="support_development_message">¡Hola! Soy rukamori, el desarrollador de ArchiveTune. Si ArchiveTune se ha ganado un hueco en tu rutina diaria de música, puedes ayudar a que siga adelante haciendo una donación o marcando el proyecto como favorito en GitHub. Gracias por apoyar el trabajo que hay detrás de la aplicación.</string>
     <string name="support_development_donate">Haz una donación para apoyar el desarrollo</string>
@@ -860,7 +832,6 @@
     <string name="no_playlists_yet">Sin listas de reproducción</string>
     <string name="hide_playlist">Ocultar lista de reproducción</string>
     <string name="unhide_playlist">Mostrar la lista de reproducción</string>
-    <string name="show_hidden_playlists">Mostrar listas de reproducción ocultas</string>
     <string name="hide_playlist_confirm">¿Ocultar \"%1$s\" de la biblioteca?</string>
     <string name="together_transfer_host">Transferir host</string>
     <string name="together_approve">Aprobar</string>
@@ -890,10 +861,6 @@
     <string name="unsupported_language">Idioma no soportado: %1$s</string>
     <string name="force_high_refresh_rate">Forzar una alta frecuencia de actualización</string>
     <string name="max_supported_refresh_rate">Máximo soportado: %1$d Hz</string>
-    <string name="playback_error_code">Código</string>
-    <string name="playback_error_http">HTTP</string>
-    <string name="playback_error_message">Mensaje</string>
-    <string name="playback_error_cause">Razón</string>
     <string name="discord_reauthorize_required_title">Sesión de Discord expairada</string>
     <string name="discord_reauthorize_action">Volver a autenticar</string>
     <string name="lastfm_service">Servicio de scrobbling</string>
@@ -1021,7 +988,6 @@
     <string name="custom_background_adjustments_description">Ajusta la imagen en ambas vistas previas.</string>
     <string name="custom_background_blur_value">%1$d dp</string>
     <string name="custom_background_permission_cleanup_error">No se pudo conceder el acceso a la imagen anterior.</string>
-    <string name="playback_login_po_token">Token de inicio de sesión PO</string>
     <string name="eq_screen_subtitle">Adapta la reproducción a tus oídos y a tu equipo</string>
     <string name="eq_sound_shaping_on">La configuración del sonido está habilitada</string>
     <string name="eq_sound_shaping_off">La configuración del sonido está desactivada</string>

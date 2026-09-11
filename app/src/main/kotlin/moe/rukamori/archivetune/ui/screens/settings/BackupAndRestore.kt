@@ -338,6 +338,25 @@ fun BackupAndRestore(
                 onOverwriteChanged = viewModel::onScheduledBackupOverwriteChanged,
             )
 
+            GoogleDriveBackupSection(
+                enabled = backupRestoreProgress == null && !showRestoreOptionsDialog && !showBackupOptionsDialog,
+                onRestoreReady = remember(viewModel, context) {
+                    { uri ->
+                        coroutineScope.launch {
+                            val result = viewModel.validateBackup(context, uri)
+                            if (result.isValid) {
+                                pendingRestoreCategories = result.availableCategories
+                                pendingRestoreUri = uri
+                                showRestoreOptionsDialog = true
+                            } else {
+                                restoreValidationErrorMessage = result.errorMessage ?: context.getString(R.string.restore_corrupted)
+                                showRestoreValidationError = true
+                            }
+                        }
+                    }
+                },
+            )
+
             PreferenceGroup(title = stringResource(R.string.internal_service)) {
                 item {
                     PreferenceEntry(

@@ -142,9 +142,7 @@
         <item quantity="one">1 Minute</item>
         <item quantity="other">%d Minuten</item>
     </plurals>
-    <string name="error_no_stream">Kein Stream verfügbar</string>
     <string name="error_no_internet">Keine Netzwerkverbindung</string>
-    <string name="error_timeout">Time-out</string>
     <string name="error_unknown">Unbekannter Fehler</string>
     <string name="action_like">Gefällt mir</string>
     <string name="action_remove_like">Gefällt-mir entfernen</string>
@@ -481,9 +479,8 @@
     <string name="sort_order_ascending">Aufsteigend</string>
     <string name="sort_order_descending">Absteigend</string>
     <string name="no_matching_playlists">Keine übereinstimmende Playlist</string>
-    <string name="error_malformed_stream">Quellenfehler</string>
     <string name="archivetune_canvas">ArchiveTune-Canvas</string>
-    <string name="archivetune_canvas_desc">Albumcover animieren während des Abpielens (Unterstützt von BetterLyrics)</string>
+    <string name="archivetune_canvas_desc">Albumcover animieren während des Abpielens</string>
     <string name="player_background_style_v8_v9_desc">Nicht verfügbar mit V8 und V9 Player-Stil</string>
     <string name="disable_animations">Animationen deaktivieren</string>
     <string name="disable_animations_desc">Die meisten Appanimationen deaktivieren. Für Low-end-Geräte empfohlen</string>
@@ -530,10 +527,6 @@
     <string name="lyrics_mode_enhanced">Erweitert</string>
     <string name="lyrics_animation_style_v2_only">Nur verfügbar in V2 Songtextmodus</string>
     <string name="lyrics_line_spacing">Songtext Zeilenabstand</string>
-    <string name="playback_confirmation_required">Wiedergabebestätigung erforderlich</string>
-    <string name="playback_requires_youtube_music_confirmation">Wiedergabe in YouTube Music bestätigten, dann zu ArchiveTune zurückkehren.</string>
-    <string name="playback_login_refresh_required">Erneuere YouTube Music Anmeldung</string>
-    <string name="playback_requires_youtube_music_login_refresh">Erneuere YouTube Music Anmeldung, dann zu ArchiveTune zurückkehren.</string>
     <string name="internet">Internet</string>
     <string name="internet_warning_title">Sicherheits- und Nutzungswarnung</string>
     <string name="dns_over_https">DNS über HTTPS</string>
@@ -633,7 +626,6 @@
     <string name="updates_status_current">Du verwendest die aktuellste verfügbare Version</string>
     <string name="enable_update_notification">Updatebenachrichtigung aktivieren</string>
     <string name="update_channel">Updatekanal</string>
-    <string name="channel_stable">Stabil</string>
     <string name="recent_commits">Neueste Beiträge</string>
     <string name="updates_loading_commits">Lade neueste Commits</string>
     <string name="changelog">Änderungsverlauf</string>
@@ -650,7 +642,6 @@
     <string name="permission_storage_desc">Benötigt um deine heruntergeladene und lokale Audiodateien wiederzugeben.</string>
     <string name="permission_status_allowed">Erlaubt</string>
     <string name="next">Nächster</string>
-    <string name="updates_subtitle_stable">Stabile Version und Veröffentlichungshinweise</string>
     <string name="current_version">Aktuelle Version</string>
     <string name="latest_version_format">Neueste: %s</string>
     <string name="allow">Zulassen</string>
@@ -702,13 +693,6 @@
     <string name="together_dont_show_again">Nicht noch einmal anzeigen</string>
     <string name="together_welcome_join_title">Trete von einem anderen Gerät bei</string>
     <string name="together_welcome_permissions_title">Berechtigungen und Sicherheit</string>
-    <string name="generated_tokens">Generierte Token</string>
-    <string name="regenerate">Neu generieren</string>
-    <string name="regenerate_token">Token neugenerieren</string>
-    <string name="source_url_placeholder">https://youtube.com/account</string>
-    <string name="tokens_generated">Token erfolgreich generiert</string>
-    <string name="token_generation_failed">Tokengenerierung fehlgeschlagen</string>
-    <string name="token_copied">Token in Zwischenablage kopiert</string>
     <string name="saved_accounts">Gespeicherte Konten</string>
     <string name="save_current_account">Aktuelles Konto speichern</string>
     <string name="library_top_mixes_no_recent_history">Höre dir mehr Songs an, dann aktualisiere, um KI-Mixe aus deinem bisherigen Verlauf zu erstellen.</string>
@@ -736,7 +720,6 @@
     <string name="unsaved_account_dialog_cancel">Anmeldung abbrechen</string>
     <string name="unsaved_account_dialog_title">Konto nicht gespeichert</string>
     <string name="add_another_account">Weiteres Konto hinzufügen</string>
-    <string name="extracting_from_url">Tokens aus URL extrahieren</string>
     <string name="together_activity_error">Fehler: %1$s</string>
     <string name="together_activity_song_skipped">%1$s sprang zu %2$s</string>
     <string name="together_activity_playback_resumed">%1$s setzte die Wiedergabe fort</string>
@@ -777,8 +760,6 @@
     <string name="font_preference">Schriftart</string>
     <string name="font_preference_default">Standard</string>
     <string name="font_preference_system">System</string>
-    <string name="playback_error_http">HTTP</string>
-    <string name="playback_error_message">Nachricht</string>
     <string name="device_mute_recovery_volume_disabled">Deaktiviert</string>
     <string name="account_integrations_summary">Discord, Last.fm, Libre.fm, ListenBrainz</string>
     <string name="lastfm_provider_lastfm">Last.fm</string>
@@ -820,8 +801,6 @@
     <string name="custom_font_invalid">Wähle eine .ttf-Schriftartdatei</string>
     <string name="force_high_refresh_rate">Hohe Bildwiederholrate erzwingen</string>
     <string name="max_supported_refresh_rate">Max. unterstützt: %1$d Hz</string>
-    <string name="playback_error_code">Code</string>
-    <string name="playback_error_cause">Ursache</string>
     <string name="device_volume_zero_playback_paused">Wiedergabe pausiert da die Lautstärke 0 ist. Erhöhe die Lautstärke, um die Wiedergabe fortzusetzen.</string>
     <string name="paxsenix_status_degraded">Degradiert</string>
     <string name="paxsenix_status_down">Nicht verfügbar</string>
@@ -860,7 +839,6 @@
     <string name="widget_no_recommendations">Noch keine Empfehlungen</string>
     <string name="add_to_n_playlists">Zu %1$d hinzufügen</string>
     <string name="no_playlists_yet">Noch keine Playlists</string>
-    <string name="show_hidden_playlists">Ausgeblendete anzeigen</string>
     <string name="hide_playlist_confirm">\"%1$s\" in Bibliothek ausblenden?</string>
     <string name="together_transfer_host_confirm">Host an %1$s übertragen?</string>
     <string name="lyrics_search_still_searching">Suche noch</string>
@@ -985,8 +963,6 @@
     <string name="music_together">ArchiveTune Music Together</string>
     <string name="together_activity_playback_state_changed">%1$s änderte den Wiedergabestatus</string>
     <string name="together_welcome_title">Willkommen bei ArchiveTune Music Together</string>
-    <string name="po_token_account_notice_title">Dasselbe Konto verwenden</string>
-    <string name="playback_login_po_token">Anmelde-PO-Token</string>
     <string name="eq_presets_description">Beginne ausgehend von einem geräteangepassten Sound</string>
     <string name="no_matching_downloads">Keine passenden Downloads</string>
     <string name="search_downloads">Downloads durchsuchen</string>
@@ -1000,18 +976,9 @@
     <string name="together_welcome_host_title">Hoste eine Sitzung</string>
     <string name="together_welcome_join_body">Öffne den geteilten Link oder gib den Code ein und tippe Beitreten. Deine Warteschlange und Wiedergabe werden dem Host folgen.</string>
     <string name="together_welcome_permissions_body">Hosts können entscheiden, ob Gäste Songs hinzufügen oder die Wiedergabe kontrollieren können und ob sie eine Bestätigung zum Beitritt benötigen.</string>
-    <string name="po_token_generation">PO-Token-Generierung</string>
-    <string name="web_client_po_token">Webclient-PO-Token</string>
-    <string name="po_token_gvs">PO-Token (GVS)</string>
-    <string name="po_token_account_notice_body">Melde dich hier mit demselben Google-Konto an, dass du bereits für YouTube Music in ArchiveTune benutzt, bevor du ein PO-Token generierst.</string>
     <string name="gatekeeper_connection_blocked">Verbindung durch ArchiveTune Remote blockiert. Diese App konnte nicht als offizieller ArchiveTune-Build verifiziert werden. Installiere einen offiziellen Build von https://github.com/rukamori/ArchiveTune oder https://t.me/ArchiveTuneGC.</string>
     <string name="scheduled_backup_disabled_description">Automatische Sicherungen sind pausiert.</string>
     <string name="scheduled_backup_enabled_description">Sicherungen laufen automatisch nach dem untenstehenden Plan.</string>
-    <string name="po_token_account_notice_same_account">Wenn diese Webansicht ein anderes Konto benutzt, wird das generierte Token nicht richtig funktionieren.</string>
-    <string name="po_token_account_notice_mismatch">Verwende das passende Konto, beende die Anmeldung, öffne dann youtube.com/account und generiere das Token auf dieser Seite.</string>
-    <string name="source_url">Quellen-URL</string>
-    <string name="po_token_player">PO-Token (Player)</string>
-    <string name="web_client_po_token_desc">PO-Token-Generierung für webbasierte Player-Clients aktivieren</string>
     <string name="together_welcome_host_body">Tippe Sitzung starten und teile dann den Sitzungslink. Lasse ArchiveTune während dem Hosten im Hintergrund offen.</string>
     <string name="together_activity_log_empty_body">Sitzungsereignisse werden hier erscheinen wenn sie passieren.</string>
     <string name="together_activity_log">Aktivitätslog</string>

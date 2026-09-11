@@ -361,7 +361,6 @@
     <string name="settings_lyrics_subtitle">Proveedores de letras y traducción</string>
     <string name="settings_content_subtitle">Idioma, país y valores predeterminados de recomendación</string>
     <string name="settings_internet_subtitle">Comportamiento de la reproducción en redes, DNS y servidores proxy</string>
-    <string name="settings_po_token_subtitle">Verificación de la reproducción y datos de los visitantes</string>
     <string name="settings_storage_subtitle">Caché, descargas y almacenamiento sin conexión</string>
     <string name="settings_updates_subtitle">Versión, notas de la versión y canal de actualización</string>
     <string name="settings_about_subtitle">Información sobre la aplicación, licencias y colaboradores</string>
@@ -612,16 +611,16 @@
     <string name="release_metadata">%1$s • %2$d</string>
     <string name="aod_customize_show_lyric_ticker">Ver las letras en tiempo real</string>
     <string name="aod_background_adaptive_art">Arte adaptativo</string>
-    <string name="aod_background_frosted_wallpaper">vinilo esmerilado</string>
+    <string name="aod_background_frosted_wallpaper">Fondo de pantalla borroso</string>
     <string name="aod_background_adaptive_frosted">Difuminado adaptativo</string>
     <string name="aod_clock_bold_digital">En negrita</string>
     <string name="aod_clock_minimal">Mínimo</string>
     <string name="aod_clock_elegant_thin">Elegante y fino</string>
-    <string name="aod_clock_pixel_stacked">Diseño de bloques de píxeles</string>
-    <string name="aod_customize_security_power">Seguridad y Potencia</string>
-    <string name="aod_customize_smart_lock">Bloqueo e Pantalla Inteligente</string>
+    <string name="aod_clock_pixel_stacked">Diseño pixelado</string>
+    <string name="aod_customize_security_power">Seguridad y energía</string>
+    <string name="aod_customize_smart_lock">Pantalla y bloqueo inteligente</string>
     <string name="aod_customize_shake_to_unlock">Agitar para desbloquear</string>
-    <string name="aod_customize_shake_to_unlock_desc">Agita tu teléfono para salir del modo de bloqueo táctil</string>
+    <string name="aod_customize_shake_to_unlock_desc">Agita el dispositivo para desbloquear la pantalla</string>
     <string name="aod_customize_auto_lock">Bloqueo automático al activar la pantalla siempre encendida</string>
     <string name="aod_customize_auto_lock_desc">Bloquear la pantalla automáticamente después de un tiempo de espera al entrar en AOD</string>
     <string name="aod_customize_auto_lock_delay">Tiempo de espera para el bloqueo automático</string>
@@ -692,11 +691,13 @@
     <string name="import_saving">Guardando datos importados…</string>
     <string name="import_saving_progress">Guardando: %1$d/%2$d</string>
     <string name="aod_mode">Pantalla siempre encendida</string>
-    <string name="aod_mode_exit">Desactivar pantalla siempre encendida</string>
     <string name="playlist_source_local">Almacenamiento del dispositivo</string>
     <string name="playlist_source_online">En la red</string>
     <string name="arrange_playlist_tags">Ordenar las etiquetas de la lista de reproducción</string>
     <string name="arrange_playlist_tags_desc">Ordenar los filtros de etiquetas de la biblioteca</string>
     <string name="arrange_library_chips">Ordenar etiquetas de la biblioteca</string>
     <string name="arrange_library_chips_desc">Ordenar pestañas de la biblioteca</string>
+    <string name="aod_customize_mode_enabled">Activar el modo AOD</string>
+    <string name="aod_customize_mode_enabled_desc">Permitir que ArchiveTune muestre la pantalla del reproductor siempre activo</string>
+    <string name="ai_provider_openrouter">OpenRouter</string>
 </resources>

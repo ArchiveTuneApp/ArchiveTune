@@ -55,6 +55,7 @@ class LibraryTopMixRepository
                                 val tracks =
                                     database
                                         .libraryTopMixSongs(mix.id)
+                                        .filterNot { song -> song.song.isPodcast }
                                         .filterExplicit(hideExplicit)
                                         .map { it.toMediaMetadata() }
                                 if (tracks.isEmpty()) {
@@ -76,7 +77,11 @@ class LibraryTopMixRepository
                 .flatMapLatest { hideExplicit ->
                     database
                         .recentSongs(limit)
-                        .map { songs -> songs.filterExplicit(hideExplicit) }
+                        .map { songs ->
+                            songs
+                                .filterNot { it.song.isPodcast }
+                                .filterExplicit(hideExplicit)
+                        }
                 }.first()
 
         suspend fun replaceTopMixes(mixes: List<GeneratedLibraryTopMix>) {
@@ -113,7 +118,12 @@ class LibraryTopMixRepository
                 .flatMapLatest { hideExplicit ->
                     database
                         .recentSongs(LibraryTopMixCandidateLimit)
-                        .map { songs -> songs.filterExplicit(hideExplicit).map { it.toMediaMetadata() } }
+                        .map { songs ->
+                            songs
+                                .filterNot { it.song.isPodcast }
+                                .filterExplicit(hideExplicit)
+                                .map { it.toMediaMetadata() }
+                        }
                 }.flowOn(Dispatchers.IO)
 
         fun observeLikedTracks(): Flow<List<MediaMetadata>> =
@@ -123,6 +133,7 @@ class LibraryTopMixRepository
                         .likedSongsByCreateDateAsc()
                         .map { songs ->
                             songs
+                                .filterNot { it.song.isPodcast }
                                 .filterExplicit(hideExplicit)
                                 .asReversed()
                                 .map { it.toMediaMetadata() }
@@ -136,6 +147,7 @@ class LibraryTopMixRepository
                         .songs(SongSortType.PLAY_TIME, descending = true, filterVideo = true)
                         .map { songs ->
                             songs
+                                .filterNot { it.song.isPodcast }
                                 .filterExplicit(hideExplicit)
                                 .filter { it.song.totalPlayTime > 0L }
                                 .map { it.toMediaMetadata() }
@@ -149,6 +161,7 @@ class LibraryTopMixRepository
                         .songs(SongSortType.CREATE_DATE, descending = true, filterVideo = true)
                         .map { songs ->
                             songs
+                                .filterNot { it.song.isPodcast }
                                 .filterExplicit(hideExplicit)
                                 .map { it.toMediaMetadata() }
                         }

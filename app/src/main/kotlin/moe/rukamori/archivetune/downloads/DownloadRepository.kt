@@ -7,7 +7,10 @@
 
 package moe.rukamori.archivetune.downloads
 
+import android.content.Context
 import androidx.media3.exoplayer.offline.Download
+import androidx.media3.exoplayer.offline.DownloadService
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -18,6 +21,7 @@ import moe.rukamori.archivetune.db.entities.Playlist
 import moe.rukamori.archivetune.db.entities.PlaylistSongMap
 import moe.rukamori.archivetune.db.entities.Song
 import moe.rukamori.archivetune.playback.DownloadUtil
+import moe.rukamori.archivetune.playback.ExoDownloadService
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -43,6 +47,7 @@ interface DownloadRepository {
 class Media3DownloadRepository
     @Inject
     constructor(
+        @ApplicationContext private val context: Context,
         private val database: MusicDatabase,
         private val downloadUtil: DownloadUtil,
     ) : DownloadRepository {
@@ -66,23 +71,50 @@ class Media3DownloadRepository
 
         override fun pause(songIds: Collection<String>) {
             songIds.distinct().forEach { songId ->
-                downloadUtil.downloadManager.setStopReason(songId, PAUSED_STOP_REASON)
+                DownloadService.sendSetStopReason(
+                    context,
+                    ExoDownloadService::class.java,
+                    songId,
+                    PAUSED_STOP_REASON,
+                    false,
+                )
             }
         }
 
         override fun resume(songIds: Collection<String>) {
             songIds.distinct().forEach { songId ->
-                val download = downloadUtil.downloads.value[songId]
-                if (download?.state == Download.STATE_FAILED) {
-                    downloadUtil.downloadManager.addDownload(download.request)
-                } else {
-                    downloadUtil.downloadManager.setStopReason(songId, NO_STOP_REASON)
+                val download = downloadUtil.downloads.value[songId] ?: return@forEach
+                when (download.state) {
+                    Download.STATE_FAILED ->
+                        DownloadService.sendAddDownload(
+                            context,
+                            ExoDownloadService::class.java,
+                            download.request,
+                            NO_STOP_REASON,
+                            true,
+                        )
+
+                    Download.STATE_STOPPED ->
+                        DownloadService.sendSetStopReason(
+                            context,
+                            ExoDownloadService::class.java,
+                            songId,
+                            NO_STOP_REASON,
+                            true,
+                        )
                 }
             }
         }
 
         override fun remove(songIds: Collection<String>) {
-            songIds.distinct().forEach(downloadUtil.downloadManager::removeDownload)
+            songIds.distinct().forEach { songId ->
+                DownloadService.sendRemoveDownload(
+                    context,
+                    ExoDownloadService::class.java,
+                    songId,
+                    false,
+                )
+            }
         }
 
         private companion object {

@@ -49,6 +49,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import moe.rukamori.archivetune.LocalDatabase
+import moe.rukamori.archivetune.LocalSyncUtils
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.constants.ImportSourcePriorityKey
 import moe.rukamori.archivetune.constants.ListThumbnailSize
@@ -79,6 +80,7 @@ fun AddToPlaylistDialogOnline(
 ) {
     val context = LocalContext.current
     val database = LocalDatabase.current
+    val syncUtils = LocalSyncUtils.current
     val coroutineScope = rememberCoroutineScope()
     val importResolver = remember { ImportSongResolver() }
     val (importLocalFirst) = rememberPreference(ImportSourcePriorityKey, false)
@@ -219,21 +221,28 @@ fun AddToPlaylistDialogOnline(
                             emptyList()
                         }
                     } else if (addToLiked) {
-                        preparedResults.filter { result ->
-                            try {
-                                val resolvedSong = checkNotNull(result.resolvedSong)
-                                database.query {
-                                    if (!resolvedSong.song.liked) {
-                                        update(resolvedSong.song.toggleLike())
-                                    }
+                        val missingSongIds = mutableSetOf<String>()
+                        val likeRequests =
+                            preparedResults.mapNotNull { result ->
+                                val resolvedId = checkNotNull(result.resolvedId)
+                                val storedSong = database.getSongById(resolvedId)?.song
+                                if (storedSong == null) {
+                                    missingSongIds += resolvedId
+                                    failedSongs += result.originalSong.title
+                                    null
+                                } else if (storedSong.liked) {
+                                    null
+                                } else {
+                                    storedSong.toggleLike()
                                 }
-                                true
-                            } catch (error: Exception) {
-                                Timber.e(error, "Failed to like imported song: %s", result.originalSong.title)
-                                failedSongs += result.originalSong.title
-                                false
                             }
+                        val failedSongIds = syncUtils.likeSongs(likeRequests) + missingSongIds
+                        if (failedSongIds.isNotEmpty()) {
+                            preparedResults
+                                .filter { it.resolvedId in failedSongIds && it.resolvedId !in missingSongIds }
+                                .forEach { result -> failedSongs += result.originalSong.title }
                         }
+                        preparedResults.filterNot { result -> result.resolvedId in failedSongIds }
                     } else {
                         preparedResults
                     }

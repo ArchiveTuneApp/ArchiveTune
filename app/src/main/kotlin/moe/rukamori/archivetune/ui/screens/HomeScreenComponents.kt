@@ -63,6 +63,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.carousel.HorizontalCenteredHeroCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -104,7 +105,9 @@ import moe.rukamori.archivetune.extensions.toMediaItem
 import moe.rukamori.archivetune.extensions.togglePlayPause
 import moe.rukamori.archivetune.innertube.models.AlbumItem
 import moe.rukamori.archivetune.innertube.models.ArtistItem
+import moe.rukamori.archivetune.innertube.models.EpisodeItem
 import moe.rukamori.archivetune.innertube.models.PlaylistItem
+import moe.rukamori.archivetune.innertube.models.PodcastItem
 import moe.rukamori.archivetune.innertube.models.SongItem
 import moe.rukamori.archivetune.innertube.models.WatchEndpoint
 import moe.rukamori.archivetune.innertube.models.YTItem
@@ -898,6 +901,12 @@ fun SpeedDialSection(
             pageCount = { tilePages.size },
         )
 
+    LaunchedEffect(tilePages.size) {
+        if (pagerState.currentPage > tilePages.lastIndex) {
+            pagerState.scrollToPage(tilePages.lastIndex.coerceAtLeast(0))
+        }
+    }
+
     fun playSpeedDialQueue(startIndex: Int) {
         if (speedDialSongs.isEmpty()) return
         playerConnection.playQueue(
@@ -942,18 +951,26 @@ fun SpeedDialSection(
                     state = pagerState,
                     pageSize = PageSize.Fill,
                     pageSpacing = spacing,
-                    key = { page -> tilePages[page].firstOrNull()?.key ?: "speed_dial_page_$page" },
+                    key = { page ->
+                        tilePages.getOrNull(page)?.firstOrNull()?.key ?: "stale_speed_dial_page_$page"
+                    },
                     verticalAlignment = Alignment.Top,
                     modifier =
                         Modifier
                             .fillMaxWidth()
                             .height(gridHeight),
                 ) { page ->
+                    val pageTiles = tilePages.getOrNull(page)
+                    if (pageTiles == null) {
+                        Box(modifier = Modifier.fillMaxSize())
+                        return@HorizontalPager
+                    }
+
                     Column(
                         verticalArrangement = Arrangement.spacedBy(spacing),
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        tilePages[page]
+                        pageTiles
                             .chunked(SpeedDialGridColumns)
                             .forEach { rowTiles ->
                                 Row(
@@ -1403,6 +1420,7 @@ fun HomePageSectionContent(
     menuState: MenuState,
     haptic: HapticFeedback,
     scope: CoroutineScope,
+    onOpenRemoteItem: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyRow(
@@ -1426,6 +1444,7 @@ fun HomePageSectionContent(
                 menuState = menuState,
                 haptic = haptic,
                 scope = scope,
+                onOpenRemoteItem = onOpenRemoteItem,
             )
         }
     }
@@ -1447,6 +1466,7 @@ private fun YouTubeGridItemWrapper(
     menuState: MenuState,
     haptic: HapticFeedback,
     scope: CoroutineScope,
+    onOpenRemoteItem: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     YouTubeGridItem(
@@ -1480,45 +1500,54 @@ private fun YouTubeGridItemWrapper(
                             is PlaylistItem -> {
                                 navController.navigate("online_playlist/${item.id}")
                             }
+
+                            is PodcastItem, is EpisodeItem -> onOpenRemoteItem?.invoke(item.id)
                         }
                     },
-                    onLongClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        menuState.show {
-                            when (item) {
-                                is SongItem -> {
-                                    YouTubeSongMenu(
-                                        song = item,
-                                        navController = navController,
-                                        onDismiss = menuState::dismiss,
-                                    )
-                                }
+                    onLongClick =
+                        if (item is PodcastItem || item is EpisodeItem) {
+                            null
+                        } else {
+                            {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                menuState.show {
+                                    when (item) {
+                                        is SongItem -> {
+                                            YouTubeSongMenu(
+                                                song = item,
+                                                navController = navController,
+                                                onDismiss = menuState::dismiss,
+                                            )
+                                        }
 
-                                is AlbumItem -> {
-                                    YouTubeAlbumMenu(
-                                        albumItem = item,
-                                        navController = navController,
-                                        onDismiss = menuState::dismiss,
-                                    )
-                                }
+                                        is AlbumItem -> {
+                                            YouTubeAlbumMenu(
+                                                albumItem = item,
+                                                navController = navController,
+                                                onDismiss = menuState::dismiss,
+                                            )
+                                        }
 
-                                is ArtistItem -> {
-                                    YouTubeArtistMenu(
-                                        artist = item,
-                                        onDismiss = menuState::dismiss,
-                                    )
-                                }
+                                        is ArtistItem -> {
+                                            YouTubeArtistMenu(
+                                                artist = item,
+                                                onDismiss = menuState::dismiss,
+                                            )
+                                        }
 
-                                is PlaylistItem -> {
-                                    YouTubePlaylistMenu(
-                                        playlist = item,
-                                        coroutineScope = scope,
-                                        onDismiss = menuState::dismiss,
-                                    )
+                                        is PlaylistItem -> {
+                                            YouTubePlaylistMenu(
+                                                playlist = item,
+                                                coroutineScope = scope,
+                                                onDismiss = menuState::dismiss,
+                                            )
+                                        }
+
+                                        is PodcastItem, is EpisodeItem -> Unit
+                                    }
                                 }
                             }
-                        }
-                    },
+                        },
                 ),
     )
 }

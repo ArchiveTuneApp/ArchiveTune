@@ -22,6 +22,7 @@ import moe.rukamori.archivetune.morideobfuscator.youtubei.YoutubeiResolutionPrio
 import moe.rukamori.archivetune.morideobfuscator.youtubei.YoutubeiResolver
 import moe.rukamori.archivetune.morideobfuscator.youtubei.YoutubeiStreamRequest
 import moe.rukamori.archivetune.utils.YTPlayerUtils
+import timber.log.Timber
 import java.util.TimeZone
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -33,7 +34,10 @@ class YoutubeiStreamRepository
         @ApplicationContext context: Context,
     ) : AudioStreamRepository {
         private val resolver =
-            YoutubeiResolver(context) {
+            YoutubeiResolver(
+                context = context,
+                diagnostics = { message -> Timber.tag("YoutubeiResolver").d(message) },
+            ) {
                 YoutubeiNetworkConfiguration(
                     proxy = YouTube.proxy,
                     proxyUsername = YouTube.proxyUsername,
@@ -105,21 +109,25 @@ class YoutubeiStreamRepository
                 } catch (cancellation: CancellationException) {
                     throw cancellation
                 } catch (failure: YoutubeiException) {
-                    when (failure.kind) {
-                        YoutubeiFailureKind.LOGIN_REQUIRED ->
-                            throw YTPlayerUtils.LoginRequiredForPlaybackException(
-                                videoId = request.mediaId,
-                                targetUrl = request.mediaUrl,
-                                reason = failure.message,
-                            )
-
-                        YoutubeiFailureKind.PO_TOKEN ->
-                            throw YTPlayerUtils.BotDetectionPlaybackException(
-                                videoId = request.mediaId,
-                                clients = setOf(if (authState.hasLoginCookie) "WEB_CREATOR" else "WEB"),
-                            )
-
-                        else -> Unit
+                    if (failure.kind == YoutubeiFailureKind.PO_TOKEN ||
+                        failure.kind == YoutubeiFailureKind.LOGIN_REQUIRED &&
+                        YTPlayerUtils.isBotDetectionError(failure.message.orEmpty())
+                    ) {
+                        throw YTPlayerUtils.BotDetectionPlaybackException(
+                            videoId = request.mediaId,
+                            clients = setOf(if (authState.hasLoginCookie) "WEB_CREATOR" else "VISIONOS"),
+                            cause = failure,
+                        )
+                    }
+                    if (failure.kind == YoutubeiFailureKind.LOGIN_REQUIRED ||
+                        failure.kind == YoutubeiFailureKind.HTTP && failure.httpStatus == 401
+                    ) {
+                        throw YTPlayerUtils.LoginRequiredForPlaybackException(
+                            videoId = request.mediaId,
+                            targetUrl = request.mediaUrl,
+                            reason = failure.message,
+                            cause = failure,
+                        )
                     }
                     throw failure
                 }

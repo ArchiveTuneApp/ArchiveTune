@@ -938,6 +938,8 @@ fun ArtistScreen(
                                                                 is PlaylistItem -> {
                                                                     navController.navigate("online_playlist/${item.id}")
                                                                 }
+
+                                                                else -> Unit
                                                             }
                                                         },
                                                         onLongClick = {
@@ -974,6 +976,8 @@ fun ArtistScreen(
                                                                             onDismiss = menuState::dismiss,
                                                                         )
                                                                     }
+
+                                                                    else -> Unit
                                                                 }
                                                             }
                                                         },

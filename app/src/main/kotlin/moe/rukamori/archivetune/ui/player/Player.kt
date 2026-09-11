@@ -60,17 +60,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedIconButton
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
@@ -121,7 +116,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -129,7 +123,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.DialogProperties
 import androidx.core.graphics.drawable.toBitmap
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -152,14 +145,16 @@ import coil3.toBitmap
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import moe.rukamori.archivetune.LocalDownloadUtil
 import moe.rukamori.archivetune.LocalPlayerConnection
 import moe.rukamori.archivetune.R
-import moe.rukamori.archivetune.canvas.models.CanvasArtwork
-import moe.rukamori.archivetune.constants.ArchiveTuneCanvasKey
+import moe.rukamori.archivetune.canvas.CanvasSource
+import moe.rukamori.archivetune.canvas.CanvasPlaybackRequest
+import moe.rukamori.archivetune.viewmodels.CanvasPlaybackViewModel
+import moe.rukamori.archivetune.viewmodels.CanvasPlaybackState
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import moe.rukamori.archivetune.constants.BackdropBlurAmountKey
 import moe.rukamori.archivetune.constants.BackdropEnabledKey
 import moe.rukamori.archivetune.constants.BlurRadiusKey
@@ -167,7 +162,6 @@ import moe.rukamori.archivetune.constants.DarkModeKey
 import moe.rukamori.archivetune.constants.DisableBlurKey
 import moe.rukamori.archivetune.constants.EnableHapticFeedbackKey
 import moe.rukamori.archivetune.constants.InnerTubeCookieKey
-import moe.rukamori.archivetune.constants.MaxCanvasCacheSizeKey
 import moe.rukamori.archivetune.constants.PlayerBackgroundStyle
 import moe.rukamori.archivetune.constants.PlayerBackgroundStyleKey
 import moe.rukamori.archivetune.constants.PlayerButtonsStyle
@@ -199,8 +193,6 @@ import moe.rukamori.archivetune.ui.screens.buildLoginRoute
 import moe.rukamori.archivetune.ui.screens.settings.DarkMode
 import moe.rukamori.archivetune.ui.theme.PlayerColorExtractor
 import android.widget.Toast
-import androidx.compose.foundation.gestures.detectDragGestures
-import com.materialkolor.hct.Hct
 import com.materialkolor.ktx.toHct
 import com.materialkolor.ktx.toColor
 import moe.rukamori.archivetune.ui.utils.highRes
@@ -316,7 +308,8 @@ fun BottomSheetPlayer(
     navController: NavController,
     modifier: Modifier = Modifier,
     pureBlack: Boolean,
-    isMiniPlayerPairedWithNavigation: Boolean = false,
+    navigationProximityProvider: () -> Float = { 0f },
+    canvasViewModel: CanvasPlaybackViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     val menuState = LocalMenuState.current
@@ -453,7 +446,6 @@ fun BottomSheetPlayer(
     val aodModeEnabled by playerConnection.aodModeEnabled.collectAsStateWithLifecycle()
     val currentLyricsEntity by playerConnection.currentLyrics.collectAsStateWithLifecycle(initialValue = null)
     val (thumbnailCornerRadius) = rememberPreference(ThumbnailCornerRadiusKey, defaultValue = 8f)
-    val archiveTuneCanvasEnabled by rememberPreference(ArchiveTuneCanvasKey, false)
     val lowDataModeActive = rememberLowDataModeActive()
     val playerSwapState =
         rememberThumbnailSwapState(
@@ -462,16 +454,27 @@ fun BottomSheetPlayer(
             lowDataMode = lowDataModeActive,
             isMusicVideo = mediaMetadata?.isMusicVideo ?: false,
         )
-    val (maxCanvasCacheSize, _) =
-        rememberPreference(
-            key = MaxCanvasCacheSizeKey,
-            defaultValue = 256,
-        )
-
     val sliderStyle by rememberEnumPreference(SliderStyleKey, SliderStyle.Standard)
-
-    LaunchedEffect(maxCanvasCacheSize) {
-        CanvasArtworkPlaybackCache.setMaxSize(maxCanvasCacheSize)
+    val canvasState by canvasViewModel.state.collectAsStateWithLifecycle()
+    val canvasRequest = remember(mediaMetadata, playerDesignStyle, aodModeEnabled) {
+        mediaMetadata?.takeIf {
+            !aodModeEnabled && playerDesignStyle != PlayerDesignStyle.V5
+        }?.let { metadata ->
+            val country = Locale.getDefault().country
+            CanvasPlaybackRequest(
+                mediaId = metadata.id,
+                title = metadata.title,
+                artist = metadata.artists.firstOrNull()?.name.orEmpty(),
+                storefront = if (country.length == 2) country.lowercase(Locale.ROOT) else "us",
+                requireVertical = playerDesignStyle == PlayerDesignStyle.V7,
+            )
+        }
+    }
+    LaunchedEffect(canvasViewModel, canvasRequest) {
+        canvasViewModel.setRequest(canvasRequest)
+    }
+    DisposableEffect(canvasViewModel) {
+        onDispose { canvasViewModel.setRequest(null) }
     }
 
     var position by rememberSaveable(mediaMetadata?.id) {
@@ -1144,7 +1147,7 @@ fun BottomSheetPlayer(
                 position = position,
                 duration = duration,
                 pureBlack = pureBlack,
-                isPairedWithNavigation = isMiniPlayerPairedWithNavigation,
+                navigationProximityProvider = navigationProximityProvider,
             )
         },
     ) {
@@ -1205,124 +1208,11 @@ fun BottomSheetPlayer(
                 }
             }
 
-        val storefront =
-            remember {
-                val country = Locale.getDefault().country
-                if (country.length == 2) country.lowercase(Locale.ROOT) else "us"
-            }
-        val shouldUseV7Canvas =
-            archiveTuneCanvasEnabled &&
-                playerDesignStyle == PlayerDesignStyle.V7 &&
-                !aodModeEnabled
-        val shouldUseArtworkCanvas =
-            archiveTuneCanvasEnabled &&
-                (playerDesignStyle == PlayerDesignStyle.V8 || playerDesignStyle == PlayerDesignStyle.V9) &&
-                !aodModeEnabled
-        val shouldFetchV7Canvas = shouldUseV7Canvas && !lowDataModeActive
-        val shouldFetchArtworkCanvas = shouldUseArtworkCanvas && !lowDataModeActive
-        var v7CanvasArtwork by remember(mediaMetadata?.id) {
-            mutableStateOf<CanvasArtwork?>(null)
-        }
-        var v7CanvasFetchInFlight by remember(mediaMetadata?.id) {
-            mutableStateOf(false)
-        }
-        var artworkCanvas by remember(mediaMetadata?.id) {
-            mutableStateOf<CanvasArtwork?>(null)
-        }
-        var artworkCanvasFetchInFlight by remember(mediaMetadata?.id) {
-            mutableStateOf(false)
-        }
-        var canvasArtworkRevision by remember(mediaMetadata?.id) {
-            mutableIntStateOf(0)
-        }
-
-        LaunchedEffect(playerConnection, mediaMetadata?.id) {
-            playerConnection.canvasArtworkUpdates.collect { update ->
-                if (update.mediaId != mediaMetadata?.id) return@collect
-
-                canvasArtworkRevision += 1
-                if (!update.artwork.preferredVerticalAnimationUrl.isNullOrBlank()) {
-                    v7CanvasArtwork = update.artwork
-                }
-                if (!update.artwork.preferredAnimationUrl.isNullOrBlank()) {
-                    artworkCanvas = update.artwork
-                }
-            }
-        }
-
-        LaunchedEffect(shouldUseV7Canvas, shouldFetchV7Canvas, mediaMetadata?.id) {
-            val metadata = mediaMetadata
-            if (!shouldUseV7Canvas || metadata == null) {
-                v7CanvasArtwork = null
-                v7CanvasFetchInFlight = false
-                return@LaunchedEffect
-            }
-
-            val artistNameRaw =
-                metadata.artists
-                    .firstOrNull()
-                    ?.name
-                    .orEmpty()
-            if (v7CanvasFetchInFlight) {
-                return@LaunchedEffect
-            }
-
-            v7CanvasFetchInFlight = true
-            try {
-                val requestRevision = canvasArtworkRevision
-                val resolvedArtwork =
-                    resolveCanvasArtworkForPlayback(
-                        mediaId = metadata.id,
-                        songTitleRaw = metadata.title,
-                        artistNameRaw = artistNameRaw,
-                        storefront = storefront,
-                        requireVertical = true,
-                        allowNetwork = shouldFetchV7Canvas,
-                    )
-                if (requestRevision == canvasArtworkRevision) {
-                    v7CanvasArtwork = resolvedArtwork
-                }
-            } finally {
-                v7CanvasFetchInFlight = false
-            }
-        }
-
-        LaunchedEffect(shouldUseArtworkCanvas, shouldFetchArtworkCanvas, mediaMetadata?.id) {
-            val metadata = mediaMetadata
-            if (!shouldUseArtworkCanvas || metadata == null) {
-                artworkCanvas = null
-                artworkCanvasFetchInFlight = false
-                return@LaunchedEffect
-            }
-
-            val artistNameRaw =
-                metadata.artists
-                    .firstOrNull()
-                    ?.name
-                    .orEmpty()
-            if (artworkCanvasFetchInFlight) {
-                return@LaunchedEffect
-            }
-
-            artworkCanvasFetchInFlight = true
-            try {
-                val requestRevision = canvasArtworkRevision
-                val resolvedArtwork =
-                    resolveCanvasArtworkForPlayback(
-                        mediaId = metadata.id,
-                        songTitleRaw = metadata.title,
-                        artistNameRaw = artistNameRaw,
-                        storefront = storefront,
-                        requireVertical = false,
-                        allowNetwork = shouldFetchArtworkCanvas,
-                    )
-                if (requestRevision == canvasArtworkRevision) {
-                    artworkCanvas = resolvedArtwork
-                }
-            } finally {
-                artworkCanvasFetchInFlight = false
-            }
-        }
+        val resolvedCanvas = (canvasState as? CanvasPlaybackState.Success)
+            ?.takeIf { it.request == canvasRequest }
+            ?.video
+        val v7CanvasArtwork = resolvedCanvas.takeIf { playerDesignStyle == PlayerDesignStyle.V7 }
+        val artworkCanvas = resolvedCanvas.takeIf { playerDesignStyle != PlayerDesignStyle.V7 }
 
         val controlsContent: @Composable ColumnScope.(MediaMetadata) -> Unit = { mediaMetadata ->
             PlayerControlsContent(
@@ -1473,6 +1363,7 @@ fun BottomSheetPlayer(
                         V7PlayerBackdrop(
                             thumbnailUrl = v7SwapState.displayUrl,
                             canvasStaticUrl = v7CanvasArtwork?.static,
+                            canvasSource = v7CanvasArtwork?.source,
                             canvasPrimaryUrl = v7CanvasArtwork?.animatedVertical,
                             canvasFallbackUrl = v7CanvasArtwork?.videoUrlVertical,
                             isPlaying = isPlaying,
@@ -1559,6 +1450,7 @@ fun BottomSheetPlayer(
                                 menuState = menuState,
                                 bottomSheetPageState = bottomSheetPageState,
                                 currentFormat = currentFormat,
+                                canvasSource = artworkCanvas?.source,
                                 canvasPrimaryUrl = artworkCanvas?.animated,
                                 canvasFallbackUrl = artworkCanvas?.videoUrl,
                                 onSliderValueChange = onSliderValueChange,
@@ -1595,6 +1487,7 @@ fun BottomSheetPlayer(
                             textBackgroundColor = TextBackgroundColor,
                             textButtonColor = textButtonColor,
                             iconButtonColor = iconButtonColor,
+                            canvasSource = artworkCanvas?.source,
                             canvasPrimaryUrl = artworkCanvas?.animated,
                             canvasFallbackUrl = artworkCanvas?.videoUrl,
                             onCollapseClick = { state.collapseSoft() },
@@ -1692,6 +1585,7 @@ fun BottomSheetPlayer(
                             val screenWidth = LocalConfiguration.current.screenWidthDp
                             val thumbnailSize = (screenWidth * 0.4).dp
                             Thumbnail(
+                                canvas = artworkCanvas,
                                 sliderPositionProvider = { sliderPosition },
                                 modifier = Modifier.size(thumbnailSize),
                                 isPlayerExpanded = state.isExpanded,
@@ -1814,6 +1708,7 @@ fun BottomSheetPlayer(
                         V7PlayerBackdrop(
                             thumbnailUrl = v7SwapState.displayUrl,
                             canvasStaticUrl = v7CanvasArtwork?.static,
+                            canvasSource = v7CanvasArtwork?.source,
                             canvasPrimaryUrl = v7CanvasArtwork?.animatedVertical,
                             canvasFallbackUrl = v7CanvasArtwork?.videoUrlVertical,
                             isPlaying = isPlaying,
@@ -1898,6 +1793,7 @@ fun BottomSheetPlayer(
                                 menuState = menuState,
                                 bottomSheetPageState = bottomSheetPageState,
                                 currentFormat = currentFormat,
+                                canvasSource = artworkCanvas?.source,
                                 canvasPrimaryUrl = artworkCanvas?.animated,
                                 canvasFallbackUrl = artworkCanvas?.videoUrl,
                                 onSliderValueChange = onSliderValueChange,
@@ -1933,6 +1829,7 @@ fun BottomSheetPlayer(
                             textBackgroundColor = TextBackgroundColor,
                             textButtonColor = textButtonColor,
                             iconButtonColor = iconButtonColor,
+                            canvasSource = artworkCanvas?.source,
                             canvasPrimaryUrl = artworkCanvas?.animated,
                             canvasFallbackUrl = artworkCanvas?.videoUrl,
                             onCollapseClick = { state.collapseSoft() },
@@ -2031,6 +1928,7 @@ fun BottomSheetPlayer(
                             modifier = Modifier.weight(1f),
                         ) {
                             Thumbnail(
+                                canvas = artworkCanvas,
                                 sliderPositionProvider = { sliderPosition },
                                 modifier = Modifier.nestedScroll(state.preUpPostDownNestedScrollConnection),
                                 isPlayerExpanded = state.isExpanded,
@@ -2391,6 +2289,7 @@ private fun BackdropBlurApi30(
 private fun V7PlayerBackdrop(
     thumbnailUrl: String?,
     canvasStaticUrl: String?,
+    canvasSource: CanvasSource?,
     canvasPrimaryUrl: String?,
     canvasFallbackUrl: String?,
     isPlaying: Boolean,
@@ -2492,9 +2391,10 @@ private fun V7PlayerBackdrop(
     }
 
     val backdropState =
-        remember(sharpArtworkUrl, canvasPrimary, canvasFallback) {
+        remember(sharpArtworkUrl, canvasSource, canvasPrimary, canvasFallback) {
             V7PlayerBackdropState(
                 artworkUrl = sharpArtworkUrl,
+                canvasSource = canvasSource,
                 canvasPrimaryUrl = canvasPrimary,
                 canvasFallbackUrl = canvasFallback,
             )
@@ -2681,6 +2581,7 @@ private fun V7PlayerBackdrop(
 
                 if (hasCanvas) {
                     CanvasArtworkPlayer(
+                        source = backdrop.canvasSource,
                         primaryUrl = backdrop.canvasPrimaryUrl,
                         fallbackUrl = backdrop.canvasFallbackUrl,
                         isPlaying = isPlaying,
@@ -2751,6 +2652,7 @@ private fun Color.v7BackdropTone(
 @Immutable
 private data class V7PlayerBackdropState(
     val artworkUrl: String?,
+    val canvasSource: CanvasSource?,
     val canvasPrimaryUrl: String?,
     val canvasFallbackUrl: String?,
 )
