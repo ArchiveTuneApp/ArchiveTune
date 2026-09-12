@@ -332,6 +332,8 @@
     <string name="action_login">Đăng nhập</string>
     <string name="login">Đăng nhập</string>
     <string name="not_logged_in">Chưa đăng nhập</string>
+    <string name="google_login_warning_title">Yêu cầu đăng nhập tài khoản Google</string>
+    <string name="google_login_warning_description">Để có thể nghe các bản nhạc trên %1$s mà không bị lỗi liên quan đến các vấn đề playback, vui lòng đăng nhập tài khoản Google vào %1$s. Đây là điều cần thiết để không bị chặn nghe nhạc từ phía của Google (a.k.a YouTube Music)</string>
     <string name="content_language">Ngôn ngữ nội dung mặc định</string>
     <string name="content_country">Quốc gia nội dung mặc định</string>
     <string name="system_default">Mặc định hệ thống</string>

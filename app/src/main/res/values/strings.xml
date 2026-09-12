@@ -498,6 +498,8 @@
     <string name="action_login">Log in</string>
     <string name="login">Login</string>
     <string name="not_logged_in">Not logged in</string>
+    <string name="google_login_warning_title">Login Google account request</string>
+    <string name="google_login_warning_description">Để có thể nghe các bản nhạc trên %1$s mà không bị lỗi liên quan đến các vấn đề playback, vui lòng đăng nhập tài khoản Google vào %1$s. Đây là điều cần thiết để không bị chặn nghe nhạc từ phía của Google (a.k.a YouTube Music)</string>
     <string name="playback_confirmation_required" translatable="false">Playback confirmation required</string>
     <string name="playback_requires_youtube_music_confirmation" translatable="false">Confirm playback in YouTube Music, then return to ArchiveTune.</string>
     <string name="playback_login_refresh_required" translatable="false">Refresh YouTube Music login</string>
