@@ -46,6 +46,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.role.Role
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -71,12 +72,14 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -224,6 +227,8 @@ import moe.rukamori.archivetune.constants.StopMusicOnTaskClearKey
 import moe.rukamori.archivetune.constants.UpdateChannel
 import moe.rukamori.archivetune.constants.UpdateChannelKey
 import moe.rukamori.archivetune.constants.UseSystemFontKey
+import moe.rukamori.archivetune.constants.GoogleLoginWarningDismissedKey
+import moe.rukamori.archivetune.constants.InnerTubeCookieKey
 import moe.rukamori.archivetune.db.MusicDatabase
 import moe.rukamori.archivetune.db.entities.Album
 import moe.rukamori.archivetune.db.entities.Artist
@@ -238,6 +243,7 @@ import moe.rukamori.archivetune.innertube.models.EpisodeItem
 import moe.rukamori.archivetune.innertube.models.PlaylistItem
 import moe.rukamori.archivetune.innertube.models.PodcastItem
 import moe.rukamori.archivetune.innertube.models.SongItem
+import moe.rukamori.archivetune.innertube.utils.hasYouTubeLoginCookie
 import moe.rukamori.archivetune.models.toMediaMetadata
 import moe.rukamori.archivetune.musicrecognition.ACTION_MUSIC_RECOGNITION
 import moe.rukamori.archivetune.musicrecognition.MusicRecognitionRoute
@@ -891,6 +897,36 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     return@ArchiveTuneTheme
+                }
+
+                // Google login warning dialog
+                val innerTubeCookie by rememberPreference(InnerTubeCookieKey, defaultValue = "")
+                val googleLoginWarningDismissed by rememberPreference(GoogleLoginWarningDismissedKey, defaultValue = false)
+                val isLoggedIn = remember(innerTubeCookie) { hasYouTubeLoginCookie(innerTubeCookie) }
+                var showLoginWarningDialog by rememberSaveable { mutableStateOf(false) }
+                var dontShowAgain by rememberSaveable { mutableStateOf(false) }
+                LaunchedEffect(isLoggedIn, googleLoginWarningDismissed) {
+                    if (!isLoggedIn && !googleLoginWarningDismissed) {
+                        showLoginWarningDialog = true
+                    }
+                }
+                if (showLoginWarningDialog) {
+                    LoginWarningDialog(
+                        onLogin = {
+                            showLoginWarningDialog = false
+                            navController.navigate(buildLoginRoute())
+                        },
+                        onDismiss = {
+                            if (dontShowAgain) {
+                                lifecycleScope.launch {
+                                    dataStore.edit { it[GoogleLoginWarningDismissedKey] = true }
+                                }
+                            }
+                            showLoginWarningDialog = false
+                        },
+                        dontShowAgain = dontShowAgain,
+                        onDontShowAgainChange = { dontShowAgain = it },
+                    )
                 }
 
                 BoxWithConstraints(
@@ -2986,6 +3022,59 @@ class MainActivity : ComponentActivity() {
                     shapes = ButtonDefaults.shapes(),
                 ) {
                     Text(stringResource(android.R.string.cancel))
+                }
+            },
+        )
+    }
+
+    @Composable
+    private fun LoginWarningDialog(
+        onLogin: () -> Unit,
+        onDismiss: () -> Unit,
+        dontShowAgain: Boolean,
+        onDontShowAgainChange: (Boolean) -> Unit,
+    ) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            icon = { Icon(painterResource(R.drawable.login), null) },
+            title = { Text(stringResource(R.string.google_login_warning_title)) },
+            text = {
+                Column {
+                    Text(
+                        text = stringResource(
+                            R.string.google_login_warning_description,
+                            stringResource(R.string.app_name),
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .toggleable(
+                                value = dontShowAgain,
+                                role = Role.Checkbox,
+                                onValueChange = onDontShowAgainChange,
+                            )
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Checkbox(
+                            checked = dontShowAgain,
+                            onCheckedChange = null,
+                        )
+                        Text(text = stringResource(R.string.together_dont_show_again))
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = onLogin, shapes = ButtonDefaults.shapes()) {
+                    Text(stringResource(R.string.action_login))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss, shapes = ButtonDefaults.shapes()) {
+                    Text(stringResource(R.string.later))
                 }
             },
         )
