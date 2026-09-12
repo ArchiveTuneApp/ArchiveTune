@@ -613,7 +613,7 @@ fun PlayerMenu(
                                         text = stringResource(R.string.music_together),
                                         onClick = {
                                             onDismiss()
-                                            playerBottomSheetState.snapTo(playerBottomSheetState.collapsedBound)
+                                            playerBottomSheetState.collapseSoft()
                                             navController.navigate("settings/music_together")
                                         },
                                     ),
@@ -666,7 +666,7 @@ fun PlayerMenu(
                                     Modifier.clickable {
                                         if (splitArtists.size == 1 && splitArtists[0].originalArtist != null) {
                                             onDismiss()
-                                            playerBottomSheetState.snapTo(playerBottomSheetState.collapsedBound)
+                                            playerBottomSheetState.collapseSoft()
                                             navController.navigate("artist/${splitArtists[0].originalArtist!!.id}")
                                         } else {
                                             showSelectArtistDialog = true
@@ -695,7 +695,7 @@ fun PlayerMenu(
                                 modifier =
                                     Modifier.clickable {
                                         onDismiss()
-                                        playerBottomSheetState.snapTo(playerBottomSheetState.collapsedBound)
+                                        playerBottomSheetState.collapseSoft()
                                         navController.navigate("album/${mediaMetadata.album.id}")
                                     },
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),

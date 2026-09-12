@@ -2131,8 +2131,6 @@ class MainActivity : ComponentActivity() {
                                 },
                                 bottomBar = {
                                     Box {
-                                        val showNavigationBarState = rememberUpdatedState(shouldShowNavigationBar)
-                                        val useRailState = rememberUpdatedState(useRail)
                                         val navigationProximityProvider: () -> Float =
                                             remember(playerBottomSheetState, bottomNavigationBarHeightState) {
                                                 {
@@ -2155,11 +2153,7 @@ class MainActivity : ComponentActivity() {
                                                             }
                                                         }
                                                     val sheetPresence = (1f - (swipeDeviation / morphThreshold)).coerceIn(0f, 1f)
-                                                    if (!showNavigationBarState.value || useRailState.value) {
-                                                        0f
-                                                    } else {
-                                                        navRatio * sheetPresence
-                                                    }
+                                                    navRatio * sheetPresence
                                                 }
                                             }
 
